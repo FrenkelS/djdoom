@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -1016,12 +1017,10 @@ void D_DoomMain (void)
 	if (M_CheckParm("-cdrom"))
 	{
 		printf(D_CDROM);
-#if (APPVER_DOOMREV < AV_DR_DM1666E)
+#if (APPVER_DOOMREV < AV_DR_DM17)
 		mkdir("c:doomdata");
-#elif (APPVER_DOOMREV < AV_DR_DM17)
-		mkdir("c:doomdata",0);
 #else
-		mkdir("c:\\doomdata",0);
+		mkdir("c:\\doomdata");
 #endif
 		strcpy (basedefault,"c:/doomdata/default.cfg");
 	}	

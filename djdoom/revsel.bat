@@ -23,13 +23,13 @@ echo along with TASM 3.1.
 echo.
 echo %MSG%
 set MSG=
-choice /C:123456789AaBbCcDd0 /N
+choice /C:123456789ABCD0 /N
 echo.
 
-if ERRORLEVEL 18 goto end
-if ERRORLEVEL 16 goto CHEX
-if ERRORLEVEL 14 goto DM19F2
-if ERRORLEVEL 12 goto DM19F
+if ERRORLEVEL 14 goto end
+if ERRORLEVEL 13 goto CHEX
+if ERRORLEVEL 12 goto DM19F2
+if ERRORLEVEL 11 goto DM19F
 if ERRORLEVEL 10 goto DM19U
 if ERRORLEVEL 9 goto DM19UP
 if ERRORLEVEL 8 goto DM19

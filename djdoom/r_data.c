@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -114,7 +115,7 @@ void R_DrawColumnInCache (column_t *patch, byte *cache, int originy, int cachehe
 		if (count > 0)
 			memcpy (cache + position, source, count);
 		
-		patch = (column_t *)(  (byte *)patch + patch->length+ 4);
+		patch = (column_t *)(  (byte *)patch + patch->length + 4);
 	}
 }
 

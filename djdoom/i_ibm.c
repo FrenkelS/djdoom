@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -1124,7 +1125,7 @@ void DPMIInt (int i)
 void I_StartupDPMI (void)
 {
 	extern char __begtext;
-	extern char ___argc;
+	extern char ___Argc;
 	int     n,d;
 
 //
@@ -1136,7 +1137,7 @@ void I_StartupDPMI (void)
 // lock the entire program down
 //
 
-	_dpmi_lockregion (&__begtext, &___argc - &__begtext);
+	_dpmi_lockregion (&__begtext, &___Argc - &__begtext);
 
 
 //

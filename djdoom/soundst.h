@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -137,7 +138,7 @@ void I_ResumeSong(int handle);
 //  plays a song, and when the song is done,
 //  starts playing it again in an endless loop.
 // Horrible thing to do, considering.
-int I_PlaySong(int handle, int looping);
+void I_PlaySong(int handle, int looping);
 
 
 // stops a song over 3 seconds.

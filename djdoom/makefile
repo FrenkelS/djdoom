@@ -123,7 +123,7 @@ $(appver_exedef)\newdoom.exe : $(GLOBOBJS)
 .obj : $(appver_exedef)
 
 .c.obj :
- wcc386p $(CCOPTS) $(GAMEVEROPTS) $(DMXINC) $[* /fo=$(appver_exedef)\$^&
+ wcc386 $(CCOPTS) $(GAMEVEROPTS) $(DMXINC) $[* /fo=$(appver_exedef)\$^&
 
 .asm.obj :
  tasm /mx $[*,$(appver_exedef)\$^&/J
