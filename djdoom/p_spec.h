@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -473,4 +474,4 @@ void	T_MoveFloor(floormove_t *floor);
 ===============================================================================
 */
 
-boolean EV_Teleport(line_t *line, int side, mobj_t *thing);
+void EV_Teleport(line_t *line, int side, mobj_t *thing);

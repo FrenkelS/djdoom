@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -26,7 +27,7 @@
 //						TELEPORTATION
 //
 //==================================================================
-int	EV_Teleport( line_t *line, int side, mobj_t *thing )
+void	EV_Teleport( line_t *line, int side, mobj_t *thing )
 {
 	int		i;
 	int		tag;
@@ -38,10 +39,10 @@ int	EV_Teleport( line_t *line, int side, mobj_t *thing )
 	fixed_t		oldx, oldy, oldz;
 	
 	if (thing->flags & MF_MISSILE)
-		return 0;			// don't teleport missiles
+		return;			// don't teleport missiles
 		
 	if (side == 1)		// don't teleport if hit back of line,
-		return 0;		// so you can get out of teleporter
+		return;		// so you can get out of teleporter
 	
 	tag = line->tag;
 	for (i = 0; i < numsectors; i++)
@@ -64,7 +65,7 @@ int	EV_Teleport( line_t *line, int side, mobj_t *thing )
 				oldy = thing->y;
 				oldz = thing->z;
 				if (!P_TeleportMove (thing, m->x, m->y))
-					return 0;
+					return;
 #if (APPVER_DOOMREV != AV_DR_DM19F)
 				thing->z = thing->floorz;	//fixme: not needed?
 #endif
@@ -81,9 +82,8 @@ int	EV_Teleport( line_t *line, int side, mobj_t *thing )
 					thing->reactiontime = 18;	// don't move for a bit
 				thing->angle = m->angle;
 				thing->momx = thing->momy = thing->momz = 0;
-				return 1;
+				return;
 			}	
 		}
-	return 0;
 }
 
