@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -644,7 +645,6 @@ extern int _dp12;
 
 extern boolean automapactive;
 extern boolean menuactive;
-extern boolean bodyqueslot;
 extern boolean nodrawers;
 extern boolean noblit;
 extern boolean viewactive;
