@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -18,6 +19,9 @@
 #include "DoomDef.h"
 #include "R_local.h"
 #include "soundst.h"
+
+int _dpmi_lockregion (void * inmem, int length);
+int _dpmi_unlockregion (void * inmem, int length);
 
 static channel_t *channels; // the set of channels available
 static int snd_SfxVolume, snd_MusicVolume;

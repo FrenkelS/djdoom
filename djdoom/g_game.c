@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -1219,7 +1220,7 @@ void G_DoLoadGame(void)
 	// Skip the description field
 	memset(vcheck, 0, sizeof(vcheck));
 	sprintf(vcheck, "version %i", VERSION);
-	if (strcmp (save_p, vcheck))
+	if (strcmp ((char const *)save_p, vcheck))
 	{ // Bad version
 		return;
 	}

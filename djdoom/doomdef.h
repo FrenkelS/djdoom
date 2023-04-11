@@ -20,7 +20,10 @@
 
 #ifndef __DOOMDEF__
 #define __DOOMDEF__
+#include <conio.h>
+#include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #ifdef __WATCOMC__
 #include <malloc.h>

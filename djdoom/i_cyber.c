@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,6 +20,7 @@
 
 #include <dos.h>
 #include <stdlib.h>
+#include "DoomDef.h"
 
 
 /*
@@ -43,16 +45,6 @@ normal speed to help aiming.
 
 ====================================================
 */
-
-typedef struct
-{
-	char            forwardmove;            // *2048 for move
-	char            sidemove;                       // *2048 for move
-	short           angleturn;                      // <<16 for angle delta
-	short           consistancy;            // checks for net game
-	unsigned char            chatchar;
-	unsigned char           buttons;
-} ticcmd_t;
 
 #define BT_ATTACK               1
 #define BT_USE                  2

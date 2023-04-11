@@ -35,6 +35,11 @@ extern int _wp1, _wp2;
 void I_StartupNet (void);
 void I_ShutdownNet (void);
 
+void I_StartupSound (void);
+void I_ShutdownSound (void);
+
+void I_ShutdownTimer (void);
+
 typedef struct
 {
 	unsigned        edi, esi, ebp, reserved, ebx, edx, ecx, eax;
@@ -42,6 +47,9 @@ typedef struct
 } dpmiregs_t;
 
 extern  dpmiregs_t      dpmiregs;
+
+void DPMIInt (int i);
+int _dpmi_lockregion (void * inmem, int length);
 
 void I_ReadMouse (void);
 void I_InitDiskFlash (void);
@@ -504,7 +512,7 @@ void I_InitGraphics (void)
 		return;
 	grmode = true;
 	regs.w.ax = 0x13;
-	int386 (0x10, (const union REGS *)&regs, &regs);
+	int386 (0x10, &regs, &regs);
 	screen = currentscreen = (byte *)0xa0000;
 	destscreen = (byte *)0xa4000;
 	outp (SC_INDEX,SC_MEMMODE);
@@ -1349,7 +1357,7 @@ void I_Quit (void)
 	regs.h.bh = 0;
 	regs.h.dl = 0;
 	regs.h.dh = 23;
-	int386 (0x10, (const union REGS *)&regs, &regs); // Set text pos
+	int386 (0x10, &regs, &regs); // Set text pos
 	printf ("\n");
 	exit (0);
 }
