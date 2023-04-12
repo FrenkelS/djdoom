@@ -55,9 +55,7 @@ void S_StopMusic(void)
     I_StopSong(mus_playing->handle);
     I_UnRegisterSong(mus_playing->handle);
     Z_ChangeTag(mus_playing->data, PU_CACHE);
-#ifdef __WATCOMC__
     _dpmi_unlockregion(mus_playing->data, lumpinfo[mus_playing->lumpnum].size);
-#endif
     mus_playing->data = 0;
     mus_playing = 0;
   }
@@ -86,9 +84,7 @@ void S_ChangeMusic (int musicnum, int looping)
   }
   // load & register it
   music->data = (void *) W_CacheLumpNum(music->lumpnum, PU_MUSIC);
-#ifdef __WATCOMC__
     _dpmi_lockregion(music->data, lumpinfo[music->lumpnum].size);
-#endif
   music->handle = I_RegisterSong(music->data);
   // play it
   I_PlaySong(music->handle, looping);
@@ -350,16 +346,11 @@ void S_StartSoundAtVolume(void *origin_p, int sfx_id, int volume)
   // cache data if necessary
   if (!sfx->data)
   {
-#ifndef __WATCOMC__
-    fprintf( stderr,
-	     "S_StartSoundAtVolume: 16bit and not pre-cached - wtf?\n");
-#else
     sfx->data = (void *) W_CacheLumpNum(sfx->lumpnum, PU_MUSIC);
     _dpmi_lockregion(sfx->data, lumpinfo[sfx->lumpnum].size);
     // fprintf( stderr,
     //	     "S_StartSoundAtVolume: loading %d (lump %d) : 0x%x\n",
     //       sfx_id, sfx->lumpnum, (int)sfx->data );
-#endif
   }
 #endif
   
@@ -438,7 +429,6 @@ void S_UpdateSounds(void* listener_p)
   mobj_t *listener = (mobj_t*)listener_p;
 #endif
 
-#ifdef __WATCOMC__
   if (gametic > nextcleanup)
   {
     for (i=1 ; i<NUMSFX ; i++)
@@ -455,7 +445,7 @@ void S_UpdateSounds(void* listener_p)
     }
     nextcleanup = gametic + 15;
   }
-#endif
+
   for (cnum=0 ; cnum<numChannels ; cnum++)
   {
     c = &channels[cnum];
