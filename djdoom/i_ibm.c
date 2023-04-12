@@ -22,7 +22,6 @@
 #include <conio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <graph.h>
 #include "DoomDef.h"
 #include "R_local.h"
 
