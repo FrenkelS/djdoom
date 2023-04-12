@@ -374,8 +374,6 @@ byte *screen, *currentscreen, *destscreen, *destview;
 ===================
 */
 
-#define PLANEWIDTH	80
-
 void I_UpdateBox (int x, int y, int width, int height)
 {
 	int		ofs;

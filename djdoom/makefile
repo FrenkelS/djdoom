@@ -61,7 +61,6 @@ GLOBOBJS = &
  i_ibm.obj &
  i_sound.obj &
  i_cyber.obj &
- planar.obj &
  tables.obj &
  f_finale.obj &
  d_main.obj &
@@ -123,9 +122,6 @@ $(appver_exedef)\newdoom.exe : $(GLOBOBJS)
 
 .c.obj :
  wcc386 $(CCOPTS) $(GAMEVEROPTS) $(DMXINC) $[* /fo=$(appver_exedef)\$^&
-
-.asm.obj :
- tasm /mx $[*,$(appver_exedef)\$^&/J
 
 clean : .SYMBOLIC
  del $(appver_exedef)\*.obj

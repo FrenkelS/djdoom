@@ -803,6 +803,7 @@ void D_StartTitle (void);
 //SCREEN_MUL*BASE_WIDTH //320
 #define SCREENHEIGHT 200
 //(int)(SCREEN_MUL*BASE_WIDTH*INV_ASPECT_RATIO) //200
+#define PLANEWIDTH	(SCREENWIDTH/4)
 
 byte *I_ZoneBase (int *size);
 // called by startup code to get the ammount of memory to malloc

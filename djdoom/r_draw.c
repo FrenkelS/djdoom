@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -63,9 +64,6 @@ byte			*dc_source;		// first pixel in a column (possibly virtual)
 
 int				dccount;		// just for profiling
 
-#ifndef __WATCOMC__
-#ifndef __i386
-#ifndef __m68k
 void R_DrawColumn (void)
 {
 	int			count;
@@ -81,7 +79,8 @@ void R_DrawColumn (void)
 		I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
 #endif
 
-	dest = ylookup[dc_yl] + columnofs[dc_x]; 
+	outp (SC_INDEX+1,1<<(dc_x&3));
+	dest = destview + dc_yl*PLANEWIDTH + (dc_x>>2);
 	
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
@@ -89,17 +88,11 @@ void R_DrawColumn (void)
 	do
 	{
 		*dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
-		dest += SCREENWIDTH;
+		dest += PLANEWIDTH;
 		frac += fracstep;
 	} while (count--);
 }
-#endif		// __m68k
-#endif		// __i386
-#endif
 
-#ifndef __WATCOMC__
-#ifndef __i386
-#ifndef __m68k
 void R_DrawColumnLow (void)
 {
 	int			count;
@@ -116,7 +109,11 @@ void R_DrawColumnLow (void)
 //	dccount++;
 #endif
 
-	dest = ylookup[dc_yl] + columnofs[dc_x]; 
+	if (dc_x & 1)
+		outp (SC_INDEX+1,12);
+	else
+		outp (SC_INDEX+1,3);
+	dest = destview + dc_yl*PLANEWIDTH + (dc_x>>1);
 	
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
@@ -124,22 +121,14 @@ void R_DrawColumnLow (void)
 	do
 	{
 		*dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
-		dest += SCREENWIDTH;
+		dest += PLANEWIDTH;
 		frac += fracstep;
 	} while (count--);
 }
-#endif		// __m68k
-#endif		// __i386
-#endif
 
 
 #define FUZZTABLE	50
-
-#ifdef __WATCOMC__
-#define FUZZOFF	(SCREENWIDTH/4)
-#else
-#define FUZZOFF	(SCREENWIDTH)
-#endif
+#define FUZZOFF	(PLANEWIDTH)
 int		fuzzoffset[FUZZTABLE] = {
 FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF
 };
@@ -165,7 +154,6 @@ void R_DrawFuzzColumn (void)
 		I_Error ("R_DrawFuzzColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
 #endif
 
-#ifdef __WATCOMC__
 	if (detailshift)
 	{
 		if (dc_x & 1)
@@ -178,17 +166,14 @@ void R_DrawFuzzColumn (void)
 			outpw (GC_INDEX,GC_READMAP); 
 			outp (SC_INDEX+1,3); 
 		}
-		dest = destview + dc_yl*80 + (dc_x>>1); 
+		dest = destview + dc_yl*PLANEWIDTH + (dc_x>>1); 
 	}
 	else
 	{
 		outpw (GC_INDEX,GC_READMAP+((dc_x&3)<<8) ); 
 		outp (SC_INDEX+1,1<<(dc_x&3)); 
-		dest = destview + dc_yl*80 + (dc_x>>2); 
+		dest = destview + dc_yl*PLANEWIDTH + (dc_x>>2); 
 	}
-#else
-	dest = ylookup[dc_yl] + columnofs[dc_x];
-#endif
 
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
@@ -198,11 +183,8 @@ void R_DrawFuzzColumn (void)
 		*dest = colormaps[6*256+dest[fuzzoffset[fuzzpos]]];
 		if (++fuzzpos == FUZZTABLE)
 			fuzzpos = 0;
-#ifdef __WATCOMC__
-		dest += SCREENWIDTH/4;
-#else
-		dest += SCREENWIDTH;
-#endif
+
+		dest += PLANEWIDTH;
 		frac += fracstep;
 	} while (count--);
 }
@@ -233,7 +215,6 @@ void R_DrawTranslatedColumn (void)
 		I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
 #endif
 
-#ifdef __WATCOMC__
 	if (detailshift)
 	{
 		if (dc_x & 1)
@@ -241,16 +222,13 @@ void R_DrawTranslatedColumn (void)
 		else
 			outp (SC_INDEX+1,3);
 	
-		dest = destview + dc_yl*80 + (dc_x>>1); 
+		dest = destview + dc_yl*PLANEWIDTH + (dc_x>>1); 
 	}
 	else
 	{
 		outp (SC_INDEX+1,1<<(dc_x&3)); 
-		dest = destview + dc_yl*80 + (dc_x>>2); 
+		dest = destview + dc_yl*PLANEWIDTH + (dc_x>>2); 
 	}
-#else
-	dest = ylookup[dc_yl] + columnofs[dc_x];
-#endif
 	
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
@@ -258,11 +236,7 @@ void R_DrawTranslatedColumn (void)
 	do
 	{
 		*dest = dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]];
-#ifdef __WATCOMC__
-		dest += SCREENWIDTH/4;
-#else
-		dest += SCREENWIDTH;
-#endif
+		dest += PLANEWIDTH;
 		frac += fracstep;
 	} while (count--);
 }
@@ -321,9 +295,6 @@ byte			*ds_source;		// start of a 64*64 tile image
 
 int				dscount;		// just for profiling
 
-#ifndef __WATCOMC__
-#ifndef __i386
-#ifndef __m68k
 void R_DrawSpan (void)
 {
 	fixed_t		xfrac, yfrac;
@@ -340,23 +311,19 @@ void R_DrawSpan (void)
 	xfrac = ds_xfrac;
 	yfrac = ds_yfrac;
 	
-	dest = ylookup[ds_y] + columnofs[ds_x1];	
-	count = ds_x2 - ds_x1;
-	do
+	dest = destview + ds_y*PLANEWIDTH + (ds_x1>>2);
+	for (count = ds_x1; count <= ds_x2; count++)
 	{
 		spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
-		*dest++ = ds_colormap[ds_source[spot]];
+		outp (SC_INDEX+1,1<<(count&3)); 
+		*dest = ds_colormap[ds_source[spot]];
+		if ((count&3)==3)
+			dest++;
 		xfrac += ds_xstep;
 		yfrac += ds_ystep;
-	} while (count--);
+	}
 }
-#endif
-#endif
-#endif
 
-#ifndef __WATCOMC__
-#ifndef __i386
-#ifndef __m68k
 void R_DrawSpanLow (void)
 {
 	fixed_t		xfrac, yfrac;
@@ -373,19 +340,21 @@ void R_DrawSpanLow (void)
 	xfrac = ds_xfrac;
 	yfrac = ds_yfrac;
 	
-	dest = ylookup[ds_y] + columnofs[ds_x1];	
-	count = ds_x2 - ds_x1;
-	do
+	dest = destview + ds_y*PLANEWIDTH + (ds_x1>>1);
+	for (count = ds_x1; count <= ds_x2; count++)
 	{
 		spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
-		*dest++ = ds_colormap[ds_source[spot]];
+		if (count & 1)
+			outp (SC_INDEX+1,12);
+		else
+			outp (SC_INDEX+1,3);
+		*dest = ds_colormap[ds_source[spot]];
+		if (count & 1)
+			dest++;
 		xfrac += ds_xstep;
 		yfrac += ds_ystep;
-	} while (count--);
+	}
 }
-#endif
-#endif
-#endif
 
 
 
@@ -482,7 +451,6 @@ void R_FillBackScreen (void)
 	V_DrawPatch (viewwindowx+scaledviewwidth, viewwindowy+viewheight, 1,
 		W_CacheLumpName ("brdr_br",PU_CACHE));
 
-#ifdef __WATCOMC__
 	dest = (byte*)0xac000;
 	src = screens[1];
 	for (i = 0; i < 4; i++, src++)
@@ -492,13 +460,11 @@ void R_FillBackScreen (void)
 		for (j = 0; j < (SCREENHEIGHT-SBARHEIGHT)*SCREENWIDTH/4; j++)
 			dest[j] = src[j*4];
 	}
-#endif
 }
 
 
 void R_VideoErase (unsigned ofs, int count)
 { 
-#ifdef __WATCOMC__
 	int		i;
 	byte	*src, *dest;
 	outp (SC_INDEX, SC_MAPMASK);
@@ -513,9 +479,6 @@ void R_VideoErase (unsigned ofs, int count)
 	}
 	outp (GC_INDEX, GC_MODE);
 	outp (GC_INDEX+1, inp (GC_INDEX+1)&~1);
-#else
-	memcpy (screens[0]+ofs, screens[1]+ofs, count);
-#endif
 }
 
 
@@ -563,10 +526,6 @@ void R_DrawViewBorder (void)
 		R_VideoErase (ofs, side);
 		ofs += SCREENWIDTH;
 	}
-
-#ifndef __WATCOMC__
-	V_MarkRect (0,0,SCREENWIDTH, SCREENHEIGHT-SBARHEIGHT);
-#endif
 }
  
  
