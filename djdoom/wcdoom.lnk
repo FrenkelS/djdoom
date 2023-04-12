@@ -1,5 +1,5 @@
 
-# newdoom.EXE Linker directive file
+# wcdoom.EXE Linker directive file
 
 option quiet
 option map
@@ -11,7 +11,7 @@ libpath %WATCOM%\lib386
 libpath %WATCOM%\lib386\dos
 lib noemu387.lib
 format os2 le
-name newdoom
+name wcdoom
 
 %DMXLIBS%
 file i_main.obj

@@ -1,5 +1,5 @@
 
-# NEWDOOM.EXE and DOOM.EXE makefile
+# WCDOOM.EXE makefile
 
 # --------------------------------------------------------------------------
 #
@@ -23,38 +23,11 @@
 #
 # --------------------------------------------------------------------------
 
-CCOPTS = /dAPPVER_EXEDEF=$(appver_exedef) /omaxet /zp1 /4r /ei /j /zq
+CCOPTS = /dAPPVER_EXEDEF=DM19 /omaxet /zp1 /4r /ei /j /zq
 
-!ifeq appver_exedef DM18FR
-GAMEVEROPTS = /DFRENCH
-!endif
-
-!ifeq appver_exedef DM1666P
-DMXVER=dmx34af1
-!else ifeq appver_exedef DM1666E
-DMXVER=dmx34af1
-!else ifeq appver_exedef DM1666
-DMXVER=dmx34af2
-!else ifeq appver_exedef DM17
-DMXVER=dmx34af3
-!else ifeq appver_exedef DM17A
-DMXVER=dmx34af3
-!else ifeq appver_exedef DM18FR
-DMXVER=dmx34af3
-!else
 DMXVER=dmx37
-!endif
-
-!ifeq use_apodmx 1
-DMXINC = /i=..\apodmx
-DMXLIBS = file ..\..\apodmx\apodmx.lib file audio_wf.lib
-!else ifeq DMXVER dmx37
 DMXINC = /i=..\dmx\$(DMXVER)\inc
 DMXLIBS = file ..\..\dmx\$(DMXVER)\lib\dmx_r.lib
-!else
-DMXINC = /i=..\dmx\$(DMXVER)\inc
-DMXLIBS = file ..\..\dmx\$(DMXVER)\lib\dmx.lib
-!endif
 
 GLOBOBJS = &
  i_main.obj &
@@ -107,22 +80,16 @@ GLOBOBJS = &
  sounds.obj &
  dutils.obj
 
-$(appver_exedef)\newdoom.exe : $(GLOBOBJS)
- cd $(appver_exedef)
- # Workaround for too long path
-!ifeq use_apodmx 1
- copy ..\..\audiolib\origlibs\109\AUDIO_WF.LIB .
-!endif
- call ..\linkhlpr.bat $(DMXLIBS)
- copy newdoom.exe strpdoom.exe
+WCDM19\wcdoom.exe : $(GLOBOBJS)
+ cd WCDM19
+ set DMXLIBS=$(DMXLIBS)
+ wlink @..\wcdoom.lnk
+ set DMXLIBS=
+ copy wcdoom.exe strpdoom.exe
  wstrip strpdoom.exe
  cd..
 
-.obj : $(appver_exedef)
+.obj : WCDM19
 
 .c.obj :
- wcc386 $(CCOPTS) $(GAMEVEROPTS) $(DMXINC) $[* /fo=$(appver_exedef)\$^&
-
-clean : .SYMBOLIC
- del $(appver_exedef)\*.obj
- del $(appver_exedef)\newdoom.exe
+ wcc386 $(CCOPTS) $(DMXINC) $[* /fo=WCDM19\$^&
