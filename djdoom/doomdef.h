@@ -25,11 +25,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef __WATCOMC__
 #include <malloc.h>
 #define	strcasecmp strcmpi
 #define	strncasecmp strnicmp
-#endif
 
 // VERSIONS RESTORATION
 // This *must* be included (near) the beginning for every compilation unit

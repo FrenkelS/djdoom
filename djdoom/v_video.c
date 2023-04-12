@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -202,9 +203,6 @@ void V_DrawPatchFlipped (int x, int y, int scrn, patch_t *patch)
 
 void V_DrawPatchDirect (int x, int y, int scrn, patch_t *patch)
 {
-#ifndef __WATCOMC__
-	V_DrawPatch (x,y,scrn, patch); 
-#else
 	int			count,col;
 	column_t	*column;
 	byte		*desttop, *dest, *source;
@@ -245,7 +243,6 @@ void V_DrawPatchDirect (int x, int y, int scrn, patch_t *patch)
 		if ( ((++x)&3) == 0 )
 			desttop++;	// go to next byte, not next plane
 	}
-#endif
 }
 
 /*

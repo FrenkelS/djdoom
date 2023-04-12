@@ -23,12 +23,9 @@
 #define	FGCOLOR		8
 #endif
 
-#ifdef __WATCOMC__
 #include <dos.h>
-#include <graph.h>
 #include <sys\types.h>
 #include <unistd.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include "DoomDef.h"

@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -766,9 +767,7 @@ void R_SetupFrame (player_t *player)
 #ifdef __NeXT__
 	RD_ClearMapWindow ();
 #endif
-#ifdef __WATCOMC__
 	destview = destscreen+(viewwindowx>>2)+viewwindowy*80;
-#endif
 }
 
 /*

@@ -311,7 +311,6 @@ default_t defaults[] =
 	{"music_volume", &musicVolume, 8},
 #endif
 	{"show_messages",&showMessages, 1},
-#ifdef __WATCOMC__
 #define SC_UPARROW              0x48
 #define SC_DOWNARROW            0x50
 #define SC_LEFTARROW            0x4b
@@ -334,7 +333,6 @@ default_t defaults[] =
 	{"key_use", &key_use, SC_SPACE, 1},
 	{"key_strafe", &key_strafe, SC_RALT, 1},
 	{"key_speed", &key_speed, SC_RSHIFT, 1},
-#endif
 
 #ifdef __NeXT__
 	{"key_right", &key_right, KEY_RIGHTARROW},
@@ -410,10 +408,8 @@ void M_SaveDefaults (void)
 
 	for (i=0 ; i<numdefaults ; i++)
 	{
-#ifdef __WATCOMC__
 		if (defaults[i].scantranslate)
 			defaults[i].location = &defaults[i].untranslated;
-#endif
 		if (defaults[i].defaultvalue > -0xfff
 		  && defaults[i].defaultvalue < 0xfff)
 		{
@@ -510,7 +506,6 @@ void M_LoadDefaults (void)
 	}
 
 
-#ifdef __WATCOMC__
 	for(i = 0; i < numdefaults; i++)
 	{
 		if(defaults[i].scantranslate)
@@ -520,7 +515,6 @@ void M_LoadDefaults (void)
 			*defaults[i].location = scantokey[parm];
 		}
 	}
-#endif
 }
 
 
