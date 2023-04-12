@@ -59,7 +59,6 @@ DMXLIBS = file ..\..\dmx\$(DMXVER)\lib\dmx.lib
 GLOBOBJS = &
  i_main.obj &
  i_ibm.obj &
- i_ibm_a.obj &
  i_sound.obj &
  i_cyber.obj &
  planar.obj &
