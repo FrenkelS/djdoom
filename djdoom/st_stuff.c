@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -145,7 +146,7 @@ boolean ST_Responder (event_t *ev)
 	      plyr->message = STSTR_NOMUS;
 	    else
 #endif
-	      S_ChangeMusic(musnum, 1);
+	      S_ChangeMusic(musnum, true);
 #if (APPVER_DOOMREV >= AV_DR_DM19U)
 	  }
 	  else
@@ -155,7 +156,7 @@ boolean ST_Responder (event_t *ev)
 	    if (((buf[0]-'1')*9 + buf[1]-'1') > 31)
 	      plyr->message = STSTR_NOMUS;
 	    else
-	      S_ChangeMusic(musnum, 1);
+	      S_ChangeMusic(musnum, true);
 	  }
 #endif
 	}

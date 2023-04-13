@@ -107,7 +107,7 @@ void S_StartSoundAtVolume(void *origin, int sound_id, int volume);
 #endif
 void S_StopSound(void *origin);
 void S_StartMusic(int music_id);
-void S_ChangeMusic(int music_id, int looping);
+void S_ChangeMusic(int music_id, boolean looping);
 void S_StopMusic(void);
 void S_PauseSound(void);
 void S_ResumeSound(void);
@@ -138,7 +138,7 @@ void I_ResumeSong(int handle);
 //  plays a song, and when the song is done,
 //  starts playing it again in an endless loop.
 // Horrible thing to do, considering.
-void I_PlaySong(int handle, int looping);
+void I_PlaySong(int handle, boolean looping);
 
 
 // stops a song over 3 seconds.

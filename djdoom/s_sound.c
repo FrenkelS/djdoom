@@ -61,7 +61,7 @@ void S_StopMusic(void)
   }
 }
 
-void S_ChangeMusic (int musicnum, int looping)
+void S_ChangeMusic (int musicnum, boolean looping)
 {
   musicinfo_t *music;
   char namebuf[9];
