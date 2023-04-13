@@ -48,7 +48,7 @@ typedef struct
 extern  dpmiregs_t      dpmiregs;
 
 void DPMIInt (int i);
-int _dpmi_lockregion (void * inmem, int length);
+void _dpmi_lockregion (void * inmem, int length);
 
 void I_ReadMouse (void);
 void I_InitDiskFlash (void);
@@ -252,6 +252,8 @@ ticcmd_t *I_BaseTiccmd (void)
 ===================
 */
 
+//TODO implement timer
+#if 0
 int I_GetTime (void)
 {
 #ifdef NOTIMER
@@ -259,6 +261,24 @@ int I_GetTime (void)
 #endif
 	return (ticcount);
 }
+#else
+#include <time.h>
+static unsigned int basetime;
+
+void I_InitBaseTime(void)
+{
+	basetime = clock();
+}
+
+int I_GetTime (void)
+{
+	unsigned int ticks = clock();
+
+	ticks -= basetime;
+
+	return (ticks * TICRATE) / 1000;
+}
+#endif
 
 /*
 ===================
@@ -763,10 +783,9 @@ _outbyte(PEL_DATA,b);
 ================
 */
 
-int I_TimerISR (void)
+void I_TimerISR (void)
 {
 	ticcount++;
-	return 0;
 }
 
 /*

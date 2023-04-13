@@ -150,9 +150,6 @@ int I_RegisterSong(void *data);
 // see above then think backwards
 void I_UnRegisterSong(int handle);
 
-// is the song playing?
-int I_QrySongPlaying(int handle);
-
 
 //
 //  SFX I/O

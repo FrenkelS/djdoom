@@ -25,11 +25,8 @@
 
 CCOPTS = /dAPPVER_EXEDEF=DM19 /omaxet /zp1 /4r /ei /j /zq
 
-DMXVER=dmx37
-DMXINC = /i=..\dmx\$(DMXVER)\inc
-DMXLIBS = file ..\..\dmx\$(DMXVER)\lib\dmx_r.lib
-
 GLOBOBJS = &
+ dmx.obj &
  i_main.obj &
  i_ibm.obj &
  i_sound.obj &
@@ -82,9 +79,7 @@ GLOBOBJS = &
 
 WCDM19\wcdoom.exe : $(GLOBOBJS)
  cd WCDM19
- set DMXLIBS=$(DMXLIBS)
  wlink @..\wcdoom.lnk
- set DMXLIBS=
  copy wcdoom.exe strpdoom.exe
  wstrip strpdoom.exe
  cd..
@@ -92,4 +87,4 @@ WCDM19\wcdoom.exe : $(GLOBOBJS)
 .obj : WCDM19
 
 .c.obj :
- wcc386 $(CCOPTS) $(DMXINC) $[* /fo=WCDM19\$^&
+ wcc386 $(CCOPTS) $[* /fo=WCDM19\$^&

@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -39,16 +40,19 @@ static int tsm_ID;
 void I_StartupTimer (void)
 {
 #ifndef NOTIMER
-	extern int I_TimerISR(void);
+	extern void I_TimerISR(void);
+	extern void I_InitBaseTime(void);
 
 	printf("I_StartupTimer()\n");
 	// installs master timer.  Must be done before StartupTimer()!
 	TSM_Install(SND_TICRATE);
-	tsm_ID = TSM_NewService (I_TimerISR, 35, 0, 0); // max priority
+	tsm_ID = TSM_NewService (I_TimerISR, TICRATE); // max priority
 	if (tsm_ID == -1)
 	{
 		I_Error("Can't register 35 Hz timer w/ DMX library");
 	}
+
+	I_InitBaseTime();
 #endif
 }
 
@@ -128,59 +132,34 @@ void I_SetSfxVolume(int volume)
 
 int I_RegisterSong(void *data)
 {
-  int rc = MUS_RegisterSong(data);
-#ifdef SNDDEBUG
-  if (rc<0) printf("MUS_Reg() returned %d\n", rc);
-#endif
-  return rc;
+  return MUS_RegisterSong(data);
 }
 
 void I_UnRegisterSong(int handle)
 {
-  int rc = MUS_UnregisterSong(handle);
-#ifdef SNDDEBUG
-  if (rc < 0) printf("MUS_Unreg() returned %d\n", rc);
-#endif
-}
-
-int I_QrySongPlaying(int handle)
-{
-  int rc = MUS_QrySongPlaying(handle);
-#ifdef SNDDEBUG
-  if (rc < 0) printf("MUS_QrySP() returned %d\n", rc);
-#endif
-  return rc;
+  MUS_UnregisterSong(handle);
 }
 
 // Stops a song.  MUST be called before I_UnregisterSong().
 
 void I_StopSong(int handle)
 {
-  int rc;
-  rc = MUS_StopSong(handle);
-#ifdef SNDDEBUG
-  if (rc < 0) printf("MUS_StopSong() returned %d\n", rc);
-#endif
+  MUS_StopSong(handle);
+
+#if 0
   // Fucking kluge pause
   {
 	int s;
 	extern volatile int ticcount;
 	for (s=ticcount ; ticcount - s < 10 ; );
   }
+#endif
 }
 
 void I_PlaySong(int handle, boolean looping)
 {
-  int rc;
-  rc = MUS_ChainSong(handle, looping ? handle : -1);
-#ifdef SNDDEBUG
-  if (rc < 0) printf("MUS_ChainSong() returned %d\n", rc);
-#endif
-  rc = MUS_PlaySong(handle, snd_MusicVolume);
-#ifdef SNDDEBUG
-  if (rc < 0) printf("MUS_PlaySong() returned %d\n", rc);
-#endif
-
+  MUS_ChainSong(handle, looping ? handle : -1);
+  MUS_PlaySong(handle, snd_MusicVolume);
 }
 
 /*
@@ -217,7 +196,7 @@ int I_StartSound (int id, void *data, int vol, int sep, int pitch, int priority)
 	||  data == S_sfx[sfx_sawidl].data)) return -1;
 
   else
-	return SFX_PlayPatch(data, sep, pitch, vol, 0, 100);
+	return SFX_PlayPatch(data, sep, pitch, vol);
 
 }
 
@@ -259,7 +238,7 @@ void I_sndArbitrateCards(void)
 #else
   boolean codec, ensoniq, gus, adlib, pc, sb, midi;
 #endif
-  int i, rc, mputype, p, opltype, wait, dmxlump;
+  int wait, dmxlump;
 
   snd_MaxVolume = 127;
 
@@ -333,7 +312,7 @@ void I_sndArbitrateCards(void)
 	  printf("cfg p=0x%x, i=%d, d=%d\n",
 	  snd_SBport, snd_SBirq, snd_SBdma);
 	}
-	if (SB_Detect(&snd_SBport, &snd_SBirq, &snd_SBdma, 0))
+	if (SB_Detect(&snd_SBport, &snd_SBirq, &snd_SBdma))
 	{
 	  printf("SB isn't responding at p=0x%x, i=%d, d=%d\n",
 	  snd_SBport, snd_SBirq, snd_SBdma);
@@ -351,7 +330,7 @@ void I_sndArbitrateCards(void)
   {
 	if(devparm)
 	  printf("Adlib\n");
-	if (AL_Detect(&wait,0))
+	if (AL_Detect(&wait))
 	  printf("Dude.  The Adlib isn't responding.\n");
 	else
 		AL_SetCard(wait, W_CacheLumpName("genmidi", PU_STATIC));
@@ -364,7 +343,7 @@ void I_sndArbitrateCards(void)
 	if (devparm)
 	  printf("cfg p=0x%x\n", snd_Mport);
 
-	if (MPU_Detect(&snd_Mport, &i))
+	if (MPU_Detect(&snd_Mport))
 	  printf("The MPU-401 isn't reponding @ p=0x%x.\n", snd_Mport);
 	else MPU_SetCard(snd_Mport);
   }
@@ -424,11 +403,13 @@ void I_StartupSound (void)
 void I_ShutdownSound (void)
 {
   S_PauseSound();
+#if 0
   {
 	int s;
 	extern volatile int ticcount;
 	for (s=ticcount + 30; s != ticcount ; );
   }
+#endif
   DMX_DeInit();
 }
 

@@ -13,7 +13,7 @@ lib noemu387.lib
 format os2 le
 name wcdoom
 
-%DMXLIBS%
+file dmx.obj
 file i_main.obj
 file i_ibm.obj
 file i_sound.obj

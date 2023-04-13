@@ -20,8 +20,8 @@
 #include "R_local.h"
 #include "soundst.h"
 
-int _dpmi_lockregion (void * inmem, int length);
-int _dpmi_unlockregion (void * inmem, int length);
+void _dpmi_lockregion (void * inmem, int length);
+void _dpmi_unlockregion (void * inmem, int length);
 
 static channel_t *channels; // the set of channels available
 static int snd_SfxVolume, snd_MusicVolume;
@@ -498,11 +498,6 @@ void S_UpdateSounds(void* listener_p)
       }
 }
 }
-// kill music if it is a single-play && finished
-// if (	mus_playing
-//      && !I_QrySongPlaying(mus_playing->handle)
-//      && !mus_paused )
-// S_StopMusic();
 }
 
 //
