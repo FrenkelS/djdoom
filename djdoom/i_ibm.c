@@ -136,6 +136,7 @@ boolean         joystickpresent;
 unsigned        joystickx, joysticky;
 boolean I_ReadJoystick (void)	// returns false if not connected
 {
+	// TODO implement joystick support
 	return false;
 }
 
