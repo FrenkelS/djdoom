@@ -163,7 +163,7 @@ boolean I_ReadJoystick (void)	// returns false if not connected
 #define MOUSEB2 2
 #define MOUSEB3 4
 
-boolean mousepresent;
+static  boolean mousepresent;
 static  int tsm_ID = -1; // tsm init flag
 
 //===============================
@@ -876,8 +876,6 @@ int I_ResetMouse (void)
 ================
 */
 
-void I_StartupCyberMan(void);
-
 void I_StartupMouse (void)
 {
    int  (far *function)();
@@ -897,8 +895,6 @@ void I_StartupMouse (void)
 	printf("Mouse: detected\n");
 
 	mousepresent = 1;
-
-	I_StartupCyberMan();
 }
 
 
@@ -1556,8 +1552,6 @@ byte *I_AllocLow (int length)
 	regs.w.ax = 0x0100;          // DPMI allocate DOS memory
 	regs.w.bx = (length+15) / 16;
 	int386( DPMI_INT, &regs, &regs);
-//      segment = regs.w.ax;
-//   selector = regs.w.dx;
 	if (regs.w.cflag != 0)
 		I_Error ("I_AllocLow: DOS alloc of %i failed, %i free",
 			length, regs.w.bx*16);

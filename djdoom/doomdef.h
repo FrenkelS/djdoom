@@ -869,8 +869,6 @@ void I_EndRead (void);
 byte	*I_AllocLow (int length);
 // allocates from low memory under dos, just mallocs under unix
 
-void I_Tactile (int on, int off, int total);
-
 ticcmd_t *I_BaseTiccmd(void);
 // Either returns a null ticcmd,
 // or calls a loadable driver to build it.

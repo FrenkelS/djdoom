@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -685,7 +686,6 @@ void P_DamageMobj (mobj_t *target, mobj_t *inflictor, mobj_t *source, int damage
 	int			saved;
 	player_t	*player;
 	fixed_t		thrust;
-	int			temp;
 		
 	if ( !(target->flags & MF_SHOOTABLE) )
 		return;						// shouldn't happen...
@@ -764,11 +764,6 @@ void P_DamageMobj (mobj_t *target, mobj_t *inflictor, mobj_t *source, int damage
 		player->damagecount += damage;	// add damage after armor / invuln
 		if (player->damagecount > 100)
 			player->damagecount = 100;	// teleport stomp does 10k points...
-	
-		temp = damage < 100 ? damage : 100;
-
-		if (player == &players[consoleplayer])
-			I_Tactile (40,10,40+temp*2);
 	}
 
 //
