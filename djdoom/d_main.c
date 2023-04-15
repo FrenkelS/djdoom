@@ -24,7 +24,8 @@
 #endif
 
 #include <dos.h>
-#include <sys\types.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1030,10 +1031,16 @@ void D_DoomMain (void)
 	if (M_CheckParm("-cdrom"))
 	{
 		printf(D_CDROM);
-#if (APPVER_DOOMREV < AV_DR_DM17)
+#if (APPVER_DOOMREV < AV_DR_DM1666E)
 		mkdir("c:doomdata");
+#elif (APPVER_DOOMREV < AV_DR_DM17)
+		mkdir("c:doomdata",0);
 #else
+#ifdef __DJGPP__
+		mkdir("c:\\doomdata",0);
+#elifdef __WATCOMC__
 		mkdir("c:\\doomdata");
+#endif
 #endif
 		strcpy (basedefault,"c:/doomdata/default.cfg");
 	}	
