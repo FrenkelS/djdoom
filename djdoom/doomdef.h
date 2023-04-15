@@ -29,6 +29,10 @@
 #define	strcasecmp strcmpi
 #define	strncasecmp strnicmp
 
+#ifdef __DJGPP__
+#include <pc.h>
+#endif
+
 // VERSIONS RESTORATION
 // This *must* be included (near) the beginning for every compilation unit
 #include "GAMEVER.H"
