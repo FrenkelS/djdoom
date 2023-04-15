@@ -25,10 +25,14 @@
 #include "DoomDef.h"
 #include "R_local.h"
 
+#if defined __DJGPP__
+#include <dpmi.h>
+#include <go32.h>
+#endif
+
 extern int _wp1, _wp2;
 
 #define DPMI_INT 0x31
-//#define NOKBD
 //#define NOTIMER
 
 void I_StartupNet (void);
@@ -792,9 +796,13 @@ void I_TimerISR (void)
 ============================================================================
 */
 
-void (__interrupt __far *oldkeyboardisr) () = NULL;
+#if defined __DJGPP__
+static _go32_dpmi_seginfo oldkeyboardisr;
+#elif defined __WATCOMC__
+static void (__interrupt __far *oldkeyboardisr) () = NULL;
+#endif
 
-int lastpress;
+static int lastpress;
 
 /*
 ================
@@ -804,7 +812,11 @@ int lastpress;
 ================
 */
 
-void __interrupt I_KeyboardISR (void)
+#if defined __DJGPP__
+static void I_KeyboardISR (void)
+#elif defined __WATCOMC__
+static void __interrupt I_KeyboardISR (void)
+#endif
 {
 // Get the scan code
 
@@ -826,21 +838,31 @@ void __interrupt I_KeyboardISR (void)
 ===============
 */
 
-void I_StartupKeyboard (void)
+static void I_StartupKeyboard (void)
 {
-#ifndef NOKBD
+#if defined __DJGPP__
+	_go32_dpmi_seginfo newkeyboardisr;
+	newkeyboardisr.pm_offset = (int)I_KeyboardISR;
+	newkeyboardisr.pm_selector = _go32_my_cs();
+ 
+	_go32_dpmi_get_protected_mode_interrupt_vector(KEYBOARDINT, &oldkeyboardisr);
+	_go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARDINT, &newkeyboardisr);
+#elif defined __WATCOMC__
 	oldkeyboardisr = _dos_getvect(KEYBOARDINT);
 	_dos_setvect (0x8000 | KEYBOARDINT, I_KeyboardISR);
 #endif
-
-//I_ReadKeys ();
 }
 
 
-void I_ShutdownKeyboard (void)
+static void I_ShutdownKeyboard (void)
 {
+#if defined __DJGPP__
+	_go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARDINT, &oldkeyboardisr);
+#elif defined __WATCOMC__
 	if (oldkeyboardisr)
 		_dos_setvect (KEYBOARDINT, oldkeyboardisr);
+#endif
+
 	*(short *)0x41c = *(short *)0x41a;      // clear bios key buffer
 }
 
@@ -874,8 +896,6 @@ int I_ResetMouse (void)
 
 void I_StartupMouse (void)
 {
-   int  (far *function)();
-
    //
    // General mouse detection
    //
@@ -1103,18 +1123,6 @@ void I_StartFrame (void)
 dpmiregs_t      dpmiregs;
 
 unsigned                realstackseg;
-
-void DPMIFarCall (void)
-{
-	segread (&segregs);
-	regs.w.ax = 0x301;
-	regs.w.bx = 0;
-	regs.w.cx = 0;
-	regs.x.edi = (unsigned)&dpmiregs;
-	segregs.es = segregs.ds;
-	int386x( DPMI_INT, &regs, &regs, &segregs );
-}
-
 
 void DPMIInt (int i)
 {
