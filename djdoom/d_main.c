@@ -1036,9 +1036,9 @@ void D_DoomMain (void)
 #elif (APPVER_DOOMREV < AV_DR_DM17)
 		mkdir("c:doomdata",0);
 #else
-#ifdef __DJGPP__
+#if defined __DJGPP__
 		mkdir("c:\\doomdata",0);
-#elifdef __WATCOMC__
+#elif defined __WATCOMC__
 		mkdir("c:\\doomdata");
 #endif
 #endif

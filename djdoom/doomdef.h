@@ -27,11 +27,11 @@
 #include <string.h>
 #include <malloc.h>
 
-#ifdef __WATCOMC__
+#if defined __WATCOMC__
 #define	strcasecmp strcmpi
 #endif
 
-#ifdef __DJGPP__
+#if defined __DJGPP__
 #include <pc.h>
 #endif
 
