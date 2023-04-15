@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -26,8 +27,6 @@
 
 #define MAXWIDTH			1120
 #define	MAXHEIGHT			832
-
-#define	PI					3.141592657
 
 #define	CENTERY				(SCREENHEIGHT/2)
 
