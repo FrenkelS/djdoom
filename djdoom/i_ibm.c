@@ -143,10 +143,6 @@ boolean I_ReadJoystick (void)	// returns false if not connected
 
 //==================================================
 
-#define VBLCOUNTER              34000           // hardware tics to a frame
-
-
-#define TIMERINT 8
 #define KEYBOARDINT 9
 
 #define CRTCOFF (_inbyte(STATUS_REGISTER_1)&1)
@@ -1163,80 +1159,6 @@ void I_StartupDPMI (void)
 
 
 
-/*
-============================================================================
-
-					TIMER INTERRUPT
-
-============================================================================
-*/
-
-void (__interrupt __far *oldtimerisr) ();
-
-
-/*
-================
-=
-= IO_TimerISR
-=
-================
-*/
-
-//void __interrupt IO_TimerISR (void)
-
-void __interrupt __far IO_TimerISR (void)
-{
-	ticcount++;
-	_outbyte(0x20,0x20);                            // Ack the interrupt
-}
-
-/*
-=====================
-=
-= IO_SetTimer0
-=
-= Sets system timer 0 to the specified speed
-=
-=====================
-*/
-
-void IO_SetTimer0(int speed)
-{
-	if (speed > 0 && speed < 150)
-		I_Error ("INT_SetTimer0: %i is a bad value",speed);
-
-	_outbyte(0x43,0x36);                            // Change timer 0
-	_outbyte(0x40,speed);
-	_outbyte(0x40,speed >> 8);
-}
-
-
-
-/*
-===============
-=
-= IO_StartupTimer
-=
-===============
-*/
-
-void IO_StartupTimer (void)
-{
-	oldtimerisr = _dos_getvect(TIMERINT);
-
-	_dos_setvect (0x8000 | TIMERINT, IO_TimerISR);
-	IO_SetTimer0 (VBLCOUNTER);
-}
-
-void IO_ShutdownTimer (void)
-{
-	if (oldtimerisr)
-	{
-		IO_SetTimer0 (0);              // back to 18.4 ips
-		_dos_setvect (TIMERINT, oldtimerisr);
-	}
-}
-
 //===========================================================================
 
 
@@ -1272,7 +1194,6 @@ void I_Init (void)
 	I_StartupKeyboard ();
 	printf ("I_StartupSound\n");
 	I_StartupSound ();
-	//IO_StartupTimer();
 }
 
 
