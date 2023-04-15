@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -28,6 +29,7 @@
 
 #include <malloc.h>
 #include <io.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #endif
