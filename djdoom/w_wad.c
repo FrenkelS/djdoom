@@ -74,8 +74,6 @@ void		**lumpcache;
 
 #ifdef NeXT
 
-#define strcmpi strcasecmp
-
 void strupr (char *s)
 {
     while (*s)
@@ -180,7 +178,7 @@ void W_AddFile (char *filename)
 	printf ("	adding %s\n",filename);
 	startlump = numlumps;
 	
-	if (strcmpi (filename+strlen(filename)-3 , "wad" ) )
+	if (strcasecmp (filename+strlen(filename)-3 , "wad" ) )
 	{
 	// single lump file
 		fileinfo = &singleinfo;
