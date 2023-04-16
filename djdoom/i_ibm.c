@@ -185,7 +185,9 @@ int             ticcount;
 
 // REGS stuff used for int calls
 static union REGS regs;
+#if defined __WATCOMC__
 static struct SREGS segregs;
+#endif
 
 boolean novideo; // if true, stay in text mode for debugging
 
@@ -1308,20 +1310,38 @@ void I_Quit (void)
 ===============
 */
 
+#if defined __WATCOMC__
+typedef struct {
+  unsigned long largest_available_free_block_in_bytes;
+  unsigned long maximum_unlocked_page_allocation_in_pages;
+  unsigned long maximum_locked_page_allocation_in_pages;
+  unsigned long linear_address_space_size_in_pages;
+  unsigned long total_number_of_unlocked_pages;
+  unsigned long total_number_of_free_pages;
+  unsigned long total_number_of_physical_pages;
+  unsigned long free_linear_address_space_in_pages;
+  unsigned long size_of_paging_file_partition_in_pages;
+  unsigned long reserved[3];
+} __dpmi_free_mem_info;
+#endif
+
 byte *I_ZoneBase (int *size)
 {
-	int             meminfo[32];
+	__dpmi_free_mem_info             meminfo;
 	int             heap;
 	byte                    *ptr;
 
-	memset (meminfo,0,sizeof(meminfo));
-	segread(&segregs);
-	segregs.es = segregs.ds;
+#if defined __DJGPP__
+	__dpmi_get_free_memory_information(&meminfo);
+#elif defined __WATCOMC__
 	regs.w.ax = 0x500;      // get memory info
-	regs.x.edi = (int)&meminfo;
+	memset (&segregs,0,sizeof(segregs));
+	segregs.es = FP_SEG(&meminfo);
+	regs.x.edi = FP_OFF(&meminfo);
 	int386x( DPMI_INT, &regs, &regs, &segregs );
+#endif
 
-	heap = meminfo[0];
+	heap = meminfo.largest_available_free_block_in_bytes;
 	printf ("DPMI memory: 0x%x",heap);
 
 	do
