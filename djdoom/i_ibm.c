@@ -797,7 +797,7 @@ void I_TimerISR (void)
 */
 
 #if defined __DJGPP__
-static _go32_dpmi_seginfo oldkeyboardisr;
+static _go32_dpmi_seginfo oldkeyboardisr, newkeyboardisr;
 #elif defined __WATCOMC__
 static void (__interrupt __far *oldkeyboardisr) () = NULL;
 #endif
@@ -841,11 +841,11 @@ static void __interrupt I_KeyboardISR (void)
 static void I_StartupKeyboard (void)
 {
 #if defined __DJGPP__
-	_go32_dpmi_seginfo newkeyboardisr;
-	newkeyboardisr.pm_offset = (int)I_KeyboardISR;
-	newkeyboardisr.pm_selector = _go32_my_cs();
- 
 	_go32_dpmi_get_protected_mode_interrupt_vector(KEYBOARDINT, &oldkeyboardisr);
+
+	newkeyboardisr.pm_offset = (int)I_KeyboardISR;
+	newkeyboardisr.pm_selector = _go32_my_cs(); 
+	_go32_dpmi_allocate_iret_wrapper(&newkeyboardisr);
 	_go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARDINT, &newkeyboardisr);
 #elif defined __WATCOMC__
 	oldkeyboardisr = _dos_getvect(KEYBOARDINT);
@@ -858,6 +858,7 @@ static void I_ShutdownKeyboard (void)
 {
 #if defined __DJGPP__
 	_go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARDINT, &oldkeyboardisr);
+	_go32_dpmi_free_iret_wrapper(&newkeyboardisr);
 #elif defined __WATCOMC__
 	if (oldkeyboardisr)
 		_dos_setvect (KEYBOARDINT, oldkeyboardisr);
