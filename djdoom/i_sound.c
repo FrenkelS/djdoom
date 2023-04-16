@@ -146,6 +146,7 @@ void I_StopSong(int handle)
 {
   MUS_StopSong(handle);
 
+//TODO implement timer
 #if 0
   // Fucking kluge pause
   {
@@ -403,6 +404,8 @@ void I_StartupSound (void)
 void I_ShutdownSound (void)
 {
   S_PauseSound();
+
+//TODO implement timer
 #if 0
   {
 	int s;
