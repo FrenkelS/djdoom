@@ -49,9 +49,9 @@ typedef struct
 	unsigned short  flags, es, ds, fs, gs, ip, cs, sp, ss;
 } dpmiregs_t;
 
-extern  dpmiregs_t      dpmiregs;
+static dpmiregs_t      dpmiregs;
 
-void DPMIInt (int i);
+static void DPMIInt (int i);
 void _dpmi_lockregion (void * inmem, int length);
 
 void I_ReadMouse (void);
@@ -171,8 +171,8 @@ static  int tsm_ID = -1; // tsm init flag
 int             ticcount;
 
 // REGS stuff used for int calls
-union REGS regs;
-struct SREGS segregs;
+static union REGS regs;
+static struct SREGS segregs;
 
 boolean novideo; // if true, stay in text mode for debugging
 
@@ -1120,11 +1120,9 @@ void I_StartFrame (void)
 
 #define REALSTACKSIZE   1024
 
-dpmiregs_t      dpmiregs;
+static unsigned                realstackseg;
 
-unsigned                realstackseg;
-
-void DPMIInt (int i)
+static void DPMIInt (int i)
 {
 	dpmiregs.ss = realstackseg;
 	dpmiregs.sp = REALSTACKSIZE-4;
@@ -1292,8 +1290,6 @@ byte *I_ZoneBase (int *size)
 {
 	int             meminfo[32];
 	int             heap;
-	int             i;
-	int                             block;
 	byte                    *ptr;
 
 	memset (meminfo,0,sizeof(meminfo));
@@ -1301,7 +1297,7 @@ byte *I_ZoneBase (int *size)
 	segregs.es = segregs.ds;
 	regs.w.ax = 0x500;      // get memory info
 	regs.x.edi = (int)&meminfo;
-	int386x( 0x31, &regs, &regs, &segregs );
+	int386x( DPMI_INT, &regs, &regs, &segregs );
 
 	heap = meminfo[0];
 	printf ("DPMI memory: 0x%x",heap);
@@ -1341,16 +1337,6 @@ byte *I_ZoneBase (int *size)
 #endif
 #endif // APPVER_CHEX
 	}
-#if 0
-	regs.w.ax = 0x501;      // allocate linear block
-	regs.w.bx = heap>>16;
-	regs.w.cx = heap&0xffff;
-	int386( 0x31, &regs, &regs);
-	if (regs.w.cflag)
-		I_Error ("Couldn't allocate DPMI memory!");
-
-	block = (regs.w.si << 16) + regs.w.di;
-#endif
 
 	*size = heap;
 	return ptr;
@@ -1477,7 +1463,6 @@ byte *I_AllocLow (int length)
 	byte    *mem;
 
 	// DPMI call 100h allocates DOS memory
-	segread(&segregs);
 	regs.w.ax = 0x0100;          // DPMI allocate DOS memory
 	regs.w.bx = (length+15) / 16;
 	int386( DPMI_INT, &regs, &regs);
