@@ -65,7 +65,10 @@ typedef union {
 static __dpmi_regs      dpmiregs;
 
 static void DPMIInt (int i);
+
+#if defined __WATCOMC__
 void _dpmi_lockregion (void * inmem, int length);
+#endif
 
 void I_ReadMouse (void);
 void I_InitDiskFlash (void);
@@ -1169,22 +1172,21 @@ static void DPMIInt (int i)
 
 static void I_StartupDPMI (void)
 {
+#if defined __WATCOMC__
 	extern char __begtext;
 	extern char ___Argc;
-	int     n,d;
 
 //
 // allocate a decent stack for real mode ISRs
 //
-#if defined __WATCOMC__
 	realstackseg = (int)I_AllocLow (1024) >> 4;
-#endif
 
 //
 // lock the entire program down
 //
 
 	_dpmi_lockregion (&__begtext, &___Argc - &__begtext);
+#endif
 }
 
 
