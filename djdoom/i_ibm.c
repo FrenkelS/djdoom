@@ -1146,7 +1146,7 @@ static void DPMIInt (int i)
 ==============
 */
 
-void I_StartupDPMI (void)
+static void I_StartupDPMI (void)
 {
 	extern char __begtext;
 	extern char ___Argc;
@@ -1461,6 +1461,22 @@ void I_EndRead (void)
 
 byte *I_AllocLow (int length)
 {
+#if defined __DJGPP__
+	byte    *mem;
+	int paragraphs;
+	int dummy;
+	int seg;
+	
+	paragraphs = (length+15)>>4;
+	seg = __dpmi_allocate_dos_memory(paragraphs, &dummy);
+	if (seg == -1)
+		I_Error ("I_AllocLow: DOS alloc of %i failed", length);
+
+	mem = (void *) (seg << 4);
+
+	memset (mem,0,length);
+	return mem;
+#elif defined __WATCOMC__
 	byte    *mem;
 
 	// DPMI call 100h allocates DOS memory
@@ -1471,14 +1487,12 @@ byte *I_AllocLow (int length)
 		I_Error ("I_AllocLow: DOS alloc of %i failed, %i free",
 			length, regs.w.bx*16);
 
-#if defined __DJGPP__
-	mem = (void *) (regs.x.ax << 4);
-#elif defined __WATCOMC__
+
 	mem = (void *) ((regs.x.eax & 0xFFFF) << 4);
-#endif
 
 	memset (mem,0,length);
 	return mem;
+#endif
 }
 
 /*
