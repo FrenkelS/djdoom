@@ -1471,8 +1471,11 @@ byte *I_AllocLow (int length)
 		I_Error ("I_AllocLow: DOS alloc of %i failed, %i free",
 			length, regs.w.bx*16);
 
-
+#if defined __DJGPP__
+	mem = (void *) (regs.x.ax << 4);
+#elif defined __WATCOMC__
 	mem = (void *) ((regs.x.eax & 0xFFFF) << 4);
+#endif
 
 	memset (mem,0,length);
 	return mem;
