@@ -43,13 +43,26 @@ void I_ShutdownSound (void);
 
 void I_ShutdownTimer (void);
 
-typedef struct
-{
+#if defined __WATCOMC__
+typedef union {
+  struct {
 	unsigned        edi, esi, ebp, reserved, ebx, edx, ecx, eax;
+  } d;
+  struct {
+    unsigned short  di, di_hi;
+    unsigned short  si, si_hi;
+    unsigned short  bp, bp_hi;
+    unsigned short  res, res_hi;
+    unsigned short  bx, bx_hi;
+    unsigned short  dx, dx_hi;
+    unsigned short  cx, cx_hi;
+    unsigned short  ax, ax_hi;
 	unsigned short  flags, es, ds, fs, gs, ip, cs, sp, ss;
-} dpmiregs_t;
+  } x;
+} __dpmi_regs;
+#endif
 
-static dpmiregs_t      dpmiregs;
+static __dpmi_regs      dpmiregs;
 
 static void DPMIInt (int i);
 void _dpmi_lockregion (void * inmem, int length);
@@ -953,14 +966,14 @@ void I_ReadMouse (void)
 	ev.type = ev_mouse;
 
 	memset (&dpmiregs,0,sizeof(dpmiregs));
-	dpmiregs.eax = 3;                               // read buttons / position
+	dpmiregs.d.eax = 3;                               // read buttons / position
 	DPMIInt (0x33);
-	ev.data1 = dpmiregs.ebx;
+	ev.data1 = dpmiregs.d.ebx;
 
-	dpmiregs.eax = 11;                              // read counters
+	dpmiregs.d.eax = 11;                              // read counters
 	DPMIInt (0x33);
-	ev.data2 = (short)dpmiregs.ecx;
-	ev.data3 = -(short)dpmiregs.edx;
+	ev.data2 = (short)dpmiregs.d.ecx;
+	ev.data3 = -(short)dpmiregs.d.edx;
 
 	D_PostEvent (&ev);
 }
@@ -1119,14 +1132,19 @@ void I_StartFrame (void)
 ============================================================================
 */
 
+#if defined __WATCOMC__
 #define REALSTACKSIZE   1024
 
 static unsigned                realstackseg;
+#endif
 
 static void DPMIInt (int i)
 {
-	dpmiregs.ss = realstackseg;
-	dpmiregs.sp = REALSTACKSIZE-4;
+#if defined __DJGPP__
+	__dpmi_int(i, &dpmiregs);
+#elif defined __WATCOMC__
+	dpmiregs.x.ss = realstackseg;
+	dpmiregs.x.sp = REALSTACKSIZE-4;
 
 	segread (&segregs);
 	regs.w.ax = 0x300;
@@ -1135,6 +1153,7 @@ static void DPMIInt (int i)
 	regs.x.edi = (unsigned)&dpmiregs;
 	segregs.es = segregs.ds;
 	int386x( DPMI_INT, &regs, &regs, &segregs );
+#endif
 }
 
 
@@ -1155,7 +1174,9 @@ static void I_StartupDPMI (void)
 //
 // allocate a decent stack for real mode ISRs
 //
+#if defined __WATCOMC__
 	realstackseg = (int)I_AllocLow (1024) >> 4;
+#endif
 
 //
 // lock the entire program down
