@@ -79,8 +79,7 @@ GLOBOBJS = &
 WCDM19\wcdoom.exe : $(GLOBOBJS)
  cd WCDM19
  wlink @..\wcdoom.lnk
- copy wcdoom.exe strpdoom.exe
- wstrip strpdoom.exe
+ wstrip wcdoom.exe
  cd..
 
 .obj : WCDM19
