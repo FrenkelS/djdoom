@@ -315,11 +315,7 @@ void V_GetBlock (int x, int y, int scrn, int width, int height, byte *dest)
 void V_Init (void)
 {
 	int		i;
-	byte	*base;
 		
-	// stick these in low dos memory on PCs
-	base = I_AllocLow (SCREENWIDTH*SCREENHEIGHT*4);
-
 	for (i=0 ; i<4 ; i++)
-		screens[i] = base + i*SCREENWIDTH*SCREENHEIGHT;
+		screens[i] = (byte *) Z_Malloc(SCREENWIDTH*SCREENHEIGHT, PU_STATIC, NULL);	
 }

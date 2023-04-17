@@ -451,7 +451,7 @@ void R_FillBackScreen (void)
 	V_DrawPatch (viewwindowx+scaledviewwidth, viewwindowy+viewheight, 1,
 		W_CacheLumpName ("brdr_br",PU_CACHE));
 
-	dest = (byte*)0xac000;
+	dest = (byte*)(0xac000 + __djgpp_conventional_base);
 	src = screens[1];
 	for (i = 0; i < 4; i++, src++)
 	{
@@ -471,7 +471,7 @@ void R_VideoErase (unsigned ofs, int count)
 	outp (SC_INDEX+1, 15);
 	outp (GC_INDEX, GC_MODE);
 	outp (GC_INDEX+1, inp (GC_INDEX+1)|1);
-	src = (byte*)0xac000+(ofs>>2);
+	src = (byte*)(0xac000 + __djgpp_conventional_base + (ofs>>2));
 	dest = destscreen+(ofs>>2);
 	for (i = (count>>2)-1; i >= 0; i--)
 	{

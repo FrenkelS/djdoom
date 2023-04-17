@@ -294,7 +294,7 @@ int I_GetTime (void)
 
 	ticks -= basetime;
 
-	return (ticks * TICRATE) / 1000;
+	return (ticks * TICRATE) / CLOCKS_PER_SEC;
 }
 #endif
 
@@ -533,8 +533,8 @@ void I_FinishUpdate (void)
 	outpw (CRTC_INDEX, CRTC_STARTHIGH+((int)destscreen&0xff00));
 
 	destscreen += 0x4000;
-	if ( (int)destscreen == 0xac000)
-		destscreen = (byte *)0xa0000;
+	if ( (int)destscreen == 0xac000 + __djgpp_conventional_base)
+		destscreen = (byte *)(0xa0000 + __djgpp_conventional_base);
 }
 
 /*
@@ -552,8 +552,8 @@ void I_InitGraphics (void)
 	grmode = true;
 	regs.w.ax = 0x13;
 	int386 (0x10, &regs, &regs);
-	screen = currentscreen = (byte *)0xa0000;
-	destscreen = (byte *)0xa4000;
+	screen = currentscreen = (byte *)(0xa0000 + __djgpp_conventional_base);
+	destscreen = (byte *)(0xa4000 + __djgpp_conventional_base);
 	outp (SC_INDEX,SC_MEMMODE);
 	outp (SC_INDEX+1,(inp(SC_INDEX+1)&~8)|4);
 	outp (GC_INDEX,GC_MODE);
@@ -581,7 +581,7 @@ void I_InitGraphics (void)
 
 void I_ShutdownGraphics (void)
 {
-	if (*(byte *)0x449 == 0x13) // don't reset mode if it didn't get set
+	if (*(byte *)(0x449 + __djgpp_conventional_base) == 0x13) // don't reset mode if it didn't get set
 	{
 		regs.w.ax = 3;
 		int386 (0x10, &regs, &regs); // back to text mode
@@ -882,7 +882,7 @@ static void I_ShutdownKeyboard (void)
 		_dos_setvect (KEYBOARDINT, oldkeyboardisr);
 #endif
 
-	*(short *)0x41c = *(short *)0x41a;      // clear bios key buffer
+	*(short *)(0x41c + __djgpp_conventional_base) = *(short *)(0x41a + __djgpp_conventional_base);      // clear bios key buffer
 }
 
 
@@ -1163,6 +1163,35 @@ static void DPMIInt (int i)
 
 
 /*
+=============
+=
+= I_AllocLow
+=
+=============
+*/
+#if defined __WATCOMC__
+static byte *I_AllocLow (int length)
+{
+	byte    *mem;
+
+	// DPMI call 100h allocates DOS memory
+	regs.w.ax = 0x0100;          // DPMI allocate DOS memory
+	regs.w.bx = (length+15) / 16;
+	int386( DPMI_INT, &regs, &regs);
+	if (regs.w.cflag != 0)
+		I_Error ("I_AllocLow: DOS alloc of %i failed, %i free",
+			length, regs.w.bx*16);
+
+
+	mem = (void *) ((regs.x.eax & 0xFFFF) << 4);
+
+	memset (mem,0,length);
+	return mem;
+}
+#endif
+
+
+/*
 ==============
 =
 = I_StartupDPMI
@@ -1294,7 +1323,7 @@ void I_Quit (void)
 	M_SaveDefaults ();
 	scr = (byte *)W_CacheLumpName ("ENDOOM", PU_CACHE);
 	I_Shutdown ();
-	memcpy ((void *)0xb8000, scr, 80*25*2);
+	memcpy ((void *)(0xb8000 + __djgpp_conventional_base), scr, 80*25*2);
 	regs.w.ax = 0x0200;
 	regs.h.bh = 0;
 	regs.h.dl = 0;
@@ -1334,6 +1363,7 @@ byte *I_ZoneBase (int *size)
 	byte                    *ptr;
 
 #if defined __DJGPP__
+	__djgpp_nearptr_enable();
 	__dpmi_get_free_memory_information(&meminfo);
 #elif defined __WATCOMC__
 	regs.w.ax = 0x500;      // get memory info
@@ -1404,7 +1434,7 @@ void I_InitDiskFlash (void)
 	else
 		pic = W_CacheLumpName ("STDISK",PU_CACHE);
 	temp = destscreen;
-	destscreen = (byte *)0xac000;
+	destscreen = (byte *)(0xac000 + __djgpp_conventional_base);
 	V_DrawPatchDirect (SCREENWIDTH-16,SCREENHEIGHT-16,0,pic);
 	destscreen = temp;
 }
@@ -1427,7 +1457,7 @@ void I_BeginRead (void)
 
 // copy to backup
 	src = currentscreen + 184*80 + 304/4;
-	dest = (byte *)0xac000 + 184*80 + 288/4;
+	dest = (byte *)(0xac000 + __djgpp_conventional_base + 184*80 + 288/4);
 	for (y=0 ; y<16 ; y++)
 	{
 		dest[0] = src[0];
@@ -1440,7 +1470,7 @@ void I_BeginRead (void)
 
 // copy disk over
 	dest = currentscreen + 184*80 + 304/4;
-	src = (byte *)0xac000 + 184*80 + 304/4;
+	src = (byte *)(0xac000 + __djgpp_conventional_base + 184*80 + 304/4);
 	for (y=0 ; y<16 ; y++)
 	{
 		dest[0] = src[0];
@@ -1476,7 +1506,7 @@ void I_EndRead (void)
 
 // copy disk over
 	dest = currentscreen + 184*80 + 304/4;
-	src = (byte *)0xac000 + 184*80 + 288/4;
+	src = (byte *)(0xac000 + __djgpp_conventional_base + 184*80 + 288/4);
 	for (y=0 ; y<16 ; y++)
 	{
 		dest[0] = src[0];
@@ -1493,50 +1523,6 @@ void I_EndRead (void)
 }
 
 
-
-/*
-=============
-=
-= I_AllocLow
-=
-=============
-*/
-
-byte *I_AllocLow (int length)
-{
-#if defined __DJGPP__
-	byte    *mem;
-	int paragraphs;
-	int dummy;
-	int seg;
-	
-	paragraphs = (length+15)>>4;
-	seg = __dpmi_allocate_dos_memory(paragraphs, &dummy);
-	if (seg == -1)
-		I_Error ("I_AllocLow: DOS alloc of %i failed", length);
-
-	mem = (void *) (seg << 4);
-
-	memset (mem,0,length);
-	return mem;
-#elif defined __WATCOMC__
-	byte    *mem;
-
-	// DPMI call 100h allocates DOS memory
-	regs.w.ax = 0x0100;          // DPMI allocate DOS memory
-	regs.w.bx = (length+15) / 16;
-	int386( DPMI_INT, &regs, &regs);
-	if (regs.w.cflag != 0)
-		I_Error ("I_AllocLow: DOS alloc of %i failed, %i free",
-			length, regs.w.bx*16);
-
-
-	mem = (void *) ((regs.x.eax & 0xFFFF) << 4);
-
-	memset (mem,0,length);
-	return mem;
-#endif
-}
 
 /*
 ============================================================================

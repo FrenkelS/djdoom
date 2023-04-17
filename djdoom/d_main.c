@@ -1167,14 +1167,14 @@ void D_DoomMain (void)
 	}
 	
 	// init subsystems
-	printf ("V_Init: allocate screens.\n");
-	V_Init ();
-	
 	printf ("M_LoadDefaults: Load system defaults.\n");
 	M_LoadDefaults ();              // load before initing other systems
 	
 	printf ("Z_Init: Init zone memory allocation daemon. \n");
 	Z_Init ();
+	
+	printf ("V_Init: allocate screens.\n");
+	V_Init ();
 	
 	printf ("W_Init: Init WADfiles.\n");
 	W_InitMultipleFiles (wadfiles);

@@ -35,6 +35,12 @@
 #include <pc.h>
 #endif
 
+#if defined __DJGPP__
+#include <sys/nearptr.h>
+#elif defined __WATCOMC__
+#define __djgpp_conventional_base 0
+#endif
+
 // VERSIONS RESTORATION
 // This *must* be included (near) the beginning for every compilation unit
 #include "GAMEVER.H"
@@ -865,9 +871,6 @@ void I_ReadScreen (byte *scr);
 
 void I_BeginRead (void);
 void I_EndRead (void);
-
-byte	*I_AllocLow (int length);
-// allocates from low memory under dos, just mallocs under unix
 
 ticcmd_t *I_BaseTiccmd(void);
 // Either returns a null ticcmd,
