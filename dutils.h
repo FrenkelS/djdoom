@@ -20,26 +20,6 @@
 #define __DUTILSH__
 
 //
-// LINKED LIST
-//
-
-typedef struct lnode_s {
-  void *value;
-  struct lnode_s *prev, *next;
-} lnode_t;
-
-typedef struct {
-  lnode_t *start, *end;
-} list_t;
-
-list_t *dll_NewList(void);
-lnode_t *dll_AddEndNode(list_t *list, void *value);
-lnode_t *dll_AddStartNode(list_t *list, void *value);
-void *dll_DelNode(list_t *list, lnode_t *node);
-void *dll_DelEndNode(list_t *list);
-void *dll_DelStartNode(list_t *list);
-
-//
 // CHEAT SEQUENCE PACKAGE
 //
 
@@ -51,22 +31,15 @@ typedef struct
   unsigned char *sequence, *p;
 } cheatseq_t;
 
-int cht_CheckCheat(cheatseq_t *cht, char key);
+boolean cht_CheckCheat(cheatseq_t *cht, char key);
 void cht_GetParam(cheatseq_t *cht, char *buffer);
 
 //
 //                       SCREEN WIPE PACKAGE
 //
 
-enum
-{
-  wipe_ColorXForm,// simple gradual pixel change for 8-bit only
-  wipe_Melt,	// weird screen melt
-  wipe_NUMWIPES
-};
-
 void wipe_StartScreen(void);
-int wipe_EndScreen(int x, int y, int width, int height);
-boolean wipe_ScreenWipe(int	wipeno, int width, int height, int ticks);
+void wipe_EndScreen(void);
+boolean wipe_ScreenWipe(int ticks);
 
 #endif
