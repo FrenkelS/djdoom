@@ -93,12 +93,10 @@ will have new column_ts generated.
 ===================
 */
 
-void R_DrawColumnInCache (column_t *patch, byte *cache, int originy, int cacheheight)
+static void R_DrawColumnInCache (column_t *patch, byte *cache, int originy, int cacheheight)
 {
 	int		count, position;
-	byte	*source, *dest;
-	
-	dest = (byte *)cache + 3;
+	byte	*source;
 	
 	while (patch->topdelta != 0xff)
 	{
@@ -128,7 +126,7 @@ void R_DrawColumnInCache (column_t *patch, byte *cache, int originy, int cachehe
 ===================
 */
 
-void R_GenerateComposite (int texnum)
+static void R_GenerateComposite (int texnum)
 {
 	byte		*block;
 	texture_t	*texture;

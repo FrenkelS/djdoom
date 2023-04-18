@@ -539,12 +539,9 @@ void WI_updateDeathmatchStats(void)
 }
 
 
-void WI_drawDeathmatchStats(void)
+static void WI_drawDeathmatchStats(void)
 {
   int i, j, x, y, w;
-  int lh;	// line height
-
-  lh = WI_SPACINGY;
 
   WI_slamBackground();
   WI_drawAnimatedBack(); // draw animated background

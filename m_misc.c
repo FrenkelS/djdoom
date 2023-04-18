@@ -215,7 +215,7 @@ boolean M_WriteFile (char const *name, void *source, int length)
 ==================
 */
 
-int M_ReadFile (char const *name, byte **buffer)
+void M_ReadFile (char const *name, byte **buffer)
 {
 	int handle, count, length;
 	struct stat fileinfo;
@@ -235,7 +235,6 @@ int M_ReadFile (char const *name, byte **buffer)
 		I_Error ("Couldn't read file %s", name);
 
 	*buffer = buf;
-	return length;
 }
 
 /*

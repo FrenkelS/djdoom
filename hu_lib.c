@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -111,7 +112,6 @@ void HUlib_drawTextLine(hu_textline_t *l, boolean drawcursor)
 void HUlib_eraseTextLine(hu_textline_t *l)
 {
   int lh, y, yoffset;
-  static boolean lastautomapactive = true;
 
 // Only erases when NOT in automap and the screen is reduced,
 // and the text must either need updating or refreshing
@@ -132,7 +132,6 @@ void HUlib_eraseTextLine(hu_textline_t *l)
     }
   }
 
-  lastautomapactive = automapactive;
   if (l->needsupdate) l->needsupdate--;
 
 }

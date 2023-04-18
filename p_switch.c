@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -287,7 +288,7 @@ boolean P_UseSpecialLine ( mobj_t *thing, line_t *line, int side)
 		//	SWITCHES
 		//===============================================
 		case 7:			// Build Stairs
-			if (EV_BuildStairs(line,build8))
+			if (EV_BuildStairs(line,true))
 				P_ChangeSwitchTexture(line,0);
 			break;
 		case 9:			// Change Donut
@@ -379,7 +380,7 @@ boolean P_UseSpecialLine ( mobj_t *thing, line_t *line, int side)
 				P_ChangeSwitchTexture(line,0);
 			break;
 		case 127:		// Build Stairs Turbo 16
-			if (EV_BuildStairs(line,turbo16))
+			if (EV_BuildStairs(line,false))
 				P_ChangeSwitchTexture(line,0);
 			break;
 		case 131:		// Raise Floor Turbo

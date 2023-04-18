@@ -344,7 +344,6 @@ void AM_maxOutWindowScale(void)
 boolean AM_Responder (event_t *ev)
 {
   int rc;
-  static int cheatstate=0;
   static int bigstate=0;
   static char buffer[20];
 
@@ -422,7 +421,6 @@ boolean AM_Responder (event_t *ev)
 	plr->message = AMSTR_MARKSCLEARED;
   	break;
       default:
-	cheatstate=0;
 	rc = false;
     }
 #if (APPVER_DOOMREV < AV_DR_DM19)

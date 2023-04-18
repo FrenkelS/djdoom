@@ -422,7 +422,7 @@ void P_CrossSpecialLine (int linenum, int side, mobj_t *thing)
 			line->special = 0;
 			break;
 		case 8:			// Build Stairs
-			EV_BuildStairs(line,build8);
+			EV_BuildStairs(line,true);
 			line->special = 0;
 			break;
 		case 10:		// PlatDownWaitUp
@@ -531,7 +531,7 @@ void P_CrossSpecialLine (int linenum, int side, mobj_t *thing)
 			line->special = 0;
 			break;
 		case 100:		// Build Stairs Turbo 16
-			EV_BuildStairs(line,turbo16);
+			EV_BuildStairs(line,false);
 			line->special = 0;
 			break;
 		case 110:		// Blazing Door Close (faster than TURBO!)
@@ -959,12 +959,7 @@ void P_SpawnSpecials (void)
 {
 	sector_t	*sector;
 	int		i;
-	int		episode;
 
-	episode = 1;
-	if (W_CheckNumForName("texture2") >= 0)
-		episode = 2;
-		
 	//
 	// See if -TIMER needs to be used
 	//

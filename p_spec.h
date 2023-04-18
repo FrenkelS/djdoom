@@ -431,12 +431,6 @@ typedef enum
 	raiseFloor512
 } floor_e;
 
-typedef enum
-{
-	build8,	// slowly build by 8
-	turbo16	// quickly build by 16
-} stair_e;
-
 typedef struct
 {
 	thinker_t	thinker;
@@ -462,7 +456,7 @@ typedef enum
 result_e	T_MovePlane(sector_t *sector,fixed_t speed,
 			fixed_t dest,boolean crush,int floorOrCeiling,int direction);
 
-int		EV_BuildStairs(line_t *line, stair_e type);
+int		EV_BuildStairs(line_t *line, boolean build8);
 int		EV_DoFloor(line_t *line,floor_e floortype);
 void	T_MoveFloor(floormove_t *floor);
 

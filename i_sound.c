@@ -235,9 +235,9 @@ void I_sndArbitrateCards(void)
 {
   // boolean gus, adlib, pc, sb, midi, ensoniq, codec;
 #if (APPVER_DOOMREV < AV_DR_DM18)
-  boolean gus, adlib, pc, sb, midi;
+  boolean gus, adlib, sb, midi;
 #else
-  boolean codec, ensoniq, gus, adlib, pc, sb, midi;
+  boolean codec, ensoniq, gus, adlib, sb, midi;
 #endif
   int wait, dmxlump;
 
@@ -268,7 +268,6 @@ void I_sndArbitrateCards(void)
   codec = snd_SfxDevice == snd_CODEC ;
 #endif
   adlib = snd_MusicDevice == snd_Adlib ;
-  pc = snd_SfxDevice == snd_PC;
   midi = snd_MusicDevice == snd_MPU;
 
 #if (APPVER_DOOMREV >= AV_DR_DM18)

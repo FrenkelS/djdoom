@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -393,7 +394,7 @@ int EV_DoFloor(line_t *line,floor_e floortype)
 //	BUILD A STAIRCASE!
 //
 //==================================================================
-int EV_BuildStairs(line_t *line, stair_e type)
+int EV_BuildStairs(line_t *line, boolean build8)
 {
 	int		secnum;
 	int		height;
@@ -426,16 +427,13 @@ int EV_BuildStairs(line_t *line, stair_e type)
 		floor->thinker.function = T_MoveFloor;
 		floor->direction = 1;
 		floor->sector = sec;
-		switch(type)
+		if (build8)
 		{
-			case build8:
-				speed = FLOORSPEED/4;
-				stairsize = 8*FRACUNIT;
-				break;
-			case turbo16:
-				speed = FLOORSPEED*4;
-				stairsize = 16*FRACUNIT;
-				break;
+			speed = FLOORSPEED/4;
+			stairsize = 8*FRACUNIT;
+		} else {
+			speed = FLOORSPEED*4;
+			stairsize = 16*FRACUNIT;
 		}
 		floor->speed = speed;
 		height = sec->floorheight + stairsize;

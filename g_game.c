@@ -725,29 +725,6 @@ also see P_SpawnPlayer in P_Things
 /*
 ====================
 =
-= G_InitPlayer
-=
-= Called at the start
-= Called by the game initialization functions
-====================
-*/
-
-void G_InitPlayer (int player)
-{
-	player_t        *p;
-
-// set up the saved info
-	p = &players[player];
-
-// clear everything else to defaults
-	G_PlayerReborn (player);
-
-}
-
-
-/*
-====================
-=
 = G_PlayerFinishLevel
 =
 = Can when a player completes a level
@@ -1203,14 +1180,13 @@ void G_LoadGame (char* name)
 
 void G_DoLoadGame(void)
 {
-	int length;
 	int i;
 	int a, b, c;
 	char vcheck[VERSIONSIZE];
 
 	gameaction = ga_nothing;
 
-	length = M_ReadFile(savename, &savebuffer);
+	M_ReadFile(savename, &savebuffer);
 	save_p = savebuffer+SAVESTRINGSIZE;
 	// Skip the description field
 	memset(vcheck, 0, sizeof(vcheck));

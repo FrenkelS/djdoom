@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -17,9 +18,10 @@
 
 #include "DoomDef.h"
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	myargc = argc;
 	myargv = argv;
 	D_DoomMain();
+	return 0;
 }
