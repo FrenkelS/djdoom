@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -361,7 +362,7 @@ void R_DrawMaskedColumn (column_t *column)
 ================
 */
 
-void R_DrawVisSprite (vissprite_t *vis, int x1, int x2)
+static void R_DrawVisSprite (vissprite_t *vis)
 {
 	column_t	*column;
 	int			texturecolumn;
@@ -660,7 +661,7 @@ void R_DrawPSprite (pspdef_t *psp)
 		vis->colormap = colormaps;		// full bright
 	else
 		vis->colormap = spritelights[MAXLIGHTSCALE-1];	// local light
-	R_DrawVisSprite (vis, vis->x1, vis->x2);
+	R_DrawVisSprite (vis);
 }
 
 /*
@@ -865,7 +866,7 @@ void R_DrawSprite (vissprite_t *spr)
 
 	mfloorclip = clipbot;
 	mceilingclip = cliptop;
-	R_DrawVisSprite (spr, spr->x1, spr->x2);
+	R_DrawVisSprite (spr);
 }
 
 

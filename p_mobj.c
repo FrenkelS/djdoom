@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -369,8 +370,6 @@ void P_NightmareRespawn (mobj_t *mobj)
 
 void P_MobjThinker (mobj_t *mobj)
 {
-	mobj_t	*onmo;
-	
 	// momentum movement
 	if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) )
 	{

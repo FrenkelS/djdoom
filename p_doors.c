@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -482,7 +483,7 @@ void P_SpawnDoorCloseIn30(sector_t *sec)
 //	Spawn a door that opens after 5 minutes
 //
 //==================================================================
-void P_SpawnDoorRaiseIn5Mins(sector_t *sec, int secnum)
+void P_SpawnDoorRaiseIn5Mins(sector_t *sec)
 {
 	vldoor_t *door;
 

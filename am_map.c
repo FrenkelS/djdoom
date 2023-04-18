@@ -860,7 +860,7 @@ void AM_drawPlayers(void)
   }
 }
 
-void AM_drawThings(int colors, int colorrange)
+static void AM_drawThings(int colors)
 {
   int i;
   mobj_t *t;
@@ -910,7 +910,7 @@ void AM_Drawer(void)
   if (grid) AM_drawGrid(GRIDCOLORS);
   AM_drawWalls();
   AM_drawPlayers();
-  if (cheating==2) AM_drawThings(THINGCOLORS, THINGRANGE);
+  if (cheating==2) AM_drawThings(THINGCOLORS);
   AM_drawCrosshair(XHAIRCOLORS);
 
   AM_drawMarks();

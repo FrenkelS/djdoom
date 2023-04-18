@@ -180,7 +180,6 @@ boolean I_ReadJoystick (void)	// returns false if not connected
 #define MOUSEB3 4
 
 static  boolean mousepresent;
-static  int tsm_ID = -1; // tsm init flag
 
 //===============================
 
@@ -348,8 +347,6 @@ void I_UnColorBorder (void)
 
 void I_WaitVBL (int vbls)
 {
-	int	i;
-	int	old;
 	int	stat;
 
 	if (novideo)
@@ -760,8 +757,6 @@ void   I_StartTic (void)
 void   I_ReadKeys (void)
 {
 	int             k;
-	event_t ev;
-
 
 	while (1)
 	{
@@ -1049,8 +1044,6 @@ int             basejoyx, basejoyy;
 
 void I_StartupJoystick (void)
 {
-	int     buttons;
-	int     count;
 	int     centerx, centery;
 
 	joystickpresent = 0;
@@ -1313,8 +1306,6 @@ void I_Error (char *error, ...)
 void I_Quit (void)
 {
 	byte *scr;
-	char *lumpName;
-	int r;
 
 	if (demorecording)
 		G_CheckDemoStatus ();

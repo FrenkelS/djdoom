@@ -34,7 +34,6 @@
 #define S_ATTENUATOR		((S_CLIPPING_DIST-S_CLOSE_DIST)>>FRACBITS)
 
 #define NORM_PITCH     		128
-#define NORM_PRIORITY		64
 #define NORM_VOLUME    		snd_MaxVolume
 
 #define S_PITCH_PERTURB		1
@@ -160,7 +159,7 @@ int I_GetSfxLumpNum (sfxinfo_t*);
 
 
 // Starts a sound in a particular sound channel.
-int I_StartSound(int id, void *data, int vol, int sep, int pitch, int priority);
+int I_StartSound(void *data, int vol, int sep, int pitch);
 
 
 // Updates the volume, separation,

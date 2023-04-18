@@ -185,7 +185,7 @@ int I_GetSfxLumpNum(sfxinfo_t *sound)
 
 }
 
-int I_StartSound (int id, void *data, int vol, int sep, int pitch, int priority)
+int I_StartSound (void *data, int vol, int sep, int pitch)
 {
   // hacks out certain PC sounds
   if (snd_SfxDevice == snd_PC
@@ -355,7 +355,7 @@ void I_sndArbitrateCards(void)
 
 void I_StartupSound (void)
 {
-  int rc, i;
+  int rc;
 
   if (devparm)
 	printf("I_StartupSound: Hope you hear a pop.\n");

@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -43,7 +44,7 @@ void STlib_initNum (st_number_t *n, int x, int y, patch_t **pl, int *num, boolea
 }
 
 
-void STlib_drawNum (st_number_t *n, boolean refresh)
+static void STlib_drawNum (st_number_t *n)
 {
 
   int numdigits = n->width;
@@ -101,9 +102,9 @@ void STlib_drawNum (st_number_t *n, boolean refresh)
 }
 
 
-void STlib_updateNum (st_number_t *n, boolean refresh)
+void STlib_updateNum (st_number_t *n)
 {
-  if (*n->on) STlib_drawNum(n, refresh);
+  if (*n->on) STlib_drawNum(n);
 }
 
 
@@ -121,7 +122,7 @@ void STlib_updatePercent (st_percent_t *per, int refresh)
   if (refresh && *per->n.on)
     V_DrawPatch(per->n.x, per->n.y, FG, per->p);
     
-  STlib_updateNum(&per->n, refresh);
+  STlib_updateNum(&per->n);
 }
 
 

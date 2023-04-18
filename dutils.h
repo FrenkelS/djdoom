@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -64,8 +65,8 @@ enum
   wipe_NUMWIPES
 };
 
-int wipe_StartScreen(int x, int y, int width, int height);
+void wipe_StartScreen(void);
 int wipe_EndScreen(int x, int y, int width, int height);
-int wipe_ScreenWipe(int	wipeno, int x, int y, int width, int height, int ticks);
+boolean wipe_ScreenWipe(int	wipeno, int width, int height, int ticks);
 
 #endif

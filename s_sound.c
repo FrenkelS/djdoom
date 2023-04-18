@@ -33,7 +33,7 @@ static int nextcleanup;
 // Internals.
 //
 int S_getChannel (void *origin, sfxinfo_t *sfxinfo);
-int S_AdjustSoundParams ( mobj_t *listener, mobj_t *source, int *vol, int *sep, int *pitch);
+static int S_AdjustSoundParams ( mobj_t *listener, mobj_t *source, int *vol, int *sep);
 void S_StopChannel(int cnum);
 
 void S_SetMusicVolume(int volume)
@@ -128,12 +128,12 @@ void S_StopChannel(int cnum)
 }
 
 //
-// Changes volume, stereo-separation, and pitch variables
+// Changes volume and stereo-separation variables
 //  from the norm of a sound effect to be played.
 // If the sound is not audible, returns a 0.
 // Otherwise, modifies parameters and returns 1.
 //
-int S_AdjustSoundParams (mobj_t *listener, mobj_t *source, int *vol, int *sep, int *pitch)
+static int S_AdjustSoundParams (mobj_t *listener, mobj_t *source, int *vol, int *sep)
 {
   fixed_t approx_dist, adx, ady;
   angle_t angle;
@@ -259,7 +259,7 @@ void S_StartSoundAtVolume(mobj_t *origin, int sfx_id, int volume)
 void S_StartSoundAtVolume(void *origin_p, int sfx_id, int volume)
 #endif
 {
-  int rc, sep, pitch, priority;
+  int rc, sep, pitch;
   sfxinfo_t *sfx;
   int cnum;
 #if (APPVER_DOOMREV >= AV_DR_DM17)
@@ -280,7 +280,6 @@ void S_StartSoundAtVolume(void *origin_p, int sfx_id, int volume)
   if (sfx->link)
   {
     pitch = sfx->pitch;
-    priority = sfx->priority;
     volume += sfx->volume;
     
     if (volume < 1)
@@ -292,14 +291,12 @@ void S_StartSoundAtVolume(void *origin_p, int sfx_id, int volume)
   else
   {
     pitch = NORM_PITCH;
-    priority = NORM_PRIORITY;
   }
   // Check to see if it is audible,
   //  and if not, modify the params
   if (origin && origin != players[consoleplayer].mo)
   {
-    rc = S_AdjustSoundParams(players[consoleplayer].mo, origin,
-			     &volume, &sep, &pitch);
+    rc = S_AdjustSoundParams(players[consoleplayer].mo, origin, &volume, &sep);
     if ( origin->x == players[consoleplayer].mo->x
 	 && origin->y == players[consoleplayer].mo->y)
     {	
@@ -360,8 +357,7 @@ void S_StartSoundAtVolume(void *origin_p, int sfx_id, int volume)
   
   // Assigns the handle to one of the channels in the
   //  mix/output buffer.
-  channels[cnum].handle = I_StartSound(sfx_id, sfx->data, volume,
-    sep, pitch, priority);
+  channels[cnum].handle = I_StartSound(sfx->data, volume, sep, pitch);
 }
 
 void S_StartSound (void *origin, int sfx_id)
@@ -480,8 +476,7 @@ void S_UpdateSounds(void* listener_p)
 	if (c->origin && listener_p != c->origin)
 #endif
 	{
-	  audible = S_AdjustSoundParams(listener, c->origin,
-	    &volume, &sep, &pitch);
+	  audible = S_AdjustSoundParams(listener, c->origin, &volume, &sep);
 	  if (!audible)
 	  {
 	    S_StopChannel(cnum);

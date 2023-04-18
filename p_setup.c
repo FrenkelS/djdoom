@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -553,7 +554,7 @@ void P_GroupLines (void)
 =================
 */
 
-void P_SetupLevel (int episode, int map, int playermask, skill_t skill)
+void P_SetupLevel (int episode, int map)
 {
 	int		i;
 	char	lumpname[9];

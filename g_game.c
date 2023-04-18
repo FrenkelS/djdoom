@@ -414,7 +414,7 @@ void G_DoLoadLevel (void)
 		memset (players[i].frags,0,sizeof(players[i].frags));
 	}
 
-	P_SetupLevel (gameepisode, gamemap, 0, gameskill);
+	P_SetupLevel (gameepisode, gamemap);
 	displayplayer = consoleplayer;      // view the guy you are playing
 	starttime = I_GetTime ();
 	gameaction = ga_nothing;

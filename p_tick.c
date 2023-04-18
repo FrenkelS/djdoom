@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -634,21 +635,6 @@ void P_RemoveThinker (thinker_t *thinker)
 {
 	thinker->function = (think_t)-1;
 }
-
-/*
-===============
-=
-= P_AllocateThinker
-=
-= Allocates memory and adds a new thinker at the end of the list
-=
-===============
-*/
-
-void P_AllocateThinker (thinker_t *thinker)
-{
-}
-
 
 /*
 ===============

@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -87,18 +88,10 @@ static patch_t **lnames; // Name graphics of each level (centered)
 //
 
 // slam background
-static unsigned char *background=0;
 void WI_slamBackground(void)
 {
   memcpy(screens[0], screens[1], SCREENWIDTH * SCREENHEIGHT);
   V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
-}
-
-// The ticker is used to detect keys
-//  because of timing issues in netgames.
-boolean WI_Responder(event_t *ev)
-{
-  return false;
 }
 
 // Draws "<Levelname> Finished!"

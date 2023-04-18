@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -161,8 +162,8 @@ void cht_GetParam(cheatseq_t *cht, char *buffer)
 //                       SCREEN WIPE PACKAGE
 //
 
-// when zero, stop the wipe
-static boolean go = 0;
+// when false, stop the wipe
+static boolean go = false;
 
 static byte *wipe_scr_start, *wipe_scr_end, *wipe_scr;
 
@@ -310,11 +311,10 @@ int wipe_exitMelt(int width, int height, int ticks)
   return 0;
 }
 
-int wipe_StartScreen(int x, int y, int width, int height)
+void wipe_StartScreen(void)
 {
   wipe_scr_start = screens[2];
   I_ReadScreen(wipe_scr_start);
-  return 0;
 }
 
 int wipe_EndScreen(int x, int y, int width, int height)
@@ -325,7 +325,7 @@ int wipe_EndScreen(int x, int y, int width, int height)
   return 0;
 }
 
-int wipe_ScreenWipe(int wipeno, int x, int y, int width, int height, int ticks)
+boolean wipe_ScreenWipe(int wipeno, int width, int height, int ticks)
 {
   int rc;
   static int (*wipes[])(int, int, int) =
@@ -339,7 +339,7 @@ int wipe_ScreenWipe(int wipeno, int x, int y, int width, int height, int ticks)
   // initial stuff
   if (!go)
   {
-    go = 1;
+    go = true;
     // wipe_scr = (byte *) Z_Malloc(width*height, PU_STATIC, 0); // DEBUG
     wipe_scr = screens[0];
     (*wipes[wipeno*3])(width, height, ticks);
@@ -348,12 +348,11 @@ int wipe_ScreenWipe(int wipeno, int x, int y, int width, int height, int ticks)
   // do a piece of wipe-in
   V_MarkRect(0, 0, width, height);
   rc = (*wipes[wipeno*3+1])(width, height, ticks);
-  //  V_DrawBlock(x, y, 0, width, height, wipe_scr); // DEBUG
 
   // final stuff
   if (rc)
   {
-    go = 0;
+    go = false;
     (*wipes[wipeno*3+2])(width, height, ticks);
   }
 

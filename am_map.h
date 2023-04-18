@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -24,7 +25,6 @@
 #define BLUES		(256-4*16+8)
 #define BLUERANGE	8
 #define GREENS		(7*16)
-#define GREENRANGE	16
 #define GRAYS		(6*16)
 #define GRAYSRANGE	16
 #define BROWNS		(4*16)
@@ -47,7 +47,6 @@
 #define CDWALLCOLORS	YELLOWS
 #define CDWALLRANGE	YELLOWRANGE
 #define THINGCOLORS	GREENS
-#define THINGRANGE	GREENRANGE
 #define SECRETWALLCOLORS WALLCOLORS
 #define SECRETWALLRANGE WALLRANGE
 #define GRIDCOLORS	(GRAYS + GRAYSRANGE/2)

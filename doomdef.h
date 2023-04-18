@@ -928,7 +928,7 @@ void P_Ticker (void);
 // can call G_PlayerExited
 // carries out all thinking of monsters and players
 
-void P_SetupLevel (int episode, int map, int playermask, skill_t skill);
+void P_SetupLevel (int episode, int map);
 // called by W_Ticker
 
 void P_Init (void);

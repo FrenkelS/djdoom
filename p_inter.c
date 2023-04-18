@@ -636,7 +636,6 @@ void P_KillMobj (mobj_t *source, mobj_t *target)
 	target->tics -= P_Random()&3;
 	if (target->tics < 1)
 		target->tics = 1;
-//	I_StartSound(&actor->r, actor->info->deathsound);
 		
 #if !APPVER_CHEX
 //

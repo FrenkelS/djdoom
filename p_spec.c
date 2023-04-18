@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -1024,7 +1025,7 @@ void P_SpawnSpecials (void)
 				P_SpawnStrobeFlash (sector, FASTDARK, 1);
 				break;
 			case 14:	// DOOR RAISE IN 5 MINUTES
-				P_SpawnDoorRaiseIn5Mins (sector, i);
+				P_SpawnDoorRaiseIn5Mins (sector);
 				break;
 			case 17:
 				P_SpawnFireFlicker(sector);

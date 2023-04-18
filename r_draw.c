@@ -422,11 +422,6 @@ void R_FillBackScreen (void)
 			memcpy (dest, src+((y&63)<<6), 64);
 			dest += 64;
 		}
-		if (SCREENWIDTH&63)
-		{
-			memcpy (dest, src+((y&63)<<6), SCREENWIDTH&63);
-			dest += (SCREENWIDTH&63);
-		}
 	}
 	
 	patch = W_CacheLumpName ("brdr_t",PU_CACHE);

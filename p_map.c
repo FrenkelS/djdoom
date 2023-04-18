@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -887,7 +888,6 @@ boolean		PTR_ShootTraverse (intercept_t *in)
 	fixed_t		slope;
 	fixed_t		dist;
 	fixed_t		thingtopslope, thingbottomslope;
-	mobj_t *mo;
 
 	if (in->isaline)
 	{
