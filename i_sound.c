@@ -37,7 +37,7 @@ extern int _wp11, _wp12, _wp13, _wp14, _wp15, _wp16, _wp17, _wp18, _wp19;
 
 static int tsm_ID;
 
-void I_StartupTimer (void)
+static void I_StartupTimer (void)
 {
 #ifndef NOTIMER
 	extern void I_TimerISR(void);
@@ -83,19 +83,19 @@ const char *dnames[] = {"None",
 #endif
 
 #if (APPVER_DOOMREV < AV_DR_DM18)
-const char snd_prefixen[] = { 'P', 'P', 'A', 'S', 'S', 'S', 'M',
+static const char snd_prefixen[] = { 'P', 'P', 'A', 'S', 'S', 'S', 'M',
   'M', 'M', 'S'};
 #else
-const char snd_prefixen[] = { 'P', 'P', 'A', 'S', 'S', 'S', 'M',
+static const char snd_prefixen[] = { 'P', 'P', 'A', 'S', 'S', 'S', 'M',
   'M', 'M', 'S', 'S', 'S'};
 #endif
 
 int snd_DesiredMusicDevice, snd_DesiredSfxDevice;
-int snd_MusicDevice,    // current music card # (index to dmxCodes)
-	snd_SfxDevice,      // current sfx card # (index to dmxCodes)
-	snd_MaxVolume,      // maximum volume for sound
-	snd_MusicVolume;    // maximum volume for music
-int dmxCodes[NUM_SCARDS]; // the dmx code for a given card
+int snd_MusicDevice;    // current music card # (index to dmxCodes)
+static int snd_SfxDevice;      // current sfx card # (index to dmxCodes)
+static int snd_MaxVolume;      // maximum volume for sound
+static int snd_MusicVolume;    // maximum volume for music
+static int dmxCodes[NUM_SCARDS]; // the dmx code for a given card
 
 int     snd_SBport, snd_SBirq, snd_SBdma;       // sound blaster variables
 int     snd_Mport;                              // midi variables
@@ -231,7 +231,7 @@ void I_UpdateSoundParams(int handle, int vol, int sep, int pitch)
 // Why PC's Suck, Reason #8712
 //
 
-void I_sndArbitrateCards(void)
+static void I_sndArbitrateCards(void)
 {
   // boolean gus, adlib, pc, sb, midi, ensoniq, codec;
 #if (APPVER_DOOMREV < AV_DR_DM18)
