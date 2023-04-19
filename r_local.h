@@ -385,14 +385,6 @@ void	R_InitData (void);
 void R_PrecacheLevel (void);
 
 
-//
-// R_things.c
-//
-#define	MAXVISSPRITES	128
-
-extern	vissprite_t	vissprites[MAXVISSPRITES], *vissprite_p;
-extern	vissprite_t	vsprsortedhead;
-
 // constant arrays used for psprite clipping and initializing clipping
 extern	short	negonearray[SCREENWIDTH];
 extern	short	screenheightarray[SCREENWIDTH];
@@ -408,8 +400,6 @@ extern	fixed_t		pspritescale, pspriteiscale;
 
 void R_DrawMaskedColumn (column_t *column);
 
-
-void 	R_SortVisSprites (void);
 
 void	R_AddSprites (sector_t *sec);
 void	R_AddPSprites (void);

@@ -47,7 +47,7 @@ This is not the same as the angle, which increases counter clockwise
 
 fixed_t		pspritescale, pspriteiscale;
 
-lighttable_t	**spritelights;
+static lighttable_t	**spritelights;
 
 // constant arrays used for psprite clipping and initializing clipping
 short	negonearray[SCREENWIDTH];
@@ -65,9 +65,9 @@ short	screenheightarray[SCREENWIDTH];
 spritedef_t		*sprites;
 int				numsprites;
 
-spriteframe_t	sprtemp[29];
-int				maxframe;
-char			*spritename;
+static spriteframe_t	sprtemp[29];
+static int				maxframe;
+static char				*spritename;
 
 
 
@@ -80,7 +80,7 @@ char			*spritename;
 =================
 */
 
-void R_InstallSpriteLump (int lump, unsigned frame, unsigned rotation, boolean flipped)
+static void R_InstallSpriteLump (int lump, unsigned frame, unsigned rotation, boolean flipped)
 {
 	int		r;
 
@@ -142,7 +142,7 @@ void R_InstallSpriteLump (int lump, unsigned frame, unsigned rotation, boolean f
 =================
 */
 
-void R_InitSpriteDefs (char **namelist)
+static void R_InitSpriteDefs (char **namelist)
 {
 	char		**check;
 	int		i, l, intname, frame, rotation;
@@ -244,9 +244,10 @@ void R_InitSpriteDefs (char **namelist)
 
 ===============================================================================
 */
+#define	MAXVISSPRITES	128
 
-vissprite_t	vissprites[MAXVISSPRITES], *vissprite_p;
-int			newvissprite;
+static vissprite_t	vissprites[MAXVISSPRITES], *vissprite_p;
+static int			newvissprite;
 
 
 /*
@@ -294,9 +295,9 @@ void R_ClearSprites (void)
 ===================
 */
 
-vissprite_t		overflowsprite;
+static vissprite_t		overflowsprite;
 
-vissprite_t *R_NewVisSprite (void)
+static vissprite_t *R_NewVisSprite (void)
 {
 	if (vissprite_p == &vissprites[MAXVISSPRITES])
 		return &overflowsprite;
@@ -417,7 +418,7 @@ static void R_DrawVisSprite (vissprite_t *vis)
 ===================
 */
 
-void R_ProjectSprite (mobj_t *thing)
+static void R_ProjectSprite (mobj_t *thing)
 {
 	fixed_t		trx,try;
 	fixed_t		gxt,gyt;
@@ -586,7 +587,7 @@ void R_AddSprites (sector_t *sec)
 ========================
 */
 
-void R_DrawPSprite (pspdef_t *psp)
+static void R_DrawPSprite (pspdef_t *psp)
 {
 	fixed_t		tx;
 	int			x1, x2;
@@ -672,7 +673,7 @@ void R_DrawPSprite (pspdef_t *psp)
 ========================
 */
 
-void R_DrawPlayerSprites (void)
+static void R_DrawPlayerSprites (void)
 {
 	int			i, lightnum;
 	pspdef_t	*psp;
@@ -712,9 +713,9 @@ void R_DrawPlayerSprites (void)
 ========================
 */
 
-vissprite_t	vsprsortedhead;
+static vissprite_t	vsprsortedhead;
 
-void R_SortVisSprites (void)
+static void R_SortVisSprites (void)
 {
 	int			i, count;
 	vissprite_t	*ds, *best;
@@ -772,7 +773,7 @@ void R_SortVisSprites (void)
 ========================
 */
 
-void R_DrawSprite (vissprite_t *spr)
+static void R_DrawSprite (vissprite_t *spr)
 {
 	drawseg_t		*ds;
 	short			clipbot[SCREENWIDTH], cliptop[SCREENWIDTH];
