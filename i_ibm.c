@@ -70,8 +70,8 @@ static void DPMIInt (int i);
 void _dpmi_lockregion (void * inmem, int length);
 #endif
 
-void I_ReadMouse (void);
-void I_InitDiskFlash (void);
+static void I_ReadMouse (void);
+static void I_InitDiskFlash (void);
 
 extern  int     usemouse, usejoystick;
 
@@ -144,7 +144,7 @@ extern  int     usemouse, usejoystick;
 #define PEL_DATA                0x3c9
 #define PEL_MASK                0x3c6
 
-boolean grmode;
+static boolean grmode;
 
 //==================================================
 //
@@ -152,8 +152,8 @@ boolean grmode;
 //
 //==================================================
 
-boolean         joystickpresent;
-unsigned        joystickx, joysticky;
+static boolean         joystickpresent;
+static unsigned        joystickx, joysticky;
 boolean I_ReadJoystick (void)	// returns false if not connected
 {
 	// TODO implement joystick support
@@ -191,11 +191,11 @@ static union REGS regs;
 static struct SREGS segregs;
 #endif
 
-boolean novideo; // if true, stay in text mode for debugging
+static boolean novideo; // if true, stay in text mode for debugging
 
 #define KBDQUESIZE 32
-byte keyboardque[KBDQUESIZE];
-int kbdtail, kbdhead;
+static byte keyboardque[KBDQUESIZE];
+static int kbdtail, kbdhead;
 
 #define KEY_LSHIFT      0xfe
 
@@ -247,8 +247,8 @@ typedef struct
 	ticcmd_t f_4; // cmd
 } doomcontrol_t;
 
-doomcontrol_t *doomcon;
-ticcmd_t emptycmd;
+static doomcontrol_t *doomcon;
+static ticcmd_t emptycmd;
 
 ticcmd_t *I_BaseTiccmd (void)
 {
@@ -400,7 +400,8 @@ void I_SetPalette (byte *palette)
 ============================================================================
 */
 
-byte *screen, *currentscreen, *destscreen, *destview;
+static byte *screen, *currentscreen;
+byte *destscreen, *destview;
 
 /*
 ===================
@@ -410,7 +411,7 @@ byte *screen, *currentscreen, *destscreen, *destview;
 ===================
 */
 
-void I_UpdateBox (int x, int y, int width, int height)
+static void I_UpdateBox (int x, int y, int width, int height)
 {
 	int		ofs;
 	byte	*source;
@@ -576,7 +577,7 @@ void I_InitGraphics (void)
 ===================
 */
 
-void I_ShutdownGraphics (void)
+static void I_ShutdownGraphics (void)
 {
 	if (*(byte *)(0x449 + __djgpp_conventional_base) == 0x13) // don't reset mode if it didn't get set
 	{
@@ -908,7 +909,7 @@ int I_ResetMouse (void)
 ================
 */
 
-void I_StartupMouse (void)
+static void I_StartupMouse (void)
 {
    //
    // General mouse detection
@@ -953,7 +954,7 @@ void I_ShutdownMouse (void)
 ================
 */
 
-void I_ReadMouse (void)
+static void I_ReadMouse (void)
 {
 	event_t ev;
 
@@ -986,7 +987,7 @@ void I_ReadMouse (void)
 ============================================================================
 */
 
-int     joyxl, joyxh, joyyl, joyyh;
+static int     joyxl, joyxh, joyyl, joyyh;
 
 boolean WaitJoyButton (void)
 {
@@ -1042,7 +1043,7 @@ boolean WaitJoyButton (void)
 
 int             basejoyx, basejoyy;
 
-void I_StartupJoystick (void)
+static void I_StartupJoystick (void)
 {
 	int     centerx, centery;
 
@@ -1415,7 +1416,7 @@ byte *I_ZoneBase (int *size)
 =============================================================================
 */
 
-void I_InitDiskFlash (void)
+static void I_InitDiskFlash (void)
 {
 	void    *pic;
 	byte    *temp;
