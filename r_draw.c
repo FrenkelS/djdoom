@@ -40,8 +40,8 @@ files only know about ccordinates, not the architecture of the frame buffer.
 
 byte *viewimage;
 int viewwidth, scaledviewwidth, viewheight, viewwindowx, viewwindowy;
-byte *ylookup[MAXHEIGHT];
-int columnofs[MAXWIDTH];
+static byte *ylookup[MAXHEIGHT];
+static int columnofs[MAXWIDTH];
 byte translations[3][256]; // color tables for different players
 
 /*
@@ -129,10 +129,10 @@ void R_DrawColumnLow (void)
 
 #define FUZZTABLE	50
 #define FUZZOFF	(PLANEWIDTH)
-int		fuzzoffset[FUZZTABLE] = {
+static int		fuzzoffset[FUZZTABLE] = {
 FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF
 };
-int fuzzpos = 0;
+static int fuzzpos = 0;
 
 void R_DrawFuzzColumn (void)
 {
