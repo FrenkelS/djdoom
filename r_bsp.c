@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -212,9 +213,6 @@ void R_AddLine (seg_t *line)
 	int			x1, x2;
 	angle_t		angle1, angle2, span, tspan;
 	
-#ifdef __NeXT__
-	RD_DrawLineCheck (line);
-#endif 	
 	curline = line;
 
 // OPTIMIZE: quickly reject orthogonal back sides
@@ -323,10 +321,6 @@ boolean R_CheckBBox (fixed_t *bspcoord)
 	cliprange_t	*start;
 	int			sx1, sx2;
 	
-#ifdef __NeXT__
-	RD_DrawBBox (bspcoord);
-#endif
-
 // find the corners of the box that define the edges from current viewpoint
 	if (viewx <= bspcoord[BOXLEFT])
 		boxx = 0;
@@ -352,10 +346,6 @@ boolean R_CheckBBox (fixed_t *bspcoord)
 	y2 = bspcoord[checkcoord[boxpos][3]];
 
 
-#ifdef __NeXT__
-//	RD_DisplayLine (x1, y1, x2, y2, 0.1);
-#endif
-	
 //
 // check clip list for an open space
 //	
@@ -473,10 +463,6 @@ void R_RenderBSPNode (int bspnum)
 	}
 		
 	bsp = &nodes[bspnum];
-	
-#ifdef __NeXT__
-	RD_DrawNodeLine (bsp);
-#endif
 	
 //
 // decide which side the view point is on

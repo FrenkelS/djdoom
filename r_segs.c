@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -338,9 +339,6 @@ void R_StoreWallRange (int start, int stop)
 #ifdef RANGECHECK
 	if (start >=viewwidth || start > stop)
 		I_Error ("Bad R_RenderWallRange: %i to %i", start , stop);
-#endif
-#ifdef __NeXT__
-	RD_DrawLine (curline);
 #endif
 
 	sidedef = curline->sidedef;

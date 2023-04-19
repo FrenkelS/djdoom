@@ -18,19 +18,13 @@
 
 // M_misc.c
 
-#ifdef __NeXT__
-#include <libc.h>
-#else
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <direct.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
-#endif
-
 #include <ctype.h>
-
 #include "DoomDef.h"
 #include "HU_stuff.h"
 #include "soundst.h"
@@ -292,24 +286,22 @@ typedef struct
 	int     untranslated;       // lousy hack
 } default_t;
 
-#ifndef __NeXT__
 extern int snd_DesiredMusicDevice, snd_DesiredSfxDevice;
 extern int snd_MusicDevice, // current music card # (index to dmxCodes)
 	snd_SfxDevice; // current sfx card # (index to dmxCodes)
 
 extern int     snd_SBport, snd_SBirq, snd_SBdma;       // sound blaster variables
 extern int     snd_Mport;                              // midi variables
-#endif
 
 default_t defaults[] =
 {
 	{"mouse_sensitivity", &mouseSensitivity, 5},
 
-#ifndef __NeXT__
 	{"sfx_volume", &sfxVolume, 8},
 	{"music_volume", &musicVolume, 8},
-#endif
+
 	{"show_messages",&showMessages, 1},
+
 #define SC_UPARROW              0x48
 #define SC_DOWNARROW            0x50
 #define SC_LEFTARROW            0x4b
@@ -333,20 +325,6 @@ default_t defaults[] =
 	{"key_strafe", &key_strafe, SC_RALT, 1},
 	{"key_speed", &key_speed, SC_RSHIFT, 1},
 
-#ifdef __NeXT__
-	{"key_right", &key_right, KEY_RIGHTARROW},
-	{"key_left", &key_left, KEY_LEFTARROW},
-	{"key_up", &key_up, KEY_UPARROW},
-	{"key_down", &key_down, KEY_DOWNARROW},
-	{"key_strafeleft", &key_strafeleft, ','},
-	{"key_straferight", &key_straferight, '.'},
-
-	{"key_fire", &key_fire, ' ', 1},
-	{"key_use", &key_use, 'x', 1 },
-	{"key_strafe", &key_strafe, 'c', 1},
-	{"key_speed", &key_speed, 'z', 1},
-#endif
-
 	{"use_mouse", &usemouse, 1},
 	{"mouseb_fire", &mousebfire, 0},
 	{"mouseb_strafe", &mousebstrafe, 1},
@@ -361,7 +339,6 @@ default_t defaults[] =
 	{"screenblocks", &screenblocks, 9},
 	{"detaillevel", &detailLevel, 0},
 
-#ifndef __NeXT__
 	{"snd_channels", &numChannels, 3},
 	{"snd_musicdevice", &snd_DesiredMusicDevice, 0},
 	{"snd_sfxdevice", &snd_DesiredSfxDevice, 0},
@@ -369,7 +346,6 @@ default_t defaults[] =
 	{"snd_sbirq", &snd_SBirq, 5},
 	{"snd_sbdma", &snd_SBdma, 1},
 	{"snd_mport", &snd_Mport, 816},
-#endif
 
 	{"usegamma",&usegamma, 0},
 

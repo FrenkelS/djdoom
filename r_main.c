@@ -741,7 +741,6 @@ void R_SetupFrame (player_t *player)
 {
 	int	i;
 
-	//drawbsp = 1;
 	viewplayer = player;
 	viewx = player->mo->x;
 	viewy = player->mo->y;
@@ -764,9 +763,6 @@ void R_SetupFrame (player_t *player)
 	framecount++;
 	validcount++;
 
-#ifdef __NeXT__
-	RD_ClearMapWindow ();
-#endif
 	destview = destscreen+(viewwindowx>>2)+viewwindowy*80;
 }
 
