@@ -672,8 +672,8 @@ void R_PrecacheLevel (void)
 //
 // precache sprites
 //
-	spritepresent = alloca(numsprites);
-	memset (spritepresent,0, numsprites);
+	spritepresent = alloca(NUMSPRITES);
+	memset (spritepresent,0, NUMSPRITES);
 	
 	for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
 	{
@@ -682,7 +682,7 @@ void R_PrecacheLevel (void)
 	}
 	
 	spritememory = 0;
-	for (i=0 ; i<numsprites ; i++)
+	for (i=0 ; i<NUMSPRITES ; i++)
 	{
 		if (!spritepresent[i])
 			continue;
