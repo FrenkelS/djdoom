@@ -18,11 +18,6 @@
 
 // D_main.c
 
-#if 0 // VERSIONS RESTORATION: Move these down for convenience
-#define	BGCOLOR		7
-#define	FGCOLOR		8
-#endif
-
 #include <dos.h>
 #include <sys/stat.h>
 #include <sys/types.h>

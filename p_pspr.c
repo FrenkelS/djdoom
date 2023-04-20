@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -403,10 +404,6 @@ void A_ReFire (player_t *player, pspdef_t *psp)
 void A_CheckReload (player_t *player, pspdef_t *psp)
 {
 	P_CheckAmmo (player);
-#if 0
-	if (player->ammo[am_shell]<2)
-		P_SetPsprite (player, ps_weapon, S_DSNR1);
-#endif
 }
 
 

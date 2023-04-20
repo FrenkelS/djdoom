@@ -479,13 +479,6 @@ boolean G_Responder(event_t *ev)
 
 	if(gamestate == GS_LEVEL)
 	{
-#if 0 
-		if (devparm && ev->type == ev_keydown && ev->data1 == ';') 
-		{ 
-			G_DeathMatchSpawnPlayer (0); 
-			return true; 
-		} 
-#endif 
 		if (HU_Responder(ev))
 		{
 			return true;	// chat ate the event
@@ -1018,23 +1011,6 @@ void G_DoCompleted(void)
 		}
 	}
 
-#if 0
-	if ((gamemap == 8) && !commercial)
-	{
-		// victory 
-		gameaction = ga_victory;
-		return;
-	}
-
-	if ((gamemap == 9) && !commercial)
-	{
-		// exit secret level 
-		for (i = 0; i < MAXPLAYERS; i++)
-			players[i].didsecret = true;
-	}
-#endif
-
-
 	wminfo.didsecret = players[consoleplayer].didsecret;
 	wminfo.epsd = gameepisode - 1;
 	wminfo.last = gamemap - 1;
@@ -1461,17 +1437,6 @@ void G_InitNew(skill_t skill, int episode, int map)
 #endif
 		}
 
-//
-// give one null ticcmd_t
-//
-#if 0
-	gametic = 0;
-	maketic = 1;
-	for (i=0 ; i<MAXPLAYERS ; i++)
-		nettics[i] = 1;                 // one null event for this gametic
-	memset (localcmds,0,sizeof(localcmds));
-	memset (netcmds,0,sizeof(netcmds));
-#endif
 	G_DoLoadLevel();
 }
 

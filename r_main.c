@@ -320,21 +320,6 @@ fixed_t	R_PointToDist (fixed_t x, fixed_t y)
 
 void R_InitPointToAngle (void)
 {
-// now getting from tables.c
-#if 0
-	int	i;
-	long	t;
-	float	f;
-//
-// slope (tangent) to angle lookup
-//
-	for (i=0 ; i<=SLOPERANGE ; i++)
-	{
-		f = atan( (float)i/SLOPERANGE )/(3.141592657*2);
-		t = 0xffffffff*f;
-		tantoangle[i] = t;
-	}
-#endif
 }
 
 //=============================================================================
@@ -355,20 +340,6 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 	int			anglea, angleb;
 	int			sinea, sineb;
 	fixed_t		num,den;
-
-#if 0
-{
-	fixed_t		dist,z;
-	fixed_t		sinv, cosv;
-
-	sinv = finesine[(visangle-rw_normalangle)>>ANGLETOFINESHIFT];
-	dist = FixedDiv (rw_distance, sinv);
-	cosv = finecosine[(viewangle-visangle)>>ANGLETOFINESHIFT];
-	z = abs(FixedMul (dist, cosv));
-	scale = FixedDiv(projection, z);
-	return scale;
-}
-#endif
 
 	anglea = ANG90 + (visangle-viewangle);
 	angleb = ANG90 + (visangle-rw_normalangle);
@@ -403,35 +374,6 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 
 void R_InitTables (void)
 {
-// now getting from tables.c
-#if 0
-	int		i;
-	float		a, fv;
-	int			t;
-
-//
-// viewangle tangent table
-//
-	for (i=0 ; i<FINEANGLES/2 ; i++)
-	{
-		a = (i-FINEANGLES/4+0.5)*PI*2/FINEANGLES;
-		fv = FRACUNIT*tan (a);
-		t = fv;
-		finetangent[i] = t;
-	}
-
-//
-// finesine table
-//
-	for (i=0 ; i<5*FINEANGLES/4 ; i++)
-	{
-// OPTIMIZE: mirror...
-		a = (i+0.5)*PI*2/FINEANGLES;
-		t = FRACUNIT*sin (a);
-		finesine[i] = t;
-	}
-#endif
-
 }
 
 

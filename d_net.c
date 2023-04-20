@@ -84,10 +84,6 @@ unsigned NetbufferChecksum (void)
 
 	c = 0x1234567;
 
-#if defined(NeXT) || defined(NORMALUNIX)
-	return 0;                       // byte order problems
-#endif
-
 	l = (NetbufferSize () - (int)&(((doomdata_t *)0)->retransmitfrom))/4;
 	for (i=0 ; i<l ; i++)
 		c += ((unsigned *)&netbuffer->retransmitfrom)[i] * (i+1);
@@ -541,18 +537,11 @@ void D_ArbitrateNetStart (void)
 				HSendPacket (i, NCMD_SETUP);
 			}
 
-#if 1
 			for(i = 10 ; i  &&  HGetPacket(); --i)
 			{
  if((netbuffer->player&0x7f) < MAXNETNODES)
 				gotinfo[netbuffer->player&0x7f] = true;
 			}
-#else
-			while (HGetPacket ())
-			{
-				gotinfo[netbuffer->player&0x7f] = true;
-			}
-#endif
 
 			for (i=1 ; i<doomcom->numnodes ; i++)
 				if (!gotinfo[i])

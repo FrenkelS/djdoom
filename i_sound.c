@@ -70,18 +70,6 @@ void I_ShutdownTimer (void)
  */
 
 // sound information
-#if 0
-const char *dnames[] = {"None",
-			"PC_Speaker",
-			"Adlib",
-			"Sound_Blaster",
-			"ProAudio_Spectrum16",
-			"Gravis_Ultrasound",
-			"MPU",
-			"AWE32"
-			};
-#endif
-
 #if (APPVER_DOOMREV < AV_DR_DM18)
 static const char snd_prefixen[] = { 'P', 'P', 'A', 'S', 'S', 'S', 'M',
   'M', 'M', 'S'};

@@ -571,16 +571,7 @@ void P_SetupLevel (int episode, int map)
 	
 	S_Start ();			// make sure all sounds are stopped before Z_FreeTags
 	
-
-#if 0
-	if (debugfile)
-	{
-		Z_FreeTags (PU_LEVEL, MAXINT);
-		Z_FileDumpHeap (debugfile);
-	}
-else
-#endif
-		Z_FreeTags (PU_LEVEL, PU_PURGELEVEL-1);
+	Z_FreeTags (PU_LEVEL, PU_PURGELEVEL-1);
 	
 	// W_Profile ();
 	P_InitThinkers ();

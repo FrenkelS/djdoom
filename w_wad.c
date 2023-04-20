@@ -18,21 +18,11 @@
 
 // W_wad.c
 
-#ifdef NeXT
-#include <libc.h>
-#include <ctype.h>
-
-// next doesn't need a binary flag in open call
-#define	O_BINARY	0
-
-#else
-
 #include <malloc.h>
 #include <io.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#endif
 
 #include "DoomDef.h"
 extern int _wp1, _wp2, _wp3, _wp4, _wp5, _wp6, _wp7, _wp8, _wp9;
@@ -71,34 +61,6 @@ void		**lumpcache;
 
 
 //===================
-
-#ifdef NeXT
-
-void strupr (char *s)
-{
-    while (*s)
-	*s++ = toupper(*s);
-}
-
-/*
-================
-=
-= filelength
-=
-================
-*/
-
-int filelength (int handle)
-{
-    struct stat	fileinfo;
-    
-    if (fstat (handle,&fileinfo) == -1)
-	I_Error ("Error fstating");
-
-    return fileinfo.st_size;
-}
-
-#endif
 
 
 void ExtractFileBase (char *path, char *dest)
