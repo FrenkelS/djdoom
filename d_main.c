@@ -45,7 +45,7 @@
 extern int _wp1, _wp2, _wp3, _wp4;
 
 #define MAXWADFILES 20
-char *wadfiles[MAXWADFILES];
+static char *wadfiles[MAXWADFILES];
 
 boolean shareware;		// true if only episode 1 present
 boolean registered;
@@ -211,7 +211,7 @@ extern boolean setsizeneeded;
 extern int showMessages;
 void R_ExecuteSetViewSize (void);
 
-void D_Display (void)
+static void D_Display (void)
 {
 	static boolean viewactivestate = false;
 	static boolean menuactivestate = false;
@@ -371,7 +371,7 @@ void D_Display (void)
 ================
 */
 
-void D_DoomLoop (void)
+static void D_DoomLoop (void)
 {
 	if (demorecording)
 		G_BeginRecording ();
@@ -422,9 +422,9 @@ void D_DoomLoop (void)
 ===============================================================================
 */
 
-int             demosequence;
-int             pagetic;
-char            *pagename;
+static int             demosequence;
+static int             pagetic;
+static char            *pagename;
 
 
 /*
@@ -554,9 +554,9 @@ void D_StartTitle (void)
 	D_AdvanceDemo ();
 }
 
-char title[128]; //      print title for every printed line
+static char title[128]; //      print title for every printed line
 
-int GetTextX(void)
+static int GetTextX(void)
 {
 	union REGS regs;
 	regs.h.ah = 3;
@@ -565,7 +565,7 @@ int GetTextX(void)
 	return regs.h.dl;
 }
 
-int GetTextY(void)
+static int GetTextY(void)
 {
 	union REGS regs;
 	regs.h.ah = 3;
@@ -574,7 +574,7 @@ int GetTextY(void)
 	return regs.h.dh;
 }
 
-void SetTextPos(int x, int y)
+static void SetTextPos(int x, int y)
 {
 	union REGS regs;
 	regs.h.ah = 2;
@@ -584,7 +584,7 @@ void SetTextPos(int x, int y)
 	int386(0x10, &regs, &regs);
 }
 
-void tprintf(char *msg, int fgcolor, int bgcolor)
+static void tprintf(char *msg, int fgcolor, int bgcolor)
 {
 	union REGS regs;
 	byte attr;
@@ -634,7 +634,7 @@ void mprintf(char *msg)
 ===============
 */
 
-void D_AddFile(char *file)
+static void D_AddFile(char *file)
 {
 	int numwadfiles;
 	char *new;
@@ -670,7 +670,7 @@ void CheckBetaTest(void)
 = should be executed (notably loading PWAD's).
 =================
 */
-void IdentifyVersion (void)
+static void IdentifyVersion (void)
 {
 
 	char	*doom1wad, *doomwad, *doom2wad;
@@ -827,7 +827,7 @@ void CheckBetaTest(void)
 =
 =================
 */
-void FindResponseFile (void)
+static void FindResponseFile (void)
 {
 	int i;
 #define MAXARGVS 100
