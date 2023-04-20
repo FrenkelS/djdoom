@@ -26,49 +26,49 @@
 extern int _wp1, _wp2, _wp3, _wp4, _wp5, _wp6, _wp7, _wp8;
 extern int _wp9, _wp10, _wp11, _wp12, _wp13, _wp14, _wp15, _wp16, _wp17, _wp18;
 
-int             finalestage;            // 0 = text, 1 = art screen, 2 = character cast
-int             finalecount;
+static int             finalestage;            // 0 = text, 1 = art screen, 2 = character cast
+static int             finalecount;
 
 #define TEXTSPEED       3
 #define TEXTWAIT        250
 
-char    *e1text = E1TEXT;
-char    *e2text = E2TEXT;
-char    *e3text = E3TEXT;
+static char    *e1text = E1TEXT;
+static char    *e2text = E2TEXT;
+static char    *e3text = E3TEXT;
 #if (APPVER_DOOMREV >= AV_DR_DM19U)
-char    *e4text = E4TEXT;
+static char    *e4text = E4TEXT;
 #endif
 
-char    *c1text = C1TEXT;
-char    *c2text = C2TEXT;
-char    *c3text = C3TEXT;
-char    *c4text = C4TEXT;
-char    *c5text = C5TEXT;
-char    *c6text = C6TEXT;
+static char    *c1text = C1TEXT;
+static char    *c2text = C2TEXT;
+static char    *c3text = C3TEXT;
+static char    *c4text = C4TEXT;
+static char    *c5text = C5TEXT;
+static char    *c6text = C6TEXT;
 
 #if (APPVER_DOOMREV >= AV_DR_DM19F)
-char    *p1text = P1TEXT;
-char    *p2text = P2TEXT;
-char    *p3text = P3TEXT;
-char    *p4text = P4TEXT;
-char    *p5text = P5TEXT;
-char    *p6text = P6TEXT;
+static char    *p1text = P1TEXT;
+static char    *p2text = P2TEXT;
+static char    *p3text = P3TEXT;
+static char    *p4text = P4TEXT;
+static char    *p5text = P5TEXT;
+static char    *p6text = P6TEXT;
 
-char    *t1text = T1TEXT;
-char    *t2text = T2TEXT;
-char    *t3text = T3TEXT;
-char    *t4text = T4TEXT;
-char    *t5text = T5TEXT;
-char    *t6text = T6TEXT;
+static char    *t1text = T1TEXT;
+static char    *t2text = T2TEXT;
+static char    *t3text = T3TEXT;
+static char    *t4text = T4TEXT;
+static char    *t5text = T5TEXT;
+static char    *t6text = T6TEXT;
 #endif
 
-char    *finaletext;
-char    *finaleflat;
+static char    *finaletext;
+static char    *finaleflat;
 
-void	F_StartCast (void);
-void	F_CastTicker (void);
-boolean F_CastResponder (event_t *ev);
-void	F_CastDrawer (void);
+static void	F_StartCast (void);
+static void	F_CastTicker (void);
+static boolean F_CastResponder (event_t *ev);
+static void	F_CastDrawer (void);
 
 /*
 =======================
@@ -285,7 +285,7 @@ void F_Ticker (void)
 extern        patch_t *hu_font[HU_FONTSIZE];
 
 
-void F_TextWrite (void)
+static void F_TextWrite (void)
 {
 	byte    *src, *dest;
 	int             x,y,w;
@@ -364,7 +364,7 @@ typedef struct
 	mobjtype_t	type;
 } castinfo_t;
 
-castinfo_t	castorder[] = {
+static castinfo_t	castorder[] = {
 	{CC_ZOMBIE, MT_POSSESSED},
 	{CC_SHOTGUN, MT_SHOTGUY},
 	{CC_HEAVY, MT_CHAINGUY},
@@ -386,13 +386,13 @@ castinfo_t	castorder[] = {
 	{NULL,0}
 };
 
-int			castnum;
-int			casttics;
-state_t		*caststate;
-boolean		castdeath;
-int			castframes;
-int			castonmelee;
-boolean		castattacking;
+static int			castnum;
+static int			casttics;
+static state_t		*caststate;
+static boolean		castdeath;
+static int			castframes;
+static int			castonmelee;
+static boolean		castattacking;
 
 
 /*
@@ -405,7 +405,7 @@ boolean		castattacking;
 extern	gamestate_t     wipegamestate;
 
 
-void F_StartCast (void)
+static void F_StartCast (void)
 {
 	wipegamestate = -1;		// force a screen wipe
 	castnum = 0;
@@ -427,7 +427,7 @@ void F_StartCast (void)
 =
 =======================
 */
-void F_CastTicker (void)
+static void F_CastTicker (void)
 {
 	int		st;
 	int		sfx;
@@ -538,7 +538,7 @@ void F_CastTicker (void)
 =======================
 */
 
-boolean F_CastResponder (event_t* ev)
+static boolean F_CastResponder (event_t* ev)
 {
 	if (ev->type != ev_keydown)
 		return false;
@@ -559,7 +559,7 @@ boolean F_CastResponder (event_t* ev)
 }
 
 
-void F_CastPrint (char* text)
+static void F_CastPrint (char* text)
 {
 	char	*ch;
 	int		c;
@@ -619,7 +619,7 @@ void F_CastPrint (char* text)
 */
 void V_DrawPatchFlipped (int x, int y, int scrn, patch_t *patch);
 
-void F_CastDrawer (void)
+static void F_CastDrawer (void)
 {
 	spritedef_t		*sprdef;
 	spriteframe_t	*sprframe;
@@ -654,7 +654,7 @@ void F_CastDrawer (void)
 ==================
 */
 
-void F_DrawPatchCol (int x, patch_t *patch, int col)
+static void F_DrawPatchCol (int x, patch_t *patch, int col)
 {
 	column_t        *column;
 	byte            *source, *dest, *desttop;
@@ -689,7 +689,7 @@ void F_DrawPatchCol (int x, patch_t *patch, int col)
 ==================
 */
 
-void F_BunnyScroll (void)
+static void F_BunnyScroll (void)
 {
 	int                     scrolled, x;
 	patch_t         *p1, *p2;
