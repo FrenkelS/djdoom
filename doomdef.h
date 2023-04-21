@@ -614,7 +614,6 @@ extern	int			gameepisode;
 extern	int			gamemap;
 extern 	int 			prevmap;
 extern	int			totalkills, totalitems, totalsecret;	// for intermission
-extern	int			levelstarttic;		// gametic at level start
 extern	int			leveltime;			// tics in game play for par
 
 extern	ticcmd_t	netcmds[MAXPLAYERS][BACKUPTICS];
@@ -626,7 +625,6 @@ extern int gametic, maketic;
 
 #define SAVEGAMESIZE 0x2c000
 #define SAVESTRINGSIZE 24
-extern byte *savebuffer;
 extern byte *save_p;
 
 extern mapthing_t *deathmatch_p;
@@ -656,7 +654,6 @@ extern int _dp12;
 extern boolean automapactive;
 extern boolean menuactive;
 extern boolean nodrawers;
-extern boolean noblit;
 extern boolean viewactive;
 extern boolean singledemo; // quit after playing a demo from cmdline
 extern boolean modifiedgame;
@@ -892,7 +889,6 @@ void G_DeferedPlayDemo (char *demo);
 void G_LoadGame (char *name);
 // can be called by the startup code or M_Responder
 // calls P_SetupLevel or W_EnterWorld
-void G_DoLoadGame (void);
 
 void G_SaveGame (int slot, char *description);
 // called by M_Responder
