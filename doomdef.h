@@ -526,7 +526,6 @@ typedef struct
 #define	DOOMCOM_ID		0x12345678l
 
 extern	doomcom_t		*doomcom;
-extern	doomdata_t		*netbuffer;		// points inside doomcom
 
 #define	MAXNETNODES		8			// max computers in a game
 
@@ -622,10 +621,8 @@ extern	ticcmd_t	netcmds[MAXPLAYERS][BACKUPTICS];
 extern int ticdup;
 
 #define	MAXNETNODES		8
-extern	ticcmd_t		localcmds[BACKUPTICS];
 extern int rndindex;
 extern int gametic, maketic;
-extern	int        	nettics[MAXNETNODES];
 
 #define SAVEGAMESIZE 0x2c000
 #define SAVESTRINGSIZE 24

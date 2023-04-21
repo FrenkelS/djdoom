@@ -28,7 +28,7 @@
 
 
 doomcom_t               *doomcom;
-doomdata_t              *netbuffer;             // points inside doomcom
+static doomdata_t              *netbuffer;             // points inside doomcom
 
 
 /*
@@ -48,28 +48,28 @@ a gametic cannot be run until nettics[] > gametic for all players
 #define RESENDCOUNT     10
 #define PL_DRONE        0x80                            // bit flag in doomdata->player
 
-ticcmd_t                localcmds[BACKUPTICS];
+static ticcmd_t                localcmds[BACKUPTICS];
 
 ticcmd_t        netcmds[MAXPLAYERS][BACKUPTICS];
-int             nettics[MAXNETNODES];
-boolean                 nodeingame[MAXNETNODES];        // set false as nodes leave game
-boolean                 remoteresend[MAXNETNODES];      // set when local needs tics
-int                             resendto[MAXNETNODES];                  // set when remote needs tics
-int                             resendcount[MAXNETNODES];
+static int             nettics[MAXNETNODES];
+static boolean                 nodeingame[MAXNETNODES];        // set false as nodes leave game
+static boolean                 remoteresend[MAXNETNODES];      // set when local needs tics
+static int                             resendto[MAXNETNODES];                  // set when remote needs tics
+static int                             resendcount[MAXNETNODES];
 
-int                             nodeforplayer[MAXPLAYERS];
+static int                             nodeforplayer[MAXPLAYERS];
 
 int             maketic;
-int                             lastnettic, skiptics;
+static int                             skiptics;
 int                             ticdup;
-int                             maxsend;        // BACKUPTICS/(2*ticdup)-1
+static int                             maxsend;        // BACKUPTICS/(2*ticdup)-1
 
 void D_ProcessEvents (void);
 void G_BuildTiccmd (ticcmd_t *cmd);
 void D_DoAdvanceDemo (void);
 
-boolean                 reboundpacket;
-doomdata_t              reboundstore;
+static boolean                 reboundpacket;
+static doomdata_t              reboundstore;
 
 
 int     NetbufferSize (void)
@@ -77,7 +77,7 @@ int     NetbufferSize (void)
 	return (int)&(((doomdata_t *)0)->cmds[netbuffer->numtics]);
 }
 
-unsigned NetbufferChecksum (void)
+static unsigned NetbufferChecksum (void)
 {
 	unsigned                c;
 	int             i,l;
@@ -91,7 +91,7 @@ unsigned NetbufferChecksum (void)
 	return c & NCMD_CHECKSUM;
 }
 
-int ExpandTics (int low)
+static int ExpandTics (int low)
 {
 	int     delta;
 
@@ -120,7 +120,7 @@ int ExpandTics (int low)
 ==============
 */
 
-void HSendPacket (int node, int flags)
+static void HSendPacket (int node, int flags)
 {
 	netbuffer->checksum = NetbufferChecksum () | flags;
 
@@ -169,7 +169,7 @@ if (debugfile)
 ==============
 */
 
-boolean HGetPacket (void)
+static boolean HGetPacket (void)
 {
 	if (reboundpacket)
 	{
@@ -235,9 +235,9 @@ if (debugfile)
 ===================
 */
 
-char    exitmsg[80];
+static char    exitmsg[80];
 
-void GetPackets (void)
+static void GetPackets (void)
 {
 	int             netconsole;
 	int             netnode;
@@ -356,7 +356,7 @@ fprintf (debugfile,"missed tics from %i (%i - %i)\n", netnode, realstart, nettic
 =============
 */
 
-int      gametime;
+static int      gametime;
 
 void NetUpdate (void)
 {
@@ -455,7 +455,7 @@ listen:
 =====================
 */
 
-void CheckAbort (void)
+static void CheckAbort (void)
 {
 	event_t *ev;
 	int             stoptic;
@@ -482,7 +482,7 @@ void CheckAbort (void)
 =====================
 */
 
-void D_ArbitrateNetStart (void)
+static void D_ArbitrateNetStart (void)
 {
 	int             i;
 	boolean gotinfo[MAXNETNODES];
@@ -641,9 +641,9 @@ void D_QuitNetGame (void)
 ===============
 */
 
-int     frametics[4], frameon;
-int     frameskip[4];
-int             oldnettics;
+static int     frametics[4], frameon;
+static int     frameskip[4];
+static int             oldnettics;
 extern  boolean advancedemo;
 
 void TryRunTics (void)
