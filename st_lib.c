@@ -24,7 +24,7 @@
 // in AM_map.c
 extern boolean		automapactive; 
 
-patch_t *sttminus;
+static patch_t *sttminus;
 
 void STlib_init(void)
 {

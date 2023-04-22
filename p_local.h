@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -122,8 +123,6 @@ void	P_PlayerThink (player_t *player);
 // Time interval for item respawning.
 #define ITEMQUESIZE		128
 
-extern mapthing_t	itemrespawnque[ITEMQUESIZE];
-extern int		itemrespawntime[ITEMQUESIZE];
 extern int		iquehead, iquetail;
 
 
@@ -174,15 +173,11 @@ typedef struct
 } intercept_t;
 
 #define	MAXINTERCEPTS	128
-extern	intercept_t		intercepts[MAXINTERCEPTS], *intercept_p;
 typedef boolean (*traverser_t) (intercept_t *in);
 
 
 fixed_t P_AproxDistance (fixed_t dx, fixed_t dy);
 int 	P_PointOnLineSide (fixed_t x, fixed_t y, line_t *line);
-int 	P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t *line);
-void 	P_MakeDivline (line_t *li, divline_t *dl);
-fixed_t P_InterceptVector (divline_t *v2, divline_t *v1);
 int 	P_BoxOnLineSide (fixed_t *tmbox, line_t *ld);
 
 extern	fixed_t opentop, openbottom, openrange;
@@ -212,7 +207,7 @@ void	P_SetThingPosition (mobj_t *thing);
 */
 
 extern boolean		floatok;				// if true, move would be ok if
-extern fixed_t		tmfloorz, tmceilingz;	// within tmfloorz - tmceilingz
+extern fixed_t		tmfloorz;				// within tmfloorz - tmceilingz
 
 extern line_t *ceilingline;
 

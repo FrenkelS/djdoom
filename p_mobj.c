@@ -73,7 +73,7 @@ boolean P_SetMobjState (mobj_t *mobj, statenum_t state)
 =================== 
 */ 
 
-void P_ExplodeMissile (mobj_t *mo)
+static void P_ExplodeMissile (mobj_t *mo)
 {
 	mo->momx = mo->momy = mo->momz = 0;
 	P_SetMobjState (mo, mobjinfo[mo->type].deathstate);
@@ -96,7 +96,7 @@ void P_ExplodeMissile (mobj_t *mo)
 #define	STOPSPEED		0x1000
 #define	FRICTION		0xe800
 
-void P_XYMovement (mobj_t *mo)
+static void P_XYMovement (mobj_t *mo)
 {
 	fixed_t		ptryx, ptryy;
 	player_t	*player;
@@ -213,7 +213,7 @@ void P_XYMovement (mobj_t *mo)
 ===============
 */
 
-void P_ZMovement (mobj_t *mo)
+static void P_ZMovement (mobj_t *mo)
 {
 	int		dist;
 	int		delta;
@@ -315,7 +315,7 @@ void P_ZMovement (mobj_t *mo)
 ================
 */
 
-void P_NightmareRespawn (mobj_t *mobj)
+static void P_NightmareRespawn (mobj_t *mobj)
 {
 	fixed_t			x,y,z;
 	subsector_t		*ss;
@@ -475,8 +475,8 @@ mobj_t *P_SpawnMobj (fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 =
 ===============
 */
-mapthing_t	itemrespawnque[ITEMQUESIZE];
-int			itemrespawntime[ITEMQUESIZE];
+static mapthing_t	itemrespawnque[ITEMQUESIZE];
+static int			itemrespawntime[ITEMQUESIZE];
 int			iquehead, iquetail;
 
 
@@ -782,7 +782,7 @@ void P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int damage)
 ================
 */
 
-void P_CheckMissileSpawn (mobj_t *th)
+static void P_CheckMissileSpawn (mobj_t *th)
 {
 	th->tics -= P_Random()&3;
 	if (th->tics < 1)

@@ -51,20 +51,10 @@ typedef struct
 
 #define	MAXANIMS		32
 
-extern	anim_t	anims[MAXANIMS], *lastanim;
-
-//
-// End-level timer (-TIMER option)
-//
-extern	boolean levelTimer;
-extern	int	levelTimeCount;
-
 //
 //	Animating line specials
 //
 #define	MAXLINEANIMS		64
-extern	short	numlinespecials;
-extern	line_t	*linespeciallist[MAXLINEANIMS];
 
 
 //	Define values for map objects
@@ -254,9 +244,7 @@ extern	plat_t	*activeplats[MAXPLATS];
 void	T_PlatRaise(plat_t	*plat);
 int		EV_DoPlat(line_t *line,plattype_e type,int amount);
 void	P_AddActivePlat(plat_t *plat);
-void	P_RemoveActivePlat(plat_t *plat);
 void	EV_StopPlat(line_t *line);
-void	P_ActivateInStasis(int tag);
 
 /*
 ===============================================================================

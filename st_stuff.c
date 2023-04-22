@@ -33,7 +33,7 @@ extern int _wp10, _wp11, _wp12, _wp13, _wp14, _wp15, _wp16;
 //
 void ST_Stop(void);
 
-void ST_refreshBackground(void)
+static void ST_refreshBackground(void)
 {
 
   if (st_statusbaron)
@@ -263,7 +263,7 @@ boolean ST_Responder (event_t *ev)
 
 
 
-int ST_calcPainOffset(void)
+static int ST_calcPainOffset(void)
 {
   int health;
   static int lastcalc;
@@ -286,7 +286,7 @@ int ST_calcPainOffset(void)
 // the precedence of expressions is:
 //  dead > evil grin > turned head > straight ahead
 //
-void ST_updateFaceWidget(void)
+static void ST_updateFaceWidget(void)
 {
   int i;
   angle_t badguyangle;
@@ -453,7 +453,7 @@ void ST_updateFaceWidget(void)
 
 }
 
-void ST_updateWidgets(void)
+static void ST_updateWidgets(void)
 {
   static int largeammo = 1994; // means "n/a"
   int i;
@@ -524,7 +524,7 @@ void ST_Ticker (void)
 
 static int st_palette = 0;
 
-void ST_doPaletteStuff(void)
+static void ST_doPaletteStuff(void)
 {
 
   int palette;
@@ -767,7 +767,7 @@ void ST_unloadData(void)
   ST_unloadGraphics();
 }
 
-void ST_initData(void)
+static void ST_initData(void)
 {
 
   int i;
@@ -800,7 +800,7 @@ void ST_initData(void)
 
 
 
-void ST_createWidgets(void)
+static void ST_createWidgets(void)
 {
 
   int i;

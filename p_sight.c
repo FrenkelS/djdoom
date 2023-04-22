@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -30,15 +31,15 @@ extern int _wp1, _wp2, _wp3, _wp4, _wp5, _wp6, _wp7, _wp8, _wp9;
 ==============================================================================
 */
 
-fixed_t		sightzstart;		// eye z of looker
+static fixed_t		sightzstart;		// eye z of looker
 fixed_t		topslope;
 fixed_t		bottomslope;		// slopes to top and bottom of target
 
-divline_t	strace;			// from t1 to t2
-fixed_t		t2x;
-fixed_t		t2y;
+static divline_t	strace;			// from t1 to t2
+static fixed_t		t2x;
+static fixed_t		t2y;
 
-int		sightcounts[2];
+static int		sightcounts[2];
 
 
 /*
@@ -51,7 +52,7 @@ int		sightcounts[2];
 ==============
 */
 
-int P_DivlineSide (fixed_t x, fixed_t y, divline_t *node)
+static int P_DivlineSide (fixed_t x, fixed_t y, divline_t *node)
 {
 	fixed_t	dx, dy;
 	fixed_t	left, right;
@@ -99,14 +100,13 @@ int P_DivlineSide (fixed_t x, fixed_t y, divline_t *node)
 ==============
 */
 
-fixed_t P_InterceptVector2 (divline_t *v2, divline_t *v1)
+static fixed_t P_InterceptVector2 (divline_t *v2, divline_t *v1)
 {
 	fixed_t	frac, num, den;
 	
 	den = FixedMul (v1->dy>>8,v2->dx) - FixedMul(v1->dx>>8,v2->dy);
 	if (den == 0)
 		return 0;
-//		I_Error ("P_InterceptVector: parallel");
 
 	num = FixedMul ( (v1->x - v2->x)>>8 ,v1->dy) + 
 			FixedMul ( (v2->y - v1->y)>>8 , v1->dx);
@@ -125,7 +125,7 @@ fixed_t P_InterceptVector2 (divline_t *v2, divline_t *v1)
 ==============
 */
 
-boolean P_CrossSubsector (int num)
+static boolean P_CrossSubsector (int num)
 {
 	seg_t			*seg;
 	line_t			*line;
@@ -244,7 +244,7 @@ boolean P_CrossSubsector (int num)
 ==============
 */
 
-boolean P_CrossBSPNode (int bspnum)
+static boolean P_CrossBSPNode (int bspnum)
 {
 	node_t	*bsp;
 	int		side;

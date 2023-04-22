@@ -25,7 +25,7 @@
 //	CHANGE THE TEXTURE OF A WALL SWITCH TO ITS OPPOSITE
 //
 //==================================================================
-switchlist_t alphSwitchList[] =
+static switchlist_t alphSwitchList[] =
 {
 	// Doom shareware episode 1 switches
 	{"SW1BRCOM",	"SW2BRCOM",	1},
@@ -76,8 +76,8 @@ switchlist_t alphSwitchList[] =
 	{"\0",			"\0",		0}
 };
 
-int			switchlist[MAXSWITCHES * 2];
-int			numswitches;
+static int			switchlist[MAXSWITCHES * 2];
+static int			numswitches;
 button_t	buttonlist[MAXBUTTONS];
 
 /*
@@ -125,7 +125,7 @@ void P_InitSwitchList(void)
 //	Start a button counting down till it turns off.
 //
 //==================================================================
-void P_StartButton(line_t *line,bwhere_e w,int texture,int time)
+static void P_StartButton(line_t *line,bwhere_e w,int texture,int time)
 {
 	int		i;
 

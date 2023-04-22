@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -31,7 +32,7 @@
 
 #define MAXBOB			0x100000		// 16 pixels of bob
 
-boolean onground;
+static boolean onground;
 
 /*
 ==================
@@ -43,7 +44,7 @@ boolean onground;
 ==================
 */
 
-void P_Thrust (player_t *player, angle_t angle, fixed_t move) 
+static void P_Thrust (player_t *player, angle_t angle, fixed_t move) 
 {
 	angle >>= ANGLETOFINESHIFT;
 	player->mo->momx += FixedMul(move,finecosine[angle]); 
@@ -61,7 +62,7 @@ void P_Thrust (player_t *player, angle_t angle, fixed_t move)
 ==================
 */
 
-void P_CalcHeight (player_t *player)
+static void P_CalcHeight (player_t *player)
 {
 	int			angle;
 	fixed_t		bob;
@@ -127,7 +128,7 @@ void P_CalcHeight (player_t *player)
 =================
 */
 
-void P_MovePlayer (player_t *player)
+static void P_MovePlayer (player_t *player)
 {
 	ticcmd_t		*cmd;
 	
@@ -158,7 +159,7 @@ void P_MovePlayer (player_t *player)
 
 #define         ANG5    (ANG90/18)
 
-void P_DeathThink (player_t *player)
+static void P_DeathThink (player_t *player)
 {
 	angle_t		angle, delta;
 

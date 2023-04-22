@@ -141,7 +141,7 @@ int P_BoxOnLineSide (fixed_t *tmbox, line_t *ld)
 ==================
 */
 
-int P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t *line)
+static int P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t *line)
 {
 	fixed_t	dx,dy;
 	fixed_t	left, right;
@@ -188,7 +188,7 @@ int P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t *line)
 ==============
 */
 
-void P_MakeDivline (line_t *li, divline_t *dl)
+static void P_MakeDivline (line_t *li, divline_t *dl)
 {
 	dl->x = li->v1->x;
 	dl->y = li->v1->y;
@@ -208,7 +208,7 @@ void P_MakeDivline (line_t *li, divline_t *dl)
 ===============
 */
 
-fixed_t P_InterceptVector (divline_t *v2, divline_t *v1)
+static fixed_t P_InterceptVector (divline_t *v2, divline_t *v1)
 {
 	fixed_t	frac, num, den;
 	
@@ -457,10 +457,10 @@ boolean P_BlockThingsIterator (int x, int y, boolean(*func)(mobj_t*) )
 ===============================================================================
 */
 
-intercept_t		intercepts[MAXINTERCEPTS], *intercept_p;
+static intercept_t		intercepts[MAXINTERCEPTS], *intercept_p;
 
 divline_t 	trace;
-boolean 	earlyout;
+static boolean 	earlyout;
 int			ptflags;
 
 /*
@@ -475,7 +475,7 @@ int			ptflags;
 ==================
 */
 
-boolean PIT_AddLineIntercepts (line_t *ld)
+static boolean PIT_AddLineIntercepts (line_t *ld)
 {
 	int			s1, s2;
 	fixed_t		frac;
@@ -526,7 +526,7 @@ boolean PIT_AddLineIntercepts (line_t *ld)
 ==================
 */
 
-boolean PIT_AddThingIntercepts (mobj_t	*thing)
+static boolean PIT_AddThingIntercepts (mobj_t	*thing)
 {
 	fixed_t		x1,y1, x2,y2;
 	int			s1, s2;
@@ -584,7 +584,7 @@ boolean PIT_AddThingIntercepts (mobj_t	*thing)
 ====================
 */
 
-boolean P_TraverseIntercepts ( traverser_t func, fixed_t maxfrac )
+static boolean P_TraverseIntercepts ( traverser_t func, fixed_t maxfrac )
 {
 	int				count;
 	fixed_t			dist;
