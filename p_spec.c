@@ -32,7 +32,7 @@ extern int _wp1, _wp2, _wp3, _wp4, _wp5, _wp6;
 ===================
 */
 
-animdef_t		animdefs[] =
+static animdef_t		animdefs[] =
 {
 	{false,	"NUKAGE3",	"NUKAGE1",	8},
 	{false,	"FWATER4",	"FWATER1",	8},
@@ -65,8 +65,8 @@ animdef_t		animdefs[] =
 	{-1}
 };
 
-anim_t	anims[MAXANIMS];
-anim_t	*lastanim;
+static anim_t	anims[MAXANIMS];
+static anim_t	*lastanim;
 
 
 void P_InitPicAnims (void)
@@ -786,8 +786,11 @@ void P_PlayerInSpecialSector(player_t *player)
 = Animate planes, scroll walls, etc
 ===============================================================================
 */
-boolean		levelTimer;
-int		levelTimeCount;
+static boolean		levelTimer;
+static int		levelTimeCount;
+
+static short	numlinespecials;
+static line_t	*linespeciallist[MAXLINEANIMS];
 
 void P_UpdateSpecials (void)
 {
@@ -951,9 +954,6 @@ int EV_DoDonut(line_t *line)
 =
 ===============================================================================
 */
-
-short	numlinespecials;
-line_t	*linespeciallist[MAXLINEANIMS];
 
 void P_SpawnSpecials (void)
 {
