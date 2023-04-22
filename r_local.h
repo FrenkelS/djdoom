@@ -343,7 +343,7 @@ extern	planefunction_t		floorfunc, ceilingfunc;
 
 extern	int			skyflatnum;
 
-extern	short			openings[MAXOPENINGS], *lastopening;
+extern	short			*lastopening;
 
 extern	short		floorclip[SCREENWIDTH];
 extern	short		ceilingclip[SCREENWIDTH];
@@ -353,8 +353,6 @@ extern	fixed_t		distscale[SCREENWIDTH];
 
 void R_InitPlanes (void);
 void R_ClearPlanes (void);
-void R_MapPlane (int y, int x1, int x2);
-void R_MakeSpans (int x, int t1, int b1, int t2, int b2);
 void R_DrawPlanes (void);
 
 visplane_t *R_FindPlane (fixed_t height, int picnum, int lightlevel);

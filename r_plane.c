@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -29,16 +30,17 @@ planefunction_t		floorfunc, ceilingfunc;
 //
 int			skyflatnum;
 int			skytexture;
-int			skytexturemid;
+static int			skytexturemid;
 
 //
 // opening
 //
 
-visplane_t		visplanes[MAXVISPLANES], *lastvisplane;
+static visplane_t		visplanes[MAXVISPLANES], *lastvisplane;
 visplane_t		*floorplane, *ceilingplane;
 
-short			openings[MAXOPENINGS], *lastopening;
+static short	openings[MAXOPENINGS];
+short			*lastopening;
 
 //
 // clip values are the solid pixel bounding the range
@@ -52,23 +54,22 @@ short		ceilingclip[SCREENWIDTH];
 // spanstart holds the start of a plane span
 // initialized to 0 at start
 //
-int			spanstart[SCREENHEIGHT];
-int			spanstop[SCREENHEIGHT];
+static int			spanstart[SCREENHEIGHT];
 
 //
 // texture mapping
 //
-lighttable_t	**planezlight;
-fixed_t		planeheight;
+static lighttable_t	**planezlight;
+static fixed_t		planeheight;
 
 fixed_t		yslope[SCREENHEIGHT];
 fixed_t		distscale[SCREENWIDTH];
-fixed_t		basexscale, baseyscale;
+static fixed_t		basexscale, baseyscale;
 
-fixed_t		cachedheight[SCREENHEIGHT];
-fixed_t		cacheddistance[SCREENHEIGHT];
-fixed_t		cachedxstep[SCREENHEIGHT];
-fixed_t		cachedystep[SCREENHEIGHT];
+static fixed_t		cachedheight[SCREENHEIGHT];
+static fixed_t		cacheddistance[SCREENHEIGHT];
+static fixed_t		cachedxstep[SCREENHEIGHT];
+static fixed_t		cachedystep[SCREENHEIGHT];
 
 
 /*
@@ -120,7 +121,7 @@ BASIC PRIMITIVE
 ================
 */
 
-void R_MapPlane (int y, int x1, int x2)
+static void R_MapPlane (int y, int x1, int x2)
 {
 	angle_t		angle;
 	fixed_t		distance, length;
@@ -328,7 +329,7 @@ visplane_t *R_CheckPlane (visplane_t *pl, int start, int stop)
 ================
 */
 
-void R_MakeSpans (int x, int t1, int b1, int t2, int b2)
+static void R_MakeSpans (int x, int t1, int b1, int t2, int b2)
 {
 	while (t1 < t2 && t1<=b1)
 	{
