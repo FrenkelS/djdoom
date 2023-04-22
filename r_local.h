@@ -267,7 +267,7 @@ extern	angle_t		rw_normalangle;
 // R_main.c
 //
 extern	int				viewwidth, viewheight, viewwindowx, viewwindowy;
-extern	int				centerx, centery;
+extern	int				centery;
 extern	fixed_t			centerxfrac;
 extern	fixed_t			centeryfrac;
 extern	fixed_t			projection;
@@ -276,7 +276,6 @@ extern	int				validcount;
 
 extern	int				sscount, linecount, loopcount;
 extern	lighttable_t	*scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
-extern	lighttable_t	*scalelightfixed[MAXLIGHTSCALE];
 extern	lighttable_t	*zlight[LIGHTLEVELS][MAXLIGHTZ];
 
 extern	int				extralight;

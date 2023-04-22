@@ -34,11 +34,12 @@ int			validcount = 1;		// increment every time a check is made
 lighttable_t	*fixedcolormap;
 extern	lighttable_t	**walllights;
 
-int				centerx, centery;
+static int		centerx;
+int				centery;
 fixed_t			centerxfrac, centeryfrac;
 fixed_t			projection;
 
-int				framecount;		// just for profiling purposes
+static int				framecount;		// just for profiling purposes
 
 int		sscount, linecount, loopcount;
 
@@ -72,7 +73,7 @@ fixed_t		*finecosine = &finesine[FINEANGLES/4];
 
 
 lighttable_t	*scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
-lighttable_t	*scalelightfixed[MAXLIGHTSCALE];
+static lighttable_t	*scalelightfixed[MAXLIGHTSCALE];
 lighttable_t	*zlight[LIGHTLEVELS][MAXLIGHTZ];
 
 int			extralight;			// bumped light from gun blasts
@@ -80,7 +81,7 @@ int			extralight;			// bumped light from gun blasts
 void		(*colfunc) (void);
 void		(*basecolfunc) (void);
 void		(*fuzzcolfunc) (void);
-void		(*transcolfunc) (void);
+static void		(*transcolfunc) (void);
 void		(*spanfunc) (void);
 
 /*
@@ -220,7 +221,7 @@ extern	int	tantoangle[SLOPERANGE+1];		// get from tables.c
 
 // int	tantoangle[SLOPERANGE+1];
 
-int SlopeDiv (unsigned num, unsigned den)
+static int SlopeDiv (unsigned num, unsigned den)
 {
 	unsigned ans;
 	if (den < 512)
@@ -385,7 +386,7 @@ void R_InitTables (void)
 =================
 */
 
-void R_InitTextureMapping (void)
+static void R_InitTextureMapping (void)
 {
 	int			i;
 	int			x;
@@ -462,7 +463,7 @@ void R_InitTextureMapping (void)
 
 #define		DISTMAP	2
 
-void R_InitLightTables (void)
+static void R_InitLightTables (void)
 {
 	int		i,j, level, startmap;
 	int		scale;
@@ -500,7 +501,7 @@ void R_InitLightTables (void)
 */
 
 boolean	setsizeneeded;
-int		setblocks, setdetail;
+static int		setblocks, setdetail;
 
 void R_SetViewSize (int blocks, int detail)
 {
@@ -679,7 +680,7 @@ subsector_t *R_PointInSubsector (fixed_t x, fixed_t y)
 ==============
 */
 
-void R_SetupFrame (player_t *player)
+static void R_SetupFrame (player_t *player)
 {
 	int	i;
 
