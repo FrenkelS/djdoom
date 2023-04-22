@@ -743,7 +743,7 @@ void	*W_CacheLumpName (char *name, int tag);
 //----------
 void D_DoomMain (void);
 
-static void D_DoomLoop (void);
+// static void D_DoomLoop (void);
 // not a globally visible function, just included for source reference
 // called by D_DoomMain, never exits
 // manages timing and IO

@@ -457,6 +457,7 @@ listen:
 
 static void CheckAbort (void)
 {
+	int temp;
 	event_t *ev;
 	int             stoptic;
 
@@ -465,8 +466,7 @@ static void CheckAbort (void)
 		I_StartTic ();
 
 	I_StartTic ();
-	for ( ; eventtail != eventhead
-	; eventtail = (++eventtail)&(MAXEVENTS-1) )
+	for ( ; eventtail != eventhead ; temp = (++eventtail)&(MAXEVENTS-1), eventtail = temp )
 	{
 		ev = &events[eventtail];
 		if (ev->type == ev_keydown && ev->data1 == KEY_ESCAPE)

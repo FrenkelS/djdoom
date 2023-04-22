@@ -125,8 +125,11 @@ int eventtail;
 
 void D_PostEvent (event_t *ev)
 {
+	int temp;
+
 	events[eventhead] = *ev;
-	eventhead = (++eventhead)&(MAXEVENTS-1);
+	temp = (++eventhead)&(MAXEVENTS-1);
+	eventhead = temp;
 }
 
 /*
@@ -141,6 +144,7 @@ void D_PostEvent (event_t *ev)
 
 void D_ProcessEvents (void)
 {
+	int temp;
 	event_t		*ev;
 
 #if (APPVER_DOOMREV >= AV_DR_DM1666E)
@@ -149,7 +153,7 @@ void D_ProcessEvents (void)
 		return;
 #endif
 
-	for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) )
+	for ( ; eventtail != eventhead ; temp = (++eventtail)&(MAXEVENTS-1), eventtail = temp )
 	{
 		ev = &events[eventtail];
 		if (M_Responder(ev))
