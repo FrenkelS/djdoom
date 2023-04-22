@@ -26,7 +26,7 @@
 
 // a weapon is found with two clip loads, a big item has five clip loads
 int		maxammo[NUMAMMO] = {200, 50, 300, 50};
-int		clipammo[NUMAMMO] = {10, 4, 20, 1};
+static const int		clipammo[NUMAMMO] = {10, 4, 20, 1};
 
 
 /*
@@ -45,7 +45,7 @@ int		clipammo[NUMAMMO] = {10, 4, 20, 1};
 =================== 
 */ 
 
-boolean P_GiveAmmo (player_t *player, ammotype_t ammo, int num)
+static boolean P_GiveAmmo (player_t *player, ammotype_t ammo, int num)
 {
 	int		oldammo;
 	
@@ -122,7 +122,7 @@ boolean P_GiveAmmo (player_t *player, ammotype_t ammo, int num)
 =================== 
 */ 
 
-boolean P_GiveWeapon (player_t *player, weapontype_t weapon, boolean dropped)
+static boolean P_GiveWeapon (player_t *player, weapontype_t weapon, boolean dropped)
 {
 	boolean		gaveammo, gaveweapon;
 	
@@ -198,7 +198,7 @@ boolean P_GiveBody (player_t *player, int num)
 =================== 
 */ 
 
-boolean P_GiveArmor (player_t *player, int armortype)
+static boolean P_GiveArmor (player_t *player, int armortype)
 {
 	int		hits;
 	
@@ -221,7 +221,7 @@ boolean P_GiveArmor (player_t *player, int armortype)
 =================== 
 */ 
 
-void P_GiveCard (player_t *player, card_t card)
+static void P_GiveCard (player_t *player, card_t card)
 {
 	if (player->cards[card])
 		return;		
@@ -592,7 +592,7 @@ void P_TouchSpecialThing (mobj_t *special, mobj_t *toucher)
 ==============
 */
 
-void P_KillMobj (mobj_t *source, mobj_t *target)
+static void P_KillMobj (mobj_t *source, mobj_t *target)
 {
 	mobjtype_t		item;
 	mobj_t			*mo;
