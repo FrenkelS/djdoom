@@ -540,10 +540,7 @@ static boolean P_ThingHeightClip (mobj_t *thing)
 			thing->z = thing->ceilingz - thing->height;
 	}
 	
-	if (thing->ceilingz - thing->floorz < thing->height)
-		return false;
-		
-	return true;
+	return thing->ceilingz - thing->floorz >= thing->height;
 }
 
 
@@ -1062,7 +1059,7 @@ static boolean		PTR_UseTraverse (intercept_t *in)
 	}
 		
 	side = 0;
-	if (P_PointOnLineSide (usething->x, usething->y, in->d.line) == 1)
+	if (P_PointOnLineSide (usething->x, usething->y, in->d.line))
 		side = 1;
 //		return false;		// don't use back sides
 		
