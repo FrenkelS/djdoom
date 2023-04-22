@@ -45,9 +45,9 @@ Most monsters are spawned unaware of all players, but some can be made preaware
 // sound blocking lines cut off traversal.
 //
 
-mobj_t *soundtarget;
+static mobj_t *soundtarget;
 
-void P_RecursiveSound (sector_t *sec, int soundblocks)
+static void P_RecursiveSound (sector_t *sec, int soundblocks)
 {
 	int			i;
 	line_t		*check;
@@ -111,7 +111,7 @@ void P_NoiseAlert(mobj_t *target, mobj_t *emmiter)
 ================
 */
 
-boolean P_CheckMeleeRange(mobj_t *actor)
+static boolean P_CheckMeleeRange(mobj_t *actor)
 {
 	mobj_t		*pl;
 	fixed_t		dist;
@@ -139,7 +139,7 @@ boolean P_CheckMeleeRange(mobj_t *actor)
 ================
 */
 
-boolean P_CheckMissileRange(mobj_t *actor)
+static boolean P_CheckMissileRange(mobj_t *actor)
 {
 	fixed_t		dist;
 
@@ -202,14 +202,14 @@ boolean P_CheckMissileRange(mobj_t *actor)
 ================
 */
 
-fixed_t	xspeed[8] = {FRACUNIT,47000,0,-47000,-FRACUNIT,-47000,0,47000};
-fixed_t yspeed[8] = {0,47000,FRACUNIT,47000,0,-47000,-FRACUNIT,-47000};
+static const fixed_t	xspeed[8] = {FRACUNIT,47000,0,-47000,-FRACUNIT,-47000,0,47000};
+static const fixed_t yspeed[8] = {0,47000,FRACUNIT,47000,0,-47000,-FRACUNIT,-47000};
 
 #define	MAXSPECIALCROSS		8
 extern	line_t	*spechit[MAXSPECIALCROSS];
 extern	int			 numspechit;
 
-boolean P_Move(mobj_t *actor)
+static boolean P_Move(mobj_t *actor)
 {
 	fixed_t tryx, tryy;
 	line_t *ld;
@@ -278,7 +278,7 @@ boolean P_Move(mobj_t *actor)
 ==================================
 */
 
-boolean P_TryWalk(mobj_t *actor)
+static boolean P_TryWalk(mobj_t *actor)
 {
 	if (!P_Move (actor))
 	{
@@ -296,13 +296,13 @@ boolean P_TryWalk(mobj_t *actor)
 ================
 */
 
-dirtype_t opposite[] =
+static const dirtype_t opposite[] =
 {DI_WEST, DI_SOUTHWEST, DI_SOUTH, DI_SOUTHEAST, DI_EAST, DI_NORTHEAST,
 DI_NORTH, DI_NORTHWEST, DI_NODIR};
 
-dirtype_t diags[] = {DI_NORTHWEST,DI_NORTHEAST,DI_SOUTHWEST,DI_SOUTHEAST};
+static const dirtype_t diags[] = {DI_NORTHWEST,DI_NORTHEAST,DI_SOUTHWEST,DI_SOUTHEAST};
 
-void P_NewChaseDir (mobj_t *actor)
+static void P_NewChaseDir (mobj_t *actor)
 {
 	fixed_t		deltax,deltay;
 	dirtype_t	d[3];
@@ -419,7 +419,7 @@ void P_NewChaseDir (mobj_t *actor)
 ================
 */
 
-boolean P_LookForPlayers(mobj_t *actor, boolean allaround)
+static boolean P_LookForPlayers(mobj_t *actor, boolean allaround)
 {
 	int			c;
 	int			stop;
@@ -935,7 +935,7 @@ void A_SkelMissile (mobj_t *actor)
 	mo->tracer = actor->target;
 }
 
-int	TRACEANGLE = 0xc000000;
+static int	TRACEANGLE = 0xc000000;
 
 void A_Tracer (mobj_t *actor)
 {
@@ -1048,12 +1048,12 @@ void A_SkelFist (mobj_t *actor)
 ==============
 */
 
-mobj_t		*corpsehit;
-mobj_t		*vileobj;
-fixed_t		viletryx;
-fixed_t		viletryy;
+static mobj_t		*corpsehit;
+static mobj_t		*vileobj;
+static fixed_t		viletryx;
+static fixed_t		viletryy;
 
-boolean PIT_VileCheck (mobj_t *thing)
+static boolean PIT_VileCheck (mobj_t *thing)
 {
 	int			maxdist;
 	boolean		check;
@@ -1396,7 +1396,7 @@ void A_SkullAttack (mobj_t* actor)
 ==================
 */
 
-void A_PainShootSkull (mobj_t *actor, angle_t angle)
+static void A_PainShootSkull (mobj_t *actor, angle_t angle)
 {
 	fixed_t		x, y, z;
 	mobj_t		*newmobj;
@@ -1761,9 +1761,9 @@ void A_CloseShotgun2 (player_t *player, pspdef_t *psp)
 
 
 
-mobj_t	*braintargets[32];
-int		numbraintargets;
-int		braintargeton;
+static mobj_t	*braintargets[32];
+static int		numbraintargets;
+static int		braintargeton;
 
 void A_BrainAwake (mobj_t *mo)
 {
