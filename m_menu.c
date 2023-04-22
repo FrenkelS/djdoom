@@ -52,27 +52,27 @@ int detailLevel;
 int screenblocks;		// has default
 
 // temp for screenblocks (0-9)
-int screenSize;		
+static int screenSize;		
 
 // -1 = no quicksave slot picked!
-int quickSaveSlot;          
+static int quickSaveSlot;          
 
  // 1 = message to be printed
-int messageToPrint;
+static int messageToPrint;
 // ...and here is the message string!
-char *messageString;		
+static char *messageString;		
 
 // message x & y
 int messx;			
 int messy;
-int messageLastMenuActive;
+static int messageLastMenuActive;
 
 // timed message = no input from user
-boolean messageNeedsInput;     
+static boolean messageNeedsInput;     
 
-void (*messageRoutine)(int response);
+static void (*messageRoutine)(int response);
 
-char gammamsg[5][26] =
+static char gammamsg[5][26] =
 {
 	GAMMALVL0,
 	GAMMALVL1,
@@ -81,7 +81,7 @@ char gammamsg[5][26] =
 	GAMMALVL4
 };
 
-char endmsg[8][80] =
+static char endmsg[8][80] =
 {
 	QUITMSG,
 #if APPVER_CHEX
@@ -103,7 +103,7 @@ char endmsg[8][80] =
 #endif
 };
 
-char endmsg2[8][80] =
+static char endmsg2[8][80] =
 {
 	QUITMSG,
 #if APPVER_CHEX
@@ -126,11 +126,11 @@ char endmsg2[8][80] =
 };
 
 // we are going to be entering a savegame string
-int saveStringEnter;              
-int saveSlot; // which slot to save in
-int saveCharIndex; // which char we're editing
+static int saveStringEnter;              
+static int saveSlot; // which slot to save in
+static int saveCharIndex; // which char we're editing
 // old save description before edit
-char saveOldString[SAVESTRINGSIZE];  
+static char saveOldString[SAVESTRINGSIZE];  
 
 boolean inhelpscreens;
 boolean menuactive;
@@ -139,9 +139,9 @@ boolean menuactive;
 #define LINEHEIGHT 16
 
 extern boolean sendpause;
-char savegamestrings[10][SAVESTRINGSIZE];
+static char savegamestrings[10][SAVESTRINGSIZE];
 
-char endstring[160];
+static char endstring[160];
 
 
 //
@@ -167,65 +167,65 @@ typedef struct menu_s
 	short	lastOn;				// last item user was on in menu
 } menu_t;
 
-short itemOn; // menu item skull is on
-short skullAnimCounter; // skull animation counter
-short whichSkull; // which skull to draw
+static short itemOn; // menu item skull is on
+static short skullAnimCounter; // skull animation counter
+static short whichSkull; // which skull to draw
 
 // graphic name of skulls
-char    skullName[2][8] = {"M_SKULL1","M_SKULL2"};
+static char    skullName[2][8] = {"M_SKULL1","M_SKULL2"};
 
 // current menudef
-menu_t *currentMenu;
+static menu_t *currentMenu;
 
 //
 // PROTOTYPES
 //
-void M_NewGame(int choice);
-void M_Episode(int choice);
-void M_ChooseSkill(int choice);
-void M_LoadGame(int choice);
-void M_SaveGame(int choice);
-void M_Options(int choice);
-void M_EndGame(int choice);
-void M_ReadThis(int choice);
-void M_ReadThis2(int choice);
-void M_QuitDOOM(int choice);
+static void M_NewGame(int choice);
+static void M_Episode(int choice);
+static void M_ChooseSkill(int choice);
+static void M_LoadGame(int choice);
+static void M_SaveGame(int choice);
+static void M_Options(int choice);
+static void M_EndGame(int choice);
+static void M_ReadThis(int choice);
+static void M_ReadThis2(int choice);
+static void M_QuitDOOM(int choice);
 
-void M_ChangeMessages(int choice);
-void M_ChangeSensitivity(int choice);
-void M_SfxVol(int choice);
-void M_MusicVol(int choice);
-void M_ChangeDetail(int choice);
-void M_SizeDisplay(int choice);
+static void M_ChangeMessages(int choice);
+static void M_ChangeSensitivity(int choice);
+static void M_SfxVol(int choice);
+static void M_MusicVol(int choice);
+static void M_ChangeDetail(int choice);
+static void M_SizeDisplay(int choice);
 void M_StartGame(int choice);
-void M_Sound(int choice);
+static void M_Sound(int choice);
 
-void M_FinishReadThis(int choice);
-void M_LoadSelect(int choice);
-void M_SaveSelect(int choice);
-void M_ReadSaveStrings(void);
-void M_QuickSave(void);
-void M_QuickLoad(void);
+static void M_FinishReadThis(int choice);
+static void M_LoadSelect(int choice);
+static void M_SaveSelect(int choice);
+static void M_ReadSaveStrings(void);
+static void M_QuickSave(void);
+static void M_QuickLoad(void);
 
-void M_DrawMainMenu(void);
-void M_DrawReadThis1(void);
-void M_DrawReadThis2(void);
-void M_DrawReadThisRetail(void);
-void M_DrawNewGame(void);
-void M_DrawEpisode(void);
-void M_DrawOptions(void);
-void M_DrawSound(void);
-void M_DrawLoad(void);
-void M_DrawSave(void);
+static void M_DrawMainMenu(void);
+static void M_DrawReadThis1(void);
+static void M_DrawReadThis2(void);
+static void M_DrawReadThisRetail(void);
+static void M_DrawNewGame(void);
+static void M_DrawEpisode(void);
+static void M_DrawOptions(void);
+static void M_DrawSound(void);
+static void M_DrawLoad(void);
+static void M_DrawSave(void);
 
-void M_DrawSaveLoadBorder(int x, int y);
+static void M_DrawSaveLoadBorder(int x, int y);
 void M_SetupNextMenu(menu_t *menudef);
-void M_DrawThermo(int x, int y, int thermWidth, int thermDot);
+static void M_DrawThermo(int x, int y, int thermWidth, int thermDot);
 void M_DrawEmptyCell(menu_t *menu, int item);
 void M_DrawSelCell(menu_t *menu, int item);
-void M_WriteText(int x, int y, char* string);
-int M_StringWidth(char *string);
-int M_StringHeight(char *string);
+static void M_WriteText(int x, int y, char* string);
+static int M_StringWidth(char *string);
+static int M_StringHeight(char *string);
 void M_StartControlPanel(void);
 void M_StartMessage(char *string, void *routine, boolean input);
 void M_StopMessage(void);
@@ -248,7 +248,7 @@ enum
 	main_end
 } main_e;
 
-menuitem_t MainMenu[]=
+static menuitem_t MainMenu[]=
 {
 	{1,"M_NGAME", M_NewGame, 'n'},
 	{1,"M_OPTION",M_Options, 'o'},
@@ -263,7 +263,7 @@ menuitem_t MainMenu[]=
 	{1,"M_QUITG", M_QuitDOOM,'q'}
 };
 
-menu_t  MainDef =
+static menu_t  MainDef =
 {
 	main_end,
 	NULL,
@@ -290,7 +290,7 @@ enum
 	ep_end
 } episodes_e;
 
-menuitem_t EpisodeMenu[]=
+static menuitem_t EpisodeMenu[]=
 {
 	{1,"M_EPI1", M_Episode,'k'},
 #if !APPVER_CHEX
@@ -302,7 +302,7 @@ menuitem_t EpisodeMenu[]=
 #endif
 };
 
-menu_t  EpiDef =
+static menu_t  EpiDef =
 {
 	ep_end,				// # of menu items
 	&MainDef,			// previous menu
@@ -325,7 +325,7 @@ enum
 	newg_end
 } newgame_e;
 
-menuitem_t NewGameMenu[]=
+static menuitem_t NewGameMenu[]=
 {
 	{1,"M_JKILL",	M_ChooseSkill, 'i'},
 	{1,"M_ROUGH",	M_ChooseSkill, 'h'},
@@ -334,7 +334,7 @@ menuitem_t NewGameMenu[]=
 	{1,"M_NMARE",	M_ChooseSkill, 'n'}
 };
 
-menu_t  NewDef =
+static menu_t  NewDef =
 {
 	newg_end,			// # of menu items
 	&EpiDef,			// previous menu
@@ -362,7 +362,7 @@ enum
 	opt_end
 } options_e;
 
-menuitem_t OptionsMenu[]=
+static menuitem_t OptionsMenu[]=
 {
 	{1,"M_ENDGAM",	M_EndGame,'e'},
 	{1,"M_MESSG",	M_ChangeMessages,'m'},
@@ -374,7 +374,7 @@ menuitem_t OptionsMenu[]=
 	{1,"M_SVOL",	M_Sound,'s'}
 };
 
-menu_t  OptionsDef =
+static menu_t  OptionsDef =
 {
 	opt_end,
 	&MainDef,
@@ -393,12 +393,12 @@ enum
 	read1_end
 } read_e;
 
-menuitem_t ReadMenu1[] =
+static menuitem_t ReadMenu1[] =
 {
 	{1,"",M_ReadThis2,0}
 };
 
-menu_t  ReadDef1 =
+static menu_t  ReadDef1 =
 {
 	read1_end,
 	&MainDef,
@@ -414,12 +414,12 @@ enum
 	read2_end
 } read_e2;
 
-menuitem_t ReadMenu2[]=
+static menuitem_t ReadMenu2[]=
 {
 	{1,"",M_FinishReadThis,0}
 };
 
-menu_t  ReadDef2 =
+static menu_t  ReadDef2 =
 {
 	read2_end,
 #if (APPVER_DOOMREV < AV_DR_DM19U)
@@ -445,7 +445,7 @@ enum
 	sound_end
 } sound_e;
 
-menuitem_t SoundMenu[]=
+static menuitem_t SoundMenu[]=
 {
 	{2,"M_SFXVOL",M_SfxVol,'s'},
 	{-1,"",0},
@@ -453,7 +453,7 @@ menuitem_t SoundMenu[]=
 	{-1,"",0}
 };
 
-menu_t  SoundDef =
+static menu_t  SoundDef =
 {
 	sound_end,
 	&OptionsDef,
@@ -477,7 +477,7 @@ enum
 	load_end
 } load_e;
 
-menuitem_t LoadMenu[]=
+static menuitem_t LoadMenu[]=
 {
 	{1,"", M_LoadSelect,'1'},
 	{1,"", M_LoadSelect,'2'},
@@ -487,7 +487,7 @@ menuitem_t LoadMenu[]=
 	{1,"", M_LoadSelect,'6'}
 };
 
-menu_t  LoadDef =
+static menu_t  LoadDef =
 {
 	load_end,
 	&MainDef,
@@ -500,7 +500,7 @@ menu_t  LoadDef =
 //
 // SAVE GAME MENU
 //
-menuitem_t SaveMenu[]=
+static menuitem_t SaveMenu[]=
 {
 	{1,"", M_SaveSelect,'1'},
 	{1,"", M_SaveSelect,'2'},
@@ -510,7 +510,7 @@ menuitem_t SaveMenu[]=
 	{1,"", M_SaveSelect,'6'}
 };
 
-menu_t  SaveDef =
+static menu_t  SaveDef =
 {
 	load_end,
 	&MainDef,
@@ -525,7 +525,7 @@ menu_t  SaveDef =
 // M_ReadSaveStrings
 //  read the strings from the savegame files
 //
-void M_ReadSaveStrings(void)
+static void M_ReadSaveStrings(void)
 {
 	int             handle;
 	int             i;
@@ -557,7 +557,7 @@ void M_ReadSaveStrings(void)
 //
 // M_LoadGame & Cie.
 //
-void M_DrawLoad(void)
+static void M_DrawLoad(void)
 {
 	int             i;
 
@@ -574,7 +574,7 @@ void M_DrawLoad(void)
 //
 // Draw border for the savegame description
 //
-void M_DrawSaveLoadBorder(int x,int y)
+static void M_DrawSaveLoadBorder(int x,int y)
 {
 	int             i;
 	
@@ -594,7 +594,7 @@ void M_DrawSaveLoadBorder(int x,int y)
 //
 // User wants to load this game
 //
-void M_LoadSelect(int choice)
+static void M_LoadSelect(int choice)
 {
 	char    name[256];
 	
@@ -611,7 +611,7 @@ void M_LoadSelect(int choice)
 //
 // Selected from DOOM menu
 //
-void M_LoadGame (int choice)
+static void M_LoadGame (int choice)
 {
 	if (netgame)
 	{
@@ -627,7 +627,7 @@ void M_LoadGame (int choice)
 //
 //  M_SaveGame & Cie.
 //
-void M_DrawSave(void)
+static void M_DrawSave(void)
 {
 	int             i;
 	
@@ -661,7 +661,7 @@ void M_DoSave(int slot)
 //
 // User wants to save. Start string input for M_Responder
 //
-void M_SaveSelect(int choice)
+static void M_SaveSelect(int choice)
 {
 	// we are going to be intercepting all chars
 	saveStringEnter = 1;
@@ -676,7 +676,7 @@ void M_SaveSelect(int choice)
 //
 // Selected from DOOM menu
 //
-void M_SaveGame (int choice)
+static void M_SaveGame (int choice)
 {
 	if (!usergame)
 	{
@@ -696,9 +696,9 @@ void M_SaveGame (int choice)
 //
 //      M_QuickSave
 //
-char    tempstring[80];
+static char    tempstring[80];
 
-void M_QuickSaveResponse(int ch)
+static void M_QuickSaveResponse(int ch)
 {
 	if (ch == 'y')
 	{
@@ -707,7 +707,7 @@ void M_QuickSaveResponse(int ch)
 	}
 }
 
-void M_QuickSave(void)
+static void M_QuickSave(void)
 {
 	if (!usergame)
 	{
@@ -735,7 +735,7 @@ void M_QuickSave(void)
 //
 // M_QuickLoad
 //
-void M_QuickLoadResponse(int ch)
+static void M_QuickLoadResponse(int ch)
 {
 	if (ch == 'y')
 	{
@@ -745,7 +745,7 @@ void M_QuickLoadResponse(int ch)
 }
 
 
-void M_QuickLoad(void)
+static void M_QuickLoad(void)
 {
 	if (netgame)
 	{
@@ -768,7 +768,7 @@ void M_QuickLoad(void)
 //
 // Read This Menus
 //
-void M_DrawReadThis1(void)
+static void M_DrawReadThis1(void)
 {
 	inhelpscreens = true;
 	V_DrawPatchDirect (0,0,0,W_CacheLumpName("HELP2",PU_CACHE));
@@ -777,7 +777,7 @@ void M_DrawReadThis1(void)
 //
 // Read This Menus - optional second page.
 //
-void M_DrawReadThis2(void)
+static void M_DrawReadThis2(void)
 {
 	inhelpscreens = true;
 #if (APPVER_DOOMREV < AV_DR_DM19F) || APPVER_CHEX
@@ -787,7 +787,7 @@ void M_DrawReadThis2(void)
 #endif
 }
 
-void M_DrawReadThisRetail(void)
+static void M_DrawReadThisRetail(void)
 {
 	inhelpscreens = true;
 	V_DrawPatchDirect (0,0,0,W_CacheLumpName("HELP",PU_CACHE));
@@ -797,7 +797,7 @@ void M_DrawReadThisRetail(void)
 //
 // Change Sfx & Music volumes
 //
-void M_DrawSound(void)
+static void M_DrawSound(void)
 {
 	V_DrawPatchDirect (60,38,0,W_CacheLumpName("M_SVOL",PU_CACHE));
 
@@ -808,12 +808,12 @@ void M_DrawSound(void)
 				 16,musicVolume);
 }
 
-void M_Sound(int choice)
+static void M_Sound(int choice)
 {
 	M_SetupNextMenu(&SoundDef);
 }
 
-void M_SfxVol(int choice)
+static void M_SfxVol(int choice)
 {
 	switch (choice)
 	{
@@ -830,7 +830,7 @@ void M_SfxVol(int choice)
 	S_SetSfxVolume(sfxVolume*8);
 }
 
-void M_MusicVol(int choice)
+static void M_MusicVol(int choice)
 {
 	switch (choice)
 	{
@@ -853,7 +853,7 @@ void M_MusicVol(int choice)
 //
 // M_DrawMainMenu
 //
-void M_DrawMainMenu(void)
+static void M_DrawMainMenu(void)
 {
 	V_DrawPatchDirect (94,2,0,W_CacheLumpName("M_DOOM",PU_CACHE));
 }
@@ -864,13 +864,13 @@ void M_DrawMainMenu(void)
 //
 // M_NewGame
 //
-void M_DrawNewGame(void)
+static void M_DrawNewGame(void)
 {
 	V_DrawPatchDirect (96,14,0,W_CacheLumpName("M_NEWG",PU_CACHE));
 	V_DrawPatchDirect (54,38,0,W_CacheLumpName("M_SKILL",PU_CACHE));
 }
 
-void M_NewGame(int choice)
+static void M_NewGame(int choice)
 {
 	if (netgame && !demoplayback)
 	{
@@ -892,14 +892,14 @@ void M_NewGame(int choice)
 //
 //      M_Episode
 //
-int     epi;
+static int     epi;
 
-void M_DrawEpisode(void)
+static void M_DrawEpisode(void)
 {
 	V_DrawPatchDirect (54,38,0,W_CacheLumpName("M_EPISOD",PU_CACHE));
 }
 
-void M_VerifyNightmare(int ch)
+static void M_VerifyNightmare(int ch)
 {
 	if (ch != 'y')
 		return;
@@ -908,7 +908,7 @@ void M_VerifyNightmare(int ch)
 	M_ClearMenus ();
 }
 
-void M_ChooseSkill(int choice)
+static void M_ChooseSkill(int choice)
 {
 	if (choice == nightmare)
 	{
@@ -920,7 +920,7 @@ void M_ChooseSkill(int choice)
 	M_ClearMenus ();
 }
 
-void M_Episode(int choice)
+static void M_Episode(int choice)
 {
 	if (shareware && choice)
 	{
@@ -938,11 +938,11 @@ void M_Episode(int choice)
 //
 // M_Options
 //
-char    detailNames[2][9]	= {"M_GDHIGH","M_GDLOW"};
-char	msgNames[2][9]		= {"M_MSGOFF","M_MSGON"};
+static char    detailNames[2][9]	= {"M_GDHIGH","M_GDLOW"};
+static char	   msgNames[2][9]		= {"M_MSGOFF","M_MSGON"};
 
 
-void M_DrawOptions(void)
+static void M_DrawOptions(void)
 {
 	V_DrawPatchDirect (108,15,0,W_CacheLumpName("M_OPTTTL",PU_CACHE));
 	
@@ -959,7 +959,7 @@ void M_DrawOptions(void)
 				 9,screenSize);
 }
 
-void M_Options(int choice)
+static void M_Options(int choice)
 {
 	M_SetupNextMenu(&OptionsDef);
 }
@@ -969,7 +969,7 @@ void M_Options(int choice)
 //
 //      Toggle messages on/off
 //
-void M_ChangeMessages(int choice)
+static void M_ChangeMessages(int choice)
 {
 	// warning: unused parameter `int choice'
 	choice = 0;
@@ -987,7 +987,7 @@ void M_ChangeMessages(int choice)
 //
 // M_EndGame
 //
-void M_EndGameResponse(int ch)
+static void M_EndGameResponse(int ch)
 {
 	if (ch != 'y')
 		return;
@@ -997,7 +997,7 @@ void M_EndGameResponse(int ch)
 	D_StartTitle ();
 }
 
-void M_EndGame(int choice)
+static void M_EndGame(int choice)
 {
 	choice = 0;
 	if (!usergame)
@@ -1021,19 +1021,19 @@ void M_EndGame(int choice)
 //
 // M_ReadThis
 //
-void M_ReadThis(int choice)
+static void M_ReadThis(int choice)
 {
 	choice = 0;
 	M_SetupNextMenu(&ReadDef1);
 }
 
-void M_ReadThis2(int choice)
+static void M_ReadThis2(int choice)
 {
 	choice = 0;
 	M_SetupNextMenu(&ReadDef2);
 }
 
-void M_FinishReadThis(int choice)
+static void M_FinishReadThis(int choice)
 {
 	choice = 0;
 	M_SetupNextMenu(&MainDef);
@@ -1045,7 +1045,7 @@ void M_FinishReadThis(int choice)
 //
 // M_QuitDOOM
 //
-int     quitsounds[8] =
+static int     quitsounds[8] =
 {
 	sfx_pldeth,
 	sfx_dmpain,
@@ -1057,7 +1057,7 @@ int     quitsounds[8] =
 	sfx_sgtatk
 };
 
-int     quitsounds2[8] =
+static int     quitsounds2[8] =
 {
 	sfx_vilact,
 	sfx_getpow,
@@ -1071,7 +1071,7 @@ int     quitsounds2[8] =
 
 
 
-void M_QuitResponse(int ch)
+static void M_QuitResponse(int ch)
 {
 	if (ch != 'y')
 		return;
@@ -1089,7 +1089,7 @@ void M_QuitResponse(int ch)
 
 
 
-void M_QuitDOOM(int choice)
+static void M_QuitDOOM(int choice)
 {
 	if (commercial)
 	{
@@ -1109,7 +1109,7 @@ void M_QuitDOOM(int choice)
 
 
 
-void M_ChangeSensitivity(int choice)
+static void M_ChangeSensitivity(int choice)
 {
 	switch (choice)
 	{
@@ -1127,7 +1127,7 @@ void M_ChangeSensitivity(int choice)
 
 
 
-void M_ChangeDetail(int choice)
+static void M_ChangeDetail(int choice)
 {
 	choice = 0;
 	detailLevel = 1 - detailLevel;
@@ -1142,7 +1142,7 @@ void M_ChangeDetail(int choice)
 
 
 
-void M_SizeDisplay(int choice)
+static void M_SizeDisplay(int choice)
 {
 	switch (choice)
 	{
@@ -1172,7 +1172,7 @@ void M_SizeDisplay(int choice)
 //
 //      Menu Functions
 //
-void M_DrawThermo(int x, int y, int thermWidth, int thermDot)
+static void M_DrawThermo(int x, int y, int thermWidth, int thermDot)
 {
 	int		xx;
 	int		i;
@@ -1230,7 +1230,7 @@ void M_StopMessage(void)
 //
 // Find string width from hu_font chars
 //
-int M_StringWidth(char *string)
+static int M_StringWidth(char *string)
 {
 	int             i;
 	int             w = 0;
@@ -1253,7 +1253,7 @@ int M_StringWidth(char *string)
 //
 //      Find string height from hu_font chars
 //
-int M_StringHeight(char *string)
+static int M_StringHeight(char *string)
 {
 	int             i;
 	int             h;
@@ -1271,7 +1271,7 @@ int M_StringHeight(char *string)
 //
 //      Write a string using the hu_font
 //
-void M_WriteText(int x, int y, char *string)
+static void M_WriteText(int x, int y, char *string)
 {
 	int		w;
 	char*	ch;
