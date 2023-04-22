@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -104,9 +105,6 @@ void	HUlib_initTextLine(hu_textline_t *t, int x, int y, patch_t **f, int sc);
 // returns success
 boolean HUlib_addCharToTextLine(hu_textline_t *t, char ch);
 
-// returns success
-boolean HUlib_delCharFromTextLine(hu_textline_t *t);
-
 // draws tline
 void	HUlib_drawTextLine(hu_textline_t *l, boolean drawcursor);
 
@@ -119,9 +117,6 @@ void	HUlib_eraseTextLine(hu_textline_t *l);
 //
 
 void	HUlib_initSText(hu_stext_t *s, int x, int y, int h, patch_t **font, int startchar, boolean *on);
-
-// add a new line
-void	HUlib_addLineToSText(hu_stext_t *s);  
 
 void	HUlib_addMessageToSText (hu_stext_t *s, char *prefix, char *msg);
 

@@ -62,7 +62,8 @@ boolean HUlib_addCharToTextLine(hu_textline_t *t, char ch)
 
 }
 
-boolean HUlib_delCharFromTextLine(hu_textline_t *t)
+// returns success
+static boolean HUlib_delCharFromTextLine(hu_textline_t *t)
 {
 
   if (!t->len) return false;
@@ -151,7 +152,8 @@ void HUlib_initSText(hu_stext_t *s, int x, int y, int h, patch_t **font, int sta
 
 }
 
-void HUlib_addLineToSText(hu_stext_t *s)
+// add a new line
+static void HUlib_addLineToSText(hu_stext_t *s)
 {
 
   int i;
