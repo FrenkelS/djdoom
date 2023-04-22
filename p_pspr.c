@@ -162,31 +162,6 @@ weaponinfo_t	weaponinfo[NUMWEAPONS] =
 
 
 /*
-=================
-=
-= P_CalcSwing
-=
-=================
-*/
-
-static fixed_t	swingx, swingy;
-static void P_CalcSwing (player_t *player)
-{
-	fixed_t	swing;
-	int		angle;
-
-// OPTIMIZE: tablify this
-
-	swing = player->bob;
-
-	angle = (FINEANGLES/70*leveltime)&FINEMASK;
-	swingx = FixedMul ( swing, finesine[angle]);
-
-	angle = (FINEANGLES/70*leveltime+FINEANGLES/2)&FINEMASK;
-	swingy = -FixedMul ( swingx, finesine[angle]);
-}
-
-/*
 ================
 =
 = P_BringUpWeapon

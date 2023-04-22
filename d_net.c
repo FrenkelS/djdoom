@@ -641,7 +641,7 @@ void D_QuitNetGame (void)
 ===============
 */
 
-static int     frametics[4], frameon;
+static int     frameon;
 static int     frameskip[4];
 static int             oldnettics;
 extern  boolean advancedemo;
