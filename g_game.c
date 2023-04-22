@@ -38,8 +38,7 @@ static void G_DoNewGame (void);
 static void G_DoLoadGame (void);
 static void G_DoPlayDemo (void);
 static void G_DoCompleted (void);
-void G_DoVictory (void);
-void G_DoWorldDone (void);
+static void G_DoWorldDone (void);
 static void G_DoSaveGame (void);
 
 void D_PageTicker(void);
@@ -147,19 +146,6 @@ int bodyqueslot;
  
 void *statcopy;				// for statistics driver
 
-
-int G_CmdChecksum(ticcmd_t *cmd)
-{
-	int     i;
-	int sum;
-
-	sum = 0;
-	for(i = 0; i < sizeof(*cmd)/4-1; i++)
-	{
-		sum += ((int *)cmd)[i];
-	}
-	return(sum);
-}
 
 /*
 ====================
@@ -1121,7 +1107,7 @@ void G_WorldDone(void)
 	}
 }
 
-void G_DoWorldDone(void)
+static void G_DoWorldDone(void)
 {
 	gamestate = GS_LEVEL;
 	gamemap = wminfo.next+1;

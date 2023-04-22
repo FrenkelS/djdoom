@@ -571,7 +571,6 @@ void P_SetupLevel (int episode, int map)
 	
 	Z_FreeTags (PU_LEVEL, PU_PURGELEVEL-1);
 	
-	// W_Profile ();
 	P_InitThinkers ();
 
 	// if working with a devlopment map, reload it
@@ -643,9 +642,6 @@ void P_SetupLevel (int episode, int map)
 // preload graphics
 	if (precache)
 		R_PrecacheLevel ();
-
-//printf ("free memory: 0x%x\n", Z_FreeMemory());
-
 }
 
 

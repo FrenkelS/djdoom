@@ -39,7 +39,7 @@ fixed_t			projection;
 
 static int				framecount;		// just for profiling purposes
 
-int		sscount, linecount, loopcount;
+int		sscount;
 
 fixed_t		viewx, viewy, viewz;
 angle_t		viewangle;
@@ -81,28 +81,6 @@ void		(*basecolfunc) (void);
 void		(*fuzzcolfunc) (void);
 static void		(*transcolfunc) (void);
 void		(*spanfunc) (void);
-
-/*
-===================
-=
-= R_AddPointToBox
-=
-===================
-*/
-
-void R_AddPointToBox (int x, int y, fixed_t *box)
-{
-	if (x< box[BOXLEFT])
-		box[BOXLEFT] = x;
-	if (x> box[BOXRIGHT])
-		box[BOXRIGHT] = x;
-	if (y< box[BOXBOTTOM])
-		box[BOXBOTTOM] = y;
-	if (y> box[BOXTOP])
-		box[BOXTOP] = y;
-}
-
-
 
 /*
 ===============================================================================
@@ -309,18 +287,6 @@ fixed_t	R_PointToDist (fixed_t x, fixed_t y)
 
 
 
-/*
-=================
-=
-= R_InitPointToAngle
-=
-=================
-*/
-
-void R_InitPointToAngle (void)
-{
-}
-
 //=============================================================================
 
 /*
@@ -361,19 +327,6 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 	return scale;
 }
 
-
-
-/*
-=================
-=
-= R_InitTables
-=
-=================
-*/
-
-void R_InitTables (void)
-{
-}
 
 
 /*
@@ -624,9 +577,7 @@ void R_Init (void)
 {
 	R_InitData ();
 	printf (".");
-	R_InitPointToAngle ();
 	printf (".");
-	R_InitTables ();
 	// viewwidth / viewheight / detailLevel are set by the defaults
 	printf (".");
 	R_SetViewSize (screenblocks, detailLevel);

@@ -104,11 +104,6 @@ void I_SetMusicVolume(int volume)
   snd_MusicVolume = volume;
 }
 
-void I_SetSfxVolume(int volume)
-{
-  snd_MaxVolume = volume;
-}
-
 /*
  *
  *                              SONG API

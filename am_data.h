@@ -63,15 +63,6 @@ static mline_t cheat_player_arrow[] = {
 #define NUMCHEATPLYRLINES (sizeof(cheat_player_arrow)/sizeof(mline_t))
 
 #define R (FRACUNIT)
-mline_t triangle_guy[] = {
-  { { -.867*R, -.5*R }, { .867*R, -.5*R } },
-  { { .867*R, -.5*R } , { 0, R } },
-  { { 0, R }, { -.867*R, -.5*R } }
-  };
-#undef R
-#define NUMTRIANGLEGUYLINES (sizeof(triangle_guy)/sizeof(mline_t))
-
-#define R (FRACUNIT)
 static mline_t thintriangle_guy[] = {
   { { -.5*R, -.7*R }, { R, 0 } },
   { { R, 0 }, { -.5*R, .7*R } },

@@ -90,15 +90,9 @@ typedef struct
 // Widget creation, access, and update routines
 //
 
-// initializes heads-up widget library
-void HUlib_init(void);
-
 //
 // textline code
 //
-
-// clear a line of text
-void	HUlib_clearTextLine(hu_textline_t *t);
 
 void	HUlib_initTextLine(hu_textline_t *t, int x, int y, patch_t **f, int sc);
 
@@ -129,17 +123,8 @@ void	HUlib_eraseSText(hu_stext_t *s);
 // Input Text Line widget routines
 void	HUlib_initIText(hu_itext_t *it, int x, int y, patch_t **font, int startchar, boolean *on);
 
-// enforces left margin
-void	HUlib_delCharFromIText(hu_itext_t *it);
-
-// enforces left margin
-void	HUlib_eraseLineFromIText(hu_itext_t *it);
-
 // resets line and left margin
 void	HUlib_resetIText(hu_itext_t *it);
-
-// left of left-margin
-void	HUlib_addPrefixToIText(hu_itext_t *it, char *str);
 
 // whether eaten
 boolean	HUlib_keyInIText(hu_itext_t *it, unsigned char ch);

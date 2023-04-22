@@ -691,11 +691,8 @@ void	Z_Init (void);
 void 	*Z_Malloc (int size, int tag, void *ptr);
 void 	Z_Free (void *ptr);
 void 	Z_FreeTags (int lowtag, int hightag);
-void 	Z_DumpHeap (int lowtag, int hightag);
-void	Z_FileDumpHeap (FILE *f);
 void	Z_CheckHeap (void);
 void	Z_ChangeTag2 (void *ptr, int tag);
-int 	Z_FreeMemory (void);
 
 
 typedef struct memblock_s
@@ -767,7 +764,6 @@ void TryRunTics (void);
 void mprintf (char *);
 
 void D_PageTicker (void);
-void D_PageDrawer (void);
 void D_AdvanceDemo (void);
 void D_StartTitle (void);
 
@@ -976,8 +972,6 @@ void M_LoadDefaults (void);
 
 void M_SaveDefaults (void);
 
-int M_DrawText (int x, int y, boolean direct, char *string);
-
 //------
 // VIDEO
 //------
@@ -991,7 +985,6 @@ void V_CopyRect(int scrx, int scry, int srcscrn, int width, int height, int dest
 void V_DrawPatch(int x, int y, int scrn, patch_t *patch);
 void V_DrawPatchDirect(int x, int y, int scrn, patch_t *patch);
 void V_DrawBlock(int x, int y, int scrn, int width, int height, byte *src); // Draw a linear block of pixels into the view buffer
-void V_GetBlock(int x, int y, int scrn, int width, int height, byte *dest); // Reads a linear block of pixels into the view buffer
 void V_MarkRect(int x, int y, int width, int height);
 
 /////////////////////////////////////////////////////

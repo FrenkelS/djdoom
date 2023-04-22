@@ -44,7 +44,6 @@ char *player_names[] =
 };
 
 
-char chat_char; // remove later.
 static player_t *plr;
 patch_t *hu_font[HU_FONTSIZE];
 static hu_textline_t w_title;
@@ -370,7 +369,7 @@ static char frenchKeyMap[128]=
 	'P','A','R','S','T','U','V','Z','X','Y','W','^','\\','$','^',127
 };
 
-char ForeignTranslation(unsigned char ch)
+static char ForeignTranslation(unsigned char ch)
 {
   return ch < 128 ? frenchKeyMap[ch] : ch;
 }
@@ -399,7 +398,7 @@ void HU_Init(void)
 
 }
 
-void HU_Stop(void)
+static void HU_Stop(void)
 {
   headsupactive = false;
 }

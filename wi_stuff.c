@@ -85,7 +85,7 @@ static patch_t **lnames; // Name graphics of each level (centered)
 //
 
 // slam background
-void WI_slamBackground(void)
+static void WI_slamBackground(void)
 {
   memcpy(screens[0], screens[1], SCREENWIDTH * SCREENHEIGHT);
   V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
@@ -338,19 +338,19 @@ static void WI_drawTime (int x, int y, int t)
 
 static void WI_unloadData(void);
 
-void WI_End(void)
+static void WI_End(void)
 {
   WI_unloadData();
 }
 
-void WI_initNoState(void)
+static void WI_initNoState(void)
 {
   state = NoState;
   acceleratestage = 0;
   cnt = 10;
 }
 
-void WI_updateNoState(void) {
+static void WI_updateNoState(void) {
   WI_updateAnimatedBack();
   if (!--cnt)
   {
@@ -360,7 +360,7 @@ void WI_updateNoState(void) {
 }
 
 static boolean snl_pointeron = false;
-void WI_initShowNextLoc(void)
+static void WI_initShowNextLoc(void)
 {
   state = ShowNextLoc;
   acceleratestage = 0;
@@ -410,7 +410,7 @@ static void WI_drawShowNextLoc(void)
     WI_drawEL();  
 }
 
-void WI_drawNoState(void)
+static void WI_drawNoState(void)
 {
   snl_pointeron = true;
   WI_drawShowNextLoc();
@@ -749,7 +749,7 @@ static void WI_updateNetgameStats(void)
 }
 
 
-void WI_drawNetgameStats(void)
+static void WI_drawNetgameStats(void)
 {
   int i, x, y;
   int pwidth = SHORT(percent->width);
@@ -790,7 +790,7 @@ void WI_drawNetgameStats(void)
 
 static int sp_state;
 
-void WI_initStats(void)
+static void WI_initStats(void)
 {
   state = StatCount;
   acceleratestage = 0;

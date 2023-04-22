@@ -152,7 +152,7 @@ static boolean grmode;
 
 static boolean         joystickpresent;
 static unsigned        joystickx, joysticky;
-boolean I_ReadJoystick (void)	// returns false if not connected
+static boolean I_ReadJoystick (void)	// returns false if not connected
 {
 	// TODO implement joystick support
 	return false;
@@ -294,46 +294,6 @@ int I_GetTime (void)
 	return (ticks * TICRATE) / CLOCKS_PER_SEC;
 }
 #endif
-
-/*
-===================
-=
-= I_ColorBorder
-=
-===================
-*/
-
-void I_ColorBorder (void)
-{
-	int	i;
-
-	I_WaitVBL (1);
-	_outbyte (PEL_WRITE_ADR, 0);
-	for (i = 0; i < 3; i++)
-	{
-		_outbyte (PEL_DATA, 63);
-	}
-}
-
-/*
-===================
-=
-= I_UnColorBorder
-=
-===================
-*/
-
-void I_UnColorBorder (void)
-{
-	int	i;
-
-	I_WaitVBL (1);
-	_outbyte (PEL_WRITE_ADR, 0);
-	for (i = 0; i < 3; i++)
-	{
-		_outbyte (PEL_DATA, 0);
-	}
-}
 
 /*
 ===================
@@ -753,23 +713,6 @@ void   I_StartTic (void)
 }
 
 
-void   I_ReadKeys (void)
-{
-	int             k;
-
-	while (1)
-	{
-	   while (kbdtail < kbdhead)
-	   {
-		   k = keyboardque[kbdtail&(KBDQUESIZE-1)];
-		   kbdtail++;
-		   printf ("0x%x\n",k);
-		   if (k == 1)
-			   I_Quit ();
-	   }
-	}
-}
-
 /*
 ============================================================================
 
@@ -777,15 +720,6 @@ void   I_ReadKeys (void)
 
 ============================================================================
 */
-
-void I_ColorBlack (int r, int g, int b)
-{
-_outbyte (PEL_WRITE_ADR,0);
-_outbyte(PEL_DATA,r);
-_outbyte(PEL_DATA,g);
-_outbyte(PEL_DATA,b);
-}
-
 
 /*
 ================
@@ -890,7 +824,7 @@ static void I_ShutdownKeyboard (void)
 */
 
 
-int I_ResetMouse (void)
+static int I_ResetMouse (void)
 {
 	regs.w.ax = 0;                  // reset
 	int386 (0x33, &regs, &regs);
@@ -935,7 +869,7 @@ static void I_StartupMouse (void)
 ================
 */
 
-void I_ShutdownMouse (void)
+static void I_ShutdownMouse (void)
 {
 	if (!mousepresent)
 	  return;
@@ -987,7 +921,7 @@ static void I_ReadMouse (void)
 
 static int     joyxl, joyxh, joyyl, joyyh;
 
-boolean WaitJoyButton (void)
+static boolean WaitJoyButton (void)
 {
 	int             oldbuttons, buttons;
 
@@ -1038,8 +972,6 @@ boolean WaitJoyButton (void)
 =
 ===============
 */
-
-int             basejoyx, basejoyy;
 
 static void I_StartupJoystick (void)
 {
@@ -1260,7 +1192,7 @@ void I_Init (void)
 ===============
 */
 
-void I_Shutdown (void)
+static void I_Shutdown (void)
 {
 	I_ShutdownGraphics ();
 	I_ShutdownSound ();

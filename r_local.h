@@ -296,7 +296,6 @@ angle_t R_PointToAngle2 (fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2);
 fixed_t	R_PointToDist (fixed_t x, fixed_t y);
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle);
 subsector_t *R_PointInSubsector (fixed_t x, fixed_t y);
-void R_AddPointToBox (int x, int y, fixed_t *box);
 
 
 //
@@ -329,9 +328,6 @@ void R_RenderMaskedSegRange (drawseg_t *ds, int x1, int x2);
 //
 // R_plane.c
 //
-typedef void (*planefunction_t) (int top, int bottom);
-extern	planefunction_t		floorfunc, ceilingfunc;
-
 extern	int			skyflatnum;
 
 extern	short			*lastopening;

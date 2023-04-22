@@ -61,8 +61,6 @@ static int messageToPrint;
 static char *messageString;		
 
 // message x & y
-int messx;			
-int messy;
 static int messageLastMenuActive;
 
 // timed message = no input from user
@@ -195,7 +193,6 @@ static void M_SfxVol(int choice);
 static void M_MusicVol(int choice);
 static void M_ChangeDetail(int choice);
 static void M_SizeDisplay(int choice);
-void M_StartGame(int choice);
 static void M_Sound(int choice);
 
 static void M_FinishReadThis(int choice);
@@ -217,17 +214,13 @@ static void M_DrawLoad(void);
 static void M_DrawSave(void);
 
 static void M_DrawSaveLoadBorder(int x, int y);
-void M_SetupNextMenu(menu_t *menudef);
+static void M_SetupNextMenu(menu_t *menudef);
 static void M_DrawThermo(int x, int y, int thermWidth, int thermDot);
-void M_DrawEmptyCell(menu_t *menu, int item);
-void M_DrawSelCell(menu_t *menu, int item);
 static void M_WriteText(int x, int y, char* string);
 static int M_StringWidth(char *string);
 static int M_StringHeight(char *string);
-void M_StartControlPanel(void);
-void M_StartMessage(char *string, void *routine, boolean input);
-void M_StopMessage(void);
-void M_ClearMenus(void);
+static void M_StartMessage(char *string, void *routine, boolean input);
+static void M_ClearMenus(void);
 
 
 
@@ -646,7 +639,7 @@ static void M_DrawSave(void)
 //
 // M_Responder calls this when user is finished
 //
-void M_DoSave(int slot)
+static void M_DoSave(int slot)
 {
 	G_SaveGame (slot,savegamestrings[slot]);
 	M_ClearMenus ();
@@ -1191,20 +1184,7 @@ static void M_DrawThermo(int x, int y, int thermWidth, int thermDot)
 
 
 
-void M_DrawEmptyCell(menu_t *menu, int item)
-{
-	V_DrawPatchDirect (menu->x - 10,        menu->y+item*LINEHEIGHT - 1, 0,
-					   W_CacheLumpName("M_CELL1",PU_CACHE));
-}
-
-void M_DrawSelCell(menu_t *menu, int item)
-{
-	V_DrawPatchDirect (menu->x - 10,        menu->y+item*LINEHEIGHT - 1, 0,
-					   W_CacheLumpName("M_CELL2",PU_CACHE));
-}
-
-
-void M_StartMessage(char *string, void *routine, boolean input)
+static void M_StartMessage(char *string, void *routine, boolean input)
 {
 	messageLastMenuActive = menuactive;
 	messageToPrint = 1;
@@ -1213,14 +1193,6 @@ void M_StartMessage(char *string, void *routine, boolean input)
 	messageNeedsInput = input;
 	menuactive = true;
 	return;
-}
-
-
-
-void M_StopMessage(void)
-{
-	menuactive = messageLastMenuActive;
-	messageToPrint = 0;
 }
 
 
@@ -1781,7 +1753,7 @@ void M_Drawer (void)
 //
 // M_ClearMenus
 //
-void M_ClearMenus (void)
+static void M_ClearMenus (void)
 {
 	menuactive = 0;
 	// if (!netgame && usergame && paused)
@@ -1794,7 +1766,7 @@ void M_ClearMenus (void)
 //
 // M_SetupNextMenu
 //
-void M_SetupNextMenu(menu_t *menudef)
+static void M_SetupNextMenu(menu_t *menudef)
 {
 	currentMenu = menudef;
 	itemOn = currentMenu->lastOn;

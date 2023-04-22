@@ -459,7 +459,6 @@ static intercept_t		intercepts[MAXINTERCEPTS], *intercept_p;
 
 divline_t 	trace;
 static boolean 	earlyout;
-int			ptflags;
 
 /*
 ==================

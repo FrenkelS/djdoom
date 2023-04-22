@@ -61,8 +61,6 @@ boolean nomonsters;			// checkparm of -nomonsters
 boolean respawnparm;			// checkparm of -respawn
 boolean fastparm;				// checkparm of -fastparm
 
-boolean drone;
-
 boolean modifiedgame;
 
 boolean singletics = false; // debug flag to cancel adaptiveness
@@ -87,8 +85,6 @@ boolean advancedemo;
 
 
 
-char wadfile[1024];		// primary wad file
-char mapdir[1024];      // directory of development maps
 char basedefault[1024]; // default file
 
 
@@ -96,7 +92,7 @@ void D_CheckNetGame(void);
 void D_ProcessEvents(void);
 void G_BuildTiccmd(ticcmd_t *cmd);
 void D_DoAdvanceDemo(void);
-void D_PageDrawer (void);
+static void D_PageDrawer (void);
 void D_AdvanceDemo (void);
 void F_Drawer(void);
 boolean F_Responder(event_t *ev);
@@ -450,7 +446,7 @@ void D_PageTicker (void)
 ================
 */
 
-void D_PageDrawer (void)
+static void D_PageDrawer (void)
 {
 	V_DrawPatch (0,0, 0, W_CacheLumpName(pagename, PU_CACHE));
 }
@@ -644,13 +640,6 @@ static void D_AddFile(char *file)
 	wadfiles[numwadfiles] = new;
 }
 
-#if (APPVER_DOOMREV >= AV_DR_DM18FR) // Doom 95 debug info shows that it moved
-void CheckBetaTest(void)
-{
-}
-#endif
-
-
 #if (APPVER_DOOMREV < AV_DR_DM19U)
 #define DEVMAPS "e:/doom/"
 #else
@@ -811,12 +800,6 @@ static void IdentifyVersion (void)
 	exit(1);
 #endif
 }
-
-#if (APPVER_DOOMREV < AV_DR_DM18FR) // Doom 95 debug info shows that it moved
-void CheckBetaTest(void)
-{
-}
-#endif
 
 /*
 =================

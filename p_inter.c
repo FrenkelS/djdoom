@@ -175,7 +175,7 @@ static boolean P_GiveWeapon (player_t *player, weapontype_t weapon, boolean drop
 =================== 
 */ 
 
-boolean P_GiveBody (player_t *player, int num)
+static boolean P_GiveBody (player_t *player, int num)
 {
 	if (player->health >= MAXHEALTH)
 		return false;
