@@ -60,15 +60,16 @@ A valid mobj_t is a mobj_t that has the proper subsector_t filled in for it's xy
 ===============================================================================
 */
 
-fixed_t		tmbbox[4];
-mobj_t		*tmthing;
-int			tmflags;
-fixed_t		tmx, tmy;
+static fixed_t		tmbbox[4];
+static mobj_t		*tmthing;
+static int			tmflags;
+static fixed_t		tmx, tmy;
 
 boolean		floatok;				// if true, move would be ok if
 									// within tmfloorz - tmceilingz
 
-fixed_t		tmfloorz, tmceilingz, tmdropoffz;
+fixed_t		tmfloorz, tmceilingz;
+static fixed_t tmdropoffz;
 
 // keep track of the line that lowers the ceiling, so missiles don't explode
 // against sky hack walls
@@ -96,7 +97,7 @@ int			 numspechit;
 ==================
 */
 
-boolean PIT_StompThing (mobj_t *thing)
+static boolean PIT_StompThing (mobj_t *thing)
 {
 	fixed_t		blockdist;
 		
@@ -205,7 +206,7 @@ boolean P_TeleportMove (mobj_t *thing, fixed_t x, fixed_t y)
 ==================
 */
 
-boolean PIT_CheckLine(line_t *ld)
+static boolean PIT_CheckLine(line_t *ld)
 {
 	if (tmbbox[BOXRIGHT] <= ld->bbox[BOXLEFT]
 		||	tmbbox[BOXLEFT] >= ld->bbox[BOXRIGHT]
@@ -263,7 +264,7 @@ boolean PIT_CheckLine(line_t *ld)
 ==================
 */
 
-boolean PIT_CheckThing (mobj_t *thing)
+static boolean PIT_CheckThing (mobj_t *thing)
 {
 	fixed_t		blockdist;
 	boolean		solid;
@@ -521,7 +522,7 @@ boolean P_TryMove (mobj_t *thing, fixed_t x, fixed_t y)
 ==================
 */
 
-boolean P_ThingHeightClip (mobj_t *thing)
+static boolean P_ThingHeightClip (mobj_t *thing)
 {
 	boolean		onfloor;
 	
@@ -559,11 +560,11 @@ Allows the player to slide along any angled walls
 ==============================================================================
 */
 
-fixed_t		bestslidefrac, secondslidefrac;
-line_t		*bestslideline, *secondslideline;
-mobj_t		*slidemo;
+static fixed_t		bestslidefrac, secondslidefrac;
+static line_t		*bestslideline, *secondslideline;
+static mobj_t		*slidemo;
 
-fixed_t		tmxmove, tmymove;
+static fixed_t		tmxmove, tmymove;
 
 /*
 ==================
@@ -574,7 +575,7 @@ fixed_t		tmxmove, tmymove;
 ==================
 */
 
-void P_HitSlideLine (line_t *ld)
+static void P_HitSlideLine (line_t *ld)
 {
 	int			side;
 	angle_t		lineangle, moveangle, deltaangle;
@@ -620,7 +621,7 @@ void P_HitSlideLine (line_t *ld)
 ==============
 */
 
-boolean		PTR_SlideTraverse (intercept_t *in)
+static boolean		PTR_SlideTraverse (intercept_t *in)
 {
 	line_t	*li;
 	
@@ -776,13 +777,13 @@ stairstep:
 
 
 mobj_t		*linetarget;			// who got hit (or NULL)
-mobj_t		*shootthing;
-fixed_t		shootz;					// height if not aiming up or down
+static mobj_t		*shootthing;
+static fixed_t		shootz;					// height if not aiming up or down
 									// ???: use slope for monsters?
-int			la_damage;
+static int			la_damage;
 fixed_t		attackrange;
 
-fixed_t		aimslope;
+static fixed_t		aimslope;
 
 extern	fixed_t		topslope, bottomslope;	// slopes to top and bottom of target
 
@@ -795,7 +796,7 @@ extern	fixed_t		topslope, bottomslope;	// slopes to top and bottom of target
 ===============================================================================
 */
 
-boolean		PTR_AimTraverse (intercept_t *in)
+static boolean		PTR_AimTraverse (intercept_t *in)
 {
 	line_t		*li;
 	mobj_t		*th;
@@ -879,7 +880,7 @@ boolean		PTR_AimTraverse (intercept_t *in)
 ==============================================================================
 */
 
-boolean		PTR_ShootTraverse (intercept_t *in)
+static boolean		PTR_ShootTraverse (intercept_t *in)
 {
 	fixed_t		x,y,z;
 	fixed_t		frac;
@@ -1047,9 +1048,9 @@ void P_LineAttack (mobj_t *t1, angle_t angle, fixed_t distance, fixed_t slope, i
 ==============================================================================
 */
 
-mobj_t		*usething;
+static mobj_t		*usething;
 
-boolean		PTR_UseTraverse (intercept_t *in)
+static boolean		PTR_UseTraverse (intercept_t *in)
 {
 	int		side;
 	if (!in->d.line->special)
@@ -1109,9 +1110,9 @@ void P_UseLines (player_t *player)
 ==============================================================================
 */
 
-mobj_t		*bombsource;
-mobj_t		*bombspot;
-int			bombdamage;
+static mobj_t		*bombsource;
+static mobj_t		*bombspot;
+static int			bombdamage;
 
 /*
 =================
@@ -1122,7 +1123,7 @@ int			bombdamage;
 =================
 */
 
-boolean PIT_RadiusAttack (mobj_t *thing)
+static boolean PIT_RadiusAttack (mobj_t *thing)
 {
 	fixed_t dx, dy, dist;
 
@@ -1191,8 +1192,8 @@ void P_RadiusAttack (mobj_t *spot, mobj_t *source, int damage)
 ==============================================================================
 */
 
-boolean		crushchange;
-boolean		nofit;
+static boolean		crushchange;
+static boolean		nofit;
 
 /*
 ===============
@@ -1202,7 +1203,7 @@ boolean		nofit;
 ===============
 */
 
-boolean PIT_ChangeSector (mobj_t *thing)
+static boolean PIT_ChangeSector (mobj_t *thing)
 {
 	mobj_t		*mo;
 	
