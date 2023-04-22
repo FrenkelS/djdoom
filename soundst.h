@@ -99,15 +99,9 @@ enum
 
 void S_Start(void);
 void S_StartSound(void *origin, int sound_id);
-#if (APPVER_DOOMREV < AV_DR_DM17)
-void S_StartSoundAtVolume(mobj_t *origin, int sound_id, int volume);
-#else
-void S_StartSoundAtVolume(void *origin, int sound_id, int volume);
-#endif
 void S_StopSound(void *origin);
 void S_StartMusic(int music_id);
 void S_ChangeMusic(int music_id, boolean looping);
-void S_StopMusic(void);
 void S_PauseSound(void);
 void S_ResumeSound(void);
 void S_UpdateSounds(void *listener);

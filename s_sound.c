@@ -32,9 +32,9 @@ static int nextcleanup;
 //
 // Internals.
 //
-int S_getChannel (void *origin, sfxinfo_t *sfxinfo);
+static int S_getChannel (void *origin, sfxinfo_t *sfxinfo);
 static int S_AdjustSoundParams ( mobj_t *listener, mobj_t *source, int *vol, int *sep);
-void S_StopChannel(int cnum);
+static void S_StopChannel(int cnum);
 
 void S_SetMusicVolume(int volume)
 {
@@ -46,7 +46,7 @@ void S_SetMusicVolume(int volume)
   snd_MusicVolume = volume;
 }
 
-void S_StopMusic(void)
+static void S_StopMusic(void)
 {
   if (mus_playing)
   {
@@ -96,7 +96,7 @@ void S_StartMusic(int m_id)
     S_ChangeMusic(m_id, false);
 }
 
-void S_StopChannel(int cnum)
+static void S_StopChannel(int cnum)
 {
   int i;
   channel_t *c = &channels[cnum];
@@ -219,7 +219,7 @@ void S_StopSound(void *origin)
 // S_getChannel :
 //   If none available, return -1.  Otherwise channel #.
 //
-int S_getChannel (void *origin, sfxinfo_t *sfxinfo)
+static int S_getChannel (void *origin, sfxinfo_t *sfxinfo)
 {
   int cnum;// channel number to use
   channel_t *c;
@@ -254,9 +254,9 @@ int S_getChannel (void *origin, sfxinfo_t *sfxinfo)
 }
 
 #if (APPVER_DOOMREV < AV_DR_DM17)
-void S_StartSoundAtVolume(mobj_t *origin, int sfx_id, int volume)
+static void S_StartSoundAtVolume(mobj_t *origin, int sfx_id, int volume)
 #else
-void S_StartSoundAtVolume(void *origin_p, int sfx_id, int volume)
+static void S_StartSoundAtVolume(void *origin_p, int sfx_id, int volume)
 #endif
 {
   int rc, sep, pitch;
