@@ -105,7 +105,7 @@ static int ExpandTics (int low)
 		return (maketic&~0xff) + 256 + low;
 
 	I_Error ("ExpandTics: strange value %i at maketic %i",low,maketic);
-	return 0;
+	return 0; // shut up compiler warning
 }
 
 
