@@ -129,7 +129,7 @@ int	R_PointOnSide (fixed_t x, fixed_t y, node_t *node)
 }
 
 
-int	R_PointOnSegSide (fixed_t x, fixed_t y, seg_t *line)
+boolean	R_PointOnSegSide (fixed_t x, fixed_t y, seg_t *line)
 {
 	fixed_t	lx, ly;
 	fixed_t	ldx, ldy;
@@ -160,18 +160,12 @@ int	R_PointOnSegSide (fixed_t x, fixed_t y, seg_t *line)
 
 // try to quickly decide by looking at sign bits
 	if ( (ldy ^ ldx ^ dx ^ dy)&0x80000000 )
-	{
-		if  ( (ldy ^ dx) & 0x80000000 )
-			return 1;	// (left is negative)
-		return 0;
-	}
+		return (ldy ^ dx) & 0x80000000 ;
 
 	left = FixedMul ( ldy>>FRACBITS , dx );
 	right = FixedMul ( dy , ldx>>FRACBITS );
 
-	if (right < left)
-		return 0;		// front side
-	return 1;			// back side
+	return !(right < left);
 }
 
 
