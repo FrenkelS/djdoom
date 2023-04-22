@@ -95,7 +95,7 @@ void WI_slamBackground(void)
 }
 
 // Draws "<Levelname> Finished!"
-void WI_drawLF(void)
+static void WI_drawLF(void)
 {
   int y = WI_TITLEY;
   // draw <LevelName> 
@@ -108,7 +108,7 @@ void WI_drawLF(void)
 }
 
 // Draws "Entering <LevelName>"
-void WI_drawEL(void)
+static void WI_drawEL(void)
 {
   int y = WI_TITLEY;
   // draw "Entering"
@@ -120,7 +120,7 @@ void WI_drawEL(void)
     y, FB, lnames[wbs->next]);
 }
 
-void WI_drawOnLnode(int n, patch_t *c[])
+static void WI_drawOnLnode(int n, patch_t *c[])
 {
   int i, left, top, right, bottom;
   boolean fits = false;
@@ -155,7 +155,7 @@ void WI_drawOnLnode(int n, patch_t *c[])
   }
 }
 
-void WI_initAnimatedBack(void)
+static void WI_initAnimatedBack(void)
 {
   int i;
   anim_t *a;
@@ -181,7 +181,7 @@ void WI_initAnimatedBack(void)
   }
 }
 
-void WI_updateAnimatedBack(void)
+static void WI_updateAnimatedBack(void)
 {
   int i;
   anim_t *a;
@@ -229,7 +229,7 @@ void WI_updateAnimatedBack(void)
   }
 }
 
-void WI_drawAnimatedBack(void)
+static void WI_drawAnimatedBack(void)
 {
     int i;
     anim_t *a;
@@ -256,7 +256,7 @@ void WI_drawAnimatedBack(void)
 // Returns new x position.
 //
 
-int WI_drawNum (int x, int y, int n, int digits)
+static int WI_drawNum (int x, int y, int n, int digits)
 {
   int fontwidth = SHORT(num[0]->width);
   int neg, temp;
@@ -301,7 +301,7 @@ int WI_drawNum (int x, int y, int n, int digits)
   return x;
 }
 
-void WI_drawPercent (int x, int y, int p)
+static void WI_drawPercent (int x, int y, int p)
 {
   if (p < 0)
     return;
@@ -313,7 +313,7 @@ void WI_drawPercent (int x, int y, int p)
 // Display level completion time and par,
 //  or "sucks" message if overflow.
 //
-void WI_drawTime (int x, int y, int t)
+static void WI_drawTime (int x, int y, int t)
 {
   int div, n;
 
@@ -339,9 +339,10 @@ void WI_drawTime (int x, int y, int t)
 }
 
 
+static void WI_unloadData(void);
+
 void WI_End(void)
 {
-  void WI_unloadData(void);
   WI_unloadData();
 }
 
@@ -370,7 +371,7 @@ void WI_initShowNextLoc(void)
   WI_initAnimatedBack();
 }
 
-void WI_updateShowNextLoc(void)
+static void WI_updateShowNextLoc(void)
 {
   WI_updateAnimatedBack();
   if (!--cnt || acceleratestage)
@@ -379,7 +380,7 @@ void WI_updateShowNextLoc(void)
     snl_pointeron = (cnt & 31) < 20;
 }
 
-void WI_drawShowNextLoc(void)
+static void WI_drawShowNextLoc(void)
 {
   int i, last;
 
@@ -418,7 +419,7 @@ void WI_drawNoState(void)
   WI_drawShowNextLoc();
 }
 
-int WI_fragSum(int playernum)
+static int WI_fragSum(int playernum)
 {
   int i;
   int frags = 0;
@@ -437,7 +438,7 @@ int WI_fragSum(int playernum)
 
 static int dm_state, dm_frags[MAXPLAYERS][MAXPLAYERS], dm_totals[MAXPLAYERS];
 
-void WI_initDeathmatchStats(void)
+static void WI_initDeathmatchStats(void)
 {
   int	i, j;
 
@@ -459,7 +460,7 @@ void WI_initDeathmatchStats(void)
   WI_initAnimatedBack();
 }
 
-void WI_updateDeathmatchStats(void)
+static void WI_updateDeathmatchStats(void)
 {
   int i, j;
   boolean stillticking;
@@ -602,7 +603,7 @@ static void WI_drawDeathmatchStats(void)
 
 static int cnt_frags[MAXPLAYERS], dofrags, ng_state;
 
-void WI_initNetgameStats(void)
+static void WI_initNetgameStats(void)
 {
   int i;
 
@@ -622,7 +623,7 @@ void WI_initNetgameStats(void)
 }
 
 
-void WI_updateNetgameStats(void)
+static void WI_updateNetgameStats(void)
 {
   int i, fsum;
   boolean stillticking;
@@ -803,7 +804,7 @@ void WI_initStats(void)
   WI_initAnimatedBack();
 }
 
-void WI_updateStats(void)
+static void WI_updateStats(void)
 {
   WI_updateAnimatedBack();
   if (acceleratestage && sp_state != 10)
@@ -892,7 +893,7 @@ void WI_updateStats(void)
   }
 }
 
-void WI_drawStats(void)
+static void WI_drawStats(void)
 {
   int lh;	// line height
 
@@ -917,7 +918,7 @@ void WI_drawStats(void)
   }
 }
 
-void WI_checkForAccelerate(void)
+static void WI_checkForAccelerate(void)
 {
   int i;
   player_t *player;
@@ -977,7 +978,7 @@ void WI_Ticker(void)
 }
 
 
-void WI_loadData(void)
+static void WI_loadData(void)
 {
   int i, j;
   char name[9];
@@ -1090,7 +1091,7 @@ void WI_loadData(void)
   }
 }
 
-void WI_unloadData(void)
+static void WI_unloadData(void)
 {
   int i, j;
 
@@ -1162,7 +1163,7 @@ switch (state)
   }
 }
 
-void WI_initVariables(wbstartstruct_t *wbstartstruct)
+static void WI_initVariables(wbstartstruct_t *wbstartstruct)
 {
   wbs = wbstartstruct;
 
