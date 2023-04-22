@@ -37,13 +37,13 @@ static int tsm_ID;
 static void I_StartupTimer (void)
 {
 #ifndef NOTIMER
-	extern void I_TimerISR(void);
+	extern int I_TimerISR(void);
 	extern void I_InitBaseTime(void);
 
 	printf("I_StartupTimer()\n");
 	// installs master timer.  Must be done before StartupTimer()!
 	TSM_Install(SND_TICRATE);
-	tsm_ID = TSM_NewService (I_TimerISR, TICRATE); // max priority
+	tsm_ID = TSM_NewService (I_TimerISR, TICRATE, 0, 0); // max priority
 	if (tsm_ID == -1)
 	{
 		I_Error("Can't register 35 Hz timer w/ DMX library");
@@ -177,7 +177,7 @@ int I_StartSound (void *data, int vol, int sep, int pitch)
 	||  data == S_sfx[sfx_sawidl].data)) return -1;
 
   else
-	return SFX_PlayPatch(data, sep, pitch, vol);
+	return SFX_PlayPatch(data, sep, pitch, vol, 0, 100);
 
 }
 
@@ -219,7 +219,7 @@ static void I_sndArbitrateCards(void)
 #else
   boolean codec, ensoniq, gus, adlib, sb, midi;
 #endif
-  int wait, dmxlump;
+  int i, wait, dmxlump;
 
   snd_MaxVolume = 127;
 
@@ -292,7 +292,7 @@ static void I_sndArbitrateCards(void)
 	  printf("cfg p=0x%x, i=%d, d=%d\n",
 	  snd_SBport, snd_SBirq, snd_SBdma);
 	}
-	if (SB_Detect(&snd_SBport, &snd_SBirq, &snd_SBdma))
+	if (SB_Detect(&snd_SBport, &snd_SBirq, &snd_SBdma, 0))
 	{
 	  printf("SB isn't responding at p=0x%x, i=%d, d=%d\n",
 	  snd_SBport, snd_SBirq, snd_SBdma);
@@ -310,7 +310,7 @@ static void I_sndArbitrateCards(void)
   {
 	if(devparm)
 	  printf("Adlib\n");
-	if (AL_Detect(&wait))
+	if (AL_Detect(&wait,0))
 	  printf("Dude.  The Adlib isn't responding.\n");
 	else
 		AL_SetCard(wait, W_CacheLumpName("genmidi", PU_STATIC));
@@ -323,7 +323,7 @@ static void I_sndArbitrateCards(void)
 	if (devparm)
 	  printf("cfg p=0x%x\n", snd_Mport);
 
-	if (MPU_Detect(&snd_Mport))
+	if (MPU_Detect(&snd_Mport, &i))
 	  printf("The MPU-401 isn't reponding @ p=0x%x.\n", snd_Mport);
 	else MPU_SetCard(snd_Mport);
   }

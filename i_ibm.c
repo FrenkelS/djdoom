@@ -729,9 +729,10 @@ void   I_StartTic (void)
 ================
 */
 
-void I_TimerISR (void)
+int I_TimerISR (void)
 {
 	ticcount++;
+	return 0;
 }
 
 /*

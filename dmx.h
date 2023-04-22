@@ -19,21 +19,21 @@
 #ifndef __DMX__
 #define __DMX__
 
-void TSM_Install(int sndTicrate);
-int TSM_NewService(void (*timerISR)(void), int frequency);
+int TSM_Install(unsigned int sndTicrate);
+int TSM_NewService(int (*timerISR)(void), int frequency, int priority, int pause);
 void TSM_DelService(int tsm_ID);
 void TSM_Remove(void);
 
-void MUS_PauseSong(int handle);
-void MUS_ResumeSong(int handle);
+int MUS_PauseSong(int handle);
+int MUS_ResumeSong(int handle);
 void MUS_SetMasterVolume(int volume);
-int MUS_RegisterSong(void *data);
-void MUS_UnregisterSong(int handle);
-void MUS_StopSong(int handle);
-void MUS_ChainSong(int handle, int to);
-void MUS_PlaySong(int handle, int volume);
+int MUS_RegisterSong(unsigned char *data);
+int MUS_UnregisterSong(int handle);
+int MUS_StopSong(int handle);
+int MUS_ChainSong(int handle, int to);
+int MUS_PlaySong(int handle, int volume);
 
-int SFX_PlayPatch(void *data, int pitch, int sep, int volume);
+int SFX_PlayPatch(void *data, int pitch, int sep, int volume, int flags, int priority);
 void SFX_StopPatch(int handle);
 int SFX_Playing(int handle);
 void SFX_SetOrigin(int handle, int pitch, int sep, int volume);
@@ -42,11 +42,11 @@ int ENS_Detect(void);
 int CODEC_Detect(int *sbPort, int *sbDma);
 int GF1_Detect(void);
 void GF1_SetMap(char *dmxlump, int size);
-int SB_Detect(int *sbPort, int *sbIrq, int *sbDma);
+int SB_Detect(int *sbPort, int *sbIrq, int *sbDma, unsigned short *version);
 void SB_SetCard(int iBaseAddr, int iIrq, int iDma);
-int AL_Detect(int *wait);
+int AL_Detect(int *wait, int *type);
 void AL_SetCard(int wait, void *genmidi);
-int MPU_Detect(int *mPort);
+int MPU_Detect(int *mPort, int *type);
 void MPU_SetCard(int mPort);
 
 #define AHW_PC_SPEAKER		0x0001L
@@ -60,8 +60,8 @@ void MPU_SetCard(int mPort);
 #define AHW_ENSONIQ 		0x0100L
 #define AHW_CODEC           0x0200L
 
-int DMX_Init(int ticrate, int maxsongs, int musicDevice, int sfxDevice);
+int DMX_Init(int ticrate, int maxsongs, unsigned int musicDevice, unsigned int sfxDevice);
 void DMX_DeInit(void);
 
-void WAV_PlayMode(int channels, int sampleRate);
+void WAV_PlayMode(int channels, unsigned short sampleRate);
 #endif
