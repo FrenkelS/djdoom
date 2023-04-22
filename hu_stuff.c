@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -72,7 +73,7 @@ static boolean headsupactive = false;
 // The actual names can be found in DStrings.h.
 //
 
-char *mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
+static char *mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
 {
 
 	HUSTR_E1M1,
@@ -142,7 +143,7 @@ char *mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
 	"NEWLEVEL"
 };
 
-char *mapnames2[] =	// DOOM 2 map names.
+static char *mapnames2[] =	// DOOM 2 map names.
 {
 	HUSTR_1,
 	HUSTR_2,
@@ -262,9 +263,9 @@ char *mapnamest[] =	// TNT WAD map names.
 
 
 #if (APPVER_DOOMREV >= AV_DR_DM18FR)
-const char *shiftxform;
+static const char *shiftxform;
 
-const char french_shiftxform[] =
+static const char french_shiftxform[] =
 {
 	0,
 	1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
@@ -306,9 +307,9 @@ const char french_shiftxform[] =
 
 };
 
-const char english_shiftxform[] =
+static const char english_shiftxform[] =
 #else // APPVER_DOOMREV < AV_DR_DM18FR
-const char shiftxform[] =
+static const char shiftxform[] =
 #endif
 {
 
@@ -356,7 +357,7 @@ const char shiftxform[] =
 };
 
 #if (APPVER_DOOMREV >= AV_DR_DM18FR)
-char frenchKeyMap[128]=
+static char frenchKeyMap[128]=
 {
 	0,
 	1,2,3,4,5,6,7,8,9,10,
@@ -556,7 +557,7 @@ static int head = 0;
 static int tail = 0;
 
 
-void HU_queueChatChar(char c)
+static void HU_queueChatChar(char c)
 {
   if (((head + 1) & (QUEUESIZE-1)) == tail)
   {
