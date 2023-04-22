@@ -308,14 +308,6 @@ extern	side_t	*sidedef;
 extern	line_t	*linedef;
 extern	sector_t	*frontsector, *backsector;
 
-extern	int	rw_x;
-extern	int	rw_stopx;
-
-extern	boolean		segtextured;
-extern	boolean		markfloor;		// false if the back side is the same plane
-extern	boolean		markceiling;
-extern	boolean		skymap;
-
 extern	drawseg_t	drawsegs[MAXDRAWSEGS], *ds_p;
 
 extern	lighttable_t	**hscalelight, **vscalelight, **dscalelight;

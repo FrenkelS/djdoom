@@ -25,11 +25,11 @@ extern int _wp11, _wp12, _wp13, _wp14, _wp15, _wp16, _wp17, _wp18;
 
 // OPTIMIZE: closed two sided lines as single sided
 
-boolean         segtextured;    // true if any of the segs textures might be vis
-boolean         markfloor;              // false if the back side is the same plane
-boolean         markceiling;
-boolean         maskedtexture;
-int                     toptexture, bottomtexture, midtexture;
+static boolean         segtextured;    // true if any of the segs textures might be vis
+static boolean         markfloor;              // false if the back side is the same plane
+static boolean         markceiling;
+static boolean         maskedtexture;
+static int             toptexture, bottomtexture, midtexture;
 
 
 angle_t         rw_normalangle;
@@ -38,28 +38,28 @@ int                     rw_angle1;              // angle to line origin
 //
 // wall
 //
-int                     rw_x;
-int                     rw_stopx;
-angle_t         rw_centerangle;
-fixed_t         rw_offset;
+static int             rw_x;
+static int             rw_stopx;
+static angle_t         rw_centerangle;
+static fixed_t         rw_offset;
 fixed_t         rw_distance;
-fixed_t         rw_scale;
-fixed_t         rw_scalestep;
-fixed_t         rw_midtexturemid;
-fixed_t         rw_toptexturemid;
-fixed_t         rw_bottomtexturemid;
+static fixed_t         rw_scale;
+static fixed_t         rw_scalestep;
+static fixed_t         rw_midtexturemid;
+static fixed_t         rw_toptexturemid;
+static fixed_t         rw_bottomtexturemid;
 
-int                     worldtop, worldbottom, worldhigh, worldlow;
+static int                     worldtop, worldbottom, worldhigh, worldlow;
 
-fixed_t         pixhigh, pixlow;
-fixed_t         pixhighstep, pixlowstep;
-fixed_t         topfrac, topstep;
-fixed_t         bottomfrac, bottomstep;
+static fixed_t         pixhigh, pixlow;
+static fixed_t         pixhighstep, pixlowstep;
+static fixed_t         topfrac, topstep;
+static fixed_t         bottomfrac, bottomstep;
 
 
 lighttable_t    **walllights;
 
-short           *maskedtexturecol;
+static short           *maskedtexturecol;
 
 /*
 ================
@@ -171,7 +171,7 @@ void R_RenderMaskedSegRange (drawseg_t *ds, int x1, int x2)
 #define HEIGHTBITS      12
 #define HEIGHTUNIT      (1<<HEIGHTBITS)
 
-void R_RenderSegLoop (void)
+static void R_RenderSegLoop (void)
 {
 	angle_t         angle;
 	unsigned        index;
