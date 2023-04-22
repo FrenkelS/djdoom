@@ -27,11 +27,8 @@
 
 extern boolean automapactive;	// in AM_map.c
 
-void HUlib_init(void)
-{
-}
-
-void HUlib_clearTextLine(hu_textline_t *t)
+// clear a line of text
+static void HUlib_clearTextLine(hu_textline_t *t)
 {
   t->len = 0;
   t->l[0] = 0;
@@ -228,15 +225,9 @@ void HUlib_initIText(hu_itext_t *it, int x, int y, patch_t **font, int startchar
 
 
 // The following deletion routines adhere to the left margin restriction
-void HUlib_delCharFromIText(hu_itext_t *it)
+static void HUlib_delCharFromIText(hu_itext_t *it)
 {
   if (it->l.len != it->lm)
-    HUlib_delCharFromTextLine(&it->l);
-}
-
-void HUlib_eraseLineFromIText(hu_itext_t *it)
-{
-  while (it->lm != it->l.len)
     HUlib_delCharFromTextLine(&it->l);
 }
 
@@ -245,13 +236,6 @@ void HUlib_resetIText(hu_itext_t *it)
 {
   it->lm = 0;
   HUlib_clearTextLine(&it->l);
-}
-
-void HUlib_addPrefixToIText(hu_itext_t *it, char *str)
-{
-  while (*str)
-    HUlib_addCharToTextLine(&it->l, *(str++));
-  it->lm = it->l.len;
 }
 
 // wrapper function for handling general keyed input.
