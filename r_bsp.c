@@ -64,10 +64,10 @@ typedef	struct
 
 #define	MAXSEGS	32
 
-cliprange_t	solidsegs[MAXSEGS], *newend;	// newend is one past the last valid seg
+static cliprange_t	solidsegs[MAXSEGS], *newend;	// newend is one past the last valid seg
 
 
-void R_ClipSolidWallSegment (int first, int last)
+static void R_ClipSolidWallSegment (int first, int last)
 {
 	cliprange_t	*next, *start;
 
@@ -139,7 +139,7 @@ crunch:
 ===============================================================================
 */
 
-void R_ClipPassWallSegment (int first, int last)
+static void R_ClipPassWallSegment (int first, int last)
 {
 	cliprange_t	 *start;
 
@@ -208,7 +208,7 @@ void R_ClearClipSegs (void)
 ======================
 */
 
-void R_AddLine (seg_t *line)
+static void R_AddLine (seg_t *line)
 {
 	int			x1, x2;
 	angle_t		angle1, angle2, span, tspan;
@@ -299,7 +299,7 @@ clipsolid:
 ===============================================================================
 */
 
-int	checkcoord[12][4] = {
+static const int	checkcoord[12][4] = {
 {3,0, 2,1},
 {3,0, 2,0},
 {3,1, 2,0},
@@ -313,7 +313,7 @@ int	checkcoord[12][4] = {
 {2,1, 3,0} };
 
 
-boolean R_CheckBBox (fixed_t *bspcoord)
+static boolean R_CheckBBox (fixed_t *bspcoord)
 {
 	int			boxx, boxy, boxpos;
 	fixed_t		x1, y1, x2, y2;
@@ -401,7 +401,7 @@ boolean R_CheckBBox (fixed_t *bspcoord)
 ================
 */
 
-void R_Subsector (int num)
+static void R_Subsector (int num)
 {
 	int			count;
 	seg_t		*line;
