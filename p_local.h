@@ -207,7 +207,7 @@ void	P_SetThingPosition (mobj_t *thing);
 */
 
 extern boolean		floatok;				// if true, move would be ok if
-extern fixed_t		tmfloorz, tmceilingz;	// within tmfloorz - tmceilingz
+extern fixed_t		tmfloorz;				// within tmfloorz - tmceilingz
 
 extern line_t *ceilingline;
 

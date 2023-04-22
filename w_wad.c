@@ -55,15 +55,15 @@ typedef struct
 //=============
 
 lumpinfo_t	*lumpinfo;		// location of each lump on disk
-int			numlumps;
+static int			numlumps;
 
-void		**lumpcache;
+static void		**lumpcache;
 
 
 //===================
 
 
-void ExtractFileBase (char *path, char *dest)
+static void ExtractFileBase (char *path, char *dest)
 {
 	char	*src;
 	int		length;
@@ -109,10 +109,10 @@ void ExtractFileBase (char *path, char *dest)
 ====================
 */
 
-int				reloadlump;
-char			*reloadname;
+static int			reloadlump;
+static char			*reloadname;
 
-void W_AddFile (char *filename)
+static void W_AddFile (char *filename)
 {
 	wadinfo_t		header;
 	lumpinfo_t		*lump_p;
@@ -498,8 +498,8 @@ void	*W_CacheLumpName (char *name, int tag)
 ====================
 */
 
-int	info[2500][10];
-int	profilecount;
+static int	info[2500][10];
+static int	profilecount;
 
 void W_Profile (void)
 {

@@ -68,7 +68,8 @@ static fixed_t		tmx, tmy;
 boolean		floatok;				// if true, move would be ok if
 									// within tmfloorz - tmceilingz
 
-fixed_t		tmfloorz, tmceilingz;
+fixed_t		tmfloorz;
+static fixed_t tmceilingz;
 static fixed_t tmdropoffz;
 
 // keep track of the line that lowers the ceiling, so missiles don't explode

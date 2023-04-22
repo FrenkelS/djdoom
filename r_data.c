@@ -52,7 +52,7 @@ int		firstpatch, lastpatch, numpatches;
 int		firstspritelump, lastspritelump;
 static int	numspritelumps;
 
-int			numtextures;
+static int			numtextures;
 static texture_t	**textures;
 static int			*texturewidthmask;
 fixed_t		*textureheight;		// needed for texture pegging
