@@ -642,9 +642,6 @@ void P_SetupLevel (int episode, int map)
 // preload graphics
 	if (precache)
 		R_PrecacheLevel ();
-
-//printf ("free memory: 0x%x\n", Z_FreeMemory());
-
 }
 
 
