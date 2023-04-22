@@ -33,7 +33,7 @@ static int nextcleanup;
 // Internals.
 //
 static int S_getChannel (void *origin, sfxinfo_t *sfxinfo);
-static int S_AdjustSoundParams ( mobj_t *listener, mobj_t *source, int *vol, int *sep);
+static boolean S_AdjustSoundParams ( mobj_t *listener, mobj_t *source, int *vol, int *sep);
 static void S_StopChannel(int cnum);
 
 void S_SetMusicVolume(int volume)
@@ -133,10 +133,10 @@ static void S_StopChannel(int cnum)
 //
 // Changes volume and stereo-separation variables
 //  from the norm of a sound effect to be played.
-// If the sound is not audible, returns a 0.
-// Otherwise, modifies parameters and returns 1.
+// If the sound is not audible, returns false.
+// Otherwise, modifies parameters and returns true.
 //
-static int S_AdjustSoundParams (mobj_t *listener, mobj_t *source, int *vol, int *sep)
+static boolean S_AdjustSoundParams (mobj_t *listener, mobj_t *source, int *vol, int *sep)
 {
   fixed_t approx_dist, adx, ady;
   angle_t angle;
@@ -147,7 +147,7 @@ static int S_AdjustSoundParams (mobj_t *listener, mobj_t *source, int *vol, int 
   // From _GG1_ p.428. Appox. eucledian distance fast.
   approx_dist = adx + ady - ((adx < ady ? adx : ady)>>1);
   if (gamemap != 8 && approx_dist > S_CLIPPING_DIST)
-    return 0;
+    return false;
   // angle of source to listener
   angle = R_PointToAngle2(listener->x, listener->y, source->x, source->y);
   if (angle > listener->angle)
@@ -262,7 +262,8 @@ static void S_StartSoundAtVolume(mobj_t *origin, int sfx_id, int volume)
 static void S_StartSoundAtVolume(void *origin_p, int sfx_id, int volume)
 #endif
 {
-  int rc, sep, pitch;
+  boolean rc;
+  int sep, pitch;
   sfxinfo_t *sfx;
   int cnum;
 #if (APPVER_DOOMREV >= AV_DR_DM17)
@@ -421,7 +422,8 @@ void S_UpdateSounds(mobj_t* listener)
 void S_UpdateSounds(void* listener_p)
 #endif
 {
-  int audible, cnum,volume, sep, pitch, i;
+  boolean audible;
+  int cnum,volume, sep, pitch, i;
   sfxinfo_t *sfx;
   channel_t *c; 
 #if (APPVER_DOOMREV >= AV_DR_DM17)
