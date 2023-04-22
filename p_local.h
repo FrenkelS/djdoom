@@ -123,8 +123,6 @@ void	P_PlayerThink (player_t *player);
 // Time interval for item respawning.
 #define ITEMQUESIZE		128
 
-extern mapthing_t	itemrespawnque[ITEMQUESIZE];
-extern int		itemrespawntime[ITEMQUESIZE];
 extern int		iquehead, iquetail;
 
 
