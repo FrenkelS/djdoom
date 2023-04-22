@@ -25,9 +25,6 @@
 #include "AM_data.h"
 #include <stdio.h>
 
-extern int _wp1, _wp2, _wp3, _wp4, _wp5, _wp6, _wp7, _wp8, _wp9;
-extern int _wp10, _wp11, _wp12, _wp13, _wp14, _wp15, _wp16;
-
 static int cheating = 0;
 static int grid = 0;
 

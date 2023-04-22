@@ -19,9 +19,7 @@
 // P_maputl.c
 
 #include "DoomDef.h"
-extern int _wp1, _wp2, _wp3, _wp4, _wp5, _wp6, _wp7, _wp8, _wp9, _wp10, _wp11, _wp12, _wp13, _wp14, _wp15, _wp16, _wp17, _wp18, _wp19;
 #include "P_local.h"
-extern int _wp20, _wp21, _wp22, _wp23, _wp24, _wp25, _wp26, _wp27, _wp28, _wp29, _wp30, _wp31, _wp32, _wp33, _wp34, _wp35, _wp36;
 
 
 /*

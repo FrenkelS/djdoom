@@ -42,8 +42,6 @@
 #define	FGCOLOR		8
 #endif
 
-extern int _wp1, _wp2, _wp3, _wp4;
-
 #define MAXWADFILES 20
 static char *wadfiles[MAXWADFILES];
 

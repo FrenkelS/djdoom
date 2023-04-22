@@ -18,11 +18,7 @@
 
 // R_draw.c
 
-extern int _wp1, _wp2, _wp3, _wp4, _wp5, _wp6, _wp7, _wp8, _wp9, _wp10;
-extern int _wp11, _wp12, _wp13, _wp14, _wp15, _wp16, _wp17, _wp18, _wp19, _wp20, _wp21;
 #include "DoomDef.h"
-extern int _wp22, _wp23, _wp24, _wp25, _wp26, _wp27, _wp28, _wp29, _wp30, _wp31, _wp32;
-extern int _wp33, _wp34, _wp35, _wp36, _wp37, _wp38, _wp39, _wp40, _wp41;
 #include "R_local.h"
 
 #define SC_INDEX			0x3c4

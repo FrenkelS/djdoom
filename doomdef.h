@@ -558,8 +558,6 @@ extern boolean paused;
 
 extern boolean usergame;
 
-extern int _dp1, _dp2, _dp3, _dp4, _dp5, _dp6, _dp7; // align for d_main.c
-
 extern boolean nomonsters; // checkparm of -nomonsters
 extern boolean respawnparm; // checkparm of -respawn
 extern boolean fastparm; // checkparm of -fastparm
@@ -576,14 +574,6 @@ extern boolean tnt;
 #endif
 
 extern boolean devparm; // started game with -devparm
-
-extern int _gp1, _gp2, _gp3, _gp4, _gp5, _gp6, _gp7, _gp8; // align for g_game.c
-extern int _gp9, _gp10, _gp11, _gp12, _gp13, _gp14, _gp15, _gp16; // align for g_game.c
-extern int _gp17, _gp18; // align for g_game.c
-
-#if (APPVER_DOOMREV >= AV_DR_DM18FR)
-extern int _gp19;
-#endif
 
 extern boolean deathmatch; // only if started as net death
 
@@ -644,12 +634,6 @@ extern gamestate_t wipegamestate;
 extern boolean precache; // if true, load all graphics at level load
 
 extern byte *screens[5]; // off screen work buffer, from V_video.c
-
-extern int _dp8, _dp9, _dp10, _dp11; // align for d_main.c
-
-#if (APPVER_DOOMREV < AV_DR_DM18FR)
-extern int _dp12;
-#endif
 
 extern boolean automapactive;
 extern boolean menuactive;
@@ -1200,8 +1184,6 @@ char HU_dequeueChatChar(void);
 void HU_Erase(void);
 
 
-extern int _tp1; // temp align
 #include "sounds.h"
-extern int _tp2, _tp3, _tp4, _tp5, _tp6, _tp7, _tp8, _tp9, _tp10, _tp11, _tp12; // temp align
 
 #endif // __DOOMDEF__

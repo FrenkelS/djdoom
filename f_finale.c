@@ -23,9 +23,6 @@
 #include "soundst.h"
 #include <ctype.h>
 
-extern int _wp1, _wp2, _wp3, _wp4, _wp5, _wp6, _wp7, _wp8;
-extern int _wp9, _wp10, _wp11, _wp12, _wp13, _wp14, _wp15, _wp16, _wp17, _wp18;
-
 static int             finalestage;            // 0 = text, 1 = art screen, 2 = character cast
 static int             finalecount;
 

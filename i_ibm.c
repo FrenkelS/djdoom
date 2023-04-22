@@ -30,8 +30,6 @@
 #include <go32.h>
 #endif
 
-extern int _wp1, _wp2;
-
 #define DPMI_INT 0x31
 //#define NOTIMER
 

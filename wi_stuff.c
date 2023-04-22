@@ -18,9 +18,6 @@
 
 // WI_stuff.c
 #include "DoomDef.h"
-extern int _wp1, _wp2, _wp3, _wp4, _wp5, _wp6, _wp7, _wp8, _wp9;
-extern int _wp10, _wp11, _wp12, _wp13, _wp14, _wp15, _wp16, _wp17;
-extern int _wp18;
 #include "WI_stuff.h"
 #include "wi_data.h"
 

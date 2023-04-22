@@ -20,7 +20,6 @@
 
 #include <stdlib.h>
 #include "DoomDef.h"
-extern int _wp1, _wp2, _wp3, _wp4, _wp5, _wp6;
 #include "P_local.h"
 #include "soundst.h"
 
