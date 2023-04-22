@@ -29,7 +29,7 @@
 //
 // STATUS BAR CODE
 //
-void ST_Stop(void);
+static void ST_Stop(void);
 
 static void ST_refreshBackground(void)
 {
@@ -578,7 +578,7 @@ static void ST_doPaletteStuff(void)
 
 }
 
-void ST_drawWidgets(boolean refresh)
+static void ST_drawWidgets(boolean refresh)
 {
   int i;
 
@@ -613,7 +613,7 @@ void ST_drawWidgets(boolean refresh)
 
 }
 
-void ST_doRefresh(void)
+static void ST_doRefresh(void)
 {
 
   st_firsttime = false;
@@ -626,7 +626,7 @@ void ST_doRefresh(void)
 
 }
 
-void ST_diffDraw(void)
+static void ST_diffDraw(void)
 {
 // update all widgets
   ST_drawWidgets(false);
@@ -648,7 +648,7 @@ void ST_Drawer (boolean fullscreen, boolean refresh)
 
 }
 
-void ST_loadGraphics(void)
+static void ST_loadGraphics(void)
 {
 
   int i, j, facenum;   
@@ -721,48 +721,10 @@ void ST_loadGraphics(void)
 
 }
 
-void ST_loadData(void)
+static void ST_loadData(void)
 {
   lu_palette = W_GetNumForName ("PLAYPAL");
   ST_loadGraphics();
-}
-
-void ST_unloadGraphics(void)
-{
-
-int i;
-
-// unload the numbers, tall and short
-  for (i=0;i<10;i++)
-  {
-    Z_ChangeTag(tallnum[i], PU_CACHE);
-    Z_ChangeTag(shortnum[i], PU_CACHE);
-  }
-// unload tall percent
-  Z_ChangeTag(tallpercent, PU_CACHE); 
-
-// unload arms background
-  Z_ChangeTag(armsbg, PU_CACHE); 
-
-// unload gray #'s
-  for (i=0;i<6;i++)
-    Z_ChangeTag(arms[i][0], PU_CACHE);
-    
-// unload the key cards
-  for (i=0;i<NUMCARDS;i++)
-    Z_ChangeTag(keys[i], PU_CACHE);
-
-  Z_ChangeTag(sbar, PU_CACHE);
-  Z_ChangeTag(faceback, PU_CACHE);
-
-  for (i=0;i<ST_NUMFACES;i++)
-    Z_ChangeTag(faces[i], PU_CACHE);
-
-}
-
-void ST_unloadData(void)
-{
-  ST_unloadGraphics();
 }
 
 static void ST_initData(void)
@@ -890,7 +852,7 @@ void ST_Start (void)
 
 }
 
-void ST_Stop (void)
+static void ST_Stop (void)
 {
   if (st_stopped)
     return;
