@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -26,7 +27,7 @@
 
 #define R ((8*PLAYERRADIUS)/7)
 
-mline_t player_arrow[] = {
+static mline_t player_arrow[] = {
   { { -R+R/8, 0 }, { R, 0 } }, // -----
   { { R, 0 }, { R-R/2, R/4 } },  // ----->
   { { R, 0 }, { R-R/2, -R/4 } },
@@ -40,7 +41,7 @@ mline_t player_arrow[] = {
 #define NUMPLYRLINES (sizeof(player_arrow)/sizeof(mline_t))
 
 #define R ((8*PLAYERRADIUS)/7)
-mline_t cheat_player_arrow[] = {
+static mline_t cheat_player_arrow[] = {
   { { -R+R/8, 0 }, { R, 0 } }, // -----
   { { R, 0 }, { R-R/2, R/6 } },  // ----->
   { { R, 0 }, { R-R/2, -R/6 } },
@@ -71,7 +72,7 @@ mline_t triangle_guy[] = {
 #define NUMTRIANGLEGUYLINES (sizeof(triangle_guy)/sizeof(mline_t))
 
 #define R (FRACUNIT)
-mline_t thintriangle_guy[] = {
+static mline_t thintriangle_guy[] = {
   { { -.5*R, -.7*R }, { R, 0 } },
   { { R, 0 }, { -.5*R, .7*R } },
   { { -.5*R, .7*R }, { -.5*R, -.7*R } }

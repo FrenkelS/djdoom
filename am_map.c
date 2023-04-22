@@ -110,7 +110,7 @@ void AM_getIslope(mline_t *ml, islope_t *is)
   else is->slp = FixedDiv(dy, dx);
 }
 
-void AM_activateNewScale(void)
+static void AM_activateNewScale(void)
 {
   m_x += m_w/2;
   m_y += m_h/2;
@@ -130,7 +130,7 @@ void AM_saveScaleAndLoc(void)
   old_m_h = m_h;
 }
 
-void AM_restoreScaleAndLoc(void)
+static void AM_restoreScaleAndLoc(void)
 {
 
   m_w = old_m_w;
@@ -153,7 +153,7 @@ void AM_restoreScaleAndLoc(void)
 
 // adds a marker at the current location
 
-void AM_addMark(void)
+static void AM_addMark(void)
 {
   markpoints[markpointnum].x = m_x + m_w/2;
   markpoints[markpointnum].y = m_y + m_h/2;
@@ -161,7 +161,7 @@ void AM_addMark(void)
 
 }
 
-void AM_findMinMaxBoundaries(void)
+static void AM_findMinMaxBoundaries(void)
 {
   int i;
   fixed_t a, b;
@@ -188,7 +188,7 @@ void AM_findMinMaxBoundaries(void)
 
 }
 
-void AM_changeWindowLoc(void)
+static void AM_changeWindowLoc(void)
 {
   if (m_paninc.x || m_paninc.y)
   {
@@ -213,7 +213,7 @@ void AM_changeWindowLoc(void)
   m_y2 = m_y + m_h;
 }
 
-void AM_initVariables(void)
+static void AM_initVariables(void)
 {
   int pnum;
   static event_t st_notify = { ev_keyup, AM_MSGENTERED };
@@ -261,14 +261,14 @@ void AM_loadPics(void)
   }
 }
 
-void AM_unloadPics(void)
+static void AM_unloadPics(void)
 {
   int i;
   for (i=0;i<10;i++) Z_ChangeTag(marknums[i], PU_CACHE);
 
 }
 
-void AM_clearMarks(void)
+static void AM_clearMarks(void)
 {
   int i;
   for (i=0;i<AM_NUMMARKPOINTS;i++) markpoints[i].x = -1; // means empty
@@ -278,7 +278,7 @@ void AM_clearMarks(void)
 // should be called at the start of every level
 // right now, i figure it out myself
 
-void AM_LevelInit(void)
+static void AM_LevelInit(void)
 {
   leveljuststarted = 0;
 
@@ -307,7 +307,7 @@ void AM_Stop (void)
   stopped = true;
 }
 
-void AM_Start (void)
+static void AM_Start (void)
 {
   static int lastlevel = -1, lastepisode = -1;
 
@@ -463,7 +463,7 @@ boolean AM_Responder (event_t *ev)
 
 }
 
-void AM_changeWindowScale(void)
+static void AM_changeWindowScale(void)
 {
 
   // Change the scaling multipliers
@@ -475,7 +475,7 @@ void AM_changeWindowScale(void)
   else AM_activateNewScale();
 }
 
-void AM_doFollowPlayer(void)
+static void AM_doFollowPlayer(void)
 {
   if (f_oldloc.x != plr->mo->x || f_oldloc.y != plr->mo->y)
   {
@@ -537,7 +537,7 @@ void AM_clearFB(int color)
 // faster reject and precalculated slopes.  If I need the speed, will
 // hash algorithm to the common cases.
 
-boolean AM_clipMline(mline_t *ml, fline_t *fl)
+static boolean AM_clipMline(mline_t *ml, fline_t *fl)
 {
   enum { LEFT=1, RIGHT=2, BOTTOM=4, TOP=8 };
   register int outcode1 = 0, outcode2 = 0, outside;
@@ -625,7 +625,7 @@ boolean AM_clipMline(mline_t *ml, fline_t *fl)
 
 // Classic Bresenham w/ whatever optimizations I need for speed
 
-void AM_drawFline(fline_t *fl, int color)
+static void AM_drawFline(fline_t *fl, int color)
 {
 
   register int x, y, dx, dy, sx, sy, ax, ay, d;
@@ -686,7 +686,7 @@ void AM_drawFline(fline_t *fl, int color)
   }
 }
 
-void AM_drawMline(mline_t *ml, int color)
+static void AM_drawMline(mline_t *ml, int color)
 {
   static fline_t fl;
 
@@ -695,7 +695,7 @@ void AM_drawMline(mline_t *ml, int color)
 
 }
 
-void AM_drawGrid(int color)
+static void AM_drawGrid(int color)
 {
   fixed_t x, y;
   fixed_t start, end;
@@ -736,7 +736,7 @@ void AM_drawGrid(int color)
   }
 }
 
-void AM_drawWalls(void)
+static void AM_drawWalls(void)
 {
   int i;
   static mline_t l;
@@ -780,7 +780,7 @@ void AM_drawWalls(void)
 
 }
 
-void AM_rotate(fixed_t *x, fixed_t *y, angle_t a)
+static void AM_rotate(fixed_t *x, fixed_t *y, angle_t a)
 {
   fixed_t tmpx;
 
@@ -791,7 +791,7 @@ void AM_rotate(fixed_t *x, fixed_t *y, angle_t a)
   *x = tmpx;
 }
 
-void AM_drawLineCharacter(mline_t *lineguy, int lineguylines, fixed_t scale,
+static void AM_drawLineCharacter(mline_t *lineguy, int lineguylines, fixed_t scale,
   angle_t angle, int color, fixed_t x, fixed_t y)
 {
   int i;
@@ -826,7 +826,7 @@ void AM_drawLineCharacter(mline_t *lineguy, int lineguylines, fixed_t scale,
 
 }
 
-void AM_drawPlayers(void)
+static void AM_drawPlayers(void)
 {
 
   int i;
@@ -875,7 +875,7 @@ static void AM_drawThings(int colors)
   }
 }
 
-void AM_drawMarks(void)
+static void AM_drawMarks(void)
 {
   int i, fx, fy, w, h;
 
