@@ -988,7 +988,6 @@ void V_CopyRect(int scrx, int scry, int srcscrn, int width, int height, int dest
 void V_DrawPatch(int x, int y, int scrn, patch_t *patch);
 void V_DrawPatchDirect(int x, int y, int scrn, patch_t *patch);
 void V_DrawBlock(int x, int y, int scrn, int width, int height, byte *src); // Draw a linear block of pixels into the view buffer
-void V_GetBlock(int x, int y, int scrn, int width, int height, byte *dest); // Reads a linear block of pixels into the view buffer
 void V_MarkRect(int x, int y, int width, int height);
 
 /////////////////////////////////////////////////////
