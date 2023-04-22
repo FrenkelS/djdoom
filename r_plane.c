@@ -21,8 +21,6 @@
 #include "DoomDef.h"
 #include "R_local.h"
 
-planefunction_t		floorfunc, ceilingfunc;
-
 //
 // sky mapping
 //
