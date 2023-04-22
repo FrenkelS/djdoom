@@ -282,8 +282,8 @@ typedef struct
 #define	VDOORWAIT		150
 
 void	EV_VerticalDoor (line_t *line, mobj_t *thing);
-int		EV_DoDoor (line_t *line, vldoor_e type);
-int		EV_DoLockedDoor (line_t *line, vldoor_e type, mobj_t *thing);
+boolean	EV_DoDoor (line_t *line, vldoor_e type);
+boolean	EV_DoLockedDoor (line_t *line, vldoor_e type, mobj_t *thing);
 void	T_VerticalDoor (vldoor_t *door);
 void	P_SpawnDoorCloseIn30 (sector_t *sec);
 void	P_SpawnDoorRaiseIn5Mins (sector_t *sec);

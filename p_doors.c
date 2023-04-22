@@ -157,50 +157,50 @@ void T_VerticalDoor(vldoor_t *door)
 //
 //----------------------------------------------------------------------------
 
-int EV_DoLockedDoor (line_t *line, vldoor_e type, mobj_t *thing)
+boolean EV_DoLockedDoor (line_t *line, vldoor_e type, mobj_t *thing)
 {
 	player_t *p;
 
 	p = thing->player;
 
 	if (!p)
-		return 0;
+		return false;
 	
 	switch(line->special)
 	{
 		case 99:	// Blue Lock
 		case 133:
 			if ( !p )
-				return 0;
+				return false;
 			if (!p->cards[it_bluecard] && !p->cards[it_blueskull])
 			{
 				p->message = PD_BLUEO;
 				S_StartSound(NULL,sfx_oof);
-				return 0;
+				return false;
 			}
 			break;
 
 		case 134: // Red Lock
 		case 135:
 			if ( !p )
-				return 0;
+				return false;
 			if (!p->cards[it_redcard] && !p->cards[it_redskull])
 			{
 				p->message = PD_REDO;
 				S_StartSound(NULL,sfx_oof);
-				return 0;
+				return false;
 			}
 			break;
 
 		case 136:	// Yellow Lock
 		case 137:
 			if ( !p )
-				return 0;
+				return false;
 			if (!p->cards[it_yellowcard] && !p->cards[it_yellowskull])
 			{
 				p->message = PD_YELLOWO;
 				S_StartSound(NULL,sfx_oof);
-				return 0;
+				return false;
 			}
 			break;	
 	}
@@ -216,15 +216,15 @@ int EV_DoLockedDoor (line_t *line, vldoor_e type, mobj_t *thing)
 //
 //----------------------------------------------------------------------------
 
-int EV_DoDoor(line_t *line, vldoor_e type)
+boolean EV_DoDoor(line_t *line, vldoor_e type)
 {
 	int secnum;
-	int retcode;
+	boolean retcode;
 	sector_t *sec;
 	vldoor_t *door;
 
 	secnum = -1;
-	retcode = 0;
+	retcode = false;
 	while((secnum = P_FindSectorFromLineTag(line, secnum)) >= 0)
 	{
 		sec = &sectors[secnum];
@@ -233,7 +233,7 @@ int EV_DoDoor(line_t *line, vldoor_e type)
 			continue;
 		}
 		// Add new door thinker
-		retcode = 1;
+		retcode = true;
 		door = Z_Malloc(sizeof(*door), PU_LEVSPEC, 0);
 		P_AddThinker(&door->thinker);
 		sec->specialdata = door;
@@ -289,7 +289,7 @@ int EV_DoDoor(line_t *line, vldoor_e type)
 				break;
 		}
 	}
-	return(retcode);
+	return retcode;
 }
 
 //==================================================================
