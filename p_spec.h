@@ -339,9 +339,7 @@ extern	ceiling_t	*activeceilings[MAXCEILINGS];
 int		EV_DoCeiling (line_t *line, ceiling_e  type);
 void	T_MoveCeiling (ceiling_t *ceiling);
 void	P_AddActiveCeiling(ceiling_t *c);
-void	P_RemoveActiveCeiling(ceiling_t *c);
 int		EV_CeilingCrushStop(line_t	*line);
-void	P_ActivateInStasisCeiling(line_t *line);
 
 /*
 ===============================================================================

@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -18,6 +19,9 @@
 #include "DoomDef.h"
 #include "P_local.h"
 #include "soundst.h"
+
+static void	P_RemoveActiveCeiling(ceiling_t *c);
+static void	P_ActivateInStasisCeiling(line_t *line);
 
 //==================================================================
 //==================================================================
@@ -215,7 +219,7 @@ void P_AddActiveCeiling(ceiling_t *c)
 //		Remove a ceiling's thinker
 //
 //==================================================================
-void P_RemoveActiveCeiling(ceiling_t *c)
+static void P_RemoveActiveCeiling(ceiling_t *c)
 {
 	int		i;
 	
@@ -234,7 +238,7 @@ void P_RemoveActiveCeiling(ceiling_t *c)
 //		Restart a ceiling that's in-stasis
 //
 //==================================================================
-void P_ActivateInStasisCeiling(line_t *line)
+static void P_ActivateInStasisCeiling(line_t *line)
 {
 	int	i;
 	
