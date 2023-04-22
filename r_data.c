@@ -45,7 +45,6 @@ typedef struct
 
 int		firstflat;
 static int		lastflat, numflats;
-int		firstpatch, lastpatch, numpatches;
 int		firstspritelump, lastspritelump;
 static int	numspritelumps;
 
@@ -488,7 +487,7 @@ static void R_InitSpriteLumps (void)
 =================
 */
 
-void R_InitColormaps (void)
+static void R_InitColormaps (void)
 {
 	int	lump, length;
 //
