@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -28,6 +29,9 @@ plat_t	*activeplats[MAXPLATS];
 //	Move a plat up and down
 //
 //==================================================================
+
+static void	P_RemoveActivePlat(plat_t *plat);
+
 void	T_PlatRaise(plat_t	*plat)
 {
 	result_e res;
@@ -102,6 +106,9 @@ void	T_PlatRaise(plat_t	*plat)
 //	"amount" is only used for SOME platforms.
 //
 //==================================================================
+
+static void	P_ActivateInStasis(int tag);
+
 int	EV_DoPlat(line_t *line,plattype_e type,int amount)
 {
 	plat_t		*plat;
@@ -200,7 +207,7 @@ int	EV_DoPlat(line_t *line,plattype_e type,int amount)
 	return rtn;
 }
 
-void P_ActivateInStasis(int tag)
+static void P_ActivateInStasis(int tag)
 {
 	int		i;
 	
@@ -240,7 +247,7 @@ void P_AddActivePlat(plat_t *plat)
 	I_Error ("P_AddActivePlat: no more plats!");
 }
 
-void P_RemoveActivePlat(plat_t *plat)
+static void P_RemoveActivePlat(plat_t *plat)
 {
 	int		i;
 	for (i = 0;i < MAXPLATS;i++)
