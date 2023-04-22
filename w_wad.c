@@ -278,7 +278,7 @@ void W_InitMultipleFiles (char **filenames)
 		W_AddFile (*filenames);
 
 	if (!numlumps)
-		I_Error ("W_InitFiles: no files found");
+		I_Error ("W_InitMultipleFiles: no files found");
 		
 //
 // set up caching
@@ -288,42 +288,6 @@ void W_InitMultipleFiles (char **filenames)
 	if (!lumpcache)
 		I_Error ("Couldn't allocate lumpcache");
 	memset (lumpcache,0, size);
-}
-
-
-
-/*
-====================
-=
-= W_InitFile
-=
-= Just initialize from a single file
-=
-====================
-*/
-
-void W_InitFile (char *filename)
-{
-	char	*names[2];
-
-	names[0] = filename;
-	names[1] = NULL;
-	W_InitMultipleFiles (names);
-}
-
-
-
-/*
-====================
-=
-= W_NumLumps
-=
-====================
-*/
-
-int	W_NumLumps (void)
-{
-	return numlumps;
 }
 
 
@@ -488,65 +452,4 @@ void	*W_CacheLumpNum (int lump, int tag)
 void	*W_CacheLumpName (char *name, int tag)
 {
 	return W_CacheLumpNum (W_GetNumForName(name), tag);
-}
-
-
-/*
-====================
-=
-= W_Profile
-=
-====================
-*/
-
-static int	info[2500][10];
-static int	profilecount;
-
-void W_Profile (void)
-{
-	int		i;
-	memblock_t	*block;
-	void	*ptr;
-	char	ch;
-	FILE	*f;
-	int		j;
-	char	name[9];
-	
-	
-	for (i=0 ; i<numlumps ; i++)
-	{	
-		ptr = lumpcache[i];
-		if (!ptr)
-		{
-			ch = ' ';
-			continue;
-		}
-		else
-		{
-			block = (memblock_t *) ( (byte *)ptr - sizeof(memblock_t));
-			if (block->tag < PU_PURGELEVEL)
-				ch = 'S';
-			else
-				ch = 'P';
-		}
-		info[i][profilecount] = ch;
-	}
-	profilecount++;
-	
-	f = fopen ("waddump.txt","w");
-	name[8] = 0;
-	for (i=0 ; i<numlumps ; i++)
-	{
-		memcpy (name,lumpinfo[i].name,8);
-		for (j=0 ; j<8 ; j++)
-			if (!name[j])
-				break;
-		for ( ; j<8 ; j++)
-			name[j] = ' ';
-		fprintf (f,"%s ",name);
-		for (j=0 ; j<profilecount ; j++)
-			fprintf (f,"    %c",info[i][j]);
-		fprintf (f,"\n");
-	}
-	fclose (f);
 }
