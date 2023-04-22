@@ -118,7 +118,6 @@ void S_Init(int,int);
 
 
 void I_SetMusicVolume(int volume);
-void I_SetSfxVolume(int volume);
 
 //
 //  MUSIC I/O
