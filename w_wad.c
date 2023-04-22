@@ -346,11 +346,10 @@ int	W_GetNumForName (char *name)
 	int	i;
 
 	i = W_CheckNumForName (name);
-	if (i != -1)
-		return i;
+	if (i == -1)
+		I_Error ("W_GetNumForName: %s not found!",name);
 
-	I_Error ("W_GetNumForName: %s not found!",name);
-	return -1;
+	return i;
 }
 
 
