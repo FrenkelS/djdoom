@@ -110,7 +110,7 @@ int M_CheckParm (char *check)
 ===============
 */
 
-unsigned char rndtable[256] = {
+static const unsigned char rndtable[256] = {
 	0,   8, 109, 220, 222, 241, 149, 107,  75, 248, 254, 140,  16,  66,
 	74,  21, 211,  47,  80, 242, 154,  27, 205, 128, 161,  89,  77,  36,
 	95, 110,  85,  48, 212, 140, 211, 249,  22,  79, 200,  50,  28, 188,
@@ -132,7 +132,7 @@ unsigned char rndtable[256] = {
 	120, 163, 236, 249
 };
 int rndindex = 0;
-int prndindex = 0;
+static int prndindex = 0;
 
 int P_Random (void)
 {
@@ -293,7 +293,7 @@ extern int snd_MusicDevice, // current music card # (index to dmxCodes)
 extern int     snd_SBport, snd_SBirq, snd_SBdma;       // sound blaster variables
 extern int     snd_Mport;                              // midi variables
 
-default_t defaults[] =
+static default_t defaults[] =
 {
 	{"mouse_sensitivity", &mouseSensitivity, 5},
 
@@ -361,8 +361,8 @@ default_t defaults[] =
 	{"chatmacro9", (int *) &chat_macros[9], (int) HUSTR_CHATMACRO9 }
 };
 
-int numdefaults;
-char *defaultfile;
+static int numdefaults;
+static char *defaultfile;
 
 /*
 ==============
@@ -527,7 +527,7 @@ typedef struct
 ==============
 */
 
-void WritePCXfile (char *filename, byte *data, int width, int height, byte *palette)
+static void WritePCXfile (char *filename, byte *data, int width, int height, byte *palette)
 {
 	int     i, length;
 	pcx_t   *pcx;
