@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -106,7 +107,6 @@ fixed_t P_InterceptVector2 (divline_t *v2, divline_t *v1)
 	den = FixedMul (v1->dy>>8,v2->dx) - FixedMul(v1->dx>>8,v2->dy);
 	if (den == 0)
 		return 0;
-//		I_Error ("P_InterceptVector: parallel");
 
 	num = FixedMul ( (v1->x - v2->x)>>8 ,v1->dy) + 
 			FixedMul ( (v2->y - v1->y)>>8 , v1->dx);
