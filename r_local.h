@@ -377,7 +377,7 @@ extern	int			firstflat;
 extern	int			*flattranslation;		// for global animation
 extern	int			*texturetranslation;	// for global animation
 
-extern	int		firstspritelump, lastspritelump, numspritelumps;
+extern	int		firstspritelump, lastspritelump;
 
 byte	*R_GetColumn (int tex, int col);
 void	R_InitData (void);

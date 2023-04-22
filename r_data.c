@@ -46,18 +46,20 @@ typedef struct
 
 
 
-int		firstflat, lastflat, numflats;
+int		firstflat;
+static int		lastflat, numflats;
 int		firstpatch, lastpatch, numpatches;
-int		firstspritelump, lastspritelump, numspritelumps;
+int		firstspritelump, lastspritelump;
+static int	numspritelumps;
 
 int			numtextures;
-texture_t	**textures;
-int			*texturewidthmask;
+static texture_t	**textures;
+static int			*texturewidthmask;
 fixed_t		*textureheight;		// needed for texture pegging
-int			*texturecompositesize;
-short		**texturecolumnlump;
-unsigned short		**texturecolumnofs;
-byte		**texturecomposite;
+static int			*texturecompositesize;
+static short		**texturecolumnlump;
+static unsigned short		**texturecolumnofs;
+static byte		**texturecomposite;
 
 int			*flattranslation;		// for global animation
 int			*texturetranslation;	// for global animation
@@ -187,7 +189,7 @@ static void R_GenerateComposite (int texnum)
 ===================
 */
 
-void R_GenerateLookup (int texnum)
+static void R_GenerateLookup (int texnum)
 {
 	texture_t	*texture;
 	byte		*patchcount;		// [texture->width]
@@ -286,7 +288,7 @@ byte *R_GetColumn (int tex, int col)
 ==================
 */
 
-void R_InitTextures (void)
+static void R_InitTextures (void)
 {
 	maptexture_t	*mtexture;
 	texture_t		*texture;
@@ -432,7 +434,7 @@ void R_InitTextures (void)
 =================
 */
 
-void R_InitFlats (void)
+static void R_InitFlats (void)
 {
 	int		i;
 	
@@ -457,7 +459,7 @@ void R_InitFlats (void)
 =================
 */
 
-void R_InitSpriteLumps (void)
+static void R_InitSpriteLumps (void)
 {
 	int		i;
 	patch_t	*patch;
@@ -605,7 +607,7 @@ int	R_TextureNumForName (char *name)
 =================
 */
 
-int		flatmemory, texturememory, spritememory;
+static int		flatmemory, texturememory, spritememory;
 
 void R_PrecacheLevel (void)
 {
