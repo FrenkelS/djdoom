@@ -574,10 +574,7 @@ int	R_CheckTextureNumForName (char *name)
 
 int	R_TextureNumForName (char *name)
 {
-	int		i;
-	//char	namet[9];
-	
-	i = R_CheckTextureNumForName (name);
+	int	i = R_CheckTextureNumForName (name);
 	if (i==-1)
 		I_Error ("R_TextureNumForName: %s not found",name);
 	

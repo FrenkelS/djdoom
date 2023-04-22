@@ -578,18 +578,17 @@ static boolean PIT_AddThingIntercepts (mobj_t	*thing)
 =
 = P_TraverseIntercepts
 =
-= Returns true if the traverser function returns true for all lines
 ====================
 */
 
-static boolean P_TraverseIntercepts ( traverser_t func, fixed_t maxfrac )
+static void P_TraverseIntercepts ( traverser_t func, fixed_t maxfrac )
 {
 	int				count;
 	fixed_t			dist;
 	intercept_t		*scan, *in;
 	
 	count = intercept_p - intercepts;
-	in = 0;			// shut up compiler warning
+	in = NULL;			// shut up compiler warning
 	
 	while (count--)
 	{
@@ -602,14 +601,14 @@ static boolean P_TraverseIntercepts ( traverser_t func, fixed_t maxfrac )
 			}
 			
 		if (dist > maxfrac)
-			return true;			// checked everything in range		
+			return;			// checked everything in range		
 
 		if ( !func (in) )
-			return false;			// don't bother going farther
+			return;			// don't bother going farther
 		in->frac = MAXINT;
 	}
 	
-	return true;		// everything was traversed
+	// everything was traversed
 }
 
 
@@ -620,11 +619,10 @@ static boolean P_TraverseIntercepts ( traverser_t func, fixed_t maxfrac )
 = P_PathTraverse
 =
 = Traces a line from x1,y1 to x2,y2, calling the traverser function for each
-= Returns true if the traverser function returns true for all lines
 ==================
 */
 
-boolean P_PathTraverse (fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2,
+void P_PathTraverse (fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2,
 	int flags, boolean (*trav) (intercept_t *))
 {
 	fixed_t	xt1,yt1,xt2,yt2;
@@ -711,12 +709,12 @@ boolean P_PathTraverse (fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2,
 		if (flags & PT_ADDLINES)
 		{
 			if (!P_BlockLinesIterator (mapx, mapy,PIT_AddLineIntercepts))
-				return false;	// early out
+				return;	// early out
 		}
 		if (flags & PT_ADDTHINGS)
 		{
 			if (!P_BlockThingsIterator (mapx, mapy,PIT_AddThingIntercepts))
-				return false;	// early out
+				return;	// early out
 		}
 		
 		if (mapx == xt2 && mapy == yt2)
@@ -739,7 +737,7 @@ boolean P_PathTraverse (fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2,
 //
 // go through the sorted list
 //
-	return P_TraverseIntercepts ( trav, FRACUNIT );
+	P_TraverseIntercepts ( trav, FRACUNIT );
 }
 
 
