@@ -826,10 +826,7 @@ static boolean		PTR_AimTraverse (intercept_t *in)
 				topslope = slope;
 		}
 		
-		if (topslope <= bottomslope)
-			return false;		// stop
-			
-		return true;		// shot continues
+		return topslope > bottomslope;
 	}
 	
 //
@@ -1058,11 +1055,7 @@ static boolean		PTR_UseTraverse (intercept_t *in)
 		return true ;		// not a special line, but keep checking
 	}
 		
-	side = 0;
-	if (P_PointOnLineSide (usething->x, usething->y, in->d.line))
-		side = 1;
-//		return false;		// don't use back sides
-		
+	side = P_PointOnLineSide (usething->x, usething->y, in->d.line);
 	P_UseSpecialLine (usething, in->d.line, side);
 
 	return false;			// can't use for than one special line in a row

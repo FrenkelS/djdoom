@@ -75,9 +75,7 @@ int P_PointOnLineSide (fixed_t x, fixed_t y, line_t *line)
 	left = FixedMul ( line->dy>>FRACBITS , dx );
 	right = FixedMul ( dy , line->dx>>FRACBITS );
 	
-	if (right < left)
-		return 0;		// front side
-	return 1;			// back side
+	return right >= left;
 }
 
 
@@ -172,9 +170,7 @@ static int P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t *line)
 	left = FixedMul ( line->dy>>8, dx>>8 );
 	right = FixedMul ( dy>>8 , line->dx>>8 );
 	
-	if (right < left)
-		return 0;		// front side
-	return 1;			// back side
+	return right >= left;
 }
 
 
