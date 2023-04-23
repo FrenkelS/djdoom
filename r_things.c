@@ -234,7 +234,6 @@ static void R_InitSpriteDefs (void)
 #define	MAXVISSPRITES	128
 
 static vissprite_t	vissprites[MAXVISSPRITES], *vissprite_p;
-static int			newvissprite;
 
 
 /*
