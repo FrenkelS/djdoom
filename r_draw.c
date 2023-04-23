@@ -311,24 +311,22 @@ void R_DrawSpan (void)
 
         for (i = 0; i < 4; i++)
         {
-                outp (SC_INDEX+1,1<<i); 
                 dsp_x1 = (ds_x1-i)/4;
                 if (dsp_x1*4+i<ds_x1)
                         dsp_x1++;
-                dest = destview + ds_y*80 + dsp_x1;
                 dsp_x2 = (ds_x2-i)/4;
                 countp = dsp_x2 - dsp_x1;
-
-                xfrac = ds_xfrac; 
-                yfrac = ds_yfrac;
-
-                prt = dsp_x1*4-ds_x1+i;
-
-                xfrac += ds_xstep*prt;
-                yfrac += ds_ystep*prt;
                 if (countp < 0) {
                         continue;
                 }
+
+                outp (SC_INDEX+1,1<<i); 
+                dest = destview + ds_y*PLANEWIDTH + dsp_x1;
+
+                prt = dsp_x1*4-ds_x1+i;
+                xfrac = ds_xfrac+ds_xstep*prt;
+                yfrac = ds_yfrac+ds_ystep*prt;
+
                 do
                 {
                         // Current texture index in u,v.
@@ -362,31 +360,29 @@ void R_DrawSpanLow (void)
         || ds_x2>=SCREENWIDTH  
         || (unsigned)ds_y>SCREENHEIGHT)
     {
-        I_Error( "R_DrawSpan: %i to %i at %i",
+        I_Error( "R_DrawSpanLow: %i to %i at %i",
                  ds_x1,ds_x2,ds_y);
     } 
 #endif 
 
         for (i = 0; i < 2; i++)
         {
-                outp (SC_INDEX+1,3<<(i*2)); 
                 dsp_x1 = (ds_x1-i)/2;
                 if (dsp_x1*2+i<ds_x1)
                         dsp_x1++;
-                dest = destview + ds_y*80 + dsp_x1;
                 dsp_x2 = (ds_x2-i)/2;
                 countp = dsp_x2 - dsp_x1;
-
-                xfrac = ds_xfrac; 
-                yfrac = ds_yfrac;
-
-                prt = dsp_x1*2-ds_x1+i;
-
-                xfrac += ds_xstep*prt;
-                yfrac += ds_ystep*prt;
                 if (countp < 0) {
                         continue;
                 }
+
+                outp (SC_INDEX+1,3<<(i*2)); 
+                dest = destview + ds_y*PLANEWIDTH + dsp_x1;
+
+                prt = dsp_x1*2-ds_x1+i;
+                xfrac = ds_xfrac+ds_xstep*prt; 
+                yfrac = ds_yfrac+ds_ystep*prt;
+
                 do
                 {
                         // Current texture index in u,v.
@@ -396,7 +392,7 @@ void R_DrawSpanLow (void)
                         //  re-index using light/colormap.
                         *dest++ = ds_colormap[ds_source[spot]];
                         // Next step in u,v.
-                        xfrac += ds_xstep*2; 
+                        xfrac += ds_xstep*2;
                         yfrac += ds_ystep*2;
                 } while (countp--);
         }
