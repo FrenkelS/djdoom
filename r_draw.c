@@ -1,5 +1,7 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2016-2017 Alexey Khokholov (Nuke.YKT)
+// Copyright (C) 2017 Alexandre-Xavier Labonté-Lamoureux
 // Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
@@ -284,63 +286,120 @@ fixed_t			ds_xstep;
 fixed_t			ds_ystep;
 byte			*ds_source;		// start of a 64*64 tile image
 
-void R_DrawSpan (void)
-{
-	fixed_t		xfrac, yfrac;
-	byte		*dest;
-	int			count, spot;
-	
-#ifdef RANGECHECK
-	if (ds_x2 < ds_x1 || ds_x1<0 || ds_x2>=SCREENWIDTH 
-	|| (unsigned)ds_y>SCREENHEIGHT)
-		I_Error ("R_DrawSpan: %i to %i at %i",ds_x1,ds_x2,ds_y);
-#endif
-	
-	xfrac = ds_xfrac;
-	yfrac = ds_yfrac;
-	
-	dest = destview + ds_y*PLANEWIDTH + (ds_x1>>2);
-	for (count = ds_x1; count <= ds_x2; count++)
-	{
-		spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
-		outp (SC_INDEX+1,1<<(count&3)); 
-		*dest = ds_colormap[ds_source[spot]];
-		if ((count&3)==3)
-			dest++;
-		xfrac += ds_xstep;
-		yfrac += ds_ystep;
-	}
-}
+void R_DrawSpan (void) 
+{ 
+    fixed_t		xfrac;
+    fixed_t		yfrac; 
+    byte*		dest; 
+    int			spot; 
+        int                     i;
+        int                     prt;
+        int                     dsp_x1;
+        int                     dsp_x2;
+        int                     countp;
+         
+#ifdef RANGECHECK 
+    if (ds_x2 < ds_x1
+        || ds_x1<0
+        || ds_x2>=SCREENWIDTH  
+        || (unsigned)ds_y>SCREENHEIGHT)
+    {
+        I_Error( "R_DrawSpan: %i to %i at %i",
+                 ds_x1,ds_x2,ds_y);
+    } 
+#endif 
 
-void R_DrawSpanLow (void)
-{
-	fixed_t		xfrac, yfrac;
-	byte		*dest;
-	int			count, spot;
-	
-#ifdef RANGECHECK
-	if (ds_x2 < ds_x1 || ds_x1<0 || ds_x2>=SCREENWIDTH 
-	|| (unsigned)ds_y>SCREENHEIGHT)
-		I_Error ("R_DrawSpan: %i to %i at %i",ds_x1,ds_x2,ds_y);
-#endif
-	
-	xfrac = ds_xfrac;
-	yfrac = ds_yfrac;
-	
-	dest = destview + ds_y*PLANEWIDTH + (ds_x1>>1);
-	for (count = ds_x1; count <= ds_x2; count++)
-	{
-		spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
-		if (count & 1)
-			outp (SC_INDEX+1,12);
-		else
-			outp (SC_INDEX+1,3);
-		*dest = ds_colormap[ds_source[spot]];
-		if (count & 1)
-			dest++;
-		xfrac += ds_xstep;
-		yfrac += ds_ystep;
-	}
+        for (i = 0; i < 4; i++)
+        {
+                outp (SC_INDEX+1,1<<i); 
+                dsp_x1 = (ds_x1-i)/4;
+                if (dsp_x1*4+i<ds_x1)
+                        dsp_x1++;
+                dest = destview + ds_y*80 + dsp_x1;
+                dsp_x2 = (ds_x2-i)/4;
+                countp = dsp_x2 - dsp_x1;
+
+                xfrac = ds_xfrac; 
+                yfrac = ds_yfrac;
+
+                prt = dsp_x1*4-ds_x1+i;
+
+                xfrac += ds_xstep*prt;
+                yfrac += ds_ystep*prt;
+                if (countp < 0) {
+                        continue;
+                }
+                do
+                {
+                        // Current texture index in u,v.
+                        spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
+
+                        // Lookup pixel from flat texture tile,
+                        //  re-index using light/colormap.
+                        *dest++ = ds_colormap[ds_source[spot]];
+                        // Next step in u,v.
+                        xfrac += ds_xstep*4; 
+                        yfrac += ds_ystep*4;
+                } while (countp--);
+        }
+} 
+
+void R_DrawSpanLow (void) 
+{ 
+    fixed_t		xfrac;
+    fixed_t		yfrac; 
+    byte*		dest; 
+    int			spot; 
+        int                     i;
+        int                     prt;
+        int                     dsp_x1;
+        int                     dsp_x2;
+        int                     countp;
+         
+#ifdef RANGECHECK 
+    if (ds_x2 < ds_x1
+        || ds_x1<0
+        || ds_x2>=SCREENWIDTH  
+        || (unsigned)ds_y>SCREENHEIGHT)
+    {
+        I_Error( "R_DrawSpan: %i to %i at %i",
+                 ds_x1,ds_x2,ds_y);
+    } 
+#endif 
+
+        for (i = 0; i < 2; i++)
+        {
+                outp (SC_INDEX+1,3<<(i*2)); 
+                dsp_x1 = (ds_x1-i)/2;
+                if (dsp_x1*2+i<ds_x1)
+                        dsp_x1++;
+                dest = destview + ds_y*80 + dsp_x1;
+                dsp_x2 = (ds_x2-i)/2;
+                countp = dsp_x2 - dsp_x1;
+
+                xfrac = ds_xfrac; 
+                yfrac = ds_yfrac;
+
+                prt = dsp_x1*2-ds_x1+i;
+
+                xfrac += ds_xstep*prt;
+                yfrac += ds_ystep*prt;
+                if (countp < 0) {
+                        continue;
+                }
+                do
+                {
+                        // Current texture index in u,v.
+                        spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
+
+                        // Lookup pixel from flat texture tile,
+                        //  re-index using light/colormap.
+                        *dest++ = ds_colormap[ds_source[spot]];
+                        // Next step in u,v.
+                        xfrac += ds_xstep*2; 
+                        yfrac += ds_ystep*2;
+                } while (countp--);
+        }
 }
 
 
