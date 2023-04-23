@@ -771,23 +771,8 @@ void D_StartTitle (void);
 //SYSTEM IO
 //---------
 
-//
-// For resize of screen, at start of game.
-// It will not work dynamically, see visplanes.
-//
-#define	BASE_WIDTH		320
-
-// It is educational but futile to change this
-//  scaling e.g. to 2. Drawing of status bar,
-//  menues etc. is tied to the scale implied
-//  by the graphics.
-#define	SCREEN_MUL		1
-#define	INV_ASPECT_RATIO	0.625 // 0.75, ideally
-
 #define SCREENWIDTH  320
-//SCREEN_MUL*BASE_WIDTH //320
 #define SCREENHEIGHT 200
-//(int)(SCREEN_MUL*BASE_WIDTH*INV_ASPECT_RATIO) //200
 #define PLANEWIDTH	(SCREENWIDTH/4)
 
 byte *I_ZoneBase (int *size);
@@ -1115,8 +1100,7 @@ void AM_Drawer (void);
 void AM_Stop (void);
 
 // Size of statusbar.
-// Now sensitive for scaling.
-#define ST_HEIGHT	32*SCREEN_MUL
+#define ST_HEIGHT	32
 #define ST_WIDTH	SCREENWIDTH
 #define ST_Y		(SCREENHEIGHT - ST_HEIGHT)
 
