@@ -649,7 +649,7 @@ static void R_SetupFrame (player_t *player)
 	framecount++;
 	validcount++;
 
-	destview = destscreen+(viewwindowx>>2)+viewwindowy*80;
+	destview = destscreen+(viewwindowx>>2)+viewwindowy*PLANEWIDTH;
 }
 
 /*

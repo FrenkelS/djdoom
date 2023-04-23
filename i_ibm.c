@@ -1379,29 +1379,29 @@ void I_BeginRead (void)
 	outp (GC_INDEX+1,inp(GC_INDEX+1)|1);
 
 // copy to backup
-	src = currentscreen + 184*80 + 304/4;
-	dest = (byte *)(0xac000 + __djgpp_conventional_base + 184*80 + 288/4);
+	src = currentscreen + 184*PLANEWIDTH + 304/4;
+	dest = (byte *)(0xac000 + __djgpp_conventional_base + 184*PLANEWIDTH + 288/4);
 	for (y=0 ; y<16 ; y++)
 	{
 		dest[0] = src[0];
 		dest[1] = src[1];
 		dest[2] = src[2];
 		dest[3] = src[3];
-		src += 80;
-		dest += 80;
+		src += PLANEWIDTH;
+		dest += PLANEWIDTH;
 	}
 
 // copy disk over
-	dest = currentscreen + 184*80 + 304/4;
-	src = (byte *)(0xac000 + __djgpp_conventional_base + 184*80 + 304/4);
+	dest = currentscreen + 184*PLANEWIDTH + 304/4;
+	src = (byte *)(0xac000 + __djgpp_conventional_base + 184*PLANEWIDTH + 304/4);
 	for (y=0 ; y<16 ; y++)
 	{
 		dest[0] = src[0];
 		dest[1] = src[1];
 		dest[2] = src[2];
 		dest[3] = src[3];
-		src += 80;
-		dest += 80;
+		src += PLANEWIDTH;
+		dest += PLANEWIDTH;
 	}
 
 
@@ -1428,16 +1428,16 @@ void I_EndRead (void)
 
 
 // copy disk over
-	dest = currentscreen + 184*80 + 304/4;
-	src = (byte *)(0xac000 + __djgpp_conventional_base + 184*80 + 288/4);
+	dest = currentscreen + 184*PLANEWIDTH + 304/4;
+	src = (byte *)(0xac000 + __djgpp_conventional_base + 184*PLANEWIDTH + 288/4);
 	for (y=0 ; y<16 ; y++)
 	{
 		dest[0] = src[0];
 		dest[1] = src[1];
 		dest[2] = src[2];
 		dest[3] = src[3];
-		src += 80;
-		dest += 80;
+		src += PLANEWIDTH;
+		dest += PLANEWIDTH;
 	}
 
 // set write mode 0
