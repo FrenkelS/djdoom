@@ -1172,15 +1172,6 @@ void D_DoomMain (void)
 		};
 		int i;
 	
-		if (shareware)
-#if APPVER_CHEX
-			I_Error("\nYou cannot -file with Chex(R) Quest "
-				"version. Register!");
-#else
-			I_Error("\nYou cannot -file with the shareware "
-				"version. Register!");
-#endif
-	
 		// Check for fake IWAD with right name,
 		// but w/o all the lumps of the registered version. 
 		if (registered)
