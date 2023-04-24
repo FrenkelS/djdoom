@@ -744,7 +744,7 @@ int I_TimerISR (void)
 */
 
 #if defined __DJGPP__
-static _go32_dpmi_seginfo oldkeyboardisr, newkeyboardisr;
+static _go32_dpmi_seginfo oldkeyboardisr = {}, newkeyboardisr;
 #elif defined __WATCOMC__
 static void (__interrupt __far *oldkeyboardisr) () = NULL;
 #endif
@@ -804,8 +804,11 @@ static void I_StartupKeyboard (void)
 static void I_ShutdownKeyboard (void)
 {
 #if defined __DJGPP__
-	_go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARDINT, &oldkeyboardisr);
-	_go32_dpmi_free_iret_wrapper(&newkeyboardisr);
+	if (oldkeyboardisr.size)
+	{
+		_go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARDINT, &oldkeyboardisr);
+		_go32_dpmi_free_iret_wrapper(&newkeyboardisr);
+	}
 #elif defined __WATCOMC__
 	if (oldkeyboardisr)
 		_dos_setvect (KEYBOARDINT, oldkeyboardisr);
