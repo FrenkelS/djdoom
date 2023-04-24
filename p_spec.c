@@ -968,14 +968,14 @@ void P_SpawnSpecials (void)
 	if (i && deathmatch)
 	{
 		levelTimer = true;
-		levelTimeCount = 20 * 60 * 35;
+		levelTimeCount = 20 * 60 * TICRATE;
 	}
 	
 	i = M_CheckParm("-timer");
 	if (i && deathmatch)
 	{
 		int	time;
-		time = atoi(myargv[i+1]) * 60 * 35;
+		time = atoi(myargv[i+1]) * 60 * TICRATE;
 		levelTimer = true;
 		levelTimeCount = time;
 	}

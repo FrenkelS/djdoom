@@ -175,7 +175,7 @@ int	EV_DoPlat(line_t *line,plattype_e type,int amount)
 				if (plat->low > sec->floorheight)
 					plat->low = sec->floorheight;
 				plat->high = sec->floorheight;
-				plat->wait = 35*PLATWAIT;
+				plat->wait = TICRATE*PLATWAIT;
 				plat->status = down;
 				S_StartSound((mobj_t *)&sec->soundorg, sfx_pstart);
 				break;
@@ -185,7 +185,7 @@ int	EV_DoPlat(line_t *line,plattype_e type,int amount)
 				if (plat->low > sec->floorheight)
 					plat->low = sec->floorheight;
 				plat->high = sec->floorheight;
-				plat->wait = 35*PLATWAIT;
+				plat->wait = TICRATE*PLATWAIT;
 				plat->status = down;
 				S_StartSound((mobj_t *)&sec->soundorg, sfx_pstart);
 				break;
@@ -197,7 +197,7 @@ int	EV_DoPlat(line_t *line,plattype_e type,int amount)
 				plat->high = P_FindHighestFloorSurrounding(sec);
 				if (plat->high < sec->floorheight)
 					plat->high = sec->floorheight;
-				plat->wait = 35*PLATWAIT;
+				plat->wait = TICRATE*PLATWAIT;
 				plat->status = P_Random()&1;
 				S_StartSound((mobj_t *)&sec->soundorg, sfx_pstart);
 				break;

@@ -401,7 +401,7 @@ void P_MobjThinker (mobj_t *mobj)
 		if (!respawnmonsters)
 			return;
 		mobj->movecount++;
-		if (mobj->movecount < 12*35)
+		if (mobj->movecount < 12*TICRATE)
 			return;
 		if ( leveltime&31 )
 			return;
@@ -524,7 +524,7 @@ void P_RespawnSpecials (void)
 	if (iquehead == iquetail)
 		return;			// nothing left to respawn
 	
-	if (leveltime - itemrespawntime[iquetail] < 30*35)
+	if (leveltime - itemrespawntime[iquetail] < 30*TICRATE)
 		return;			// wait at least 30 seconds
 
 	mthing = &itemrespawnque[iquetail];

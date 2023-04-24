@@ -423,10 +423,10 @@ typedef enum
 	NUMPOWERS
 } powertype_t;
 
-#define	INVULNTICS (30*35)
-#define	INVISTICS (60*35)
-#define	INFRATICS (120*35)
-#define	IRONTICS (60*35)
+#define	INVULNTICS (30*TICRATE)
+#define	INVISTICS (60*TICRATE)
+#define	INFRATICS (120*TICRATE)
+#define	IRONTICS (60*TICRATE)
 
 /*
 ================
