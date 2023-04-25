@@ -33,9 +33,6 @@
 #define DPMI_INT 0x31
 //#define NOTIMER
 
-void I_StartupNet (void);
-void I_ShutdownNet (void);
-
 void I_StartupSound (void);
 void I_ShutdownSound (void);
 
