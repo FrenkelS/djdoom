@@ -409,9 +409,7 @@ extern	byte			*dc_source;		// first pixel in a column
 void 	R_DrawColumn (void);
 void 	R_DrawColumnLow (void);
 void 	R_DrawFuzzColumn (void);
-void 	R_DrawFuzzColumnLow (void);
 void	R_DrawTranslatedColumn (void);
-void	R_DrawTranslatedColumnLow (void);
 
 extern	int				ds_y;
 extern	int				ds_x1;

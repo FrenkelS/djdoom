@@ -22,9 +22,6 @@
 #include "DoomDef.h"
 #include "R_local.h"
 
-void R_DrawColumn (void);
-void R_DrawFuzzColumn (void);
-
 typedef struct
 {
 	int		x1, x2;
