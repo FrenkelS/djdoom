@@ -160,12 +160,16 @@ boolean	R_PointOnSegSide (fixed_t x, fixed_t y, seg_t *line)
 
 // try to quickly decide by looking at sign bits
 	if ( (ldy ^ ldx ^ dx ^ dy)&0x80000000 )
-		return (ldy ^ dx) & 0x80000000;
+	{
+		if ( (ldy ^ dx) & 0x80000000 )
+			return 1;	// (left is negative)
+		return 0;
+	}
 
 	left = FixedMul ( ldy>>FRACBITS , dx );
 	right = FixedMul ( dy , ldx>>FRACBITS );
 
-	return !(right < left);
+	return right >= left;
 }
 
 
