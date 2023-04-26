@@ -309,37 +309,37 @@ void R_DrawSpan (void)
     } 
 #endif 
 
-        for (i = 0; i < 4; i++)
-        {
-                dsp_x1 = (ds_x1-i)/4;
-                if (dsp_x1*4+i<ds_x1)
-                        dsp_x1++;
-                dsp_x2 = (ds_x2-i)/4;
-                countp = dsp_x2 - dsp_x1;
-                if (countp < 0) {
-                        continue;
-                }
+	for (i = 0; i < 4; i++)
+	{
+		dsp_x1 = (ds_x1-i)/4;
+		if (dsp_x1*4+i<ds_x1)
+			dsp_x1++;
+		dsp_x2 = (ds_x2-i)/4;
+		countp = dsp_x2 - dsp_x1;
+		if (countp < 0) {
+			continue;
+		}
 
-                outp (SC_INDEX+1,1<<i); 
-                dest = destview + ds_y*PLANEWIDTH + dsp_x1;
+		outp (SC_INDEX+1,1<<i); 
+		dest = destview + ds_y*PLANEWIDTH + dsp_x1;
 
-                prt = dsp_x1*4-ds_x1+i;
-                xfrac = ds_xfrac+ds_xstep*prt;
-                yfrac = ds_yfrac+ds_ystep*prt;
+		prt = dsp_x1*4-ds_x1+i;
+		xfrac = ds_xfrac+ds_xstep*prt;
+		yfrac = ds_yfrac+ds_ystep*prt;
 
-                do
-                {
-                        // Current texture index in u,v.
-                        spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
+		do
+		{
+			// Current texture index in u,v.
+			spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
 
-                        // Lookup pixel from flat texture tile,
-                        //  re-index using light/colormap.
-                        *dest++ = ds_colormap[ds_source[spot]];
-                        // Next step in u,v.
-                        xfrac += ds_xstep*4; 
-                        yfrac += ds_ystep*4;
-                } while (countp--);
-        }
+			// Lookup pixel from flat texture tile,
+			//  re-index using light/colormap.
+			*dest++ = ds_colormap[ds_source[spot]];
+			// Next step in u,v.
+			xfrac += ds_xstep*4; 
+			yfrac += ds_ystep*4;
+		} while (countp--);
+	}
 } 
 
 void R_DrawSpanLow (void) 
