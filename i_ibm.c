@@ -897,15 +897,14 @@ static void I_ReadMouse (void)
 
 	ev.type = ev_mouse;
 
-	memset (&dpmiregs,0,sizeof(dpmiregs));
-	dpmiregs.d.eax = 3;                               // read buttons / position
-	DPMIInt (0x33);
-	ev.data1 = dpmiregs.d.ebx;
+	regs.w.ax = 3;                               // read buttons / position
+	int386 (0x33, &regs, &regs);
+	ev.data1 = regs.w.bx;
 
-	dpmiregs.d.eax = 11;                              // read counters
-	DPMIInt (0x33);
-	ev.data2 = (short)dpmiregs.d.ecx;
-	ev.data3 = -(short)dpmiregs.d.edx;
+	regs.w.ax = 11;                              // read counters
+	int386 (0x33, &regs, &regs);
+	ev.data2 = (short)regs.w.cx;
+	ev.data3 = -(short)regs.w.dx;
 
 	D_PostEvent (&ev);
 }
