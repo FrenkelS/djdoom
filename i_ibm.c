@@ -1262,7 +1262,6 @@ void I_Quit (void)
 	I_Shutdown ();
 	memcpy ((void *)(0xb8000 + __djgpp_conventional_base), scr, 80*25*2);
 	regs.h.ah = 2;
-	regs.h.al = 0;
 	regs.h.bh = 0;
 	regs.h.dl = 0;
 	regs.h.dh = 23;
