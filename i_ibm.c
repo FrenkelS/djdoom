@@ -740,12 +740,6 @@ int I_TimerISR (void)
 ============================================================================
 */
 
-#if defined __DJGPP__
-static _go32_dpmi_seginfo oldkeyboardisr = {}, newkeyboardisr;
-#elif defined __WATCOMC__
-static void (__interrupt __far *oldkeyboardisr) () = NULL;
-#endif
-
 static int lastpress;
 
 /*
@@ -781,6 +775,12 @@ static void __interrupt I_KeyboardISR (void)
 =
 ===============
 */
+
+#if defined __DJGPP__
+static _go32_dpmi_seginfo oldkeyboardisr = {}, newkeyboardisr;
+#elif defined __WATCOMC__
+static void (__interrupt __far *oldkeyboardisr) () = NULL;
+#endif
 
 static void I_StartupKeyboard (void)
 {
@@ -1130,7 +1130,7 @@ static void I_StartupDPMI (void)
 //
 // allocate a decent stack for real mode ISRs
 //
-	realstackseg = (int)I_AllocLow (1024) >> 4;
+	realstackseg = (int)I_AllocLow (REALSTACKSIZE) >> 4;
 
 //
 // lock the entire program down
