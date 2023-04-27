@@ -1289,7 +1289,7 @@ static int I_GetLargestAvailableFreeBlockInBytes(void)
 	__dpmi_get_free_memory_information(&meminfo);
 	return meminfo.largest_available_free_block_in_bytes;
 #elif defined __DMC__
-	return 0x800000 + 0x20000; //TODO
+	return _memmax();
 #elif defined __WATCOMC__
 	__dpmi_free_mem_info	meminfo;
 
