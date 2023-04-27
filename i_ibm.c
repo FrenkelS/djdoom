@@ -899,14 +899,21 @@ static void I_ReadMouse (void)
 
 	ev.type = ev_mouse;
 
-	regs.w.ax = 3;                               // read buttons / position
+	regs.h.ah = 0;
+	regs.h.al = 3;                               // read buttons / position
 	int386 (0x33, &regs, &regs);
-	ev.data1 = regs.w.bx;
+	ev.data1 = regs.h.bl;
 
-	regs.w.ax = 11;                              // read counters
+	regs.h.ah = 0;
+	regs.h.al = 11;                              // read counters
 	int386 (0x33, &regs, &regs);
+#if defined __DJGPP__ || defined __DMC__
+	ev.data2 = (short)regs.x.cx;
+	ev.data3 = -(short)regs.x.dx;
+#elif defined __WATCOMC__
 	ev.data2 = (short)regs.w.cx;
 	ev.data3 = -(short)regs.w.dx;
+#endif
 
 	D_PostEvent (&ev);
 }
