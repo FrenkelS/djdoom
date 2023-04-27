@@ -757,10 +757,10 @@ static int lastpress;
 */
 
 #if defined __DJGPP__
-static void I_KeyboardISR (void)
-#elif defined __WATCOMC__
-static void __interrupt I_KeyboardISR (void)
+#define __interrupt
 #endif
+
+static void __interrupt I_KeyboardISR (void)
 {
 // Get the scan code
 
@@ -1277,24 +1277,32 @@ typedef struct {
 } __dpmi_free_mem_info;
 #endif
 
-byte *I_ZoneBase (int *size)
+static int I_GetLargestAvailableFreeBlockInBytes(void)
 {
-	__dpmi_free_mem_info             meminfo;
-	int             heap;
-	byte                    *ptr;
-
 #if defined __DJGPP__
+	__dpmi_free_mem_info	meminfo;
+
 	__djgpp_nearptr_enable();
 	__dpmi_get_free_memory_information(&meminfo);
+	return meminfo.largest_available_free_block_in_bytes;
 #elif defined __WATCOMC__
+	__dpmi_free_mem_info	meminfo;
+
 	regs.w.ax = 0x500;      // get memory info
 	memset (&segregs,0,sizeof(segregs));
 	segregs.es = FP_SEG(&meminfo);
 	regs.x.edi = FP_OFF(&meminfo);
 	int386x( DPMI_INT, &regs, &regs, &segregs );
+	return meminfo.largest_available_free_block_in_bytes;
 #endif
+}
 
-	heap = meminfo.largest_available_free_block_in_bytes;
+byte *I_ZoneBase (int *size)
+{
+	int		heap;
+	byte	*ptr;
+
+	heap = I_GetLargestAvailableFreeBlockInBytes();
 	printf ("DPMI memory: 0x%x",heap);
 
 	do
