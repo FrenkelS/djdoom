@@ -27,10 +27,6 @@
 #include <string.h>
 #include <malloc.h>
 
-#if defined __WATCOMC__
-#define	strcasecmp strcmpi
-#endif
-
 #if defined __DJGPP__
 #include <pc.h>
 #endif

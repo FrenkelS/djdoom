@@ -141,7 +141,7 @@ static void W_AddFile (char *filename)
 	printf ("	adding %s\n",filename);
 	startlump = numlumps;
 	
-	if (strcasecmp (filename+strlen(filename)-3 , "wad" ) )
+	if (stricmp (filename+strlen(filename)-3 , "wad" ) )
 	{
 	// single lump file
 		fileinfo = &singleinfo;
