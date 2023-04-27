@@ -825,11 +825,11 @@ static void I_ShutdownKeyboard (void)
 */
 
 
-static int I_ResetMouse (void)
+static boolean I_ResetMouse (void)
 {
 	regs.w.ax = 0;                  // reset
 	int386 (0x33, &regs, &regs);
-	return regs.w.ax;
+	return regs.w.ax != 0;
 }
 
 
@@ -847,18 +847,16 @@ static void I_StartupMouse (void)
    //
    // General mouse detection
    //
-	mousepresent = 0;
+	mousepresent = false;
 	if ( M_CheckParm ("-nomouse") || !usemouse )
 		return;
 
-	if (I_ResetMouse () != 0xffff)
+	if (I_ResetMouse ())
 	{
+		mousepresent = true;
+		printf("Mouse: detected\n");
+	} else
 		printf("Mouse: not present\n");
-		return;
-	}
-	printf("Mouse: detected\n");
-
-	mousepresent = 1;
 }
 
 
