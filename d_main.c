@@ -18,7 +18,6 @@
 
 // D_main.c
 
-#include <dos.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -27,6 +26,10 @@
 #include "DoomDef.h"
 #include "soundst.h"
 #include "DUtils.h"
+
+#if defined __DMC__
+#include <sys/unistd.h>
+#endif
 
 #if (APPVER_DOOMREV < AV_DR_DM19)
 #define	BGCOLOR		4
@@ -598,7 +601,8 @@ static void tprintf(char *msg, int fgcolor, int bgcolor)
 	{
 		regs.h.ah = 9;
 		regs.h.al = msg[i];
-		regs.w.cx = 1;
+		regs.h.ch = 0;
+		regs.h.cl = 1;
 		regs.h.bl = attr;
 		regs.h.bh = 0;
 		int386(0x10, &regs, &regs);
@@ -993,7 +997,8 @@ void D_DoomMain (void)
 				 VERSION/100,VERSION%100);
 	}
 
-	regs.w.ax = 3;
+	regs.h.ah = 0;
+	regs.h.al = 3;
 	int386 (0x10, &regs, &regs);
 
 	tprintf (title, FGCOLOR, BGCOLOR);

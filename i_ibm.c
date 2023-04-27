@@ -18,7 +18,6 @@
 
 // I_IBM.C
 
-#include <dos.h>
 #include <conio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -38,7 +37,7 @@ void I_ShutdownSound (void);
 
 void I_ShutdownTimer (void);
 
-#if defined __WATCOMC__
+#if defined __DMC__ || defined __WATCOMC__
 typedef union {
   struct {
 	unsigned        edi, esi, ebp, reserved, ebx, edx, ecx, eax;
@@ -486,7 +485,7 @@ void I_FinishUpdate (void)
 	outpw (CRTC_INDEX, CRTC_STARTHIGH+((int)destscreen&0xff00));
 
 	destscreen += 0x4000;
-	if ( (int)destscreen == 0xac000 + __djgpp_conventional_base)
+	if ( (int)destscreen == (int)(0xac000 + __djgpp_conventional_base))
 		destscreen = (byte *)(0xa0000 + __djgpp_conventional_base);
 }
 
@@ -503,7 +502,8 @@ void I_InitGraphics (void)
 	if (novideo)
 		return;
 	grmode = true;
-	regs.w.ax = 0x13;
+	regs.h.ah = 0;
+	regs.h.al = 0x13;
 	int386 (0x10, &regs, &regs);
 	screen = currentscreen = (byte *)(0xa0000 + __djgpp_conventional_base);
 	destscreen = (byte *)(0xa4000 + __djgpp_conventional_base);
@@ -536,7 +536,8 @@ static void I_ShutdownGraphics (void)
 {
 	if (*(byte *)(0x449 + __djgpp_conventional_base) == 0x13) // don't reset mode if it didn't get set
 	{
-		regs.w.ax = 3;
+		regs.h.ah = 0;
+		regs.h.al = 3;
 		int386 (0x10, &regs, &regs); // back to text mode
 	}
 }
@@ -757,10 +758,10 @@ static int lastpress;
 */
 
 #if defined __DJGPP__
-static void I_KeyboardISR (void)
-#elif defined __WATCOMC__
-static void __interrupt I_KeyboardISR (void)
+#define __interrupt
 #endif
+
+static void __interrupt I_KeyboardISR (void)
 {
 // Get the scan code
 
@@ -825,11 +826,12 @@ static void I_ShutdownKeyboard (void)
 */
 
 
-static int I_ResetMouse (void)
+static boolean I_ResetMouse (void)
 {
-	regs.w.ax = 0;                  // reset
+	regs.h.ah = 0;                  // reset
+	regs.h.al = 0;
 	int386 (0x33, &regs, &regs);
-	return regs.w.ax;
+	return regs.h.al != 0;
 }
 
 
@@ -847,18 +849,16 @@ static void I_StartupMouse (void)
    //
    // General mouse detection
    //
-	mousepresent = 0;
+	mousepresent = false;
 	if ( M_CheckParm ("-nomouse") || !usemouse )
 		return;
 
-	if (I_ResetMouse () != 0xffff)
+	if (I_ResetMouse ())
 	{
+		mousepresent = true;
+		printf("Mouse: detected\n");
+	} else
 		printf("Mouse: not present\n");
-		return;
-	}
-	printf("Mouse: detected\n");
-
-	mousepresent = 1;
 }
 
 
@@ -1247,7 +1247,8 @@ void I_Quit (void)
 	scr = (byte *)W_CacheLumpName ("ENDOOM", PU_CACHE);
 	I_Shutdown ();
 	memcpy ((void *)(0xb8000 + __djgpp_conventional_base), scr, 80*25*2);
-	regs.w.ax = 0x0200;
+	regs.h.ah = 2;
+	regs.h.al = 0;
 	regs.h.bh = 0;
 	regs.h.dl = 0;
 	regs.h.dh = 23;
@@ -1279,24 +1280,36 @@ typedef struct {
 } __dpmi_free_mem_info;
 #endif
 
-byte *I_ZoneBase (int *size)
+static int getLargestAvailableFreeBlockInBytes(void)
 {
-	__dpmi_free_mem_info             meminfo;
-	int             heap;
-	byte                    *ptr;
-
 #if defined __DJGPP__
+	__dpmi_free_mem_info	meminfo;
+
 	__djgpp_nearptr_enable();
 	__dpmi_get_free_memory_information(&meminfo);
+	return meminfo.largest_available_free_block_in_bytes;
+#elif defined __DMC__
+	return 0x800000 + 0x20000; //TODO
 #elif defined __WATCOMC__
+	__dpmi_free_mem_info	meminfo;
+
 	regs.w.ax = 0x500;      // get memory info
 	memset (&segregs,0,sizeof(segregs));
 	segregs.es = FP_SEG(&meminfo);
 	regs.x.edi = FP_OFF(&meminfo);
 	int386x( DPMI_INT, &regs, &regs, &segregs );
+	return meminfo.largest_available_free_block_in_bytes;
 #endif
+}
 
-	heap = meminfo.largest_available_free_block_in_bytes;
+
+
+byte *I_ZoneBase (int *size)
+{
+	int		heap;
+	byte	*ptr;
+
+	heap = getLargestAvailableFreeBlockInBytes();
 	printf ("DPMI memory: 0x%x",heap);
 
 	do

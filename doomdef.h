@@ -20,6 +20,7 @@
 
 #ifndef __DOOMDEF__
 #define __DOOMDEF__
+#include <dos.h>
 #include <conio.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -27,16 +28,11 @@
 #include <string.h>
 #include <malloc.h>
 
-#if defined __WATCOMC__
-#define	strcasecmp strcmpi
-#endif
-
-#if defined __DJGPP__
-#include <pc.h>
-#endif
-
 #if defined __DJGPP__
 #include <sys/nearptr.h>
+#elif defined __DMC__
+#define int386 int86
+#define __djgpp_conventional_base ((byte*)_x386_zero_base_ptr)
 #elif defined __WATCOMC__
 #define __djgpp_conventional_base 0
 #endif
