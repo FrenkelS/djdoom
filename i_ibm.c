@@ -1280,7 +1280,7 @@ typedef struct {
 } __dpmi_free_mem_info;
 #endif
 
-static int getLargestAvailableFreeBlockInBytes(void)
+static int I_GetLargestAvailableFreeBlockInBytes(void)
 {
 #if defined __DJGPP__
 	__dpmi_free_mem_info	meminfo;
@@ -1302,14 +1302,12 @@ static int getLargestAvailableFreeBlockInBytes(void)
 #endif
 }
 
-
-
 byte *I_ZoneBase (int *size)
 {
 	int		heap;
 	byte	*ptr;
 
-	heap = getLargestAvailableFreeBlockInBytes();
+	heap = I_GetLargestAvailableFreeBlockInBytes();
 	printf ("DPMI memory: 0x%x",heap);
 
 	do
