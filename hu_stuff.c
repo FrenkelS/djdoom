@@ -510,37 +510,36 @@ void HU_Ticker(void)
     for (i=0 ; i<MAXPLAYERS; i++)
     {
       if (!playeringame[i])
-	continue;
+        continue;
       if (i != consoleplayer && (c = players[i].cmd.chatchar))
       {
-	if (c <= HU_BROADCAST)
-	  chat_dest[i] = c;
-	else
-	{
-	  if (c >= 'a' && c <= 'z')
-	    c = (char) shiftxform[(unsigned char) c];
-	  rc = HUlib_keyInIText(&w_inputbuffer[i], c);
-	  if (rc && c == KEY_ENTER)
-	  {
-	    if (w_inputbuffer[i].l.len && (chat_dest[i] == consoleplayer+1
-            || chat_dest[i] == HU_BROADCAST))
+        if (c <= HU_BROADCAST)
+          chat_dest[i] = c;
+        else
+        {
+          if (c >= 'a' && c <= 'z')
+            c = (char) shiftxform[(unsigned char) c];
+          rc = HUlib_keyInIText(&w_inputbuffer[i], c);
+          if (rc && c == KEY_ENTER)
+          {
+            if (w_inputbuffer[i].l.len && (chat_dest[i] == consoleplayer+1 || chat_dest[i] == HU_BROADCAST))
             {
-	      HUlib_addMessageToSText(&w_message,
-	      player_names[i],
-	      w_inputbuffer[i].l.l);
-			    
-	      message_nottobefuckedwith = true;
-	      message_on = true;
-	      message_counter = HU_MSGTIMEOUT;
-	      if (commercial)
-	        S_StartSound(0, sfx_radio);
-	      else
-	        S_StartSound(0, sfx_tink);
-	    }
-	    HUlib_resetIText(&w_inputbuffer[i]);
-	  }
-	}
-	players[i].cmd.chatchar = 0;
+              HUlib_addMessageToSText(&w_message,
+              player_names[i],
+              w_inputbuffer[i].l.l);
+
+              message_nottobefuckedwith = true;
+              message_on = true;
+              message_counter = HU_MSGTIMEOUT;
+              if (commercial)
+                S_StartSound(0, sfx_radio);
+              else
+                S_StartSound(0, sfx_tink);
+            }
+            HUlib_resetIText(&w_inputbuffer[i]);
+          }
+        }
+        players[i].cmd.chatchar = 0;
       }
     }
   }
