@@ -30,7 +30,7 @@ static unsigned char cheat_xlate_table[256];
 
 //
 // Called in st_stuff module, which handles the input.
-// Returns a 1 if the cheat was successful, 0 if failed.
+// Returns true if the cheat was successful, false if failed.
 //
 boolean cht_CheckCheat(cheatseq_t *cht, char key)
 {
@@ -69,7 +69,9 @@ void cht_GetParam(cheatseq_t *cht, char *buffer)
   unsigned char *p, c;
 
   p = cht->sequence;
-  while (*(p++) != 1);
+  while (*(p++) != 1)
+  {
+  }
     
   do
   {

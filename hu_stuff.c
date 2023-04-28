@@ -511,8 +511,9 @@ void HU_Ticker(void)
     {
       if (!playeringame[i])
         continue;
-      if (i != consoleplayer && (c = players[i].cmd.chatchar))
+      if (i != consoleplayer && players[i].cmd.chatchar)
       {
+        c = players[i].cmd.chatchar;
         if (c <= HU_BROADCAST)
           chat_dest[i] = c;
         else

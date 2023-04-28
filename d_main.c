@@ -641,7 +641,9 @@ static void D_AddFile(char *file)
 	int numwadfiles;
 	char *new;
 
-	for(numwadfiles = 0; wadfiles[numwadfiles]; numwadfiles++);
+	numwadfiles = 0;
+	while (wadfiles[numwadfiles])
+		numwadfiles++;
 	new = malloc(strlen(file)+1);
 	strcpy(new, file);
 
@@ -1030,7 +1032,8 @@ void D_DoomMain (void)
 	}	
 	
 	// turbo option
-	if ( (p=M_CheckParm ("-turbo")) )
+	p = M_CheckParm ("-turbo");
+	if (p)
 	{
 		int  scale = 200;
 		extern int forwardmove[2];
