@@ -214,7 +214,8 @@ static void AM_initVariables(void)
   m_h = FTOM(f_h);
 
   // find player to center on initially
-  if (!playeringame[pnum = consoleplayer])
+  pnum = consoleplayer;
+  if (!playeringame[pnum])
     for (pnum=0;pnum<MAXPLAYERS;pnum++) if (playeringame[pnum]) break;
   plr = &players[pnum];
   m_x = plr->mo->x - m_w/2;
