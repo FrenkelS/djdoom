@@ -18,7 +18,6 @@
 
 // I_IBM.C
 
-#include <dos.h>
 #include <conio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -38,7 +37,7 @@ void I_ShutdownSound (void);
 
 void I_ShutdownTimer (void);
 
-#if defined __WATCOMC__
+#if defined __DMC__ || defined __WATCOMC__
 typedef union {
   struct {
 	unsigned        edi, esi, ebp, reserved, ebx, edx, ecx, eax;
@@ -486,7 +485,7 @@ void I_FinishUpdate (void)
 	outpw (CRTC_INDEX, CRTC_STARTHIGH+((int)destscreen&0xff00));
 
 	destscreen += 0x4000;
-	if ( (int)destscreen == 0xac000 + __djgpp_conventional_base)
+	if ( (int)destscreen == (int)(0xac000 + __djgpp_conventional_base))
 		destscreen = (byte *)(0xa0000 + __djgpp_conventional_base);
 }
 
@@ -503,7 +502,8 @@ void I_InitGraphics (void)
 	if (novideo)
 		return;
 	grmode = true;
-	regs.w.ax = 0x13;
+	regs.h.ah = 0;
+	regs.h.al = 0x13;
 	int386 (0x10, &regs, &regs);
 	screen = currentscreen = (byte *)(0xa0000 + __djgpp_conventional_base);
 	destscreen = (byte *)(0xa4000 + __djgpp_conventional_base);
@@ -536,7 +536,8 @@ static void I_ShutdownGraphics (void)
 {
 	if (*(byte *)(0x449 + __djgpp_conventional_base) == 0x13) // don't reset mode if it didn't get set
 	{
-		regs.w.ax = 3;
+		regs.h.ah = 0;
+		regs.h.al = 3;
 		int386 (0x10, &regs, &regs); // back to text mode
 	}
 }
@@ -778,6 +779,8 @@ static void __interrupt I_KeyboardISR (void)
 
 #if defined __DJGPP__
 static _go32_dpmi_seginfo oldkeyboardisr = {}, newkeyboardisr;
+#elif defined __DMC__
+static unsigned int oldkeyboardisroffset, oldkeyboardisrsegment;
 #elif defined __WATCOMC__
 static void (__interrupt __far *oldkeyboardisr) () = NULL;
 #endif
@@ -791,6 +794,9 @@ static void I_StartupKeyboard (void)
 	newkeyboardisr.pm_selector = _go32_my_cs(); 
 	_go32_dpmi_allocate_iret_wrapper(&newkeyboardisr);
 	_go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARDINT, &newkeyboardisr);
+#elif defined __DMC__
+	int_getvector(KEYBOARDINT, &oldkeyboardisroffset, &oldkeyboardisrsegment);
+	//FIXME int_setvector(KEYBOARDINT, FP_OFF(I_KeyboardISR), FP_SEG(I_KeyboardISR));
 #elif defined __WATCOMC__
 	oldkeyboardisr = _dos_getvect(KEYBOARDINT);
 	_dos_setvect (0x8000 | KEYBOARDINT, I_KeyboardISR);
@@ -806,6 +812,9 @@ static void I_ShutdownKeyboard (void)
 		_go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARDINT, &oldkeyboardisr);
 		_go32_dpmi_free_iret_wrapper(&newkeyboardisr);
 	}
+#elif defined __DMC__
+	//if (oldkeyboardisroffset)
+	//FIXME	int_setvector (KEYBOARDINT, oldkeyboardisroffset, oldkeyboardisrsegment);
 #elif defined __WATCOMC__
 	if (oldkeyboardisr)
 		_dos_setvect (KEYBOARDINT, oldkeyboardisr);
@@ -827,9 +836,10 @@ static void I_ShutdownKeyboard (void)
 
 static boolean I_ResetMouse (void)
 {
-	regs.w.ax = 0;                  // reset
+	regs.h.ah = 0;                  // reset
+	regs.h.al = 0;
 	int386 (0x33, &regs, &regs);
-	return regs.w.ax != 0;
+	return regs.h.al != 0;
 }
 
 
@@ -897,14 +907,21 @@ static void I_ReadMouse (void)
 
 	ev.type = ev_mouse;
 
-	regs.w.ax = 3;                               // read buttons / position
+	regs.h.ah = 0;
+	regs.h.al = 3;                               // read buttons / position
 	int386 (0x33, &regs, &regs);
-	ev.data1 = regs.w.bx;
+	ev.data1 = regs.h.bl;
 
-	regs.w.ax = 11;                              // read counters
+	regs.h.ah = 0;
+	regs.h.al = 11;                              // read counters
 	int386 (0x33, &regs, &regs);
+#if defined __DJGPP__ || defined __DMC__
+	ev.data2 = (short)regs.x.cx;
+	ev.data3 = -(short)regs.x.dx;
+#elif defined __WATCOMC__
 	ev.data2 = (short)regs.w.cx;
 	ev.data3 = -(short)regs.w.dx;
+#endif
 
 	D_PostEvent (&ev);
 }
@@ -1244,7 +1261,7 @@ void I_Quit (void)
 	scr = (byte *)W_CacheLumpName ("ENDOOM", PU_CACHE);
 	I_Shutdown ();
 	memcpy ((void *)(0xb8000 + __djgpp_conventional_base), scr, 80*25*2);
-	regs.w.ax = 0x0200;
+	regs.h.ah = 2;
 	regs.h.bh = 0;
 	regs.h.dl = 0;
 	regs.h.dh = 23;
@@ -1284,6 +1301,8 @@ static int I_GetLargestAvailableFreeBlockInBytes(void)
 	__djgpp_nearptr_enable();
 	__dpmi_get_free_memory_information(&meminfo);
 	return meminfo.largest_available_free_block_in_bytes;
+#elif defined __DMC__
+	return _memmax();
 #elif defined __WATCOMC__
 	__dpmi_free_mem_info	meminfo;
 
