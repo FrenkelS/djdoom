@@ -219,7 +219,7 @@ static void M_DrawThermo(int x, int y, int thermWidth, int thermDot);
 static void M_WriteText(int x, int y, char* string);
 static int M_StringWidth(char *string);
 static int M_StringHeight(char *string);
-static void M_StartMessage(char *string, void *routine, boolean input);
+static void M_StartMessage(char *string, void routine(int), boolean input);
 static void M_ClearMenus(void);
 
 
@@ -1184,7 +1184,7 @@ static void M_DrawThermo(int x, int y, int thermWidth, int thermDot)
 
 
 
-static void M_StartMessage(char *string, void *routine, boolean input)
+static void M_StartMessage(char *string, void routine(int), boolean input)
 {
 	messageLastMenuActive = menuactive;
 	messageToPrint = 1;
