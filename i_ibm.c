@@ -882,7 +882,7 @@ static void I_ReadMouse (void)
 	regs.h.ah = 0;
 	regs.h.al = 11;                              // read counters
 	int386 (0x33, &regs, &regs);
-#if defined __WATCOMC__
+#if defined __CCDL__ || defined __WATCOMC__
 	ev.data2 = (short)regs.w.cx;
 	ev.data3 = -(short)regs.w.dx;
 #else

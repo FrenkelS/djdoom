@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <direct.h>
 #include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1019,10 +1020,10 @@ void D_DoomMain (void)
 #elif (APPVER_DOOMREV < AV_DR_DM17)
 		mkdir("c:doomdata",0);
 #else
-#if defined __WATCOMC__
-		mkdir("c:\\doomdata");
-#else
+#if defined __DJGPP__
 		mkdir("c:\\doomdata",0);
+#else
+		mkdir("c:\\doomdata");
 #endif
 #endif
 		strcpy (basedefault,"c:/doomdata/default.cfg");

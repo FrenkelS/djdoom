@@ -20,6 +20,7 @@
 
 #ifndef __DOOMDEF__
 #define __DOOMDEF__
+#include <bios.h>
 #include <dos.h>
 #include <conio.h>
 #include <ctype.h>
@@ -40,6 +41,11 @@
 #elif defined __DMC__
 #define int386 int86
 #define __djgpp_conventional_base ((byte*)_x386_zero_base_ptr)
+
+#elif defined __CCDL__
+#define int386 _int386
+#define __djgpp_conventional_base 0
+#define __interrupt _interrupt
 
 #elif defined __WATCOMC__
 #define __djgpp_conventional_base 0

@@ -3,7 +3,8 @@ Download the executables [here](https://github.com/FrenkelS/djdoom/releases).
 
 Which compiler produces the fastest Doom code?
 [DJGPP](https://github.com/andrewwutw/build-djgpp),
-[Digital Mars](https://digitalmars.com/) (with [X32](https://github.com/Olde-Skuul/KitchenSink/tree/master/sdks/dos/x32)) or
+[Digital Mars](https://digitalmars.com/) (with [X32](https://github.com/Olde-Skuul/KitchenSink/tree/master/sdks/dos/x32)),
+[CC386](https://ladsoft.tripod.com/cc386_compiler.html) or
 [Watcom](https://github.com/open-watcom/open-watcom-v2)?
 
 The code is based on [gamesrc-ver-recreation](https://bitbucket.org/gamesrc-ver-recreation/doom/src/master/)
@@ -14,6 +15,6 @@ and it took inspiration from
 
 All the assembly code is replaced by C code.
 There's no sound, no joystick and no Logitech Cyberman support.
-And in case of Digital Mars, no keyboard.
+And in case of Digital Mars and CC386, no keyboard.
 
-Use `compdj.bat` to compile with DJGPP, `compdm.bat` for Digital Mars and `compwc.bat` for Watcom.
+Use `compdj.bat` to compile with DJGPP, `compdm.bat` for Digital Mars, `compoc.bat` for CC386 and `compwc.bat` for Watcom.
