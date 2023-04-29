@@ -15,6 +15,6 @@ and it took inspiration from
 
 All the assembly code is replaced by C code.
 There's no sound, no joystick and no Logitech Cyberman support.
-And in case of Digital Mars and CC386, no keyboard.
+And in case of Digital Mars, no keyboard.
 
 Use `compdj.bat` to compile with DJGPP, `compdm.bat` for Digital Mars, `compoc.bat` for CC386 and `compwc.bat` for Watcom.
