@@ -962,14 +962,12 @@ static void M_Options(int choice)
 //
 static void M_ChangeMessages(int choice)
 {
-	// warning: unused parameter `int choice'
-	choice = 0;
 	showMessages = 1 - showMessages;
 
-	if (!showMessages)
-		players[consoleplayer].message = MSGOFF;
-	else
+	if (showMessages)
 		players[consoleplayer].message = MSGON ;
+	else
+		players[consoleplayer].message = MSGOFF;
 
 	message_dontfuckwithme = true;
 }

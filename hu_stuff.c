@@ -499,7 +499,7 @@ void HU_Ticker(void)
       message_on = true;
       message_counter = HU_MSGTIMEOUT;
       message_nottobefuckedwith = message_dontfuckwithme;
-      message_dontfuckwithme = 0;
+      message_dontfuckwithme = false;
     }
 
   } // else message_on = false;
