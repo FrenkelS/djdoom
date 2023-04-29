@@ -71,7 +71,7 @@ void S_ChangeMusic (int musicnum, boolean looping)
   if ( (musicnum <= mus_None) || (musicnum >= NUMMUSIC) )
   {
     I_Error("Bad music number %d", musicnum);
-    return; // shut up compiler warning
+    return; // shut up warning
   }
   else
     music = &S_music[musicnum];

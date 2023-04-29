@@ -84,7 +84,7 @@ static void ExtractFileBase (char *path, char *dest)
 		if (++length == 9)
 		{
 			I_Error ("Filename base of %s >8 chars",path);
-			break; // shut up compiler warning
+			break; // shut up warning
 		}
 		*dest++ = toupper((int)*src++);
 	}

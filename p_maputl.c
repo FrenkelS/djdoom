@@ -584,7 +584,7 @@ static void P_TraverseIntercepts ( traverser_t func, fixed_t maxfrac )
 	intercept_t		*scan, *in;
 	
 	count = intercept_p - intercepts;
-	in = NULL;			// shut up compiler warning
+	in = NULL;			// shut up warning
 	
 	while (count--)
 	{

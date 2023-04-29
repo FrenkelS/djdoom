@@ -177,7 +177,7 @@ static void R_RenderSegLoop (void)
 	fixed_t         texturecolumn;
 	int                     top, bottom;
 
-	texturecolumn = 0;                              // shut up compiler warning
+	texturecolumn = 0;                              // shut up warning
 
 	for ( ; rw_x < rw_stopx ; rw_x++)
 	{
