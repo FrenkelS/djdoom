@@ -24,11 +24,6 @@
 #include "DoomDef.h"
 #include "R_local.h"
 
-#if defined __DJGPP__
-#include <dpmi.h>
-#include <go32.h>
-#endif
-
 #define DPMI_INT 0x31
 //#define NOTIMER
 
@@ -37,32 +32,7 @@ void I_ShutdownSound (void);
 
 void I_ShutdownTimer (void);
 
-#if defined __DMC__ || defined __WATCOMC__
-typedef union {
-  struct {
-	unsigned        edi, esi, ebp, reserved, ebx, edx, ecx, eax;
-  } d;
-  struct {
-    unsigned short  di, di_hi;
-    unsigned short  si, si_hi;
-    unsigned short  bp, bp_hi;
-    unsigned short  res, res_hi;
-    unsigned short  bx, bx_hi;
-    unsigned short  dx, dx_hi;
-    unsigned short  cx, cx_hi;
-    unsigned short  ax, ax_hi;
-	unsigned short  flags, es, ds, fs, gs, ip, cs, sp, ss;
-  } x;
-} __dpmi_regs;
-#endif
-
-static __dpmi_regs      dpmiregs;
-
 static void DPMIInt (int i);
-
-#if defined __WATCOMC__
-void _dpmi_lockregion (void * inmem, int length);
-#endif
 
 static void I_ReadMouse (void);
 static void I_InitDiskFlash (void);
@@ -181,9 +151,6 @@ int             ticcount;
 
 // REGS stuff used for int calls
 static union REGS regs;
-#if defined __WATCOMC__
-static struct SREGS segregs;
-#endif
 
 static boolean novideo; // if true, stay in text mode for debugging
 
@@ -751,10 +718,6 @@ static int lastpress;
 ================
 */
 
-#if defined __DJGPP__
-#define __interrupt
-#endif
-
 static void __interrupt I_KeyboardISR (void)
 {
 // Get the scan code
@@ -800,6 +763,8 @@ static void I_StartupKeyboard (void)
 #elif defined __WATCOMC__
 	oldkeyboardisr = _dos_getvect(KEYBOARDINT);
 	_dos_setvect (0x8000 | KEYBOARDINT, I_KeyboardISR);
+#else
+	//TODO implement I_StartupKeyboard()
 #endif
 }
 
@@ -818,6 +783,8 @@ static void I_ShutdownKeyboard (void)
 #elif defined __WATCOMC__
 	if (oldkeyboardisr)
 		_dos_setvect (KEYBOARDINT, oldkeyboardisr);
+#else
+	//TODO implement I_ShutdownKeyboard()
 #endif
 
 	*(short *)(0x41c + __djgpp_conventional_base) = *(short *)(0x41a + __djgpp_conventional_base);      // clear bios key buffer
@@ -915,12 +882,12 @@ static void I_ReadMouse (void)
 	regs.h.ah = 0;
 	regs.h.al = 11;                              // read counters
 	int386 (0x33, &regs, &regs);
-#if defined __DJGPP__ || defined __DMC__
-	ev.data2 = (short)regs.x.cx;
-	ev.data3 = -(short)regs.x.dx;
-#elif defined __WATCOMC__
+#if defined __WATCOMC__
 	ev.data2 = (short)regs.w.cx;
 	ev.data3 = -(short)regs.w.dx;
+#else
+	ev.data2 = (short)regs.x.cx;
+	ev.data3 = -(short)regs.x.dx;
 #endif
 
 	D_PostEvent (&ev);
@@ -1085,8 +1052,13 @@ static unsigned                realstackseg;
 static void DPMIInt (int i)
 {
 #if defined __DJGPP__
+	__dpmi_regs		dpmiregs;
+
 	__dpmi_int(i, &dpmiregs);
 #elif defined __WATCOMC__
+	__dpmi_regs		dpmiregs;
+	struct SREGS	segregs;
+
 	dpmiregs.x.ss = realstackseg;
 	dpmiregs.x.sp = REALSTACKSIZE-4;
 
@@ -1097,6 +1069,8 @@ static void DPMIInt (int i)
 	regs.x.edi = (unsigned)&dpmiregs;
 	segregs.es = segregs.ds;
 	int386x( DPMI_INT, &regs, &regs, &segregs );
+#else
+	I_Error("TODO implement DPMIInt()");
 #endif
 }
 
@@ -1141,6 +1115,7 @@ static byte *I_AllocLow (int length)
 static void I_StartupDPMI (void)
 {
 #if defined __WATCOMC__
+	void _dpmi_lockregion (void * inmem, int length);
 	extern char __begtext;
 	extern char ___Argc;
 
@@ -1304,6 +1279,7 @@ static int I_GetLargestAvailableFreeBlockInBytes(void)
 #elif defined __DMC__
 	return _memmax();
 #elif defined __WATCOMC__
+	struct SREGS			segregs;
 	__dpmi_free_mem_info	meminfo;
 
 	regs.w.ax = 0x500;      // get memory info
@@ -1312,6 +1288,8 @@ static int I_GetLargestAvailableFreeBlockInBytes(void)
 	regs.x.edi = FP_OFF(&meminfo);
 	int386x( DPMI_INT, &regs, &regs, &segregs );
 	return meminfo.largest_available_free_block_in_bytes;
+#else
+	return 0x800000 + 0x20000; //TODO implement I_GetLargestAvailableFreeBlockInBytes()
 #endif
 }
 

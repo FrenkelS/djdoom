@@ -21,15 +21,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "DoomDef.h"
 #include "soundst.h"
 #include "DUtils.h"
-
-#if defined __DMC__
-#include <sys/unistd.h>
-#endif
 
 #if (APPVER_DOOMREV < AV_DR_DM19)
 #define	BGCOLOR		4
@@ -1022,10 +1019,10 @@ void D_DoomMain (void)
 #elif (APPVER_DOOMREV < AV_DR_DM17)
 		mkdir("c:doomdata",0);
 #else
-#if defined __DJGPP__ || defined __DMC__
-		mkdir("c:\\doomdata",0);
-#elif defined __WATCOMC__
+#if defined __WATCOMC__
 		mkdir("c:\\doomdata");
+#else
+		mkdir("c:\\doomdata",0);
 #endif
 #endif
 		strcpy (basedefault,"c:/doomdata/default.cfg");
