@@ -744,6 +744,8 @@ static void __interrupt I_KeyboardISR (void)
 static _go32_dpmi_seginfo oldkeyboardisr = {}, newkeyboardisr;
 #elif defined __DMC__
 static unsigned int oldkeyboardisroffset, oldkeyboardisrsegment;
+#elif defined __CCDL__
+static unsigned short oldkeyboardisrsegment, oldkeyboardisroffset = 0;
 #elif defined __WATCOMC__
 static void (__interrupt __far *oldkeyboardisr) () = NULL;
 #endif
@@ -760,6 +762,12 @@ static void I_StartupKeyboard (void)
 #elif defined __DMC__
 	int_getvector(KEYBOARDINT, &oldkeyboardisroffset, &oldkeyboardisrsegment);
 	//FIXME int_setvector(KEYBOARDINT, FP_OFF(I_KeyboardISR), FP_SEG(I_KeyboardISR));
+#elif defined __CCDL__
+	struct SREGS	segregs;
+
+	_segread(&segregs);
+	dpmi_get_real_interrupt(&oldkeyboardisrsegment, &oldkeyboardisroffset, KEYBOARDINT);
+	dpmi_set_protected_interrupt(KEYBOARDINT, segregs.cs, (unsigned int)I_KeyboardISR);
 #elif defined __WATCOMC__
 	oldkeyboardisr = _dos_getvect(KEYBOARDINT);
 	_dos_setvect (0x8000 | KEYBOARDINT, I_KeyboardISR);
@@ -780,6 +788,9 @@ static void I_ShutdownKeyboard (void)
 #elif defined __DMC__
 	//if (oldkeyboardisroffset)
 	//FIXME	int_setvector (KEYBOARDINT, oldkeyboardisroffset, oldkeyboardisrsegment);
+#elif defined __CCDL__
+	if (oldkeyboardisroffset)
+		dpmi_set_real_interrupt(KEYBOARDINT, oldkeyboardisrsegment, oldkeyboardisroffset);
 #elif defined __WATCOMC__
 	if (oldkeyboardisr)
 		_dos_setvect (KEYBOARDINT, oldkeyboardisr);
@@ -1055,6 +1066,10 @@ static void DPMIInt (int i)
 	__dpmi_regs		dpmiregs;
 
 	__dpmi_int(i, &dpmiregs);
+#elif defined __CCDL__
+	DPMI_REGS		dpmiregs;
+
+	dpmi_simulate_real_interrupt(i, &dpmiregs);
 #elif defined __WATCOMC__
 	__dpmi_regs		dpmiregs;
 	struct SREGS	segregs;

@@ -44,6 +44,8 @@
 #define __djgpp_conventional_base ((byte*)_x386_zero_base_ptr)
 
 #elif defined __CCDL__
+#include <dpmi.h>
+#include <i86.h>
 #define int386 _int386
 #define __djgpp_conventional_base 0
 #define __interrupt _interrupt
