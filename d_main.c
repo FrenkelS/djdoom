@@ -172,7 +172,7 @@ void D_ProcessEvents (void)
 */
 fixed_t	FixedMul (fixed_t a, fixed_t b)
 {
-	return ((long long) a * (long long) b) >> FRACBITS;
+	return ((int64_t) a * (int64_t) b) >> FRACBITS;
 }
 
 /*
@@ -189,7 +189,7 @@ fixed_t FixedDiv (fixed_t a, fixed_t b)
 		return (a^b)<0 ? MININT : MAXINT;
 	else
 	{
-		long long result = ((long long) a << FRACBITS) / b;
+		int64_t result = ((int64_t) a << FRACBITS) / b;
 		return (fixed_t) result;
 	}
 }
