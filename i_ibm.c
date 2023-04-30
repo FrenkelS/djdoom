@@ -48,14 +48,14 @@ extern  int     usemouse, usejoystick;
 =============================================================================
 */
 
-#define SC_INDEX                0x3C4
+#define SC_INDEX                0x3c4
 #define SC_RESET                0
 #define SC_CLOCK                1
 #define SC_MAPMASK              2
 #define SC_CHARMAP              3
 #define SC_MEMMODE              4
 
-#define CRTC_INDEX              0x3D4
+#define CRTC_INDEX              0x3d4
 #define CRTC_H_TOTAL    0
 #define CRTC_H_DISPEND  1
 #define CRTC_H_BLANK    2
@@ -83,7 +83,7 @@ extern  int     usemouse, usejoystick;
 #define CRTC_LINECOMPARE 24
 
 
-#define GC_INDEX                0x3CE
+#define GC_INDEX                0x3ce
 #define GC_SETRESET             0
 #define GC_ENABLESETRESET 1
 #define GC_COLORCOMPARE 2
@@ -1165,7 +1165,6 @@ static void I_StartupDPMI (void)
 void I_Init (void)
 {
 	int i;
-	extern void I_StartupTimer(void);
 
 	novideo = M_CheckParm("novideo");
 	i = M_CheckParm("-control");
