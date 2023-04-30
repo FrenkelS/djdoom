@@ -23,7 +23,7 @@ Search in those files for the pre-defined compiler macros and start hacking.
 
 |Compiler    |Set environment variables|Compile code|Pre-defined compiler macro|
 |------------|-------------------------|------------|--------------------------|
-|DJGPP       |`setenvdj.bat`           |`compdl.bat`|`__DJGPP__`               |
+|DJGPP       |`setenvdj.bat`           |`compdj.bat`|`__DJGPP__`               |
 |Digital Mars|`setenvdm.bat`           |`compdm.bat`|`__DMC__`                 |
 |CC386       |`setenvoc.bat`           |`compoc.bat`|`__CCDL__`                |
 |Watcom      |`setenvwc.bat`           |`compwc.bat`|`__WATCOMC__`             |
