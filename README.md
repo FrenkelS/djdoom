@@ -17,4 +17,13 @@ All the assembly code is replaced by C code.
 There's no sound, no joystick and no Logitech Cyberman support.
 And in case of Digital Mars, no keyboard.
 
-Use `compdj.bat` to compile with DJGPP, `compdm.bat` for Digital Mars, `compoc.bat` for CC386 and `compwc.bat` for Watcom.
+## How to add another compiler
+The differences between compilers in the Doom source code are concentrated in `compiler.h` and `i_ibm.c`.
+Search in those files for the pre-defined compiler macros and start hacking.
+
+|Compiler    |Set environment variables|Compile code|Pre-defined compiler macros|
+|------------|-------------------------|------------|---------------------------|
+|DJGPP       |`setenvdj.bat`           |`compdl.bat`|`__DJGPP__`                |
+|Digital Mars|`setenvdm.bat`           |`compdm.bat`|`__DMC__`                  |
+|CC386       |`setenvoc.bat`           |`compoc.bat`|`__CCDL__`                 |
+|Watcom      |`setenvwc.bat`           |`compwc.bat`|`__WATCOMC__`              |
