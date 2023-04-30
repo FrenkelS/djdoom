@@ -30,48 +30,7 @@
 #include <string.h>
 #include <malloc.h>
 
-
-
-// Compiler specific code
-#if defined __DJGPP__
-#include <dpmi.h>
-#include <go32.h>
-#include <sys/nearptr.h>
-#define _interrupt
-#define mkdir(x) mkdir(x,0)
-
-#elif defined __DMC__
-#define int386 int86
-#define __djgpp_conventional_base ((byte*)_x386_zero_base_ptr)
-
-#elif defined __CCDL__
-#include <dpmi.h>
-#include <i86.h>
-#define int386 _int386
-#define __djgpp_conventional_base 0
-
-#elif defined __WATCOMC__
-#define __djgpp_conventional_base 0
-typedef union {
-	struct {
-		unsigned		edi, esi, ebp, reserved, ebx, edx, ecx, eax;
-	} d;
-	struct {
-		unsigned short	di, di_hi;
-		unsigned short	si, si_hi;
-		unsigned short	bp, bp_hi;
-		unsigned short	res, res_hi;
-		unsigned short	bx, bx_hi;
-		unsigned short	dx, dx_hi;
-		unsigned short	cx, cx_hi;
-		unsigned short	ax, ax_hi;
-		unsigned short	flags, es, ds, fs, gs, ip, cs, sp, ss;
-	} x;
-} __dpmi_regs;
-
-#endif
-
-
+#include "compiler.h"
 
 // VERSIONS RESTORATION
 // This *must* be included (near) the beginning for every compilation unit
