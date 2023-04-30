@@ -20,9 +20,7 @@
 #define __HULIB__
 
 
-// background and foreground screen numbers
-// different from other modules.
-#define BG 1
+// foreground screen number
 #define FG 0
 
 // font stuff
