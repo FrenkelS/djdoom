@@ -513,8 +513,6 @@ static cheatseq_t cheat_clev = { cheat_clev_seq, 0 };
 static cheatseq_t cheat_mypos = { cheat_mypos_seq, 0 };
 
 // 
-extern char	*mapnames[];
-
 extern boolean automapactive;
 
 #endif
