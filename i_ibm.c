@@ -747,7 +747,7 @@ static unsigned int oldkeyboardisroffset, oldkeyboardisrsegment;
 #elif defined __CCDL__
 static unsigned short oldkeyboardisrsegment, oldkeyboardisroffset = 0;
 #elif defined __WATCOMC__
-static void (__interrupt __far *oldkeyboardisr) () = NULL;
+static void (_interrupt __far *oldkeyboardisr) () = NULL;
 #endif
 
 static void I_StartupKeyboard (void)
