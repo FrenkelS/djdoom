@@ -38,6 +38,7 @@
 #include <go32.h>
 #include <sys/nearptr.h>
 #define _interrupt
+#define mkdir(x) mkdir(x,0)
 
 #elif defined __DMC__
 #define int386 int86

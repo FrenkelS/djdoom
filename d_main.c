@@ -1020,11 +1020,7 @@ void D_DoomMain (void)
 #elif (APPVER_DOOMREV < AV_DR_DM17)
 		mkdir("c:doomdata",0);
 #else
-#if defined __DJGPP__
-		mkdir("c:\\doomdata",0);
-#else
 		mkdir("c:\\doomdata");
-#endif
 #endif
 		strcpy (basedefault,"c:/doomdata/default.cfg");
 	}	
