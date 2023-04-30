@@ -718,7 +718,7 @@ static int lastpress;
 ================
 */
 
-static void __interrupt I_KeyboardISR (void)
+static void _interrupt I_KeyboardISR (void)
 {
 // Get the scan code
 

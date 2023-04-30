@@ -37,7 +37,7 @@
 #include <dpmi.h>
 #include <go32.h>
 #include <sys/nearptr.h>
-#define __interrupt
+#define _interrupt
 
 #elif defined __DMC__
 #define int386 int86
@@ -48,7 +48,6 @@
 #include <i86.h>
 #define int386 _int386
 #define __djgpp_conventional_base 0
-#define __interrupt _interrupt
 
 #elif defined __WATCOMC__
 #define __djgpp_conventional_base 0
