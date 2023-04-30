@@ -49,7 +49,7 @@ static void ST_refreshBackground(void)
 
 // Respond to keyboard input events,
 //  intercept cheats.
-boolean ST_Responder (event_t *ev)
+void ST_Responder (event_t *ev)
 {
   int		i;
     
@@ -256,7 +256,6 @@ boolean ST_Responder (event_t *ev)
       }
     }    
   }
-  return false;
 }
 
 

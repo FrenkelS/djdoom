@@ -1100,7 +1100,7 @@ void AM_Stop (void);
 //
 
 // Called by main loop.
-boolean ST_Responder (event_t* ev);
+void ST_Responder (event_t* ev);
 
 // Called by main loop.
 void ST_Ticker (void);
@@ -1134,8 +1134,6 @@ typedef enum
     
 } st_chatstateenum_t;
 
-
-boolean ST_Responder(event_t *ev);
 
 //
 // HEADS UP TEXT
