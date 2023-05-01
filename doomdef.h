@@ -855,7 +855,7 @@ void G_BeginRecording (void);
 
 void G_PlayDemo (char *name);
 void G_TimeDemo (char *name);
-boolean G_CheckDemoStatus (void);
+void G_CheckDemoStatus (void);
 
 void G_ExitLevel (void);
 void G_SecretExitLevel (void);
@@ -863,7 +863,7 @@ void G_SecretExitLevel (void);
 void G_WorldDone (void);
 
 void G_Ticker (void);
-boolean G_Responder (event_t *ev);
+void G_Responder (event_t *ev);
 
 void G_ScreenShot (void);
 
@@ -939,7 +939,7 @@ void M_ClearBox (fixed_t *box);
 void M_AddToBox (fixed_t *box, fixed_t x, fixed_t y);
 // bounding box functions
 
-boolean M_WriteFile (char const *name, void *source, int length);
+void M_WriteFile (char const *name, void *source, int length);
 void M_ReadFile (char const *name, byte **buffer);
 
 void M_ScreenShot (void);

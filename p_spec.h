@@ -324,10 +324,10 @@ typedef struct
 
 extern	ceiling_t	*activeceilings[MAXCEILINGS];
 
-int		EV_DoCeiling (line_t *line, ceiling_e  type);
+boolean	EV_DoCeiling (line_t *line, ceiling_e  type);
 void	T_MoveCeiling (ceiling_t *ceiling);
 void	P_AddActiveCeiling(ceiling_t *c);
-int		EV_CeilingCrushStop(line_t	*line);
+void	EV_CeilingCrushStop(line_t	*line);
 
 /*
 ===============================================================================
@@ -379,8 +379,8 @@ typedef enum
 result_e	T_MovePlane(sector_t *sector,fixed_t speed,
 			fixed_t dest,boolean crush,int floorOrCeiling,int direction);
 
-int		EV_BuildStairs(line_t *line, boolean build8);
-int		EV_DoFloor(line_t *line,floor_e floortype);
+boolean	EV_BuildStairs(line_t *line, boolean build8);
+boolean	EV_DoFloor(line_t *line,floor_e floortype);
 void	T_MoveFloor(floormove_t *floor);
 
 /*

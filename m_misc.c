@@ -143,20 +143,15 @@ void M_AddToBox (fixed_t *box, fixed_t x, fixed_t y)
 #define O_BINARY 0
 #endif
 
-boolean M_WriteFile (char const *name, void *source, int length)
+void M_WriteFile (char const *name, void *source, int length)
 {
-	int handle, count;
+	int handle;
 
 	handle = open (name, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
 	if (handle == -1)
-		return false;
-	count = write (handle, source, length);
+		return;
+	write (handle, source, length);
 	close (handle);
-
-	if (count < length)
-		return false;
-
-	return true;
 }
 
 

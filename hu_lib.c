@@ -44,31 +44,25 @@ void HUlib_initTextLine(hu_textline_t *t, int x, int y, patch_t **f, int sc)
   HUlib_clearTextLine(t);
 }
 
-boolean HUlib_addCharToTextLine(hu_textline_t *t, char ch)
+void HUlib_addCharToTextLine(hu_textline_t *t, char ch)
 {
 
-  if (t->len == HU_MAXLINELENGTH)
-    return false;
-  else
+  if (t->len != HU_MAXLINELENGTH)
   {
     t->l[t->len++] = ch;
     t->l[t->len] = 0;
     t->needsupdate = 4;
-    return true;
   }
 
 }
 
-// returns success
-static boolean HUlib_delCharFromTextLine(hu_textline_t *t)
+static void HUlib_delCharFromTextLine(hu_textline_t *t)
 {
 
-  if (!t->len) return false;
-  else
+  if (t->len)
   {
     t->l[--t->len] = 0;
     t->needsupdate = 4;
-    return true;
   }
 
 }

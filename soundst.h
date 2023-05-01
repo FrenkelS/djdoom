@@ -164,8 +164,8 @@ void I_UpdateSoundParams(int handle, int vol, int sep, int pitch);
 void I_StopSound(int handle);
 
 // Called by S_*()'s to see if a channel is still playing.
-// Returns 0 if no longer playing, 1 if playing.
-int I_SoundIsPlaying(int handle);
+// Returns false if no longer playing, true if playing.
+boolean I_SoundIsPlaying(int handle);
 
 
 // the complete set of sound effects

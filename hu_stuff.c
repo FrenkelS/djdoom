@@ -477,7 +477,8 @@ void HU_Erase(void)
 void HU_Ticker(void)
 {
 
-  int i, rc;
+  int i;
+  boolean rc;
   char c;
 
   // tick down message counter if message is up

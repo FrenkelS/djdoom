@@ -190,9 +190,9 @@ void I_StopSound(int handle)
 //  while (gDmaCount < waittocount) ;
 }
 
-int I_SoundIsPlaying(int handle)
+boolean I_SoundIsPlaying(int handle)
 {
-  return SFX_Playing(handle);
+  return SFX_Playing(handle) != 0;
 }
 
 void I_UpdateSoundParams(int handle, int vol, int sep, int pitch)

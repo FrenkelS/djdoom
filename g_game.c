@@ -25,7 +25,7 @@
 #include "P_local.h"
 #include "soundst.h"
 
-boolean G_CheckDemoStatus (void);
+void G_CheckDemoStatus (void);
 static void G_ReadDemoTiccmd (ticcmd_t *cmd);
 static void G_WriteDemoTiccmd (ticcmd_t *cmd);
 void G_PlayerReborn (int player);
@@ -428,7 +428,7 @@ static void G_DoLoadLevel (void)
 ===============================================================================
 */
 
-boolean G_Responder(event_t *ev)
+void G_Responder(event_t *ev)
 {
 	// allow spy mode changes even during the demo
 	if(gamestate == GS_LEVEL && ev->type == ev_keydown
@@ -444,7 +444,7 @@ boolean G_Responder(event_t *ev)
 			}
 		} while(!playeringame[displayplayer]
 			&& displayplayer != consoleplayer);
-		return(true);
+		return;
 	}
     
 	// any other key pops up menu if in demos
@@ -457,21 +457,20 @@ boolean G_Responder(event_t *ev)
 			(ev->type == ev_joystick && ev->data1) ) 
 		{ 
 			M_StartControlPanel (); 
-			return true; 
 		} 
-		return false; 
+		return; 
 	} 
 
 	if(gamestate == GS_LEVEL)
 	{
 		if (HU_Responder(ev))
 		{
-			return true;	// chat ate the event
+			return;	// chat ate the event
 		}
 		ST_Responder(ev);	// status window never ate it
 		if (AM_Responder(ev))
 		{
-			return true;	// automap ate it
+			return;	// automap ate it
 		}
 	}
 
@@ -479,7 +478,7 @@ boolean G_Responder(event_t *ev)
 	{ 
 		if (F_Responder(ev))
 		{
-			return true;	// finale ate the event
+			return;	// finale ate the event
 		}
 	} 
 
@@ -489,20 +488,20 @@ boolean G_Responder(event_t *ev)
 			if(ev->data1 == KEY_PAUSE)
 			{
 				sendpause = true;
-				return(true);
+				return;
 			}
 			if(ev->data1 < NUMKEYS)
 			{
 				gamekeydown[ev->data1] = true;
 			}
-			return(true); // eat key down events
+			return; // eat key down events
 
 		case ev_keyup:
 			if(ev->data1 < NUMKEYS)
 			{
 				gamekeydown[ev->data1] = false;
 			}
-			return(false); // always let key up events filter down
+			return; // always let key up events filter down
 
 		case ev_mouse:
 			mousebuttons[0] = ev->data1&1;
@@ -510,7 +509,7 @@ boolean G_Responder(event_t *ev)
 			mousebuttons[2] = ev->data1&4;
 			mousex = ev->data2*(mouseSensitivity+5)/10;
 			mousey = ev->data3*(mouseSensitivity+5)/10;
-			return(true); // eat events
+			return; // eat events
 
 		case ev_joystick:
 			joybuttons[0] = ev->data1&1;
@@ -519,12 +518,11 @@ boolean G_Responder(event_t *ev)
 			joybuttons[3] = ev->data1&8;
 			joyxmove = ev->data2;
 			joyymove = ev->data3;
-			return(true); // eat events
+			return; // eat events
 
 		default:
 			break;
 	}
-	return(false);
 }
 
 /*
@@ -1592,11 +1590,10 @@ void G_TimeDemo (char *name)
 = G_CheckDemoStatus
 =
 = Called after a death or level completion to allow demos to be cleaned up
-= Returns true if a new demo loop action will take place
 ===================
 */
 
-boolean G_CheckDemoStatus (void)
+void G_CheckDemoStatus (void)
 {
 	int             endtime;
 
@@ -1623,7 +1620,7 @@ boolean G_CheckDemoStatus (void)
 		nomonsters = false;
 		consoleplayer = 0;
 		D_AdvanceDemo ();
-		return true;
+		return;
 	}
 
 	if (demorecording)
@@ -1635,7 +1632,7 @@ boolean G_CheckDemoStatus (void)
 		I_Error ("Demo %s recorded",demoname);
 	}
 
-	return false;
+	return;
 }
 
 

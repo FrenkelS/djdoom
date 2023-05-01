@@ -136,7 +136,7 @@ static void wipe_initMelt(void)
   }
 }
 
-static int wipe_doMelt(int ticks)
+static boolean wipe_doMelt(int ticks)
 {
   int i, j, dy, idx;
   short *s, *d;
@@ -194,7 +194,7 @@ void wipe_EndScreen(void)
 
 boolean wipe_ScreenWipe(int ticks)
 {
-  int rc;
+  boolean rc;
 
   void V_MarkRect(int, int, int, int);
 

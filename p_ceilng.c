@@ -125,14 +125,15 @@ void T_MoveCeiling (ceiling_t *ceiling)
 //		Move a ceiling up/down and all around!
 //
 //==================================================================
-int EV_DoCeiling (line_t *line, ceiling_e  type)
+boolean EV_DoCeiling (line_t *line, ceiling_e  type)
 {
-	int			secnum,rtn;
+	int			secnum;
+	boolean		rtn;
 	sector_t		*sec;
 	ceiling_t		*ceiling;
 	
 	secnum = -1;
-	rtn = 0;
+	rtn = false;
 	
 	//
 	//	Reactivate in-stasis ceilings...for certain types.
@@ -156,7 +157,7 @@ int EV_DoCeiling (line_t *line, ceiling_e  type)
 		//
 		// new door thinker
 		//
-		rtn = 1;
+		rtn = true;
 		ceiling = Z_Malloc (sizeof(*ceiling), PU_LEVSPEC, 0);
 		P_AddThinker (&ceiling->thinker);
 		sec->specialdata = ceiling;
@@ -257,12 +258,10 @@ static void P_ActivateInStasisCeiling(line_t *line)
 //		Stop a ceiling from crushing!
 //
 //==================================================================
-int	EV_CeilingCrushStop(line_t	*line)
+void	EV_CeilingCrushStop(line_t	*line)
 {
 	int		i;
-	int		rtn;
 	
-	rtn = 0;
 	for (i = 0;i < MAXCEILINGS;i++)
 		if (activeceilings[i] && (activeceilings[i]->tag == line->tag) &&
 			(activeceilings[i]->direction != 0))
@@ -270,8 +269,5 @@ int	EV_CeilingCrushStop(line_t	*line)
 			activeceilings[i]->olddirection = activeceilings[i]->direction;
 			activeceilings[i]->thinker.function = NULL;
 			activeceilings[i]->direction = 0;		// in-stasis
-			rtn = 1;
 		}
-
-	return rtn;
 }

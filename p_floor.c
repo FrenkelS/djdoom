@@ -212,16 +212,16 @@ void T_MoveFloor(floormove_t *floor)
 //	HANDLE FLOOR TYPES
 //
 //==================================================================
-int EV_DoFloor(line_t *line,floor_e floortype)
+boolean EV_DoFloor(line_t *line,floor_e floortype)
 {
 	int			secnum;
-	int			rtn;
+	boolean		rtn;
 	int			i;
 	sector_t	*sec;
 	floormove_t	*floor;
 
 	secnum = -1;
-	rtn = 0;
+	rtn = false;
 	while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
 	{
 		sec = &sectors[secnum];
@@ -233,7 +233,7 @@ int EV_DoFloor(line_t *line,floor_e floortype)
 		//
 		//	new floor thinker
 		//
-		rtn = 1;
+		rtn = true;
 		floor = Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
 		P_AddThinker (&floor->thinker);
 		sec->specialdata = floor;
@@ -386,7 +386,7 @@ int EV_DoFloor(line_t *line,floor_e floortype)
 //	BUILD A STAIRCASE!
 //
 //==================================================================
-int EV_BuildStairs(line_t *line, boolean build8)
+boolean EV_BuildStairs(line_t *line, boolean build8)
 {
 	int		secnum;
 	int		height;
@@ -394,13 +394,13 @@ int EV_BuildStairs(line_t *line, boolean build8)
 	int		newsecnum;
 	int		texture;
 	int		ok;
-	int		rtn;
+	boolean	rtn;
 	sector_t	*sec, *tsec;
 	floormove_t	*floor;
 	fixed_t	stairsize, speed;
 
 	secnum = -1;
-	rtn = 0;
+	rtn = false;
 	while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
 	{
 		sec = &sectors[secnum];
@@ -412,7 +412,7 @@ int EV_BuildStairs(line_t *line, boolean build8)
 		//
 		// new floor thinker
 		//
-		rtn = 1;
+		rtn = true;
 		floor = Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
 		P_AddThinker (&floor->thinker);
 		sec->specialdata = floor;
