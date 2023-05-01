@@ -201,7 +201,7 @@ void V_DrawPatchFlipped (int x, int y, int scrn, patch_t *patch)
 ==================
 */
 
-void V_DrawPatchDirect (int x, int y, int scrn, patch_t *patch)
+void V_DrawPatchDirect (int x, int y, patch_t *patch)
 {
 	int			count,col;
 	column_t	*column;
@@ -211,7 +211,7 @@ void V_DrawPatchDirect (int x, int y, int scrn, patch_t *patch)
 	y -= SHORT(patch->topoffset);
 	x -= SHORT(patch->leftoffset);
 #ifdef RANGECHECK
-	if (x<0||x+SHORT(patch->width) >SCREENWIDTH || y<0 || y+SHORT(patch->height)>SCREENHEIGHT|| (unsigned)scrn>4)
+	if (x<0||x+SHORT(patch->width) >SCREENWIDTH || y<0 || y+SHORT(patch->height)>SCREENHEIGHT)
 		I_Error ("Bad V_DrawPatchDirect");
 #endif
 

@@ -1359,7 +1359,7 @@ static void I_InitDiskFlash (void)
 		pic = W_CacheLumpName ("STDISK",PU_CACHE);
 	temp = destscreen;
 	destscreen = (byte *)(0xac000 + __djgpp_conventional_base);
-	V_DrawPatchDirect (SCREENWIDTH-16,SCREENHEIGHT-16,0,pic);
+	V_DrawPatchDirect (SCREENWIDTH-16,SCREENHEIGHT-16,pic);
 	destscreen = temp;
 }
 
