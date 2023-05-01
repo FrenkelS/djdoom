@@ -957,7 +957,7 @@ extern byte gammatable[5][256];
 extern int usegamma;
 
 void V_Init(void); // Allocates buffer screens, call before R_Init
-void V_CopyRect(int scrx, int scry, int srcscrn, int width, int height, int destx, int desty, int destscrn);
+void V_CopyRect(int x, int scry, int width, int height, int desty);
 void V_DrawPatch(int x, int y, int scrn, patch_t *patch);
 void V_DrawPatchDirect(int x, int y, patch_t *patch);
 void V_DrawBlock(int x, int y, int scrn, int width, int height, byte *src); // Draw a linear block of pixels into the view buffer

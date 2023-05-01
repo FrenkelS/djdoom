@@ -20,6 +20,12 @@
 
 #include "DoomDef.h"
 
+//
+// Background and foreground screen numbers
+//
+#define BG 4
+#define FG 0
+
 #define SC_INDEX			0x3c4
 
 byte		*screens[5];
@@ -67,20 +73,19 @@ void V_MarkRect (int x, int y, int width, int height)
 ==================
 */
 
-void V_CopyRect (int srcx, int srcy, int srcscrn, int width, int height, int destx, int desty, int destscrn) 
+void V_CopyRect (int x, int srcy, int width, int height, int desty) 
 {
 	byte	*src, *dest;
 	 
 #ifdef RANGECHECK
-	if (srcx<0 ||srcx+width >SCREENWIDTH || srcy<0 || srcy+height>SCREENHEIGHT
-||destx<0||destx+width >SCREENWIDTH || desty<0 || desty+height>SCREENHEIGHT
-|| (unsigned)srcscrn>4 || (unsigned)destscrn>4)
+	if (x<0 ||x+width >SCREENWIDTH || srcy<0 || srcy+height>SCREENHEIGHT
+|| desty<0 || desty+height>SCREENHEIGHT)
 		I_Error ("Bad V_CopyRect");
 #endif 
-	V_MarkRect (destx, desty, width, height);
+	V_MarkRect (x, desty, width, height);
 
-	src = screens[srcscrn]+SCREENWIDTH*srcy+srcx;
-	dest = screens[destscrn]+SCREENWIDTH*desty+destx;
+	src = screens[BG]+SCREENWIDTH*srcy+x;
+	dest = screens[FG]+SCREENWIDTH*desty+x;
 	for ( ; height>0 ; height--)
 	{
 		memcpy (dest, src, width);
