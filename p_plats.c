@@ -109,15 +109,15 @@ void	T_PlatRaise(plat_t	*plat)
 
 static void	P_ActivateInStasis(int tag);
 
-int	EV_DoPlat(line_t *line,plattype_e type,int amount)
+boolean	EV_DoPlat(line_t *line,plattype_e type,int amount)
 {
 	plat_t		*plat;
 	int			secnum;
-	int			rtn;
+	boolean		rtn;
 	sector_t	*sec;
 	
 	secnum = -1;
-	rtn = 0;
+	rtn = false;
 	
 	//
 	//	Activate all <type> plats that are in_stasis
@@ -140,7 +140,7 @@ int	EV_DoPlat(line_t *line,plattype_e type,int amount)
 		//
 		// Find lowest & highest floors around sector
 		//
-		rtn = 1;
+		rtn = true;
 		plat = Z_Malloc( sizeof(*plat), PU_LEVSPEC, 0);
 		P_AddThinker(&plat->thinker);
 		

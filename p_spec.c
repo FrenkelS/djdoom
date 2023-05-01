@@ -133,9 +133,9 @@ sector_t *getSector(int currentSector,int line,int side)
 //	Given the sector number and the line number, will tell you whether
 //		the line is two-sided or not.
 //
-int	twoSided(int sector,int line)
+boolean	twoSided(int sector,int line)
 {
-	return (sectors[sector].lines[line])->flags & ML_TWOSIDED;
+	return ((sectors[sector].lines[line])->flags & ML_TWOSIDED) != 0;
 }
 
 //==================================================================
@@ -873,18 +873,18 @@ void P_UpdateSpecials (void)
 //	Special Stuff that can't be categorized
 //
 //============================================================
-int EV_DoDonut(line_t *line)
+boolean EV_DoDonut(line_t *line)
 {
 	sector_t	*s1;
 	sector_t	*s2;
 	sector_t	*s3;
 	int			secnum;
-	int			rtn;
+	boolean		rtn;
 	int			i;
 	floormove_t		*floor;
 	
 	secnum = -1;
-	rtn = 0;
+	rtn = false;
 	while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
 	{
 		s1 = &sectors[secnum];
@@ -893,7 +893,7 @@ int EV_DoDonut(line_t *line)
 		if (s1->specialdata)
 			continue;
 			
-		rtn = 1;
+		rtn = true;
 		s2 = getNextSector(s1->lines[0],s1);
 		for (i = 0;i < s2->linecount;i++)
 		{

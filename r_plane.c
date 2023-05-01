@@ -86,20 +86,6 @@ void R_InitSkyMap (void)
 
 
 /*
-====================
-=
-= R_InitPlanes
-=
-= Only at game startup
-====================
-*/
-
-void R_InitPlanes (void)
-{
-}
-
-
-/*
 ================
 =
 = R_MapPlane

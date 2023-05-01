@@ -76,7 +76,7 @@ void 	P_CrossSpecialLine (int linenum, int side, mobj_t *thing);
 
 void 	P_PlayerInSpecialSector (player_t *player);
 
-int		twoSided(int sector,int line);
+boolean	twoSided(int sector,int line);
 sector_t *getSector(int currentSector,int line,int side);
 side_t	*getSide(int currentSector,int line, int side);
 fixed_t	P_FindLowestFloorSurrounding(sector_t *sec);
@@ -91,7 +91,7 @@ sector_t *getNextSector(line_t *line,sector_t *sec);
 //
 //	SPECIAL
 //
-int EV_DoDonut(line_t *line);
+boolean EV_DoDonut(line_t *line);
 
 /*
 ===============================================================================
@@ -242,7 +242,7 @@ typedef struct
 extern	plat_t	*activeplats[MAXPLATS];
 
 void	T_PlatRaise(plat_t	*plat);
-int		EV_DoPlat(line_t *line,plattype_e type,int amount);
+boolean	EV_DoPlat(line_t *line,plattype_e type,int amount);
 void	P_AddActivePlat(plat_t *plat);
 void	EV_StopPlat(line_t *line);
 

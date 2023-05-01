@@ -161,9 +161,7 @@ boolean	R_PointOnSegSide (fixed_t x, fixed_t y, seg_t *line)
 // try to quickly decide by looking at sign bits
 	if ( (ldy ^ ldx ^ dx ^ dy)&0x80000000 )
 	{
-		if ( (ldy ^ dx) & 0x80000000 )
-			return true;	// (left is negative)
-		return false;
+		return ( (ldy ^ dx) & 0x80000000 ) != 0;
 	}
 
 	left = FixedMul ( ldy>>FRACBITS , dx );
@@ -577,7 +575,6 @@ void R_Init (void)
 	// viewwidth / viewheight / detailLevel are set by the defaults
 	printf (".");
 	R_SetViewSize (screenblocks, detailLevel);
-	R_InitPlanes ();
 	printf (".");
 	R_InitLightTables ();
 	printf (".");

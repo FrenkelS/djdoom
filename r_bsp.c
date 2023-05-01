@@ -383,10 +383,8 @@ static boolean R_CheckBBox (fixed_t *bspcoord)
 	start = solidsegs;
 	while (start->last < sx2)
 		start++;
-	if (sx1 >= start->first && sx2 <= start->last)
-		return false;	// the clippost contains the new span
 
-	return true;
+	return !(sx1 >= start->first && sx2 <= start->last);
 }
 
 
