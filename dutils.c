@@ -189,7 +189,7 @@ void wipe_EndScreen(void)
 {
   wipe_scr_end = screens[3];
   I_ReadScreen(wipe_scr_end);
-  V_DrawBlock(0, 0, 0, SCREENWIDTH, SCREENHEIGHT, wipe_scr_start); // restore start scr.
+  V_DrawBlock(wipe_scr_start); // restore start scr.
 }
 
 boolean wipe_ScreenWipe(int ticks)

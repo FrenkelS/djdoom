@@ -260,22 +260,18 @@ void V_DrawPatchDirect (int x, int y, patch_t *patch)
 ==================
 */
 
-void V_DrawBlock (int x, int y, int scrn, int width, int height, byte *src)
+void V_DrawBlock (byte *src)
 {
 	byte		*dest;
-	
-#ifdef RANGECHECK
-	if (x<0||x+width >SCREENWIDTH || y<0 || y+height>SCREENHEIGHT|| (unsigned)scrn>4)
-		I_Error ("Bad V_DrawBlock");
-#endif
+	int			height;
 
-	V_MarkRect (x, y, width, height);
-	dest = screens[scrn] + y*SCREENWIDTH+x;
-	
+	V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
+	dest = screens[0];
+	height = SCREENHEIGHT;
 	while (height--)
 	{
-		memcpy (dest, src, width);
-		src += width;
+		memcpy (dest, src, SCREENWIDTH);
+		src += SCREENWIDTH;
 		dest += SCREENWIDTH;
 	}
 }
