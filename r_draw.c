@@ -546,8 +546,6 @@ void R_VideoErase (unsigned ofs, int count)
 =================
 */
 
-void V_MarkRect (int x, int y, int width, int height);
- 
 void R_DrawViewBorder (void)
 { 
     int		top, side, ofs, i;
