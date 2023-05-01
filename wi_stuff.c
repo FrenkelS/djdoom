@@ -96,12 +96,10 @@ static void WI_drawLF(void)
 {
   int y = WI_TITLEY;
   // draw <LevelName> 
-  V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->last]->width))/2,
-    y, FB, lnames[wbs->last]);
+  V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->last]->width))/2, y, FB, lnames[wbs->last]);
   // draw "Finished!"
   y += (5*SHORT(lnames[wbs->last]->height))/4;
-  V_DrawPatch((SCREENWIDTH - SHORT(finished->width))/2,
-    y, FB, finished);
+  V_DrawPatch((SCREENWIDTH - SHORT(finished->width))/2, y, FB, finished);
 }
 
 // Draws "Entering <LevelName>"
@@ -109,12 +107,10 @@ static void WI_drawEL(void)
 {
   int y = WI_TITLEY;
   // draw "Entering"
-  V_DrawPatch((SCREENWIDTH - SHORT(entering->width))/2,
-    y, FB, entering);
+  V_DrawPatch((SCREENWIDTH - SHORT(entering->width))/2, y, FB, entering);
   // draw level
   y += (5*SHORT(lnames[wbs->next]->height))/4;
-  V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->next]->width))/2,
-    y, FB, lnames[wbs->next]);
+  V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->next]->width))/2, y, FB, lnames[wbs->next]);
 }
 
 static void WI_drawOnLnode(int n, patch_t *c[])
@@ -142,8 +138,7 @@ static void WI_drawOnLnode(int n, patch_t *c[])
 
   if (fits && i<2)
   {
-    V_DrawPatch(lnodes[wbs->epsd][n].x, lnodes[wbs->epsd][n].y,
-      FB, c[i]);
+    V_DrawPatch(lnodes[wbs->epsd][n].x, lnodes[wbs->epsd][n].y, FB, c[i]);
   }
   else
   {
@@ -555,24 +550,18 @@ static void WI_drawDeathmatchStats(void)
   {
     if (playeringame[i])
     {
-      V_DrawPatch(x-SHORT(p[i]->width)/2,
-	DM_MATRIXY - WI_SPACINGY, FB, p[i]);
-      V_DrawPatch(DM_MATRIXX-SHORT(p[i]->width)/2,
-	y, FB, p[i]);
+      V_DrawPatch(x-SHORT(p[i]->width)/2, DM_MATRIXY - WI_SPACINGY, FB, p[i]);
+      V_DrawPatch(DM_MATRIXX-SHORT(p[i]->width)/2, y, FB, p[i]);
       if (i == me)
       {
-	V_DrawPatch(x-SHORT(p[i]->width)/2,
-	  DM_MATRIXY - WI_SPACINGY, FB, bstar);
-	V_DrawPatch(DM_MATRIXX-SHORT(p[i]->width)/2,
-	  y, FB, star);
+	V_DrawPatch(x-SHORT(p[i]->width)/2, DM_MATRIXY - WI_SPACINGY, FB, bstar);
+	V_DrawPatch(DM_MATRIXX-SHORT(p[i]->width)/2, y, FB, star);
       }
     }
     else
     {
-      // V_DrawPatch(x-SHORT(bp[i]->width)/2,
-      //   DM_MATRIXY - WI_SPACINGY, FB, bp[i]);
-      // V_DrawPatch(DM_MATRIXX-SHORT(bp[i]->width)/2,
-      //   y, FB, bp[i]);
+      // V_DrawPatch(x-SHORT(bp[i]->width)/2, DM_MATRIXY - WI_SPACINGY, FB, bp[i]);
+      // V_DrawPatch(DM_MATRIXX-SHORT(bp[i]->width)/2, y, FB, bp[i]);
     }
     x += DM_SPACINGX;
     y += WI_SPACINGY;
@@ -758,12 +747,9 @@ static void WI_drawNetgameStats(void)
   WI_drawAnimatedBack();  // draw animated background
   WI_drawLF();
   // draw stat titles (top line)
-  V_DrawPatch(NG_STATSX+NG_SPACINGX-SHORT(kills->width),
-    NG_STATSY, FB, kills);
-  V_DrawPatch(NG_STATSX+2*NG_SPACINGX-SHORT(items->width),
-    NG_STATSY, FB, items);
-  V_DrawPatch(NG_STATSX+3*NG_SPACINGX-SHORT(secret->width),
-    NG_STATSY, FB, secret);
+  V_DrawPatch(NG_STATSX+NG_SPACINGX-SHORT(kills->width), NG_STATSY, FB, kills);
+  V_DrawPatch(NG_STATSX+2*NG_SPACINGX-SHORT(items->width), NG_STATSY, FB, items);
+  V_DrawPatch(NG_STATSX+3*NG_SPACINGX-SHORT(secret->width), NG_STATSY, FB, secret);
   if (dofrags)
     V_DrawPatch(NG_STATSX+4*NG_SPACINGX-SHORT(frags->width),
       NG_STATSY, FB, frags);
