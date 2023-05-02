@@ -32,6 +32,7 @@
 
 #elif defined __DMC__
 //Digital Mars
+#include <int.h>
 #define int386 int86
 #define __djgpp_conventional_base ((byte*)_x386_zero_base_ptr)
 
