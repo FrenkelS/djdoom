@@ -984,7 +984,6 @@ static void M_EndGameResponse(int ch)
 
 static void M_EndGame(int choice)
 {
-	choice = 0;
 	if (!usergame)
 	{
 		S_StartSound(NULL,sfx_oof);
@@ -1008,19 +1007,16 @@ static void M_EndGame(int choice)
 //
 static void M_ReadThis(int choice)
 {
-	choice = 0;
 	M_SetupNextMenu(&ReadDef1);
 }
 
 static void M_ReadThis2(int choice)
 {
-	choice = 0;
 	M_SetupNextMenu(&ReadDef2);
 }
 
 static void M_FinishReadThis(int choice)
 {
-	choice = 0;
 	M_SetupNextMenu(&MainDef);
 }
 
@@ -1114,7 +1110,6 @@ static void M_ChangeSensitivity(int choice)
 
 static void M_ChangeDetail(int choice)
 {
-	choice = 0;
 	detailLevel = 1 - detailLevel;
     
 	R_SetViewSize (screenblocks, detailLevel);
