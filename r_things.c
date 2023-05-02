@@ -17,8 +17,6 @@
 //
 
 // R_things.c
-#include <stdio.h>
-#include <stdlib.h>
 #include "DoomDef.h"
 #include "R_local.h"
 

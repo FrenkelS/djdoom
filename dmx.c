@@ -16,6 +16,8 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
+#include "dmx.h"
+
 void _dpmi_lockregion (void * inmem, int length) {}
 void _dpmi_unlockregion (void * inmem, int length) {}
 

@@ -18,7 +18,6 @@
 
 // Z_zone.c
 
-#include <stdlib.h>
 #include "DoomDef.h"
 
 /*

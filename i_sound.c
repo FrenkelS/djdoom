@@ -18,7 +18,6 @@
 
 // I_SOUND.C
 
-#include <stdio.h>
 #include "doomdef.h"
 #include "dmx.h"
 #include "sounds.h"

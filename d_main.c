@@ -19,12 +19,10 @@
 // D_main.c
 
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 #include <direct.h>
 #include <io.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <dos.h>
 #include "DoomDef.h"
 #include "soundst.h"
 #include "DUtils.h"

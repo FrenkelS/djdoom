@@ -23,7 +23,6 @@
 #include "DUtils.h"
 #include "AM_map.h"
 #include "AM_data.h"
-#include <stdio.h>
 
 static int cheating = 0;
 static int grid = 0;

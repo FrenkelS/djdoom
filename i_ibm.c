@@ -19,7 +19,7 @@
 // I_IBM.C
 
 #include <conio.h>
-#include <stdlib.h>
+#include <dos.h>
 #include <stdarg.h>
 #include "DoomDef.h"
 #include "R_local.h"

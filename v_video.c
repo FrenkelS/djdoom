@@ -18,6 +18,8 @@
 
 // V_video.c
 
+#include <conio.h>
+#include <dos.h>
 #include "DoomDef.h"
 
 //

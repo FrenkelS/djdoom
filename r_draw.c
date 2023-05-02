@@ -20,6 +20,8 @@
 
 // R_draw.c
 
+#include <conio.h>
+#include <dos.h>
 #include "DoomDef.h"
 #include "R_local.h"
 

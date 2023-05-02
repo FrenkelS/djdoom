@@ -20,16 +20,10 @@
 
 #ifndef __DOOMDEF__
 #define __DOOMDEF__
-#include <bios.h>
-#include <dos.h>
-#include <conio.h>
-#include <ctype.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
-
 #include "compiler.h"
 
 // VERSIONS RESTORATION

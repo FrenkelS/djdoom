@@ -18,7 +18,6 @@
 
 // P_main.c
 
-#include <math.h>
 #include "DoomDef.h"
 #include "P_local.h"
 #include "soundst.h"

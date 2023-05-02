@@ -18,11 +18,10 @@
 
 // W_wad.c
 
-#include <malloc.h>
+#include <ctype.h>
 #include <io.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/stat.h>
 
 #include "DoomDef.h"
 

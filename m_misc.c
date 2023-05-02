@@ -19,12 +19,8 @@
 // M_misc.c
 
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <direct.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <ctype.h>
 #include "DoomDef.h"
 #include "HU_stuff.h"
 #include "soundst.h"
