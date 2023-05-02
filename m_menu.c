@@ -20,6 +20,7 @@
 
 #include <fcntl.h>
 #include <unistd.h>
+#include <io.h>
 #include <ctype.h>
 #include "DoomDef.h"
 #include "R_local.h"

@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <io.h>
 #include "DoomDef.h"
 #include "HU_stuff.h"
 #include "soundst.h"

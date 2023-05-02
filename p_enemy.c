@@ -22,7 +22,7 @@
 #include "P_local.h"
 #include "soundst.h"
 
-void A_Fall ();
+void A_Fall (mobj_t *actor);
 
 /*
 ===============================================================================
