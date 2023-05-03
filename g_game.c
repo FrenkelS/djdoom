@@ -1228,7 +1228,7 @@ static void G_DoSaveGame(void)
 	}
 	description = savedescription;
 
-	save_p = savebuffer = screens[1]+0x4000;
+	save_p = savebuffer = Z_Malloc(SAVEGAMESIZE, PU_STATIC, NULL);
 
 	memcpy(save_p, description, SAVESTRINGSIZE);
 	save_p += SAVESTRINGSIZE;
@@ -1259,6 +1259,7 @@ static void G_DoSaveGame(void)
 	if (length > SAVEGAMESIZE)
 		I_Error ("Savegame buffer overrun");
 	M_WriteFile (name, savebuffer, length);
+	Z_Free(savebuffer);
 	gameaction = ga_nothing;
 	savedescription[0] = 0;
 
