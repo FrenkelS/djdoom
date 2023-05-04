@@ -1129,7 +1129,9 @@ static byte *I_AllocLow (int length)
 
 static void I_StartupDPMI (void)
 {
-#if defined __WATCOMC__
+#if defined __DJGPP__
+	__djgpp_nearptr_enable();
+#elif defined __WATCOMC__
 	void _dpmi_lockregion (void * inmem, int length);
 	extern char __begtext;
 	extern char ___Argc;
@@ -1270,11 +1272,7 @@ void I_Quit (void)
 static int I_GetLargestAvailableFreeBlockInBytes(void)
 {
 #if defined __DJGPP__
-	__dpmi_free_mem_info	meminfo;
-
-	__djgpp_nearptr_enable();
-	__dpmi_get_free_memory_information(&meminfo);
-	return meminfo.largest_available_free_block_in_bytes;
+	return _go32_dpmi_remaining_physical_memory();
 #elif defined __DMC__
 	return _memmax();
 #elif defined __WATCOMC__
