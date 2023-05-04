@@ -16,7 +16,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "DoomDef.h"
+#include "doomdef.h"
 
 fixed_t finetangent[4096] = {
 -170910304,-56965752,-34178904,-24413316,-18988036,-15535599,-13145455,-11392683,

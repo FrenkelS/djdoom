@@ -16,8 +16,8 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "DoomDef.h"
-#include "R_local.h"
+#include "doomdef.h"
+#include "r_local.h"
 #include "soundst.h"
 
 void _dpmi_lockregion (void * inmem, int length);

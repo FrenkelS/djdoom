@@ -18,8 +18,8 @@
 
 // P_enemy.c
 
-#include "DoomDef.h"
-#include "P_local.h"
+#include "doomdef.h"
+#include "p_local.h"
 #include "soundst.h"
 
 void A_Fall (mobj_t *actor);

@@ -16,7 +16,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "DoomDef.h"
+#include "doomdef.h"
 
 int main(int argc, char **argv)
 {

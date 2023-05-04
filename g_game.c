@@ -18,8 +18,8 @@
 
 // G_game.c
 
-#include "DoomDef.h"
-#include "P_local.h"
+#include "doomdef.h"
+#include "p_local.h"
 #include "soundst.h"
 
 void G_CheckDemoStatus (void);

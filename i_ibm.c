@@ -21,8 +21,8 @@
 #include <conio.h>
 #include <dos.h>
 #include <stdarg.h>
-#include "DoomDef.h"
-#include "R_local.h"
+#include "doomdef.h"
+#include "r_local.h"
 
 #define DPMI_INT 0x31
 //#define NOTIMER

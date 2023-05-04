@@ -18,12 +18,12 @@
 
 // ST_stuff.c
 
-#include "DoomDef.h"
-#include "P_local.h"
-#include "DUtils.h"
-#include "AM_map.h"
-#include "ST_lib.h"
-#include "ST_stuff.h"
+#include "doomdef.h"
+#include "p_local.h"
+#include "dutils.h"
+#include "am_map.h"
+#include "st_lib.h"
+#include "st_stuff.h"
 
 
 //

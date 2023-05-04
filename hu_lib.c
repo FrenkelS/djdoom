@@ -18,9 +18,9 @@
 
 // HU_lib.c
 #include <ctype.h>
-#include "DoomDef.h"
-#include "R_local.h"
-#include "HU_lib.h"
+#include "doomdef.h"
+#include "r_local.h"
+#include "hu_lib.h"
 
 // boolean : whether the screen is always erased
 #define noterased viewwindowx

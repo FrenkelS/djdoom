@@ -17,8 +17,8 @@
 //
 
 // WI_stuff.c
-#include "DoomDef.h"
-#include "WI_stuff.h"
+#include "doomdef.h"
+#include "wi_stuff.h"
 #include "wi_data.h"
 
 #define RANGECHECKING

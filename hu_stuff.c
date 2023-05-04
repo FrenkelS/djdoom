@@ -17,9 +17,9 @@
 //
 
 // HU_stuff.c
-#include "DoomDef.h"
-#include "HU_lib.h"
-#include "HU_stuff.h"
+#include "doomdef.h"
+#include "hu_lib.h"
+#include "hu_stuff.h"
 
 char *chat_macros[] =
 {

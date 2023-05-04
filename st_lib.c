@@ -17,8 +17,8 @@
 //
 
 // ST_lib.c
-#include "DoomDef.h"
-#include "ST_lib.h"
+#include "doomdef.h"
+#include "st_lib.h"
 
 
 // in AM_map.c

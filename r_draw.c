@@ -22,8 +22,8 @@
 
 #include <conio.h>
 #include <dos.h>
-#include "DoomDef.h"
-#include "R_local.h"
+#include "doomdef.h"
+#include "r_local.h"
 
 #define SC_INDEX			0x3c4
 #define SC_MAPMASK			2

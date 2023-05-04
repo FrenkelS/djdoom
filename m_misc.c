@@ -22,8 +22,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <io.h>
-#include "DoomDef.h"
-#include "HU_stuff.h"
+#include "doomdef.h"
+#include "hu_stuff.h"
 #include "soundst.h"
 
 int myargc;

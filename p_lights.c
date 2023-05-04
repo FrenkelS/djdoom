@@ -16,8 +16,8 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "DoomDef.h"
-#include "P_local.h"
+#include "doomdef.h"
+#include "p_local.h"
 
 //==================================================================
 //==================================================================

@@ -17,8 +17,8 @@
 //
 
 // DUtils.c
-#include "DoomDef.h"
-#include "DUtils.h"
+#include "doomdef.h"
+#include "dutils.h"
 
 //
 // CHEAT SEQUENCE PACKAGE

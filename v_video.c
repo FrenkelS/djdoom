@@ -20,7 +20,7 @@
 
 #include <conio.h>
 #include <dos.h>
-#include "DoomDef.h"
+#include "doomdef.h"
 
 //
 // Background and foreground screen numbers

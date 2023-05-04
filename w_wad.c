@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include "DoomDef.h"
+#include "doomdef.h"
 
 
 //===============

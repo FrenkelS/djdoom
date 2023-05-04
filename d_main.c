@@ -23,9 +23,9 @@
 #include <direct.h>
 #include <io.h>
 #include <dos.h>
-#include "DoomDef.h"
+#include "doomdef.h"
 #include "soundst.h"
-#include "DUtils.h"
+#include "dutils.h"
 
 #if (APPVER_DOOMREV < AV_DR_DM19)
 #define	BGCOLOR		4

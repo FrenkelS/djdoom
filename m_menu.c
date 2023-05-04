@@ -22,9 +22,9 @@
 #include <unistd.h>
 #include <io.h>
 #include <ctype.h>
-#include "DoomDef.h"
-#include "R_local.h"
-#include "HU_stuff.h"
+#include "doomdef.h"
+#include "r_local.h"
+#include "hu_stuff.h"
 #include "soundst.h"
 
 extern patch_t *hu_font[HU_FONTSIZE];
