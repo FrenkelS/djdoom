@@ -1739,11 +1739,13 @@ void A_BabyMetal (mobj_t *mo)
 
 void A_OpenShotgun2 (player_t *player, pspdef_t *psp)
 {
+	UNUSED(psp);
 	S_StartSound (player->mo, sfx_dbopn);
 }
 
 void A_LoadShotgun2 (player_t *player, pspdef_t *psp)
 {
+	UNUSED(psp);
 	S_StartSound (player->mo, sfx_dbload);
 }
 
@@ -1765,6 +1767,8 @@ void A_BrainAwake (mobj_t *mo)
 {
 	thinker_t	*thinker;
 	mobj_t		*m;
+
+	UNUSED(mo);
 
 //
 // find all the target spots
@@ -1793,6 +1797,7 @@ void A_BrainAwake (mobj_t *mo)
 
 void A_BrainPain (mobj_t *mo)
 {
+	UNUSED(mo);
 	S_StartSound (NULL,sfx_bospn);
 }
 
@@ -1842,6 +1847,7 @@ void A_BrainExplode (mobj_t *mo)
 
 void A_BrainDie (mobj_t *mo)
 {
+	UNUSED(mo);
 	G_ExitLevel ();
 }
 

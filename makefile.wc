@@ -23,7 +23,7 @@
 #
 # --------------------------------------------------------------------------
 
-CCOPTS = -dAPPVER_EXEDEF=DM19 -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc    # -wx
+CCOPTS = -dAPPVER_EXEDEF=DM19 -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc -wx
 
 GLOBOBJS = &
  dmx.obj &

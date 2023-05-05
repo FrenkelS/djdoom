@@ -602,6 +602,8 @@ static void M_LoadSelect(int choice)
 //
 static void M_LoadGame (int choice)
 {
+	UNUSED(choice);
+
 	if (netgame)
 	{
 		M_StartMessage(LOADNET,NULL,false);
@@ -667,6 +669,8 @@ static void M_SaveSelect(int choice)
 //
 static void M_SaveGame (int choice)
 {
+	UNUSED(choice);
+
 	if (!usergame)
 	{
 		M_StartMessage(SAVEDEAD,NULL,false);
@@ -799,6 +803,7 @@ static void M_DrawSound(void)
 
 static void M_Sound(int choice)
 {
+	UNUSED(choice);
 	M_SetupNextMenu(&SoundDef);
 }
 
@@ -861,6 +866,8 @@ static void M_DrawNewGame(void)
 
 static void M_NewGame(int choice)
 {
+	UNUSED(choice);
+
 	if (netgame && !demoplayback)
 	{
 		M_StartMessage(NEWGAME,NULL,false);
@@ -948,6 +955,7 @@ static void M_DrawOptions(void)
 
 static void M_Options(int choice)
 {
+	UNUSED(choice);
 	M_SetupNextMenu(&OptionsDef);
 }
 
@@ -958,6 +966,8 @@ static void M_Options(int choice)
 //
 static void M_ChangeMessages(int choice)
 {
+	UNUSED(choice);
+
 	showMessages = 1 - showMessages;
 
 	if (showMessages)
@@ -984,6 +994,8 @@ static void M_EndGameResponse(int ch)
 
 static void M_EndGame(int choice)
 {
+	UNUSED(choice);
+
 	if (!usergame)
 	{
 		S_StartSound(NULL,sfx_oof);
@@ -1007,16 +1019,19 @@ static void M_EndGame(int choice)
 //
 static void M_ReadThis(int choice)
 {
+	UNUSED(choice);
 	M_SetupNextMenu(&ReadDef1);
 }
 
 static void M_ReadThis2(int choice)
 {
+	UNUSED(choice);
 	M_SetupNextMenu(&ReadDef2);
 }
 
 static void M_FinishReadThis(int choice)
 {
+	UNUSED(choice);
 	M_SetupNextMenu(&MainDef);
 }
 
@@ -1072,6 +1087,8 @@ static void M_QuitResponse(int ch)
 
 static void M_QuitDOOM(int choice)
 {
+	UNUSED(choice);
+
 	if (commercial)
 	{
 #if (APPVER_DOOMREV >= AV_DR_DM18FR)
@@ -1110,6 +1127,8 @@ static void M_ChangeSensitivity(int choice)
 
 static void M_ChangeDetail(int choice)
 {
+	UNUSED(choice);
+
 	detailLevel = 1 - detailLevel;
     
 	R_SetViewSize (screenblocks, detailLevel);

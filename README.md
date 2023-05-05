@@ -10,8 +10,9 @@ Which compiler produces the fastest Doom code?
 The code is based on [gamesrc-ver-recreation](https://bitbucket.org/gamesrc-ver-recreation/doom/src/master/)
 and it took inspiration from
 [FastDoom](https://github.com/viti95/FastDoom),
-[doomgeneric](https://github.com/ozkl/doomgeneric) and
-[Doom Vanille](https://github.com/AXDOOMER/doom-vanille).
+[doomgeneric](https://github.com/ozkl/doomgeneric),
+[Doom Vanille](https://github.com/AXDOOMER/doom-vanille) and
+[Quake](https://github.com/id-Software/Quake).
 
 All the assembly code is replaced by C code.
 There's no sound, no joystick and no Logitech Cyberman support.
