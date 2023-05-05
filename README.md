@@ -1,20 +1,22 @@
 # DJGPP Doom
 Download the executables [here](https://github.com/FrenkelS/djdoom/releases).
 
-Which compiler produces the fastest Doom code?
+The goal of this project is to:
+* Examine which compiler generates the fastest Doom code for DOS.
 [DJGPP](https://github.com/andrewwutw/build-djgpp),
-[Digital Mars](https://digitalmars.com/) (with [X32](https://github.com/Olde-Skuul/KitchenSink/tree/master/sdks/dos/x32)),
+[Digital Mars](https://digitalmars.com) (with [X32](https://github.com/Olde-Skuul/KitchenSink/tree/master/sdks/dos/x32)),
 [CC386](https://ladsoft.tripod.com/cc386_compiler.html) or
 [Watcom](https://github.com/open-watcom/open-watcom-v2)?
+* Show the modifications required in the code for it to be compilable by the compilers, including the use of assembly.
 
-The code is based on [gamesrc-ver-recreation](https://bitbucket.org/gamesrc-ver-recreation/doom/src/master/)
+The code is based on [gamesrc-ver-recreation](https://bitbucket.org/gamesrc-ver-recreation/doom/src/master)
 and it took inspiration from
-[FastDoom](https://github.com/viti95/FastDoom),
 [doomgeneric](https://github.com/ozkl/doomgeneric),
-[Doom Vanille](https://github.com/AXDOOMER/doom-vanille) and
+[Doom Vanille](https://github.com/AXDOOMER/doom-vanille),
+[FastDoom](https://github.com/viti95/FastDoom) and
 [Quake](https://github.com/id-Software/Quake).
 
-All the assembly code is replaced by C code.
+Use the macro `C_ONLY` to build Doom using only C code, otherwise some assembly is used.
 There's no sound, no joystick and no Logitech Cyberman support.
 And in case of Digital Mars, no keyboard.
 

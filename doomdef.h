@@ -648,6 +648,7 @@ extern boolean autostart;
 
 fixed_t	FixedMul (fixed_t a, fixed_t b);
 fixed_t	FixedDiv (fixed_t a, fixed_t b);
+fixed_t	FixedDiv2 (fixed_t a, fixed_t b);
 
 #ifdef __BIG_ENDIAN__
 short ShortSwap(short);

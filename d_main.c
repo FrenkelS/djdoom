@@ -160,22 +160,23 @@ void D_ProcessEvents (void)
 /*
 ================
 =
-= FixedMul
+= FixedMul and FixedDiv
 =
 ================
 */
+
+#if defined C_ONLY
 fixed_t	FixedMul (fixed_t a, fixed_t b)
 {
 	return ((int64_t) a * (int64_t) b) >> FRACBITS;
 }
 
-/*
-================
-=
-= FixedDiv
-=
-================
-*/
+fixed_t FixedDiv2 (fixed_t a, fixed_t b)
+{
+	int64_t result = ((int64_t) a << FRACBITS) / b;
+	return (fixed_t) result;
+}
+#endif
 
 fixed_t FixedDiv (fixed_t a, fixed_t b)
 {
@@ -183,8 +184,7 @@ fixed_t FixedDiv (fixed_t a, fixed_t b)
 		return (a^b)<0 ? MININT : MAXINT;
 	else
 	{
-		int64_t result = ((int64_t) a << FRACBITS) / b;
-		return (fixed_t) result;
+		return FixedDiv2 (a,b);
 	}
 }
 

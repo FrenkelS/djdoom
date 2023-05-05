@@ -82,6 +82,24 @@ typedef struct {
 	unsigned long	reserved[3];
 } __dpmi_free_mem_info;
 
+#if !defined C_ONLY
+#pragma aux FixedMul =	\
+	"imul ebx",			\
+	"shrd eax,edx,16"	\
+	parm	[eax] [ebx] \
+	value	[eax]		\
+	modify exact [eax edx]
+
+#pragma aux FixedDiv2 =	\
+	"cdq",				\
+	"shld edx,eax,16",	\
+	"sal eax,16",		\
+	"idiv ebx"			\
+	parm	[eax] [ebx] \
+	value	[eax]		\
+	modify exact [eax edx]
+#endif
+
 
 
 #endif
