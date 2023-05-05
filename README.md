@@ -2,7 +2,7 @@
 Download the executables [here](https://github.com/FrenkelS/djdoom/releases).
 
 The goal of this project is to:
-* Examine which compiler generates the fastest Doom code for DOS.
+* Examine which compiler generates the fastest Doom code for DOS:
   - [DJGPP](https://github.com/andrewwutw/build-djgpp),
   - [Digital Mars](https://digitalmars.com) (with [X32](https://github.com/Olde-Skuul/KitchenSink/tree/master/sdks/dos/x32)),
   - [CC386](https://ladsoft.tripod.com/cc386_compiler.html) or
