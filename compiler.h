@@ -88,7 +88,7 @@ typedef struct {
 	"shrd eax,edx,16"	\
 	value	[eax]		\
 	parm	[eax] [ebx] \
-	modify exact [eax edx]
+	modify	[edx]
 
 #pragma aux FixedDiv2 =	\
 	"cdq",				\
@@ -97,7 +97,7 @@ typedef struct {
 	"idiv ebx"			\
 	value	[eax]		\
 	parm	[eax] [ebx] \
-	modify exact [eax edx]
+	modify	[edx]
 #endif
 
 
