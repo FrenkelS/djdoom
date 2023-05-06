@@ -207,13 +207,13 @@ static fixed_t FixedDiv2(fixed_t a, fixed_t b)
 	return a;
 }
 
-#elif defined __DMC__
+#elif defined __DMC__ || __CCDL__
 fixed_t FixedMul(fixed_t a, fixed_t b)
 {
 	asm
 	{
-		mov eax, a
-		mov ecx, b
+		mov eax, [a]
+		mov ecx, [b]
 		imul ecx
 		shrd eax, edx, 16
 	};
@@ -224,8 +224,8 @@ static fixed_t FixedDiv2(fixed_t a, fixed_t b)
 {
 	asm
 	{
-		mov eax, a
-		mov ecx, b
+		mov eax, [a]
+		mov ecx, [b]
 		cdq
 		shld edx, eax, 16
 		shl eax, 16
