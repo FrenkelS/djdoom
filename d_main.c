@@ -171,11 +171,43 @@ fixed_t	FixedMul (fixed_t a, fixed_t b)
 	return ((int64_t) a * (int64_t) b) >> FRACBITS;
 }
 
-fixed_t FixedDiv2 (fixed_t a, fixed_t b)
+static fixed_t FixedDiv2 (fixed_t a, fixed_t b)
 {
 	int64_t result = ((int64_t) a << FRACBITS) / b;
 	return (fixed_t) result;
 }
+#else
+
+#if defined __DJGPP__
+fixed_t FixedMul(fixed_t a, fixed_t b)
+{
+	asm
+	(
+		"imul %2 \n"
+		"shrd $16, %%edx, %%eax"
+		: "=a" (a)
+		: "a" (a), "r" (b)
+		: "edx"
+	);
+	return a;
+}
+
+static fixed_t FixedDiv2(fixed_t a, fixed_t b)
+{
+	asm
+	(
+		"cdq \n"
+		"shld $16, %%eax, %%edx \n"
+		"shl  $16, %%eax \n"
+		"idiv %2"
+		: "=a" (a)
+		: "a" (a), "r" (b)
+		: "edx"
+	);
+	return a;
+}
+#endif
+
 #endif
 
 fixed_t FixedDiv (fixed_t a, fixed_t b)

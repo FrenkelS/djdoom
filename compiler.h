@@ -85,18 +85,20 @@ typedef struct {
 #if !defined C_ONLY
 #pragma aux FixedMul =	\
 	"imul ebx",			\
-	"shrd eax,edx,16"	\
+	"shrd eax, edx, 16"	\
 	value	[eax]		\
 	parm	[eax] [ebx] \
 	modify	[edx]
 
-#pragma aux FixedDiv2 =	\
-	"cdq",				\
-	"shld edx,eax,16",	\
-	"sal eax,16",		\
-	"idiv ebx"			\
-	value	[eax]		\
-	parm	[eax] [ebx] \
+typedef int fixed_t;
+fixed_t	FixedDiv2 (fixed_t a, fixed_t b);
+#pragma aux FixedDiv2 =		\
+	"cdq",					\
+	"shld edx, eax, 16",	\
+	"shl eax, 16",			\
+	"idiv ebx"				\
+	value	[eax]			\
+	parm	[eax] [ebx] 	\
 	modify	[edx]
 #endif
 

@@ -22,7 +22,7 @@ There's no sound, no joystick and no Logitech Cyberman support.
 And in case of Digital Mars, no keyboard.
 
 ## How to add another compiler
-The differences between compilers in the Doom source code are concentrated in `compiler.h` and `i_ibm.c`.
+The differences between compilers specific to the Doom source code are in `compiler.h`, `d_main.c` and `i_ibm.c`.
 Search in those files for the pre-defined compiler macros and start hacking.
 
 |Compiler    |Set environment variables|Compile code|Pre-defined compiler macro|
