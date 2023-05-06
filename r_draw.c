@@ -39,8 +39,6 @@ files only know about ccordinates, not the architecture of the frame buffer.
 */
 
 int viewwidth, scaledviewwidth, viewheight, viewwindowx, viewwindowy;
-static byte *ylookup[MAXHEIGHT];
-static int columnofs[MAXWIDTH];
 
 /*
 ==================
@@ -429,17 +427,12 @@ void R_DrawSpanLow (void)
 
 void R_InitBuffer (int width, int height)
 {
-	int		i;
-	
 	viewwindowx = (SCREENWIDTH-width) >> 1;
-	for (i=0 ; i<width ; i++)
-		columnofs[i] = viewwindowx + i;
+
 	if (width == SCREENWIDTH)
 		viewwindowy = 0;
 	else
 		viewwindowy = (SCREENHEIGHT-SBARHEIGHT-height) >> 1;
-	for (i=0 ; i<height ; i++)
-		ylookup[i] = screens[0] + (i+viewwindowy)*SCREENWIDTH;
 }
 
  

@@ -25,9 +25,6 @@
 
 #define	BASEYCENTER			100
 
-#define MAXWIDTH			1120
-#define	MAXHEIGHT			832
-
 #define	CENTERY				(SCREENHEIGHT/2)
 
 #define	MINZ			(FRACUNIT*4)
