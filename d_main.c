@@ -217,7 +217,7 @@ fixed_t FixedMul(fixed_t a, fixed_t b)
 		imul ecx
 		shrd eax, edx, 16
 	};
-	//return eax;
+	return _EAX;
 }
 
 static fixed_t FixedDiv2(fixed_t a, fixed_t b)
@@ -231,7 +231,7 @@ static fixed_t FixedDiv2(fixed_t a, fixed_t b)
 		shl eax, 16
 		idiv ecx
 	};
-	//return eax;
+	return _EAX;
 }
 #endif
 
