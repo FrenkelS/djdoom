@@ -35,6 +35,7 @@
 #include <int.h>
 #define int386 int86
 #define __djgpp_conventional_base ((byte*)_x386_zero_base_ptr)
+#define __attribute__(x)
 
 
 
@@ -45,12 +46,14 @@
 
 #define int386 _int386
 #define __djgpp_conventional_base 0
+#define __attribute__(x)
 
 
 
 #elif defined __WATCOMC__
 //Watcom
 #define __djgpp_conventional_base 0
+#define __attribute__(x)
 
 typedef union {
 	struct {

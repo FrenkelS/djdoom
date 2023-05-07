@@ -322,7 +322,8 @@ void I_SetPalette (byte *palette)
 */
 
 static byte *screen, *currentscreen;
-byte *destscreen, *destview;
+byte *destscreen;
+byte *destview	__attribute__ ((externally_visible));
 
 /*
 ===================
