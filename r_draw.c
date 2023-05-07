@@ -50,14 +50,15 @@ int viewwidth, scaledviewwidth, viewheight, viewwindowx, viewwindowy;
 ==================
 */
 
-lighttable_t	*dc_colormap;
-int				dc_x;
-int				dc_yl;
-int				dc_yh;
-fixed_t			dc_iscale;
-fixed_t			dc_texturemid;
-byte			*dc_source;		// first pixel in a column (possibly virtual)
+lighttable_t	*dc_colormap	__attribute__ ((externally_visible));
+int				dc_x			__attribute__ ((externally_visible));
+int				dc_yl			__attribute__ ((externally_visible));
+int				dc_yh			__attribute__ ((externally_visible));
+fixed_t			dc_iscale		__attribute__ ((externally_visible));
+fixed_t			dc_texturemid	__attribute__ ((externally_visible));
+byte			*dc_source		__attribute__ ((externally_visible));		// first pixel in a column (possibly virtual)
 
+#if defined C_ONLY
 void R_DrawColumn (void)
 {
 	int			count;
@@ -99,7 +100,7 @@ void R_DrawColumnLow (void)
 				
 #ifdef RANGECHECK
 	if ((unsigned)dc_x >= SCREENWIDTH || dc_yl < 0 || dc_yh >= SCREENHEIGHT)
-		I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
+		I_Error ("R_DrawColumnLow: %i to %i at %i", dc_yl, dc_yh, dc_x);
 #endif
 
 	if (dc_x & 1)
@@ -118,6 +119,7 @@ void R_DrawColumnLow (void)
 		frac += fracstep;
 	} while (count--);
 }
+#endif
 
 
 #define FUZZTABLE	50
@@ -205,7 +207,7 @@ void R_DrawTranslatedColumn (void)
 				
 #ifdef RANGECHECK
 	if ((unsigned)dc_x >= SCREENWIDTH || dc_yl < 0 || dc_yh >= SCREENHEIGHT)
-		I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
+		I_Error ("R_DrawTranslatedColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
 #endif
 
 	if (detailshift)
@@ -276,16 +278,17 @@ void R_InitTranslationTables (void)
 ================
 */
 
-int				ds_y;
-int				ds_x1;
-int				ds_x2;
-lighttable_t	*ds_colormap;
-fixed_t			ds_xfrac;
-fixed_t			ds_yfrac;
-fixed_t			ds_xstep;
-fixed_t			ds_ystep;
-byte			*ds_source;		// start of a 64*64 tile image
+int				ds_y			__attribute__ ((externally_visible));
+int				ds_x1			__attribute__ ((externally_visible));
+int				ds_x2			__attribute__ ((externally_visible));
+lighttable_t	*ds_colormap	__attribute__ ((externally_visible));
+fixed_t			ds_xfrac		__attribute__ ((externally_visible));
+fixed_t			ds_yfrac		__attribute__ ((externally_visible));
+fixed_t			ds_xstep		__attribute__ ((externally_visible));
+fixed_t			ds_ystep		__attribute__ ((externally_visible));
+byte			*ds_source		__attribute__ ((externally_visible));		// start of a 64*64 tile image
 
+#if defined C_ONLY
 void R_DrawSpan (void) 
 { 
     fixed_t		xfrac;
@@ -414,6 +417,7 @@ void R_DrawSpanLow (void)
 		} while (countp--);
 	}
 }
+#endif
 
 
 

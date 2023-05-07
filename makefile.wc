@@ -30,6 +30,7 @@ GLOBOBJS = &
  i_main.obj &
  i_ibm.obj &
  i_sound.obj &
+ planar.obj &
  tables.obj &
  f_finale.obj &
  d_main.obj &
@@ -86,3 +87,6 @@ WCDM19\wcdoom.exe : $(GLOBOBJS)
 
 .c.obj :
  wcc386 $(CCOPTS) $[* /fo=WCDM19\$^&
+
+.asm.obj :
+ tasm /mx $[*,$(appver_exedef)\$^&/J

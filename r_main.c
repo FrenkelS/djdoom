@@ -32,7 +32,7 @@ lighttable_t	*fixedcolormap;
 extern	lighttable_t	**walllights;
 
 static int		centerx;
-int				centery;
+int				centery	__attribute__ ((externally_visible));
 fixed_t			centerxfrac, centeryfrac;
 fixed_t			projection;
 
