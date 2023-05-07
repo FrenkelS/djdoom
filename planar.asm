@@ -16,33 +16,34 @@
 ; along with this program. If not, see <https://www.gnu.org/licenses/>.
 ;
 
-	.386
-	.MODEL small
+bits 32
+cpu 386
 
-PLANEWIDTH		=	80
+PLANEWIDTH		equ	80
 
-SC_INDEX		=	03C4h
+SC_INDEX		equ	0x3c4
 
-	.DATA
-
-EXTRN	_dc_colormap:DWORD
-EXTRN	_dc_x:DWORD
-EXTRN	_dc_yl:DWORD
-EXTRN	_dc_yh:DWORD
-EXTRN	_dc_iscale:DWORD
-EXTRN	_dc_texturemid:DWORD
-EXTRN	_dc_source:DWORD
+extern	_dc_colormap
+extern	_dc_x
+extern	_dc_yl
+extern	_dc_yh
+extern	_dc_iscale
+extern	_dc_texturemid
+extern	_dc_source
 
 
-EXTRN	_ds_y:DWORD
-EXTRN	_ds_x1:DWORD
-EXTRN	_ds_x2:DWORD
-EXTRN	_ds_colormap:DWORD
-EXTRN	_ds_xfrac:DWORD
-EXTRN	_ds_yfrac:DWORD
-EXTRN	_ds_xstep:DWORD
-EXTRN	_ds_ystep:DWORD
-EXTRN	_ds_source:DWORD
+extern	_ds_y
+extern	_ds_x1
+extern	_ds_x2
+extern	_ds_colormap
+extern	_ds_xfrac
+extern	_ds_yfrac
+extern	_ds_xstep
+extern	_ds_ystep
+extern	_ds_source
+
+extern	_destview
+extern	_centery
 
 
 ;============================================================================
@@ -61,18 +62,15 @@ EXTRN	_ds_source:DWORD
 ; The graphics wrap vertically at 128 pixels
 ;============================================================================
 
-.DATA
+section .bss public class=DATA USE32
 
-EXTRN	_destview:DWORD
-EXTRN	_centery:DWORD
-
-loopcount	dd	0
-pixelcount	dd	0
+loopcount	resd 1
+pixelcount	resd 1
 
 ;=================================
 
 
-.CODE
+section .text public class=CODE USE32
 
 ;================
 ;
@@ -80,15 +78,14 @@ pixelcount	dd	0
 ;
 ;================
 
-PROC   _R_DrawColumnLow
-PUBLIC   _R_DrawColumnLow
+global   _R_DrawColumnLow
+_R_DrawColumnLow:
 	pushad
 	mov		ebp,[_dc_yl]
 	cmp		ebp,[_dc_yh]
 	jg		done
-	lea		edi,[ebp+ebp*8]
-	add		edi,ebp
-	shl		edi,3
+	lea		edi,[ebp+ebp*4]
+	shl		edi,4
 	mov		ebx,[_dc_x]
 	mov		ecx,ebx
 	shr		ebx,1
@@ -101,17 +98,15 @@ PUBLIC   _R_DrawColumnLow
 	mov		edx,SC_INDEX+1
 	out		dx,al
 	jmp		cdraw
-ENDP
-ALIGN 16
-PROC   _R_DrawColumn
-PUBLIC   _R_DrawColumn
+
+global   _R_DrawColumn
+_R_DrawColumn:
 	pushad
 	mov		ebp,[_dc_yl]
 	cmp		ebp,[_dc_yh]
 	jg		done
-	lea		edi,[ebp+ebp*8]
-	add		edi,ebp
-	shl		edi,3
+	lea		edi,[ebp+ebp*4]
+	shl		edi,4
 	mov		ebx,[_dc_x]
 	mov		ecx,ebx
 	shr		ebx,2
@@ -141,9 +136,9 @@ cdraw:
 	mov		esi,[_dc_source]
 	mov		ebx,[_dc_iscale]
 	shl		ebx,9
-	mov		eax,OFFSET patch1+2			; convice tasm to modify code...
+	mov		eax,patch1+2				; convice tasm to modify code...
 	mov		[eax],ebx
-	mov		eax,OFFSET patch2+2			; convice tasm to modify code...
+	mov		eax,patch2+2				; convice tasm to modify code...
 	mov		[eax],ebx
 
 ; eax		aligned colormap
@@ -166,10 +161,10 @@ cdraw:
 	mov		al,[eax]					; color translate first pixel
 	mov		bl,[ebx]					; color translate second pixel
 
-	test	[pixelcount],0fffffffeh
+	test	[pixelcount],dword 0fffffffeh
 	jnz		doubleloop					; at least two pixels to map
 	jmp		checklast
-ALIGN 16
+
 doubleloop:
 	mov		ecx,ebp						; begin calculating third pixel
 patch1:
@@ -184,19 +179,18 @@ patch2:
 	mov		al,[esi+ecx]				; get third pixel
 	add		edi,PLANEWIDTH*2			; advance to third pixel destination
 	mov		bl,[esi+edx]				; get fourth pixel
-	dec		[loopcount]					; done with loop?
+	dec		dword [loopcount]			; done with loop?
 	mov		al,[eax]					; color translate third pixel
 	mov		bl,[ebx]					; color translate fourth pixel
 	jnz		doubleloop
 checklast:
-	test	[pixelcount],1
+	test	[pixelcount],dword 1
 	jz		done
 	mov		[edi],al
 
 done:
 	popad
 	ret
-ENDP
 
 
 ;============================================================================
@@ -214,20 +208,20 @@ ENDP
 ; ebp should by preset from ebx / ecx before calling
 ;============================================================================
 
-.DATA
+section .bss
 
-dest dd 0
-endplane dd 0
-curplane dd 0
-frac dd 0
-fracstep dd 0
-fracpstep dd 0
-curx dd 0
-curpx dd 0
-endpx dd 0
+dest		resd 1
+endplane	resd 1
+curplane	resd 1
+frac		resd 1
+fracstep	resd 1
+fracpstep	resd 1
+curx		resd 1
+curpx		resd 1
+endpx		resd 1
 
 
-.CODE
+section .text
 
 ;================
 ;
@@ -237,10 +231,8 @@ endpx dd 0
 ;
 ;================
 
-ALIGN 16
-
-PROC   _R_DrawSpan
-PUBLIC	_R_DrawSpan
+global   _R_DrawSpan
+_R_DrawSpan:
 	pushad
 
 	mov		eax,[_ds_x1]
@@ -251,9 +243,8 @@ PUBLIC	_R_DrawSpan
 	mov		[curplane],ebx
 	shr		eax,2
 	mov		ebp,[_ds_y]
-	lea		edi,[ebp+ebp*8]
-	add		edi,ebp
-	shl		edi,3
+	lea		edi,[ebp+ebp*4]
+	shl		edi,4
 	add		edi,eax
 	add		edi,[_destview]
 	mov		[dest],edi
@@ -280,9 +271,9 @@ PUBLIC	_R_DrawSpan
 
 	shl		ebx,2
 	mov		[fracpstep],ebx
-	mov		eax,OFFSET hpatch1+2
+	mov		eax,hpatch1+2
 	mov		[eax],ebx
-	mov		eax,OFFSET hpatch2+2
+	mov		eax,hpatch2+2
 	mov		[eax],ebx
 	mov		ecx,[curplane]
 hplane:
@@ -316,7 +307,7 @@ hplane:
 	mov		esi,[_ds_source]
 	mov		edi,[dest]
 	mov		ebp,[frac]
-	test	[curpx],1
+	test	[curpx],dword 1
 	jz		hfill
 	shld	ecx,ebp,22
 	shld	ecx,ebp,6
@@ -339,7 +330,7 @@ hfill:
 	mov		al,[esi+ecx]
 	mov		bl,[esi+edx]
 	mov		dl,[eax]
-	test	[loopcount],0ffffffffh
+	test	[loopcount],dword 0ffffffffh
 	jnz		hdoubleloop
 	jmp		hchecklast
 hfillone:
@@ -354,7 +345,7 @@ hfillone:
 	mov		dl,[eax]
 	mov		[edi],dl
 	jmp		hdoneplane
-ALIGN 16
+
 hdoubleloop:
 	shld	ecx,ebp,22
 	mov		dh,[ebx]
@@ -371,11 +362,11 @@ hpatch2:
 	and		edx,0fffh
 	mov		al,[esi+ecx]
 	mov		bl,[esi+edx]
-	dec		[loopcount]
+	dec		dword [loopcount]
 	mov		dl,[eax]
 	jnz		hdoubleloop
 hchecklast:
-	test	[endpx],1
+	test	[endpx],dword 1
 	jnz		hdoneplane
 	mov		[edi],dl
 hdoneplane:
@@ -383,7 +374,7 @@ hdoneplane:
 	inc		ecx
 	and		ecx,3
 	jnz		hskip
-	inc		[dest]
+	inc		dword [dest]
 hskip:
 	cmp		ecx,[endplane]
 	jz		hdone
@@ -391,15 +382,15 @@ hskip:
 	mov		ebx,[frac]
 	add		ebx,[fracstep]
 	mov		[frac],ebx
-	inc		[curx]
+	inc		dword [curx]
 	jmp		hplane
 hdone:
 	popad
 	ret
-ENDP
-ALIGN 16
-PROC   _R_DrawSpanLow
-PUBLIC	_R_DrawSpanLow
+
+
+global   _R_DrawSpanLow
+_R_DrawSpanLow:
 	pushad
 	mov		eax,[_ds_x1]
 	mov		[curx],eax
@@ -409,9 +400,8 @@ PUBLIC	_R_DrawSpanLow
 	mov		[curplane],ebx
 	shr		eax,1
 	mov		ebp,[_ds_y]
-	lea		edi,[ebp+ebp*8]
-	add		edi,ebp
-	shl		edi,3
+	lea		edi,[ebp+ebp*4]
+	shl		edi,4
 	add		edi,eax
 	add		edi,[_destview]
 	mov		[dest],edi
@@ -438,9 +428,9 @@ PUBLIC	_R_DrawSpanLow
 	
 	shl		ebx,1
 	mov		[fracpstep],ebx
-	mov		eax,OFFSET lpatch1+2
+	mov		eax,lpatch1+2
 	mov		[eax],ebx
-	mov		eax,OFFSET lpatch2+2
+	mov		eax,lpatch2+2
 	mov		[eax],ebx
 	mov		ecx,[curplane]
 lplane:
@@ -475,7 +465,7 @@ lplane:
 	mov		esi,[_ds_source]
 	mov		edi,[dest]
 	mov		ebp,[frac]
-	test	[curpx],1
+	test	[curpx],dword 1
 	jz		lfill
 	shld	ecx,ebp,22
 	shld	ecx,ebp,6
@@ -498,7 +488,7 @@ lfill:
 	mov		al,[esi+ecx]
 	mov		bl,[esi+edx]
 	mov		dl,[eax]
-	test	[loopcount],0ffffffffh
+	test	[loopcount],dword 0ffffffffh
 	jnz		ldoubleloop
 	jmp		lchecklast
 lfillone:
@@ -513,7 +503,7 @@ lfillone:
 	mov		dl,[eax]
 	mov		[edi],dl
 	jmp		ldoneplane
-ALIGN 16
+
 ldoubleloop:
 	shld	ecx,ebp,22
 	mov		dh,[ebx]
@@ -530,11 +520,11 @@ lpatch2:
 	and		edx,0fffh
 	mov		al,[esi+ecx]
 	mov		bl,[esi+edx]
-	dec		[loopcount]
+	dec		dword [loopcount]
 	mov		dl,[eax]
 	jnz		ldoubleloop
 lchecklast:
-	test	[endpx],1
+	test	[endpx],dword 1
 	jnz		ldoneplane
 	mov		[edi],dl
 ldoneplane:
@@ -542,7 +532,7 @@ ldoneplane:
 	inc		ecx
 	and		ecx,1
 	jnz		lskip
-	inc		[dest]
+	inc		dword [dest]
 lskip:
 	cmp		ecx,[endplane]
 	jz		ldone
@@ -550,11 +540,8 @@ lskip:
 	mov		ebx,[frac]
 	add		ebx,[fracstep]
 	mov		[frac],ebx
-	inc		[curx]
+	inc		dword [curx]
 	jmp		lplane
 ldone:
 	popad
 	ret
-ENDP
-
-END
