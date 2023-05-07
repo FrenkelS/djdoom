@@ -89,4 +89,4 @@ WCDM19\wcdoom.exe : $(GLOBOBJS)
  wcc386 $(CCOPTS) $[* /fo=WCDM19\$^&
 
 .asm.obj :
- tasm /mx $[*,$(appver_exedef)\$^&/J
+ nasm $[@ -f obj -o WCDM19\$^.

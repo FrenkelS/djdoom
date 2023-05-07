@@ -17,7 +17,9 @@ and it took inspiration from
 [Quake](https://github.com/id-Software/Quake) and
 [Quake 2](https://github.com/id-Software/Quake-2).
 
-Use the macro `C_ONLY` to build Doom using only C code, otherwise some assembly is used.
+There is some assembly in the code that requires [NASM](https://www.nasm.us).
+To build Doom only using C code, use the macro `C_ONLY`.
+
 There's no sound, no joystick and no Logitech Cyberman support.
 And in case of Digital Mars, no keyboard.
 
