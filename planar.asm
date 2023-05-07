@@ -16,7 +16,6 @@
 ; along with this program. If not, see <https://www.gnu.org/licenses/>.
 ;
 
-bits 32
 cpu 386
 
 PLANEWIDTH		equ	80
@@ -62,7 +61,11 @@ extern	_centery
 ; The graphics wrap vertically at 128 pixels
 ;============================================================================
 
+%ifidn __OUTPUT_FORMAT__, coff
 section .bss public class=DATA USE32
+%elifidn __OUTPUT_FORMAT__, obj
+section _BSS public class=DATA USE32
+%endif
 
 loopcount	resd 1
 pixelcount	resd 1
@@ -70,7 +73,11 @@ pixelcount	resd 1
 ;=================================
 
 
+%ifidn __OUTPUT_FORMAT__, coff
 section .text public class=CODE USE32
+%elifidn __OUTPUT_FORMAT__, obj
+section _TEXT public class=CODE USE32
+%endif
 
 ;================
 ;
@@ -208,7 +215,11 @@ done:
 ; ebp should by preset from ebx / ecx before calling
 ;============================================================================
 
+%ifidn __OUTPUT_FORMAT__, coff
 section .bss
+%elifidn __OUTPUT_FORMAT__, obj
+section _BSS
+%endif
 
 dest		resd 1
 endplane	resd 1
@@ -221,7 +232,11 @@ curpx		resd 1
 endpx		resd 1
 
 
+%ifidn __OUTPUT_FORMAT__, coff
 section .text
+%elifidn __OUTPUT_FORMAT__, obj
+section _TEXT
+%endif
 
 ;================
 ;
