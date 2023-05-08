@@ -96,12 +96,12 @@ extern byte *destview, *destscreen;	// PC direct to screen pointers
 
 #define MAXCHAR ((char)0x7f)
 #define MAXSHORT ((int16_t)0x7fff)
-#define MAXINT	((int)0x7fffffff)	/* max pos 32-bit int */
+#define MAXINT	((int32_t)0x7fffffff)	/* max pos 32-bit int */
 #define MAXLONG ((int32_t)0x7fffffff)
 
 #define MINCHAR ((char)0x80)
 #define MINSHORT ((int16_t)0x8000)
-#define MININT 	((int)0x80000000)	/* max negative 32-bit integer */
+#define MININT 	((int32_t)0x80000000)	/* max negative 32-bit integer */
 #define MINLONG ((int32_t)0x80000000)
 
 #define	FINEANGLES			8192
@@ -127,7 +127,7 @@ extern byte *destview, *destscreen;	// PC direct to screen pointers
 
 #define	FRACBITS		16
 #define	FRACUNIT		(1<<FRACBITS)
-typedef int fixed_t;
+typedef int32_t fixed_t;
 
 #define ANGLE_1		0x01000000
 #define ANGLE_45	0x20000000
@@ -162,9 +162,9 @@ typedef enum
 typedef struct
 {
 	evtype_t	type;
-	int			data1;		// keys / mouse/joystick buttons
-	int			data2;		// mouse/joystick x move
-	int			data3;		// mouse/joystick y move
+	int32_t		data1;		// keys / mouse/joystick buttons
+	int32_t		data2;		// mouse/joystick x move
+	int32_t		data3;		// mouse/joystick y move
 } event_t;
 
 typedef struct
@@ -241,7 +241,7 @@ typedef struct mobj_s
 	struct	mobj_s	*snext, *sprev;		// links in sector (if needed)
 	angle_t			angle;
 	spritenum_t		sprite;				// used to find patch_t and flip value
-	int				frame;				// might be ord with FF_FULLBRIGHT
+	int32_t			frame;				// might be ord with FF_FULLBRIGHT
 
 // interaction info
 	struct mobj_s	*bnext, *bprev;		// links in blocks (if needed)
@@ -250,25 +250,25 @@ typedef struct mobj_s
 	fixed_t			radius, height;		// for movement checking
 	fixed_t			momx, momy, momz;	// momentums
 
-	int				validcount;			// if == validcount, already checked
+	int32_t			validcount;			// if == validcount, already checked
 
 	mobjtype_t		type;
 	mobjinfo_t		*info;				// &mobjinfo[mobj->type]
-	int				tics;				// state tic counter
+	int32_t			tics;				// state tic counter
 	state_t			*state;
-	int				flags;
-	int				health;
-	int				movedir;		// 0-7
-	int				movecount;		// when 0, select a new dir
+	int32_t			flags;
+	int32_t			health;
+	int32_t			movedir;		// 0-7
+	int32_t			movecount;		// when 0, select a new dir
 	struct mobj_s	*target;		// thing being chased/attacked (or NULL)
 									// also the originator for missiles
-	int				reactiontime;	// if non 0, don't attack yet
+	int32_t			reactiontime;	// if non 0, don't attack yet
 									// used by player to freeze a bit after
 									// teleporting
-	int				threshold;		// if >0, the target will be chased
+	int32_t			threshold;		// if >0, the target will be chased
 									// no matter what (even if shot)
 	struct player_s	*player;		// only valid if type == MT_PLAYER
-	int				lastlook;		// player number last looked for
+	int32_t			lastlook;		// player number last looked for
 
 	mapthing_t		spawnpoint;		// for nightmare respawn
 	struct mobj_s	*tracer;		// thing being chased/attacked for tracers
@@ -347,7 +347,7 @@ typedef enum
 typedef struct
 {
 	state_t	*state;		// a NULL state means not active
-	int		tics;
+	int32_t	tics;
 	fixed_t	sx, sy;
 } pspdef_t;
 
@@ -390,11 +390,11 @@ typedef enum
 typedef struct
 {
 	ammotype_t ammo;
-	int upstate;
-	int downstate;
-	int readystate;
-	int atkstate;
-	int flashstate;
+	int32_t upstate;
+	int32_t downstate;
+	int32_t readystate;
+	int32_t atkstate;
+	int32_t flashstate;
 } weaponinfo_t;
 
 extern weaponinfo_t weaponinfo[NUMWEAPONS];
@@ -435,31 +435,31 @@ typedef struct player_s
 	fixed_t		deltaviewheight;		// squat speed
 	fixed_t		bob;					// bounded/scaled total momentum
 	
-	int			health;					// only used between levels, mo->health
+	int32_t			health;					// only used between levels, mo->health
 										// is used during levels
-	int			armorpoints, armortype;	// armor type is 0-2
+	int32_t			armorpoints, armortype;	// armor type is 0-2
 
-	int			powers[NUMPOWERS];
-	boolean		cards[NUMCARDS];
-	boolean		backpack;
-	signed int			frags[MAXPLAYERS];		// kills of other players
+	int32_t			powers[NUMPOWERS];
+	boolean			cards[NUMCARDS];
+	boolean			backpack;
+	int32_t			frags[MAXPLAYERS];		// kills of other players
 	weapontype_t	readyweapon;
 	weapontype_t	pendingweapon;		// wp_nochange if not changing
-	boolean		weaponowned[NUMWEAPONS];
-	int			ammo[NUMAMMO];
-	int			maxammo[NUMAMMO];
-	int			attackdown, usedown;	// true if button down last tic
-	int			cheats;					// bit flags
+	boolean			weaponowned[NUMWEAPONS];
+	int32_t			ammo[NUMAMMO];
+	int32_t			maxammo[NUMAMMO];
+	int32_t			attackdown, usedown;	// true if button down last tic
+	int32_t			cheats;					// bit flags
 
-	int			refire;					// refired shots are less accurate
+	int32_t			refire;					// refired shots are less accurate
 
-	int			killcount, itemcount, secretcount;		// for intermission
+	int32_t			killcount, itemcount, secretcount;		// for intermission
 	char		*message;				// hint messages
-	int			damagecount, bonuscount;// for screen flashing
+	int32_t			damagecount, bonuscount;// for screen flashing
 	mobj_t		*attacker;				// who did damage (NULL for floors)
-	int			extralight;				// so gun flashes light up areas
-	int			fixedcolormap;			// can be set to REDCOLORMAP, etc
-	int			colormap;				// 0-3 for which color to draw player
+	int32_t			extralight;				// so gun flashes light up areas
+	int32_t			fixedcolormap;			// can be set to REDCOLORMAP, etc
+	int32_t			colormap;				// 0-3 for which color to draw player
 	pspdef_t	psprites[NUMPSPRITES];	// view sprites (gun, etc)
 	boolean		didsecret;				// true if secret level has been done
 } player_t;
@@ -533,8 +533,8 @@ extern	doomcom_t		*doomcom;
 #define MAXEVENTS 64
 
 extern event_t events[MAXEVENTS];
-extern int eventhead;
-extern int eventtail;
+extern int32_t eventhead;
+extern int32_t eventtail;
 
 extern fixed_t finesine[5*FINEANGLES/4];
 extern fixed_t *finecosine;
@@ -568,37 +568,37 @@ extern boolean netgame; // only true if >1 player
 
 extern boolean playeringame[MAXPLAYERS];
 
-extern int consoleplayer; // player taking events and displaying
+extern int32_t consoleplayer; // player taking events and displaying
 
-extern int displayplayer;
+extern int32_t displayplayer;
 
-extern int viewangleoffset;	// ANG90 = left side, ANG270 = right
+extern int32_t viewangleoffset;	// ANG90 = left side, ANG270 = right
 
 extern player_t players[MAXPLAYERS];
 
 extern	boolean		singletics;			// debug flag to cancel adaptiveness
 
-extern	int			maxammo[NUMAMMO];
+extern	int32_t			maxammo[NUMAMMO];
 
 extern	boolean		demoplayback;
 extern	boolean		demorecording;
-extern	int			skytexture;
+extern	int32_t			skytexture;
 
 extern	gamestate_t	gamestate;
 extern	skill_t		gameskill;
 extern	boolean		respawnmonsters;
-extern	int			gameepisode;
-extern	int			gamemap;
-extern 	int 			prevmap;
-extern	int			totalkills, totalitems, totalsecret;	// for intermission
-extern	int			leveltime;			// tics in game play for par
+extern	int32_t			gameepisode;
+extern	int32_t			gamemap;
+extern 	int32_t 			prevmap;
+extern	int32_t			totalkills, totalitems, totalsecret;	// for intermission
+extern	int32_t			leveltime;			// tics in game play for par
 
 extern	ticcmd_t	netcmds[MAXPLAYERS][BACKUPTICS];
-extern int ticdup;
+extern int32_t ticdup;
 
 #define	MAXNETNODES		8
-extern int rndindex;
-extern int gametic, maketic;
+extern int32_t rndindex;
+extern int32_t gametic, maketic;
 
 #define SAVEGAMESIZE 0x2c000
 #define SAVESTRINGSIZE 24
@@ -608,13 +608,13 @@ extern mapthing_t *deathmatch_p;
 extern mapthing_t deathmatchstarts[10];
 extern mapthing_t playerstarts[MAXPLAYERS];
 
-extern int viewwindowx;
-extern int viewwindowy;
-extern int viewwidth;
-extern int scaledviewwidth;
-extern int viewheight;
+extern int32_t viewwindowx;
+extern int32_t viewwindowy;
+extern int32_t viewwidth;
+extern int32_t scaledviewwidth;
+extern int32_t viewheight;
 
-extern int mouseSensitivity;
+extern int32_t mouseSensitivity;
 
 extern gamestate_t wipegamestate;
 
@@ -631,10 +631,10 @@ extern boolean modifiedgame;
 extern char wadfile[1024];
 extern char basedefault[1024];
 extern FILE *debugfile;
-extern int bodyqueslot;
+extern int32_t bodyqueslot;
 extern skill_t startskill;
-extern int startepisode;
-extern int startmap;
+extern int32_t startepisode;
+extern int32_t startmap;
 extern boolean autostart;
 
 /*
@@ -675,19 +675,19 @@ int32_t LongSwap(int32_t);
 #define	PU_CACHE		101
 
 void	Z_Init (void);
-void 	*Z_Malloc (int size, int tag, void *ptr);
+void 	*Z_Malloc (int32_t size, int32_t tag, void *ptr);
 void 	Z_Free (void *ptr);
-void 	Z_FreeTags (int lowtag, int hightag);
+void 	Z_FreeTags (int32_t lowtag, int32_t hightag);
 void	Z_CheckHeap (void);
-void	Z_ChangeTag2 (void *ptr, int tag);
+void	Z_ChangeTag2 (void *ptr, int32_t tag);
 
 
 typedef struct memblock_s
 {
-	int                     size;           // including the header and possibly tiny fragments
+	int32_t                     size;           // including the header and possibly tiny fragments
 	void            **user;         // NULL if a free block
-	int                     tag;            // purgelevel
-	int                     id;                     // should be ZONEID
+	int32_t                     tag;            // purgelevel
+	int32_t                     id;                     // should be ZONEID
 	struct memblock_s       *next, *prev;
 } memblock_t;
 
@@ -704,7 +704,7 @@ Z_ChangeTag2(p,t); \
 typedef struct
 {
 	char		name[8];
-	int			handle,position,size;
+	int32_t		handle,position,size;
 } lumpinfo_t;
 
 extern	void**		_lumpcache; // temp hack
@@ -713,14 +713,14 @@ extern lumpinfo_t *lumpinfo;
 void	W_InitMultipleFiles (char **filenames);
 void	W_Reload (void);
 
-int		W_CheckNumForName (char *name);
-int		W_GetNumForName (char *name);
+int32_t	W_CheckNumForName (char *name);
+int32_t	W_GetNumForName (char *name);
 
-int		W_LumpLength (int lump);
-void	W_ReadLump (int lump, void *dest);
+int32_t	W_LumpLength (int32_t lump);
+void	W_ReadLump (int32_t lump, void *dest);
 
-void	*W_CacheLumpNum (int lump, int tag);
-void	*W_CacheLumpName (char *name, int tag);
+void	*W_CacheLumpNum (int32_t lump, int32_t tag);
+void	*W_CacheLumpName (char *name, int32_t tag);
 
 
 
@@ -762,11 +762,11 @@ void D_StartTitle (void);
 #define SCREENHEIGHT 200
 #define PLANEWIDTH	(SCREENWIDTH/4)
 
-byte *I_ZoneBase (int *size);
+byte *I_ZoneBase (int32_t *size);
 // called by startup code to get the ammount of memory to malloc
 // for the zone management
 
-int I_GetTime (void);
+int32_t I_GetTime (void);
 // called by D_DoomLoop
 // returns current time in tics
 
@@ -809,7 +809,7 @@ void I_UpdateNoBlit (void);
 
 void I_FinishUpdate (void);
 
-void I_WaitVBL(int count);
+void I_WaitVBL(int32_t count);
 // wait for vertical retrace or pause a bit
 
 void I_ReadScreen (byte *scr);
@@ -827,11 +827,11 @@ ticcmd_t *I_BaseTiccmd(void);
 //GAME
 //----
 
-void G_DeathMatchSpawnPlayer (int playernum);
+void G_DeathMatchSpawnPlayer (int32_t playernum);
 
-void G_InitNew (skill_t skill, int episode, int map);
+void G_InitNew (skill_t skill, int32_t episode, int32_t map);
 
-void G_DeferedInitNew (skill_t skill, int episode, int map);
+void G_DeferedInitNew (skill_t skill, int32_t episode, int32_t map);
 // can be called by the startup code or M_Responder
 // a normal game starts at map 1, but a warp test can start elsewhere
 
@@ -841,7 +841,7 @@ void G_LoadGame (char *name);
 // can be called by the startup code or M_Responder
 // calls P_SetupLevel or W_EnterWorld
 
-void G_SaveGame (int slot, char *description);
+void G_SaveGame (int32_t slot, char *description);
 // called by M_Responder
 
 void G_RecordDemo (char *name);
@@ -872,7 +872,7 @@ void P_Ticker (void);
 // can call G_PlayerExited
 // carries out all thinking of monsters and players
 
-void P_SetupLevel (int episode, int map);
+void P_SetupLevel (int32_t episode, int32_t map);
 // called by W_Ticker
 
 void P_Init (void);
@@ -904,13 +904,13 @@ void R_FillBackScreen (void);
 void R_DrawViewBorder (void);
 // if the view size is not full screen, draws a border around it
 
-void R_SetViewSize (int blocks, int detail);
+void R_SetViewSize (int32_t blocks, int32_t detail);
 // called by M_Responder
 
-int	R_FlatNumForName (char *name);
+int32_t	R_FlatNumForName (char *name);
 
-int	R_TextureNumForName (char *name);
-int	R_CheckTextureNumForName (char *name);
+int32_t	R_TextureNumForName (char *name);
+int32_t	R_CheckTextureNumForName (char *name);
 // called by P_Ticker for switches and animations
 // returns the texture number for the texture name
 
@@ -920,12 +920,12 @@ int	R_CheckTextureNumForName (char *name);
 extern	int		myargc;
 extern	char	**myargv;
 
-int	M_CheckParm (char *check);
+int32_t	M_CheckParm (char *check);
 // returns the position of the given parameter in the arg list (0 if not found)
 
-int M_Random (void);
+int32_t M_Random (void);
 // returns a number from 0 to 255
-int P_Random (void);
+int32_t P_Random (void);
 // as M_Random, but used only by the play simulation
 
 void M_ClearRandom (void);
@@ -935,7 +935,7 @@ void M_ClearBox (fixed_t *box);
 void M_AddToBox (fixed_t *box, fixed_t x, fixed_t y);
 // bounding box functions
 
-void M_WriteFile (char const *name, void *source, int length);
+void M_WriteFile (char const *name, void *source, int32_t length);
 void M_ReadFile (char const *name, byte **buffer);
 
 void M_ScreenShot (void);
@@ -948,16 +948,16 @@ void M_SaveDefaults (void);
 // VIDEO
 //------
 
-extern int dirtybox[4];
+extern int32_t dirtybox[4];
 extern byte gammatable[5][256];
-extern int usegamma;
+extern int32_t usegamma;
 
 void V_Init(void); // Allocates buffer screens, call before R_Init
-void V_CopyRect(int x, int scry, int width, int height, int desty);
-void V_DrawPatch(int x, int y, int scrn, patch_t *patch);
-void V_DrawPatchDirect(int x, int y, patch_t *patch);
+void V_CopyRect(int32_t x, int32_t scry, int32_t width, int32_t height, int32_t desty);
+void V_DrawPatch(int32_t x, int32_t y, int32_t scrn, patch_t *patch);
+void V_DrawPatchDirect(int32_t x, int32_t y, patch_t *patch);
 void V_DrawBlock(byte *src); // Draw a linear block of pixels into the view buffer
-void V_MarkRect(int x, int y, int width, int height);
+void V_MarkRect(int32_t x, int32_t y, int32_t width, int32_t height);
 
 /////////////////////////////////////////////////////
 
@@ -1013,36 +1013,36 @@ typedef struct
     boolean	in;	// whether the player is in game
     
     // Player stats, kills, collected items etc.
-    int		skills;
-    int		sitems;
-    int		ssecret;
-    int		stime; 
-    int		frags[4];
-    int		score;	// current score on entry, modified on return
+    int32_t		skills;
+    int32_t		sitems;
+    int32_t		ssecret;
+    int32_t		stime; 
+    int32_t		frags[4];
+    int32_t		score;	// current score on entry, modified on return
   
 } wbplayerstruct_t;
 
 typedef struct
 {
-    int		epsd;	// episode # (0-2)
+    int32_t		epsd;	// episode # (0-2)
 
     // if true, splash the secret level
     boolean	didsecret;
     
     // previous and next levels, origin 0
-    int		last;
-    int		next;	
+    int32_t		last;
+    int32_t		next;	
     
-    int		maxkills;
-    int		maxitems;
-    int		maxsecret;
-    int		maxfrags;
+    int32_t		maxkills;
+    int32_t		maxitems;
+    int32_t		maxsecret;
+    int32_t		maxfrags;
 
     // the par time
-    int		partime;
+    int32_t		partime;
     
     // index of this player in game
-    int		pnum;	
+    int32_t		pnum;	
 
     wbplayerstruct_t	plyr[MAXPLAYERS];
 

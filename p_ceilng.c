@@ -127,8 +127,8 @@ void T_MoveCeiling (ceiling_t *ceiling)
 //==================================================================
 boolean EV_DoCeiling (line_t *line, ceiling_e  type)
 {
-	int			secnum;
-	boolean		rtn;
+	int32_t			secnum;
+	boolean			rtn;
 	sector_t		*sec;
 	ceiling_t		*ceiling;
 	
@@ -206,7 +206,7 @@ boolean EV_DoCeiling (line_t *line, ceiling_e  type)
 //==================================================================
 void P_AddActiveCeiling(ceiling_t *c)
 {
-	int		i;
+	int32_t		i;
 	for (i = 0; i < MAXCEILINGS;i++)
 		if (activeceilings[i] == NULL)
 		{
@@ -222,7 +222,7 @@ void P_AddActiveCeiling(ceiling_t *c)
 //==================================================================
 static void P_RemoveActiveCeiling(ceiling_t *c)
 {
-	int		i;
+	int32_t		i;
 	
 	for (i = 0;i < MAXCEILINGS;i++)
 		if (activeceilings[i] == c)
@@ -241,7 +241,7 @@ static void P_RemoveActiveCeiling(ceiling_t *c)
 //==================================================================
 static void P_ActivateInStasisCeiling(line_t *line)
 {
-	int	i;
+	int32_t	i;
 	
 	for (i = 0;i < MAXCEILINGS;i++)
 		if (activeceilings[i] && (activeceilings[i]->tag == line->tag) &&
@@ -260,7 +260,7 @@ static void P_ActivateInStasisCeiling(line_t *line)
 //==================================================================
 void	EV_CeilingCrushStop(line_t	*line)
 {
-	int		i;
+	int32_t		i;
 	
 	for (i = 0;i < MAXCEILINGS;i++)
 		if (activeceilings[i] && (activeceilings[i]->tag == line->tag) &&

@@ -32,7 +32,7 @@ void STlib_init(void)
 }
 
 
-void STlib_initNum (st_number_t *n, int x, int y, patch_t **pl, int *num, boolean *on, int width)
+void STlib_initNum (st_number_t *n, int32_t x, int32_t y, patch_t **pl, int32_t *num, boolean *on, int32_t width)
 {
   n->x = x;
   n->y = y;
@@ -47,14 +47,14 @@ void STlib_initNum (st_number_t *n, int x, int y, patch_t **pl, int *num, boolea
 static void STlib_drawNum (st_number_t *n)
 {
 
-  int numdigits = n->width;
-  int num = *n->num;
+  int32_t numdigits = n->width;
+  int32_t num = *n->num;
     
-  int w = SHORT(n->p[0]->width);
-  int h = SHORT(n->p[0]->height);
-  int x = n->x;
+  int32_t w = SHORT(n->p[0]->width);
+  int32_t h = SHORT(n->p[0]->height);
+  int32_t x = n->x;
     
-  int neg;
+  boolean neg;
 
   n->oldnum = *n->num;
 
@@ -108,7 +108,7 @@ void STlib_updateNum (st_number_t *n)
 }
 
 
-void STlib_initPercent (st_percent_t *p, int x, int y, patch_t **pl, int *num, boolean *on, patch_t *percent)
+void STlib_initPercent (st_percent_t *p, int32_t x, int32_t y, patch_t **pl, int32_t *num, boolean *on, patch_t *percent)
 {
   STlib_initNum(&p->n, x, y, pl, num, on, 3);
   p->p = percent;
@@ -117,7 +117,7 @@ void STlib_initPercent (st_percent_t *p, int x, int y, patch_t **pl, int *num, b
 
 
 
-void STlib_updatePercent (st_percent_t *per, int refresh)
+void STlib_updatePercent (st_percent_t *per, boolean refresh)
 {
   if (refresh && *per->n.on)
     V_DrawPatch(per->n.x, per->n.y, FG, per->p);
@@ -127,7 +127,7 @@ void STlib_updatePercent (st_percent_t *per, int refresh)
 
 
 
-void STlib_initMultIcon (st_multicon_t *mi, int x, int y, patch_t **il, int *inum, boolean *on)
+void STlib_initMultIcon (st_multicon_t *mi, int32_t x, int32_t y, patch_t **il, int32_t *inum, boolean *on)
 {
   mi->x = x;
   mi->y = y;
@@ -141,7 +141,7 @@ void STlib_initMultIcon (st_multicon_t *mi, int x, int y, patch_t **il, int *inu
 
 void STlib_updateMultIcon (st_multicon_t *mi, boolean refresh)
 {
-  int w, h, x, y;
+  int32_t w, h, x, y;
 
   if (*mi->on && (mi->oldinum != *mi->inum || refresh) && (*mi->inum!=-1))
   {
@@ -164,7 +164,7 @@ void STlib_updateMultIcon (st_multicon_t *mi, boolean refresh)
 
 
 
-void STlib_initBinIcon (st_binicon_t *b, int x, int y, patch_t *i, boolean *val, boolean *on)
+void STlib_initBinIcon (st_binicon_t *b, int32_t x, int32_t y, patch_t *i, boolean *val, boolean *on)
 {
   b->x = x;
   b->y = y;
@@ -178,7 +178,7 @@ void STlib_initBinIcon (st_binicon_t *b, int x, int y, patch_t *i, boolean *val,
 
 void STlib_updateBinIcon (st_binicon_t *bi, boolean refresh)
 {
-  int w, h, x, y;
+  int32_t w, h, x, y;
 
   if (*bi->on && (bi->oldval != *bi->val || refresh))
   {

@@ -19,35 +19,35 @@
 #ifndef __DMX__
 #define __DMX__
 
-int TSM_Install(unsigned int sndTicrate);
-int TSM_NewService(int (*timerISR)(void), int frequency, int priority, int pause);
-void TSM_DelService(int tsm_ID);
+int32_t TSM_Install(uint32_t sndTicrate);
+int32_t TSM_NewService(int32_t (*timerISR)(void), int32_t frequency, int32_t priority, int32_t pause);
+void TSM_DelService(int32_t tsm_ID);
 void TSM_Remove(void);
 
-int MUS_PauseSong(int handle);
-int MUS_ResumeSong(int handle);
-void MUS_SetMasterVolume(int volume);
-int MUS_RegisterSong(unsigned char *data);
-int MUS_UnregisterSong(int handle);
-int MUS_StopSong(int handle);
-int MUS_ChainSong(int handle, int to);
-int MUS_PlaySong(int handle, int volume);
+int32_t MUS_PauseSong(int32_t handle);
+int32_t MUS_ResumeSong(int32_t handle);
+void MUS_SetMasterVolume(int32_t volume);
+int32_t MUS_RegisterSong(unsigned char *data);
+int32_t MUS_UnregisterSong(int32_t handle);
+int32_t MUS_StopSong(int32_t handle);
+int32_t MUS_ChainSong(int32_t handle, int32_t to);
+int32_t MUS_PlaySong(int32_t handle, int32_t volume);
 
-int SFX_PlayPatch(void *data, int pitch, int sep, int volume, int flags, int priority);
-void SFX_StopPatch(int handle);
-int SFX_Playing(int handle);
-void SFX_SetOrigin(int handle, int pitch, int sep, int volume);
+int32_t SFX_PlayPatch(void *data, int32_t pitch, int32_t sep, int32_t volume, int32_t flags, int32_t priority);
+void SFX_StopPatch(int32_t handle);
+int32_t SFX_Playing(int32_t handle);
+void SFX_SetOrigin(int32_t handle, int32_t pitch, int32_t sep, int32_t volume);
 
-int ENS_Detect(void);
-int CODEC_Detect(int *sbPort, int *sbDma);
-int GF1_Detect(void);
-void GF1_SetMap(char *dmxlump, int size);
-int SB_Detect(int *sbPort, int *sbIrq, int *sbDma, uint16_t *version);
-void SB_SetCard(int iBaseAddr, int iIrq, int iDma);
-int AL_Detect(int *wait, int *type);
-void AL_SetCard(int wait, void *genmidi);
-int MPU_Detect(int *mPort, int *type);
-void MPU_SetCard(int mPort);
+int32_t ENS_Detect(void);
+int32_t CODEC_Detect(int32_t *sbPort, int32_t *sbDma);
+int32_t GF1_Detect(void);
+void GF1_SetMap(char *dmxlump, int32_t size);
+int32_t SB_Detect(int32_t *sbPort, int32_t *sbIrq, int32_t *sbDma, uint16_t *version);
+void SB_SetCard(int32_t iBaseAddr, int32_t iIrq, int32_t iDma);
+int32_t AL_Detect(int32_t *wait, int32_t *type);
+void AL_SetCard(int32_t wait, void *genmidi);
+int32_t MPU_Detect(int32_t *mPort, int32_t *type);
+void MPU_SetCard(int32_t mPort);
 
 #define AHW_PC_SPEAKER		0x0001L
 #define AHW_ADLIB			0x0002L
@@ -60,8 +60,8 @@ void MPU_SetCard(int mPort);
 #define AHW_ENSONIQ 		0x0100L
 #define AHW_CODEC           0x0200L
 
-int DMX_Init(int ticrate, int maxsongs, unsigned int musicDevice, unsigned int sfxDevice);
+int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32_t sfxDevice);
 void DMX_DeInit(void);
 
-void WAV_PlayMode(int channels, uint16_t sampleRate);
+void WAV_PlayMode(int32_t channels, uint16_t sampleRate);
 #endif

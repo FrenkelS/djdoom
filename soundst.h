@@ -49,29 +49,29 @@
 typedef struct
 {
 	char *name; // up to 6-character name
-	int lumpnum; // lump number of music
+	int32_t lumpnum; // lump number of music
 	void *data; // music data
-	int handle; // music handle once registered
+	int32_t handle; // music handle once registered
 } musicinfo_t;
 
 typedef struct sfxinfo_s
 {
 	char *name; // up to 6-character name
-	int singularity; // Sfx singularity (only one at a time)
-	int priority; // Sfx priority
+	int32_t singularity; // Sfx singularity (only one at a time)
+	int32_t priority; // Sfx priority
 	struct sfxinfo_s *link; // referenced sound if a link
-	int pitch; // pitch if a link
-	int volume; // volume if a link
+	int32_t pitch; // pitch if a link
+	int32_t volume; // volume if a link
 	void *data; // sound data
-	int usefulness; // Determines when a sound should be cached out
-	int lumpnum; // lump number of sfx
+	int32_t usefulness; // Determines when a sound should be cached out
+	int32_t lumpnum; // lump number of sfx
 } sfxinfo_t;
 
 typedef struct
 {
 	sfxinfo_t *sfxinfo; // sound information (if null, channel avail.)
 	void *origin; // origin of sound
-	int handle; // handle of the sound being played
+	int32_t handle; // handle of the sound being played
 } channel_t;
 
 
@@ -98,16 +98,16 @@ enum
 };
 
 void S_Start(void);
-void S_StartSound(void *origin, int sound_id);
+void S_StartSound(void *origin, int32_t sound_id);
 void S_StopSound(void *origin);
-void S_StartMusic(int music_id);
-void S_ChangeMusic(int music_id, boolean looping);
+void S_StartMusic(int32_t music_id);
+void S_ChangeMusic(int32_t music_id, boolean looping);
 void S_PauseSound(void);
 void S_ResumeSound(void);
 void S_UpdateSounds(void *listener);
-void S_SetMusicVolume(int volume);
-void S_SetSfxVolume(int volume);
-void S_Init(int,int);
+void S_SetMusicVolume(int32_t volume);
+void S_SetSfxVolume(int32_t volume);
+void S_Init(int32_t,int32_t);
 
 //--------
 //SOUND IO
@@ -117,55 +117,55 @@ void S_Init(int,int);
 #define FREQ_HIGH		0xff
 
 
-void I_SetMusicVolume(int volume);
+void I_SetMusicVolume(int32_t volume);
 
 //
 //  MUSIC I/O
 //
-void I_PauseSong(int handle);
-void I_ResumeSong(int handle);
+void I_PauseSong(int32_t handle);
+void I_ResumeSong(int32_t handle);
 
 //
 // Called by anything that wishes to start music.
 //  plays a song, and when the song is done,
 //  starts playing it again in an endless loop.
 // Horrible thing to do, considering.
-void I_PlaySong(int handle, boolean looping);
+void I_PlaySong(int32_t handle, boolean looping);
 
 
 // stops a song over 3 seconds.
-void I_StopSong(int handle);
+void I_StopSong(int32_t handle);
 
 // registers a song handle to song data
-int I_RegisterSong(void *data);
+int32_t I_RegisterSong(void *data);
 
 // see above then think backwards
-void I_UnRegisterSong(int handle);
+void I_UnRegisterSong(int32_t handle);
 
 
 //
 //  SFX I/O
 //
-void I_SetChannels(int channels);
+void I_SetChannels(int32_t channels);
 
-int I_GetSfxLumpNum (sfxinfo_t*);
+int32_t I_GetSfxLumpNum (sfxinfo_t*);
 
 
 // Starts a sound in a particular sound channel.
-int I_StartSound(void *data, int vol, int sep, int pitch);
+int32_t I_StartSound(void *data, int32_t vol, int32_t sep, int32_t pitch);
 
 
 // Updates the volume, separation,
 //  and pitch of a sound channel.
-void I_UpdateSoundParams(int handle, int vol, int sep, int pitch);
+void I_UpdateSoundParams(int32_t handle, int32_t vol, int32_t sep, int32_t pitch);
 
 
 // Stops a sound channel.
-void I_StopSound(int handle);
+void I_StopSound(int32_t handle);
 
 // Called by S_*()'s to see if a channel is still playing.
 // Returns false if no longer playing, true if playing.
-boolean I_SoundIsPlaying(int handle);
+boolean I_SoundIsPlaying(int32_t handle);
 
 
 // the complete set of sound effects

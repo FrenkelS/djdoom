@@ -107,12 +107,12 @@ void	T_PlatRaise(plat_t	*plat)
 //
 //==================================================================
 
-static void	P_ActivateInStasis(int tag);
+static void	P_ActivateInStasis(int32_t tag);
 
-boolean	EV_DoPlat(line_t *line,plattype_e type,int amount)
+boolean	EV_DoPlat(line_t *line,plattype_e type,int32_t amount)
 {
 	plat_t		*plat;
-	int			secnum;
+	int32_t		secnum;
 	boolean		rtn;
 	sector_t	*sec;
 	
@@ -207,9 +207,9 @@ boolean	EV_DoPlat(line_t *line,plattype_e type,int amount)
 	return rtn;
 }
 
-static void P_ActivateInStasis(int tag)
+static void P_ActivateInStasis(int32_t tag)
 {
-	int		i;
+	int32_t		i;
 	
 	for (i = 0;i < MAXPLATS;i++)
 		if (activeplats[i] &&
@@ -223,7 +223,7 @@ static void P_ActivateInStasis(int tag)
 
 void EV_StopPlat(line_t *line)
 {
-	int		j;
+	int32_t		j;
 	
 	for (j = 0;j < MAXPLATS;j++)
 		if (activeplats[j] && ((activeplats[j])->status != in_stasis) &&
@@ -237,7 +237,7 @@ void EV_StopPlat(line_t *line)
 
 void P_AddActivePlat(plat_t *plat)
 {
-	int		i;
+	int32_t		i;
 	for (i = 0;i < MAXPLATS;i++)
 		if (activeplats[i] == NULL)
 		{
@@ -249,7 +249,7 @@ void P_AddActivePlat(plat_t *plat)
 
 static void P_RemoveActivePlat(plat_t *plat)
 {
-	int		i;
+	int32_t		i;
 	for (i = 0;i < MAXPLATS;i++)
 		if (plat == activeplats[i])
 		{

@@ -93,7 +93,7 @@ typedef struct {
 	parm	[eax] [ecx] \
 	modify	[edx]
 
-typedef int fixed_t;
+typedef int32_t fixed_t;
 fixed_t	FixedDiv2 (fixed_t a, fixed_t b);
 #pragma aux FixedDiv2 =		\
 	"cdq",					\

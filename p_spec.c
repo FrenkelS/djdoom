@@ -69,7 +69,7 @@ static anim_t	*lastanim;
 
 void P_InitPicAnims (void)
 {
-	int		i;
+	int32_t		i;
 	
 //
 //	Init animation
@@ -114,7 +114,7 @@ void P_InitPicAnims (void)
 //	Will return a side_t* given the number of the current sector,
 //		the line number, and the side (0/1) that you want.
 //
-side_t *getSide(int currentSector,int line, int side)
+side_t *getSide(int32_t currentSector,int32_t line, int32_t side)
 {
 	return &sides[ (sectors[currentSector].lines[line])->sidenum[side] ];
 }
@@ -123,7 +123,7 @@ side_t *getSide(int currentSector,int line, int side)
 //	Will return a sector_t* given the number of the current sector,
 //		the line number and the side (0/1) that you want.
 //
-sector_t *getSector(int currentSector,int line,int side)
+sector_t *getSector(int32_t currentSector,int32_t line,int32_t side)
 {
 	return sides[ (sectors[currentSector].lines[line])->sidenum[side] ].sector;
 }
@@ -132,7 +132,7 @@ sector_t *getSector(int currentSector,int line,int side)
 //	Given the sector number and the line number, will tell you whether
 //		the line is two-sided or not.
 //
-boolean	twoSided(int sector,int line)
+boolean	twoSided(int32_t sector,int32_t line)
 {
 	return ((sectors[sector].lines[line])->flags & ML_TWOSIDED) != 0;
 }
@@ -160,7 +160,7 @@ sector_t *getNextSector(line_t *line,sector_t *sec)
 //==================================================================
 fixed_t	P_FindLowestFloorSurrounding(sector_t *sec)
 {
-	int			i;
+	int32_t		i;
 	line_t		*check;
 	sector_t	*other;
 	fixed_t		floor = sec->floorheight;
@@ -184,7 +184,7 @@ fixed_t	P_FindLowestFloorSurrounding(sector_t *sec)
 //==================================================================
 fixed_t	P_FindHighestFloorSurrounding(sector_t *sec)
 {
-	int			i;
+	int32_t		i;
 	line_t		*check;
 	sector_t	*other;
 	fixed_t		floor = -500*FRACUNIT;
@@ -206,11 +206,11 @@ fixed_t	P_FindHighestFloorSurrounding(sector_t *sec)
 //	FIND NEXT HIGHEST FLOOR IN SURROUNDING SECTORS
 //
 //==================================================================
-fixed_t	P_FindNextHighestFloor(sector_t *sec,int currentheight)
+fixed_t	P_FindNextHighestFloor(sector_t *sec,int32_t currentheight)
 {
-	int			i;
-	int			h;
-	int			min;
+	int32_t		i;
+	int32_t		h;
+	int32_t		min;
 	line_t		*check;
 	sector_t	*other;
 	fixed_t		height = currentheight;
@@ -246,7 +246,7 @@ fixed_t	P_FindNextHighestFloor(sector_t *sec,int currentheight)
 //==================================================================
 fixed_t	P_FindLowestCeilingSurrounding(sector_t *sec)
 {
-	int			i;
+	int32_t		i;
 	line_t		*check;
 	sector_t	*other;
 	fixed_t		height = MAXINT;
@@ -270,7 +270,7 @@ fixed_t	P_FindLowestCeilingSurrounding(sector_t *sec)
 //==================================================================
 fixed_t	P_FindHighestCeilingSurrounding(sector_t *sec)
 {
-	int	i;
+	int32_t	i;
 	line_t	*check;
 	sector_t	*other;
 	fixed_t	height = 0;
@@ -292,9 +292,9 @@ fixed_t	P_FindHighestCeilingSurrounding(sector_t *sec)
 //	RETURN NEXT SECTOR # THAT LINE TAG REFERS TO
 //
 //==================================================================
-int	P_FindSectorFromLineTag(line_t	*line,int start)
+int32_t	P_FindSectorFromLineTag(line_t	*line,int32_t start)
 {
-	int	i;
+	int32_t	i;
 	
 	for (i=start+1;i<numsectors;i++)
 		if (sectors[i].tag == line->tag)
@@ -307,10 +307,10 @@ int	P_FindSectorFromLineTag(line_t	*line,int start)
 //	Find minimum light from an adjacent sector
 //
 //==================================================================
-int	P_FindMinSurroundingLight(sector_t *sector,int max)
+int32_t	P_FindMinSurroundingLight(sector_t *sector,int32_t max)
 {
-	int			i;
-	int			min;
+	int32_t			i;
+	int32_t			min;
 	line_t		*line;
 	sector_t	*check;
 	
@@ -350,10 +350,10 @@ Events are operations triggered by using, crossing, or shooting special lines, o
 ===============================================================================
 */
 
-void P_CrossSpecialLine (int linenum, int side, mobj_t *thing)
+void P_CrossSpecialLine (int32_t linenum, int32_t side, mobj_t *thing)
 {
 	line_t		*line;
-	int			ok;
+	int32_t		ok;
 
 	line = &lines[linenum];
 
@@ -682,18 +682,18 @@ void P_CrossSpecialLine (int linenum, int side, mobj_t *thing)
 
 void	P_ShootSpecialLine ( mobj_t *thing, line_t *line)
 {
-	int		ok;
+	boolean		ok;
 	
 	//
 	//	Impacts that other things can activate
 	//
 	if (!thing->player)
 	{
-		ok = 0;
+		ok = false;
 		switch(line->special)
 		{
 			case 46:		// OPEN DOOR IMPACT
-				ok = 1;
+				ok = true;
 				break;
 		}
 		if (!ok)
@@ -785,7 +785,7 @@ void P_PlayerInSpecialSector(player_t *player)
 ===============================================================================
 */
 static boolean		levelTimer;
-static int		levelTimeCount;
+static int32_t		levelTimeCount;
 
 static int16_t	numlinespecials;
 static line_t	*linespeciallist[MAXLINEANIMS];
@@ -793,8 +793,8 @@ static line_t	*linespeciallist[MAXLINEANIMS];
 void P_UpdateSpecials (void)
 {
 	anim_t	*anim;
-	int		pic;
-	int		i;
+	int32_t	pic;
+	int32_t	i;
 	line_t	*line;
 	
 	//
@@ -877,10 +877,10 @@ boolean EV_DoDonut(line_t *line)
 	sector_t	*s1;
 	sector_t	*s2;
 	sector_t	*s3;
-	int			secnum;
+	int32_t		secnum;
 	boolean		rtn;
-	int			i;
-	floormove_t		*floor;
+	int32_t		i;
+	floormove_t	*floor;
 	
 	secnum = -1;
 	rtn = false;
@@ -956,7 +956,7 @@ boolean EV_DoDonut(line_t *line)
 void P_SpawnSpecials (void)
 {
 	sector_t	*sector;
-	int		i;
+	int32_t		i;
 
 	//
 	// See if -TIMER needs to be used
@@ -973,7 +973,7 @@ void P_SpawnSpecials (void)
 	i = M_CheckParm("-timer");
 	if (i && deathmatch)
 	{
-		int	time;
+		int32_t	time;
 		time = atoi(myargv[i+1]) * 60 * TICRATE;
 		levelTimer = true;
 		levelTimeCount = time;

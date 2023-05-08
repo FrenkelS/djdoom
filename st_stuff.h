@@ -227,16 +227,16 @@ static player_t *plyr;
 static boolean st_firsttime;
 
 // used to execute ST_Init() only once
-static int veryfirsttime = 1;
+static int32_t veryfirsttime = 1;
 
 // lump number for PLAYPAL
-static int lu_palette;
+static int32_t lu_palette;
 
 // used for timing
-static unsigned int st_clock;
+static uint32_t st_clock;
 
 // used for making messages go away
-static int st_msgcounter=0;
+static int32_t st_msgcounter=0;
 
 // used when in chat 
 static st_chatstateenum_t st_chatstate;
@@ -326,25 +326,25 @@ static st_number_t w_maxammo[4];
 
 
  // number of frags so far in deathmatch
-static int st_fragscount;
+static int32_t st_fragscount;
 
 // used to use appopriately pained face
-static int st_oldhealth = -1;
+static int32_t st_oldhealth = -1;
 
 // used for evil grin
 static boolean oldweaponsowned[NUMWEAPONS]; 
 
  // count until face changes
-static int st_facecount = 0;
+static int32_t st_facecount = 0;
 
 // current face index, used by w_faces
-static int st_faceindex = 0;
+static int32_t st_faceindex = 0;
 
 // holds key-type for each key box on bar
-static int keyboxes[3]; 
+static int32_t keyboxes[3]; 
 
 // a random number per tick
-static int st_randomnumber;  
+static int32_t st_randomnumber;  
 
 
 

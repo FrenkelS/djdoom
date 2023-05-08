@@ -22,11 +22,11 @@
 
 typedef struct
 {
-	int		x1, x2;
+	int32_t		x1, x2;
 
-	int		column;
-	int		topclip;
-	int		bottomclip;
+	int32_t		column;
+	int32_t		topclip;
+	int32_t		bottomclip;
 } maskdraw_t;
 
 /*
@@ -58,7 +58,7 @@ int16_t	screenheightarray[SCREENWIDTH];
 spritedef_t		*sprites;
 
 static spriteframe_t	sprtemp[29];
-static int				maxframe;
+static int32_t			maxframe;
 static char				*spritename;
 
 
@@ -72,14 +72,14 @@ static char				*spritename;
 =================
 */
 
-static void R_InstallSpriteLump (int lump, unsigned frame, unsigned rotation, boolean flipped)
+static void R_InstallSpriteLump (int32_t lump, unsigned frame, unsigned rotation, boolean flipped)
 {
-	int		r;
+	int32_t		r;
 
 	if (frame >= 29 || rotation > 8)
 		I_Error ("R_InstallSpriteLump: Bad frame characters in lump %i", lump);
 
-	if ((int)frame > maxframe)
+	if ((int32_t)frame > maxframe)
 		maxframe = frame;
 
 	if (rotation == 0)
@@ -136,9 +136,9 @@ static void R_InstallSpriteLump (int lump, unsigned frame, unsigned rotation, bo
 
 static void R_InitSpriteDefs (void)
 {
-	int		i, l, intname, frame, rotation;
-	int		start, end;
-	int		patched;
+	int32_t		i, l, intname, frame, rotation;
+	int32_t		start, end;
+	int32_t		patched;
 
 	sprites = Z_Malloc(NUMSPRITES *sizeof(*sprites), PU_STATIC, NULL);
 
@@ -154,13 +154,13 @@ static void R_InitSpriteDefs (void)
 		memset (sprtemp,-1, sizeof(sprtemp));
 
 		maxframe = -1;
-		intname = *(int *)sprnames[i];
+		intname = *(int32_t *)sprnames[i];
 
 		//
 		// scan the lumps, filling in the frames for whatever is found
 		//
 		for (l=start+1 ; l<end ; l++)
-			if (*(int *)lumpinfo[l].name == intname)
+			if (*(int32_t *)lumpinfo[l].name == intname)
 			{
 				frame = lumpinfo[l].name[4] - 'A';
 				rotation = lumpinfo[l].name[5] - '0';
@@ -191,7 +191,7 @@ static void R_InitSpriteDefs (void)
 		maxframe++;
 		for (frame = 0 ; frame < maxframe ; frame++)
 		{
-			switch ((int)sprtemp[frame].rotate)
+			switch ((int32_t)sprtemp[frame].rotate)
 			{
 			case -1:	// no rotations were found for that frame at all
 				I_Error ("R_InitSpriteDefs: No patches found for %s frame %c"
@@ -242,7 +242,7 @@ static vissprite_t	vissprites[MAXVISSPRITES], *vissprite_p;
 
 void R_InitSprites (void)
 {
-	int		i;
+	int32_t		i;
 
 	for (i=0 ; i<SCREENWIDTH ; i++)
 	{
@@ -303,7 +303,7 @@ fixed_t		sprtopscreen;
 
 void R_DrawMaskedColumn (column_t *column)
 {
-	int		topscreen, bottomscreen;
+	int32_t		topscreen, bottomscreen;
 	fixed_t	basetexturemid;
 
 	basetexturemid = dc_texturemid;
@@ -347,7 +347,7 @@ void R_DrawMaskedColumn (column_t *column)
 static void R_DrawVisSprite (vissprite_t *vis)
 {
 	column_t	*column;
-	int			texturecolumn;
+	int32_t		texturecolumn;
 	fixed_t		frac;
 	patch_t		*patch;
 
@@ -405,13 +405,13 @@ static void R_ProjectSprite (mobj_t *thing)
 	fixed_t		gxt,gyt;
 	fixed_t		tx,tz;
 	fixed_t		xscale;
-	int			x1, x2;
+	int32_t		x1, x2;
 	spritedef_t	*sprdef;
 	spriteframe_t	*sprframe;
-	int			lump;
-	unsigned	rot;
+	int32_t		lump;
+	uint32_t	rot;
 	boolean		flip;
-	int			index;
+	int32_t		index;
 	vissprite_t	*vis;
 	angle_t		ang;
 	fixed_t		iscale;
@@ -539,7 +539,7 @@ static void R_ProjectSprite (mobj_t *thing)
 void R_AddSprites (sector_t *sec)
 {
 	mobj_t		*thing;
-	int			lightnum;
+	int32_t		lightnum;
 
 	if (sec->validcount == validcount)
 		return;		// already added
@@ -571,10 +571,10 @@ void R_AddSprites (sector_t *sec)
 static void R_DrawPSprite (pspdef_t *psp)
 {
 	fixed_t		tx;
-	int			x1, x2;
+	int32_t		x1, x2;
 	spritedef_t	*sprdef;
 	spriteframe_t	*sprframe;
-	int			lump;
+	int32_t		lump;
 	boolean		flip;
 	vissprite_t	*vis, avis;
 
@@ -656,7 +656,7 @@ static void R_DrawPSprite (pspdef_t *psp)
 
 static void R_DrawPlayerSprites (void)
 {
-	int			i, lightnum;
+	int32_t		i, lightnum;
 	pspdef_t	*psp;
 
 //
@@ -698,7 +698,7 @@ static vissprite_t	vsprsortedhead;
 
 static void R_SortVisSprites (void)
 {
-	int			i, count;
+	int32_t		i, count;
 	vissprite_t	*ds, *best;
 	vissprite_t	unsorted;
 	fixed_t		bestscale;
@@ -758,9 +758,9 @@ static void R_DrawSprite (vissprite_t *spr)
 {
 	drawseg_t		*ds;
 	int16_t			clipbot[SCREENWIDTH], cliptop[SCREENWIDTH];
-	int				x, r1, r2;
+	int32_t			x, r1, r2;
 	fixed_t			scale, lowscale;
-	int				silhouette;
+	int32_t			silhouette;
 
 	for (x = spr->x1 ; x<=spr->x2 ; x++)
 		clipbot[x] = cliptop[x] = -2;

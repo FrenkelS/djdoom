@@ -32,12 +32,12 @@ void I_ShutdownSound (void);
 
 void I_ShutdownTimer (void);
 
-static void DPMIInt (int i);
+static void DPMIInt (int32_t i);
 
 static void I_ReadMouse (void);
 static void I_InitDiskFlash (void);
 
-extern  int     usemouse, usejoystick;
+extern  int32_t     usemouse, usejoystick;
 
 
 /*
@@ -147,7 +147,7 @@ static  boolean mousepresent;
 
 //===============================
 
-int             ticcount;
+int32_t             ticcount;
 
 // REGS stuff used for int calls
 static union REGS regs;
@@ -156,7 +156,7 @@ static boolean novideo; // if true, stay in text mode for debugging
 
 #define KBDQUESIZE 32
 static byte keyboardque[KBDQUESIZE];
-static int kbdtail, kbdhead;
+static int32_t kbdtail, kbdhead;
 
 #define KEY_LSHIFT      0xfe
 
@@ -204,7 +204,7 @@ byte        scantokey[128] =
 
 typedef struct
 {
-	int f_0; // interrupt
+	int32_t f_0; // interrupt
 	ticcmd_t f_4; // cmd
 } doomcontrol_t;
 
@@ -232,7 +232,7 @@ ticcmd_t *I_BaseTiccmd (void)
 
 //TODO implement timer
 #if 0
-int I_GetTime (void)
+int32_t I_GetTime (void)
 {
 #ifdef NOTIMER
 	ticcount++;
@@ -241,16 +241,16 @@ int I_GetTime (void)
 }
 #else
 #include <time.h>
-static unsigned int basetime;
+static uint32_t basetime;
 
 void I_InitBaseTime(void)
 {
 	basetime = clock();
 }
 
-int I_GetTime (void)
+int32_t I_GetTime (void)
 {
-	unsigned int ticks = clock();
+	uint32_t ticks = clock();
 
 	ticks -= basetime;
 
@@ -266,9 +266,9 @@ int I_GetTime (void)
 ===================
 */
 
-void I_WaitVBL (int vbls)
+void I_WaitVBL (int32_t vbls)
 {
-	int	stat;
+	int32_t	stat;
 
 	if (novideo)
 		return;
@@ -302,7 +302,7 @@ void I_WaitVBL (int vbls)
 
 void I_SetPalette (byte *palette)
 {
-	int	i;
+	int32_t	i;
 
 	if (novideo)
 		return;
@@ -333,14 +333,14 @@ byte *destview	__attribute__ ((externally_visible));
 ===================
 */
 
-static void I_UpdateBox (int x, int y, int width, int height)
+static void I_UpdateBox (int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	int		ofs;
+	int32_t		ofs;
 	byte	*source;
 	int16_t	*dest;
-	int		p,x1, x2;
-	int		srcdelta, destdelta;
-	int		wwide;
+	int32_t		p,x1, x2;
+	int32_t		srcdelta, destdelta;
+	int32_t		wwide;
 
 #ifdef RANGECHECK
 	if (x < 0 || y < 0 || width <= 0 || height <= 0
@@ -387,9 +387,9 @@ static void I_UpdateBox (int x, int y, int width, int height)
 
 void I_UpdateNoBlit(void)
 {
-	static int oldupdatebox[4];
-	static int voldupdatebox[4];
-	int updatebox[4];
+	static int32_t oldupdatebox[4];
+	static int32_t voldupdatebox[4];
+	int32_t updatebox[4];
 
 	currentscreen = destscreen;
 	updatebox[BOXTOP] = (dirtybox[BOXTOP] > voldupdatebox[BOXTOP]) ?
@@ -431,8 +431,8 @@ void I_UpdateNoBlit(void)
 
 void I_FinishUpdate (void)
 {
-	static	int		lasttic;
-	int				tics, i;
+	static	int32_t		lasttic;
+	int32_t				tics, i;
 
 	// draws little dots on the bottom of the screen
 	if (devparm)
@@ -450,10 +450,10 @@ void I_FinishUpdate (void)
 	}
 
 	// page flip
-	outpw (CRTC_INDEX, CRTC_STARTHIGH+((int)destscreen&0xff00));
+	outpw (CRTC_INDEX, CRTC_STARTHIGH+((int32_t)destscreen&0xff00));
 
 	destscreen += 0x4000;
-	if ( (int)destscreen == (int)(0xac000 + __djgpp_conventional_base))
+	if ( (int32_t)destscreen == (int32_t)(0xac000 + __djgpp_conventional_base))
 		destscreen = (byte *)(0xa0000 + __djgpp_conventional_base);
 }
 
@@ -522,7 +522,7 @@ static void I_ShutdownGraphics (void)
 
 void I_ReadScreen (byte *scr)
 {
-	int	p, i;
+	int32_t	p, i;
 	outp (GC_INDEX,GC_READMAP);
 	for (p = 0; p < 4; p++)
 	{
@@ -553,7 +553,7 @@ void I_ReadScreen (byte *scr)
 
 void   I_StartTic (void)
 {
-	int             k;
+	int32_t             k;
 	event_t ev;
 
 
@@ -614,7 +614,7 @@ void   I_StartTic (void)
 
 void   I_StartTic (void)
 {
-	int             k;
+	int32_t             k;
 	event_t ev;
 
 
@@ -695,7 +695,7 @@ void   I_StartTic (void)
 ================
 */
 
-int I_TimerISR (void)
+int32_t I_TimerISR (void)
 {
 	ticcount++;
 	return 0;
@@ -709,7 +709,7 @@ int I_TimerISR (void)
 ============================================================================
 */
 
-static int lastpress;
+static int32_t lastpress;
 
 /*
 ================
@@ -744,7 +744,7 @@ static void _interrupt I_KeyboardISR (void)
 #if defined __DJGPP__
 static _go32_dpmi_seginfo oldkeyboardisr = {0}, newkeyboardisr;
 #elif defined __DMC__
-static unsigned int oldkeyboardisroffset, oldkeyboardisrsegment;
+static uint32_t oldkeyboardisroffset, oldkeyboardisrsegment;
 #elif defined __CCDL__
 static uint16_t oldkeyboardisrsegment, oldkeyboardisroffset = 0;
 #elif defined __WATCOMC__
@@ -756,7 +756,7 @@ static void I_StartupKeyboard (void)
 #if defined __DJGPP__
 	_go32_dpmi_get_protected_mode_interrupt_vector(KEYBOARDINT, &oldkeyboardisr);
 
-	newkeyboardisr.pm_offset = (int)I_KeyboardISR;
+	newkeyboardisr.pm_offset = (int32_t)I_KeyboardISR;
 	newkeyboardisr.pm_selector = _go32_my_cs(); 
 	_go32_dpmi_allocate_iret_wrapper(&newkeyboardisr);
 	_go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARDINT, &newkeyboardisr);
@@ -768,7 +768,7 @@ static void I_StartupKeyboard (void)
 
 	_segread(&segregs);
 	dpmi_get_real_interrupt(&oldkeyboardisrsegment, &oldkeyboardisroffset, KEYBOARDINT);
-	dpmi_set_protected_interrupt(KEYBOARDINT, segregs.cs, (unsigned int)I_KeyboardISR);
+	dpmi_set_protected_interrupt(KEYBOARDINT, segregs.cs, (uint32_t)I_KeyboardISR);
 #elif defined __WATCOMC__
 	oldkeyboardisr = _dos_getvect(KEYBOARDINT);
 	_dos_setvect (0x8000 | KEYBOARDINT, I_KeyboardISR);
@@ -913,11 +913,11 @@ static void I_ReadMouse (void)
 ============================================================================
 */
 
-static int     joyxl, joyxh, joyyl, joyyh;
+static int32_t     joyxl, joyxh, joyyl, joyyh;
 
 static boolean WaitJoyButton (void)
 {
-	int             oldbuttons, buttons;
+	int32_t             oldbuttons, buttons;
 
 	oldbuttons = 0;
 	do
@@ -969,7 +969,7 @@ static boolean WaitJoyButton (void)
 
 static void I_StartupJoystick (void)
 {
-	int     centerx, centery;
+	int32_t     centerx, centery;
 
 	joystickpresent = 0;
 	if ( M_CheckParm ("-nojoy") || !usejoystick )
@@ -1061,7 +1061,7 @@ void I_StartFrame (void)
 static unsigned                realstackseg;
 #endif
 
-static void DPMIInt (int i)
+static void DPMIInt (int32_t i)
 {
 #if defined __DJGPP__
 	__dpmi_regs		dpmiregs;
@@ -1099,7 +1099,7 @@ static void DPMIInt (int i)
 =============
 */
 #if defined __WATCOMC__
-static byte *I_AllocLow (int length)
+static byte *I_AllocLow (int32_t length)
 {
 	byte    *mem;
 
@@ -1133,14 +1133,14 @@ static void I_StartupDPMI (void)
 #if defined __DJGPP__
 	__djgpp_nearptr_enable();
 #elif defined __WATCOMC__
-	void _dpmi_lockregion (void * inmem, int length);
+	void _dpmi_lockregion (void * inmem, int32_t length);
 	extern char __begtext;
 	extern char ___Argc;
 
 //
 // allocate a decent stack for real mode ISRs
 //
-	realstackseg = (int)I_AllocLow (REALSTACKSIZE) >> 4;
+	realstackseg = (int32_t)I_AllocLow (REALSTACKSIZE) >> 4;
 
 //
 // lock the entire program down
@@ -1167,7 +1167,7 @@ static void I_StartupDPMI (void)
 
 void I_Init (void)
 {
-	int i;
+	int32_t i;
 
 	novideo = M_CheckParm("novideo");
 	i = M_CheckParm("-control");
@@ -1270,7 +1270,7 @@ void I_Quit (void)
 ===============
 */
 
-static int I_GetLargestAvailableFreeBlockInBytes(void)
+static int32_t I_GetLargestAvailableFreeBlockInBytes(void)
 {
 #if defined __DJGPP__
 	return _go32_dpmi_remaining_physical_memory();
@@ -1291,9 +1291,9 @@ static int I_GetLargestAvailableFreeBlockInBytes(void)
 #endif
 }
 
-byte *I_ZoneBase (int *size)
+byte *I_ZoneBase (int32_t *size)
 {
-	int		heap;
+	int32_t	heap;
 	byte	*ptr;
 
 	heap = I_GetLargestAvailableFreeBlockInBytes();
@@ -1366,7 +1366,7 @@ static void I_InitDiskFlash (void)
 void I_BeginRead (void)
 {
 	byte    *src,*dest;
-	int             y;
+	int32_t             y;
 
 	if (!grmode)
 		return;
@@ -1414,7 +1414,7 @@ void I_BeginRead (void)
 void I_EndRead (void)
 {
 	byte    *src,*dest;
-	int             y;
+	int32_t             y;
 
 	if (!grmode)
 		return;
@@ -1508,7 +1508,7 @@ extern  doomcom_t               *doomcom;
 
 void I_InitNetwork (void)
 {
-	int             i;
+	int32_t             i;
 
 	i = M_CheckParm ("-net");
 	if (!i)

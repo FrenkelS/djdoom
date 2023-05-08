@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -1286,29 +1287,29 @@ MT_MISC86,
 NUMMOBJTYPES} mobjtype_t;
 
 typedef struct {
-	int	doomednum;
-	int	spawnstate;
-	int	spawnhealth;
-	int	seestate;
-	int	seesound;
-	int	reactiontime;
-	int	attacksound;
-	int	painstate;
-	int	painchance;
-	int	painsound;
-	int	meleestate;
-	int	missilestate;
-	int	deathstate;
-	int	xdeathstate;
-	int	deathsound;
-	int	speed;
-	int	radius;
-	int	height;
-	int	mass;
-	int	damage;
-	int	activesound;
-	int	flags;
-	int	raisestate;
+	int32_t	doomednum;
+	int32_t	spawnstate;
+	int32_t	spawnhealth;
+	int32_t	seestate;
+	int32_t	seesound;
+	int32_t	reactiontime;
+	int32_t	attacksound;
+	int32_t	painstate;
+	int32_t	painchance;
+	int32_t	painsound;
+	int32_t	meleestate;
+	int32_t	missilestate;
+	int32_t	deathstate;
+	int32_t	xdeathstate;
+	int32_t	deathsound;
+	int32_t	speed;
+	int32_t	radius;
+	int32_t	height;
+	int32_t	mass;
+	int32_t	damage;
+	int32_t	activesound;
+	int32_t	flags;
+	int32_t	raisestate;
 } mobjinfo_t;
 
 extern mobjinfo_t mobjinfo[NUMMOBJTYPES];

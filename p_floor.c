@@ -36,7 +36,7 @@
 //
 //==================================================================
 result_e	T_MovePlane(sector_t *sector,fixed_t speed,
-			fixed_t dest,boolean crush,int floorOrCeiling,int direction)
+			fixed_t dest,boolean crush,int32_t floorOrCeiling,int32_t direction)
 {
 	boolean	flag;
 	fixed_t	lastpos;
@@ -214,9 +214,9 @@ void T_MoveFloor(floormove_t *floor)
 //==================================================================
 boolean EV_DoFloor(line_t *line,floor_e floortype)
 {
-	int			secnum;
+	int32_t		secnum;
 	boolean		rtn;
-	int			i;
+	int32_t		i;
 	sector_t	*sec;
 	floormove_t	*floor;
 
@@ -317,7 +317,7 @@ boolean EV_DoFloor(line_t *line,floor_e floortype)
 				break;
 			case raiseToTexture:
 				{
-					int	minsize = MAXINT;
+					int32_t	minsize = MAXINT;
 					side_t	*side;
 				
 					floor->direction = 1;
@@ -388,16 +388,16 @@ boolean EV_DoFloor(line_t *line,floor_e floortype)
 //==================================================================
 boolean EV_BuildStairs(line_t *line, boolean build8)
 {
-	int		secnum;
-	int		height;
-	int		i;
-	int		newsecnum;
-	int		texture;
-	int		ok;
-	boolean	rtn;
+	int32_t		secnum;
+	int32_t		height;
+	int32_t		i;
+	int32_t		newsecnum;
+	int32_t		texture;
+	boolean		ok;
+	boolean		rtn;
 	sector_t	*sec, *tsec;
 	floormove_t	*floor;
-	fixed_t	stairsize, speed;
+	fixed_t		stairsize, speed;
 
 	secnum = -1;
 	rtn = false;
@@ -440,7 +440,7 @@ boolean EV_BuildStairs(line_t *line, boolean build8)
 		//
 		do
 		{
-			ok = 0;
+			ok = false;
 			for (i = 0;i < sec->linecount;i++)
 			{
 				if ( !((sec->lines[i])->flags & ML_TWOSIDED) )
@@ -469,7 +469,7 @@ boolean EV_BuildStairs(line_t *line, boolean build8)
 				floor->sector = sec;
 				floor->speed = speed;
 				floor->floordestheight = height;
-				ok = 1;
+				ok = true;
 				break;
 			}
 		} while(ok);

@@ -23,8 +23,8 @@
 #include "soundst.h"
 #include <ctype.h>
 
-static int             finalestage;            // 0 = text, 1 = art screen, 2 = character cast
-static int             finalecount;
+static int32_t             finalestage;            // 0 = text, 1 = art screen, 2 = character cast
+static int32_t             finalecount;
 
 #define TEXTSPEED       3
 #define TEXTWAIT        250
@@ -231,7 +231,7 @@ boolean F_Responder (event_t *event)
 
 void F_Ticker (void)
 {
-	int		i;
+	int32_t		i;
 
 	// check for skipping
 	if (commercial && (finalecount > 50))
@@ -285,11 +285,11 @@ extern        patch_t *hu_font[HU_FONTSIZE];
 static void F_TextWrite (void)
 {
 	byte    *src, *dest;
-	int             x,y,w;
-	int             count;
+	int32_t             x,y,w;
+	int32_t             count;
 	char    *ch;
-	int             c;
-	int             cx, cy;
+	int32_t             c;
+	int32_t             cx, cy;
 
 //
 // erase the entire screen to a tiled background
@@ -383,12 +383,12 @@ static castinfo_t	castorder[] = {
 	{NULL,0}
 };
 
-static int			castnum;
-static int			casttics;
+static int32_t		castnum;
+static int32_t		casttics;
 static state_t		*caststate;
 static boolean		castdeath;
-static int			castframes;
-static int			castonmelee;
+static int32_t		castframes;
+static int32_t		castonmelee;
 static boolean		castattacking;
 
 
@@ -426,8 +426,8 @@ static void F_StartCast (void)
 */
 static void F_CastTicker (void)
 {
-	int		st;
-	int		sfx;
+	int32_t		st;
+	int32_t		sfx;
 	
 	if (--casttics > 0)
 		return;			// not time to change state yet
@@ -559,10 +559,10 @@ static boolean F_CastResponder (event_t* ev)
 static void F_CastPrint (char* text)
 {
 	char	*ch;
-	int		c;
-	int		cx;
-	int		w;
-	int		width;
+	int32_t		c;
+	int32_t		cx;
+	int32_t		w;
+	int32_t		width;
 
 	// find width
 	ch = text;
@@ -614,13 +614,13 @@ static void F_CastPrint (char* text)
 =
 ==================
 */
-void V_DrawPatchFlipped (int x, int y, int scrn, patch_t *patch);
+void V_DrawPatchFlipped (int32_t x, int32_t y, int32_t scrn, patch_t *patch);
 
 static void F_CastDrawer (void)
 {
 	spritedef_t		*sprdef;
 	spriteframe_t	*sprframe;
-	int				lump;
+	int32_t			lump;
 	boolean			flip;
 	patch_t*		patch;
 
@@ -651,11 +651,11 @@ static void F_CastDrawer (void)
 ==================
 */
 
-static void F_DrawPatchCol (int x, patch_t *patch, int col)
+static void F_DrawPatchCol (int32_t x, patch_t *patch, int32_t col)
 {
 	column_t        *column;
 	byte            *source, *dest, *desttop;
-	int                     count;
+	int32_t                     count;
 	
 	column = (column_t *)((byte *)patch + LONG(patch->columnofs[col]));
 	desttop = screens[0]+x;
@@ -688,11 +688,11 @@ static void F_DrawPatchCol (int x, patch_t *patch, int col)
 
 static void F_BunnyScroll (void)
 {
-	int                     scrolled, x;
+	int32_t                     scrolled, x;
 	patch_t         *p1, *p2;
 	char            name[10];
-	int                     stage;
-	static int      laststage;
+	int32_t                     stage;
+	static int32_t      laststage;
 		
 	p1 = W_CacheLumpName ("PFUB2", PU_LEVEL);
 	p2 = W_CacheLumpName ("PFUB1", PU_LEVEL);

@@ -31,11 +31,11 @@
 //
 typedef struct
 {
-	boolean	istexture;
-	int		picnum;
-	int		basepic;
-	int		numpics;
-	int		speed;
+	boolean		istexture;
+	int32_t		picnum;
+	int32_t		basepic;
+	int32_t		numpics;
+	int32_t		speed;
 } anim_t;
 
 //
@@ -46,7 +46,7 @@ typedef struct
 	boolean	istexture;		// if false, it's a flat
 	char	endname[9];
 	char	startname[9];
-	int		speed;
+	int32_t	speed;
 } animdef_t;
 
 #define	MAXANIMS		32
@@ -70,22 +70,22 @@ void	P_SpawnSpecials (void);
 void 	P_UpdateSpecials (void);
 
 // when needed
-boolean	P_UseSpecialLine ( mobj_t *thing, line_t *line, int side);
+boolean	P_UseSpecialLine ( mobj_t *thing, line_t *line, int32_t side);
 void	P_ShootSpecialLine ( mobj_t *thing, line_t *line);
-void 	P_CrossSpecialLine (int linenum, int side, mobj_t *thing);
+void 	P_CrossSpecialLine (int32_t linenum, int32_t side, mobj_t *thing);
 
 void 	P_PlayerInSpecialSector (player_t *player);
 
-boolean	twoSided(int sector,int line);
-sector_t *getSector(int currentSector,int line,int side);
-side_t	*getSide(int currentSector,int line, int side);
+boolean	twoSided(int32_t sector,int32_t line);
+sector_t *getSector(int32_t currentSector,int32_t line,int32_t side);
+side_t	*getSide(int32_t currentSector,int32_t line, int32_t side);
 fixed_t	P_FindLowestFloorSurrounding(sector_t *sec);
 fixed_t	P_FindHighestFloorSurrounding(sector_t *sec);
-fixed_t	P_FindNextHighestFloor(sector_t *sec,int currentheight);
+fixed_t	P_FindNextHighestFloor(sector_t *sec,int32_t currentheight);
 fixed_t	P_FindLowestCeilingSurrounding(sector_t *sec);
 fixed_t	P_FindHighestCeilingSurrounding(sector_t *sec);
-int		P_FindSectorFromLineTag(line_t	*line,int start);
-int		P_FindMinSurroundingLight(sector_t *sector,int max);
+int32_t	P_FindSectorFromLineTag(line_t	*line,int32_t start);
+int32_t	P_FindMinSurroundingLight(sector_t *sector,int32_t max);
 sector_t *getNextSector(line_t *line,sector_t *sec);
 
 //
@@ -104,40 +104,40 @@ typedef struct
 {
 	thinker_t	thinker;
 	sector_t	*sector;
-	int			count;
-	int			maxlight;
-	int			minlight;
+	int32_t		count;
+	int32_t		maxlight;
+	int32_t		minlight;
 } fireflicker_t;
 
 typedef struct
 {
 	thinker_t	thinker;
 	sector_t	*sector;
-	int			count;
-	int			maxlight;
-	int			minlight;
-	int			maxtime;
-	int			mintime;
+	int32_t		count;
+	int32_t		maxlight;
+	int32_t		minlight;
+	int32_t		maxtime;
+	int32_t		mintime;
 } lightflash_t;
 
 typedef struct
 {
 	thinker_t	thinker;
 	sector_t	*sector;
-	int			count;
-	int			minlight;
-	int			maxlight;
-	int			darktime;
-	int			brighttime;
+	int32_t		count;
+	int32_t		minlight;
+	int32_t		maxlight;
+	int32_t		darktime;
+	int32_t		brighttime;
 } strobe_t;
 
 typedef struct
 {
 	thinker_t	thinker;
 	sector_t	*sector;
-	int			minlight;
-	int			maxlight;
-	int			direction;
+	int32_t		minlight;
+	int32_t		maxlight;
+	int32_t		direction;
 } glow_t;
 
 #define GLOWSPEED		8
@@ -149,10 +149,10 @@ void    P_SpawnFireFlicker (sector_t *sector);
 void	T_LightFlash (lightflash_t *flash);
 void	P_SpawnLightFlash (sector_t *sector);
 void	T_StrobeFlash (strobe_t *flash);
-void 	P_SpawnStrobeFlash (sector_t *sector, int fastOrSlow, int inSync);
+void 	P_SpawnStrobeFlash (sector_t *sector, int32_t fastOrSlow, int32_t inSync);
 void	EV_StartLightStrobing(line_t *line);
 void	EV_TurnTagLightsOff(line_t	*line);
-void	EV_LightTurnOn(line_t *line, int bright);
+void	EV_LightTurnOn(line_t *line, int32_t bright);
 void	T_Glow(glow_t *g);
 void	P_SpawnGlowingLight(sector_t *sector);
 
@@ -181,8 +181,8 @@ typedef struct
 {
 	line_t		*line;
 	bwhere_e	where;
-	int			btexture;
-	int			btimer;
+	int32_t		btexture;
+	int32_t		btimer;
 	mobj_t		*soundorg;
 } button_t;
 
@@ -192,7 +192,7 @@ typedef struct
 
 extern	button_t	buttonlist[MAXBUTTONS];	
 
-void	P_ChangeSwitchTexture(line_t *line,int useAgain);
+void	P_ChangeSwitchTexture(line_t *line,int32_t useAgain);
 void 	P_InitSwitchList(void);
 
 /*
@@ -226,12 +226,12 @@ typedef struct
 	fixed_t		speed;
 	fixed_t		low;
 	fixed_t		high;
-	int			wait;
-	int			count;
+	int32_t		wait;
+	int32_t		count;
 	plat_e		status;
 	plat_e		oldstatus;
 	boolean		crush;
-	int			tag;
+	int32_t		tag;
 	plattype_e	type;
 } plat_t;
 
@@ -242,7 +242,7 @@ typedef struct
 extern	plat_t	*activeplats[MAXPLATS];
 
 void	T_PlatRaise(plat_t	*plat);
-boolean	EV_DoPlat(line_t *line,plattype_e type,int amount);
+boolean	EV_DoPlat(line_t *line,plattype_e type,int32_t amount);
 void	P_AddActivePlat(plat_t *plat);
 void	EV_StopPlat(line_t *line);
 
@@ -272,10 +272,10 @@ typedef struct
 	sector_t	*sector;
 	fixed_t		topheight;
 	fixed_t		speed;
-	int			direction;		// 1 = up, 0 = waiting at top, -1 = down
-	int			topwait;		// tics to wait at the top
+	int32_t		direction;		// 1 = up, 0 = waiting at top, -1 = down
+	int32_t		topwait;		// tics to wait at the top
 								// (keep in case a door going down is reset)
-	int			topcountdown;	// when it reaches 0, start going down
+	int32_t		topcountdown;	// when it reaches 0, start going down
 } vldoor_t;
 	
 #define	VDOORSPEED	FRACUNIT*2
@@ -313,9 +313,9 @@ typedef struct
 	fixed_t		bottomheight, topheight;
 	fixed_t		speed;
 	boolean		crush;
-	int			direction;		// 1 = up, 0 = waiting, -1 = down
-	int			tag;			// ID
-	int			olddirection;
+	int32_t		direction;		// 1 = up, 0 = waiting, -1 = down
+	int32_t		tag;			// ID
+	int32_t		olddirection;
 } ceiling_t;
 
 #define	CEILSPEED		FRACUNIT
@@ -360,8 +360,8 @@ typedef struct
 	floor_e		type;
 	boolean		crush;
 	sector_t	*sector;
-	int			direction;
-	int			newspecial;
+	int32_t		direction;
+	int32_t		newspecial;
 	int16_t		texture;
 	fixed_t		floordestheight;
 	fixed_t		speed;
@@ -377,7 +377,7 @@ typedef enum
 } result_e;
 
 result_e	T_MovePlane(sector_t *sector,fixed_t speed,
-			fixed_t dest,boolean crush,int floorOrCeiling,int direction);
+			fixed_t dest,boolean crush,int32_t floorOrCeiling,int32_t direction);
 
 boolean	EV_BuildStairs(line_t *line, boolean build8);
 boolean	EV_DoFloor(line_t *line,floor_e floortype);
@@ -391,4 +391,4 @@ void	T_MoveFloor(floormove_t *floor);
 ===============================================================================
 */
 
-void EV_Teleport(line_t *line, int side, mobj_t *thing);
+void EV_Teleport(line_t *line, int32_t side, mobj_t *thing);

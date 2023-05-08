@@ -34,7 +34,7 @@ static unsigned char cheat_xlate_table[256];
 //
 boolean cht_CheckCheat(cheatseq_t *cht, char key)
 {
-  int i;
+  int32_t i;
   boolean rc = false;
 
   if (firsttime)
@@ -97,7 +97,7 @@ static byte *wipe_scr_start, *wipe_scr_end, *wipe_scr;
 
 static void wipe_shittyColMajorXform(int16_t *array)
 {
-  int x, y;
+  int32_t x, y;
   int16_t *dest;
 
   dest = (int16_t*) Z_Malloc(SCREENWIDTH*SCREENHEIGHT, PU_STATIC, 0);
@@ -111,11 +111,11 @@ static void wipe_shittyColMajorXform(int16_t *array)
   Z_Free(dest);
 }
 
-static int *y;
+static int32_t *y;
 
 static void wipe_initMelt(void)
 {
-  int i, r;
+  int32_t i, r;
     
   // copy start screen to main screen
   memcpy(wipe_scr, wipe_scr_start, SCREENWIDTH*SCREENHEIGHT); 
@@ -125,7 +125,7 @@ static void wipe_initMelt(void)
   wipe_shittyColMajorXform((int16_t*)wipe_scr_end);
   // setup initial column positions
   // (y<0 => not ready to scroll yet)
-  y = (int *) Z_Malloc(SCREENWIDTH*sizeof(int), PU_STATIC, 0);
+  y = (int32_t *) Z_Malloc(SCREENWIDTH*sizeof(int32_t), PU_STATIC, 0);
   y[0] = -(M_Random()%16);
   for (i=1;i<SCREENWIDTH;i++)
   {
@@ -136,9 +136,9 @@ static void wipe_initMelt(void)
   }
 }
 
-static boolean wipe_doMelt(int ticks)
+static boolean wipe_doMelt(int32_t ticks)
 {
-  int i, j, dy, idx;
+  int32_t i, j, dy, idx;
   int16_t *s, *d;
   boolean done = true;
 
@@ -192,11 +192,11 @@ void wipe_EndScreen(void)
   V_DrawBlock(wipe_scr_start); // restore start scr.
 }
 
-boolean wipe_ScreenWipe(int ticks)
+boolean wipe_ScreenWipe(int32_t ticks)
 {
   boolean rc;
 
-  void V_MarkRect(int, int, int, int);
+  void V_MarkRect(int32_t, int32_t, int32_t, int32_t);
 
   // initial stuff
   if (!go)

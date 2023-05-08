@@ -35,7 +35,7 @@ static void HUlib_clearTextLine(hu_textline_t *t)
   t->needsupdate = true;
 }
 
-void HUlib_initTextLine(hu_textline_t *t, int x, int y, patch_t **f, int sc)
+void HUlib_initTextLine(hu_textline_t *t, int32_t x, int32_t y, patch_t **f, int32_t sc)
 {
   t->x = x;
   t->y = y;
@@ -70,7 +70,7 @@ static void HUlib_delCharFromTextLine(hu_textline_t *t)
 void HUlib_drawTextLine(hu_textline_t *l, boolean drawcursor)
 {
 
-  int i, w, x;
+  int32_t i, w, x;
   unsigned char c;
 
 // draw the new stuff
@@ -103,7 +103,7 @@ void HUlib_drawTextLine(hu_textline_t *l, boolean drawcursor)
 // sorta called by HU_Erase and just better darn get things straight
 void HUlib_eraseTextLine(hu_textline_t *l)
 {
-  int lh, y, yoffset;
+  int32_t lh, y, yoffset;
 
 // Only erases when NOT in automap and the screen is reduced,
 // and the text must either need updating or refreshing
@@ -128,10 +128,10 @@ void HUlib_eraseTextLine(hu_textline_t *l)
 
 }
 
-void HUlib_initSText(hu_stext_t *s, int x, int y, int h, patch_t **font, int startchar, boolean *on)
+void HUlib_initSText(hu_stext_t *s, int32_t x, int32_t y, int32_t h, patch_t **font, int32_t startchar, boolean *on)
 {
 
-  int i;
+  int32_t i;
 
   s->h = h;
   s->on = on;
@@ -147,7 +147,7 @@ void HUlib_initSText(hu_stext_t *s, int x, int y, int h, patch_t **font, int sta
 static void HUlib_addLineToSText(hu_stext_t *s)
 {
 
-  int i;
+  int32_t i;
 
   // add a clear line
   if (++s->cl == s->h)
@@ -173,7 +173,7 @@ void HUlib_addMessageToSText (hu_stext_t *s, char *prefix, char *msg)
 
 void HUlib_drawSText(hu_stext_t *s)
 {
-  int i, idx;
+  int32_t i, idx;
   hu_textline_t *l;
 
   if (!*s->on)
@@ -197,7 +197,7 @@ void HUlib_drawSText(hu_stext_t *s)
 void HUlib_eraseSText(hu_stext_t *s)
 {
 
-  int i;
+  int32_t i;
 
   for (i=0 ; i<s->h ; i++)
   {
@@ -209,7 +209,7 @@ void HUlib_eraseSText(hu_stext_t *s)
 
 }
 
-void HUlib_initIText(hu_itext_t *it, int x, int y, patch_t **font, int startchar, boolean *on)
+void HUlib_initIText(hu_itext_t *it, int32_t x, int32_t y, patch_t **font, int32_t startchar, boolean *on)
 {
   it->lm = 0; // default left margin is start of text
   it->on = on;

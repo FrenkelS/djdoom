@@ -27,10 +27,10 @@
 //						TELEPORTATION
 //
 //==================================================================
-void	EV_Teleport( line_t *line, int side, mobj_t *thing )
+void	EV_Teleport( line_t *line, int32_t side, mobj_t *thing )
 {
-	int		i;
-	int		tag;
+	int32_t		i;
+	int32_t		tag;
 	mobj_t		*m,*fog;
 	unsigned	an;
 	thinker_t	*thinker;

@@ -23,7 +23,7 @@
 #include "sounds.h"
 #include "soundst.h"
 
-void G_PlayerReborn (int player);
+void G_PlayerReborn (int32_t player);
 void P_SpawnMapThing (mapthing_t *mthing);
 
 /*
@@ -214,8 +214,8 @@ static void P_XYMovement (mobj_t *mo)
 
 static void P_ZMovement (mobj_t *mo)
 {
-	int		dist;
-	int		delta;
+	int32_t		dist;
+	int32_t		delta;
 //
 // check for smooth step up
 //
@@ -475,8 +475,8 @@ mobj_t *P_SpawnMobj (fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 ===============
 */
 static mapthing_t	itemrespawnque[ITEMQUESIZE];
-static int			itemrespawntime[ITEMQUESIZE];
-int			iquehead, iquetail;
+static int32_t		itemrespawntime[ITEMQUESIZE];
+int32_t				iquehead, iquetail;
 
 
 void P_RemoveMobj(mobj_t *mobj)
@@ -516,7 +516,7 @@ void P_RespawnSpecials (void)
 	subsector_t 	*ss; 
 	mobj_t			*mo;
 	mapthing_t		*mthing;
-	int				i;
+	int32_t			i;
 	
 	if (deathmatch != 2)
 		return;			// only respawn items in deathmatch
@@ -574,7 +574,7 @@ void P_SpawnPlayer (mapthing_t *mthing)
 	player_t	*p;
 	fixed_t		x,y,z;
 	mobj_t		*mobj;
-	int	i;
+	int32_t		i;
 
 	if (!playeringame[mthing->type-1])
 		return;						// not playing
@@ -632,7 +632,7 @@ void P_SpawnPlayer (mapthing_t *mthing)
 
 void P_SpawnMapThing (mapthing_t *mthing)
 {
-	int			i, bit;
+	int32_t		i, bit;
 	mobj_t		*mobj;
 	fixed_t		x,y,z;
 		
@@ -755,7 +755,7 @@ void P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z)
 ================
 */
 
-void P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int damage)
+void P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int32_t damage)
 {
 	mobj_t	*th;
 	
@@ -806,7 +806,7 @@ mobj_t *P_SpawnMissile (mobj_t *source, mobj_t *dest, mobjtype_t type)
 {
 	mobj_t		*th;
 	angle_t		an;
-	int			dist;
+	int32_t		dist;
 	
 	th = P_SpawnMobj (source->x,source->y, source->z + 4*8*FRACUNIT, type);
 	if (th->info->seesound)

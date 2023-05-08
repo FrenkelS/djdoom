@@ -40,7 +40,7 @@
 ================== 
 */ 
 
-static void P_SetPsprite (player_t *player, int position, statenum_t stnum) 
+static void P_SetPsprite (player_t *player, int32_t position, statenum_t stnum) 
 {
 	pspdef_t	*psp;
 	state_t	*state;
@@ -201,7 +201,7 @@ static void P_BringUpWeapon (player_t *player)
 static boolean P_CheckAmmo (player_t *player)
 {
 	ammotype_t	ammo;
-	int			count;
+	int32_t			count;
 
 	ammo = weaponinfo[player->readyweapon].ammo;
 	if (player->readyweapon == wp_bfg)
@@ -294,7 +294,7 @@ void P_DropWeapon (player_t *player)
 void A_WeaponReady (player_t *player, pspdef_t *psp)
 {	
 	statenum_t	new;
-	int			angle;
+	int32_t			angle;
 	
     // get out of attack state
 	if (player->mo->state == &states[S_PLAY_ATK1] || player->mo->state == &states[S_PLAY_ATK2] )
@@ -481,8 +481,8 @@ void A_GunFlash (player_t *player, pspdef_t *psp)
 void A_Punch (player_t *player, pspdef_t *psp) 
 {
 	angle_t		angle;
-	int			damage;
-	int			slope;
+	int32_t		damage;
+	int32_t		slope;
 
 	UNUSED(psp);
 
@@ -513,8 +513,8 @@ void A_Punch (player_t *player, pspdef_t *psp)
 void A_Saw (player_t *player, pspdef_t *psp) 
 {
 	angle_t		angle;
-	int			damage;
-	int			slope;
+	int32_t		damage;
+	int32_t		slope;
 
 	UNUSED(psp);
 
@@ -648,7 +648,7 @@ static void P_BulletSlope (mobj_t *mo)
 static void P_GunShot (mobj_t *mo, boolean accurate)
 {
 	angle_t		angle;
-	int			damage;
+	int32_t		damage;
 	
 	damage = 5*(P_Random ()%3+1);
 	angle = mo->angle;
@@ -689,7 +689,7 @@ void A_FirePistol (player_t *player, pspdef_t *psp)
  
 void A_FireShotgun (player_t *player, pspdef_t *psp) 
 {
-	int			i;
+	int32_t			i;
 
 	UNUSED(psp);
 
@@ -715,9 +715,9 @@ void A_FireShotgun (player_t *player, pspdef_t *psp)
  
 void A_FireShotgun2 (player_t *player, pspdef_t *psp) 
 {
-	int			i;
+	int32_t		i;
 	angle_t		angle;
-	int			damage;
+	int32_t		damage;
 
 	UNUSED(psp);
 
@@ -799,7 +799,7 @@ void A_Light2 (player_t *player, pspdef_t *psp)
 
 void A_BFGSpray (mobj_t *mo) 
 {
-	int			i, j, damage;
+	int32_t		i, j, damage;
 	angle_t		an;
 	
 	// offset angles from its attack angle
@@ -846,7 +846,7 @@ void A_BFGsound (player_t *player, pspdef_t *psp)
  
 void P_SetupPsprites (player_t *player) 
 {
-	int	i;
+	int32_t	i;
 	
 // remove all psprites
 
@@ -871,7 +871,7 @@ void P_SetupPsprites (player_t *player)
 
 void P_MovePsprites (player_t *player) 
 {
-	int			i;
+	int32_t			i;
 	pspdef_t	*psp;
 	state_t		*state;
 

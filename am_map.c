@@ -24,19 +24,19 @@
 #include "am_map.h"
 #include "am_data.h"
 
-static int cheating = 0;
-static int grid = 0;
+static int32_t cheating = 0;
+static int32_t grid = 0;
 
-static int leveljuststarted = 1; // kluge until AM_LevelInit() is called
+static int32_t leveljuststarted = 1; // kluge until AM_LevelInit() is called
 
 boolean    automapactive = false;
-static int finit_width = SCREENWIDTH;
-static int finit_height = SCREENHEIGHT-32;
-static int f_x, f_y; // location of window on screen
-static int f_w, f_h; // size of window on screen
-static int lightlev; // used for funky strobing effect
+static int32_t finit_width = SCREENWIDTH;
+static int32_t finit_height = SCREENHEIGHT-32;
+static int32_t f_x, f_y; // location of window on screen
+static int32_t f_w, f_h; // size of window on screen
+static int32_t lightlev; // used for funky strobing effect
 static byte *fb; // pseudo-frame buffer
-static int amclock;
+static int32_t amclock;
 
 static mpoint_t m_paninc; // how far the window pans each tic (map coords)
 static fixed_t mtof_zoommul; // how far the window zooms in each tic (map coords)
@@ -70,9 +70,9 @@ static player_t *plr; // the player represented by an arrow
 
 static patch_t *marknums[10]; // numbers used for marking by the automap
 static mpoint_t markpoints[AM_NUMMARKPOINTS]; // where the points are
-static int markpointnum = 0; // next point to be assigned
+static int32_t markpointnum = 0; // next point to be assigned
 
-static int followplayer = 1; // specifies whether to follow the player around
+static int32_t followplayer = 1; // specifies whether to follow the player around
 
 #if APPVER_CHEX
 static unsigned char cheat_amap_seq[] =
@@ -87,7 +87,7 @@ static cheatseq_t cheat_amap = { cheat_amap_seq, 0 };
 extern boolean viewactive;
 extern boolean singledemo;
 //extern byte screens[][SCREENWIDTH*SCREENHEIGHT];
-void V_MarkRect (int x, int y, int width, int height);
+void V_MarkRect (int32_t x, int32_t y, int32_t width, int32_t height);
 
 
 static void AM_activateNewScale(void)
@@ -143,7 +143,7 @@ static void AM_addMark(void)
 
 static void AM_findMinMaxBoundaries(void)
 {
-  int i;
+  int32_t i;
   fixed_t a, b;
 
   min_x = min_y = MAXINT;
@@ -195,7 +195,7 @@ static void AM_changeWindowLoc(void)
 
 static void AM_initVariables(void)
 {
-  int pnum;
+  int32_t pnum;
   static event_t st_notify = { ev_keyup, AM_MSGENTERED };
 
   automapactive = true;
@@ -233,7 +233,7 @@ static void AM_initVariables(void)
 
 static void AM_loadPics(void)
 {
-  int i;
+  int32_t i;
   char namebuf[9];
   for (i=0;i<10;i++)
   {
@@ -244,14 +244,14 @@ static void AM_loadPics(void)
 
 static void AM_unloadPics(void)
 {
-  int i;
+  int32_t i;
   for (i=0;i<10;i++) Z_ChangeTag(marknums[i], PU_CACHE);
 
 }
 
 static void AM_clearMarks(void)
 {
-  int i;
+  int32_t i;
   for (i=0;i<AM_NUMMARKPOINTS;i++) markpoints[i].x = -1; // means empty
   markpointnum = 0;
 }
@@ -271,7 +271,7 @@ static void AM_LevelInit(void)
   AM_clearMarks();
 
   AM_findMinMaxBoundaries();
-  scale_mtof = FixedDiv(min_scale_mtof, (int) (0.7*FRACUNIT));
+  scale_mtof = FixedDiv(min_scale_mtof, (int32_t) (0.7*FRACUNIT));
   if (scale_mtof > max_scale_mtof) scale_mtof = min_scale_mtof;
   scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
 }
@@ -290,7 +290,7 @@ void AM_Stop (void)
 
 static void AM_Start (void)
 {
-  static int lastlevel = -1, lastepisode = -1;
+  static int32_t lastlevel = -1, lastepisode = -1;
 
   if (!stopped) AM_Stop();
   stopped = false;
@@ -324,8 +324,8 @@ static void AM_maxOutWindowScale(void)
 
 boolean AM_Responder (event_t *ev)
 {
-  int rc;
-  static int bigstate=0;
+  boolean rc;
+  static int32_t bigstate=0;
   static char buffer[20];
 
   rc = false;
@@ -490,7 +490,7 @@ void AM_Ticker (void)
   if (m_paninc.x || m_paninc.y) AM_changeWindowLoc();
 }
 
-static void AM_clearFB(int color)
+static void AM_clearFB(int32_t color)
 {
   memset(fb, color, f_w*f_h);
 }
@@ -502,9 +502,9 @@ static void AM_clearFB(int color)
 static boolean AM_clipMline(mline_t *ml, fline_t *fl)
 {
   enum { LEFT=1, RIGHT=2, BOTTOM=4, TOP=8 };
-  register int outcode1 = 0, outcode2 = 0, outside;
+  register int32_t outcode1 = 0, outcode2 = 0, outside;
   fpoint_t tmp;
-  int dx, dy;
+  int32_t dx, dy;
 
 #define DOOUTCODE(oc, mx, my) \
   (oc) = 0; \
@@ -587,11 +587,11 @@ static boolean AM_clipMline(mline_t *ml, fline_t *fl)
 
 // Classic Bresenham w/ whatever optimizations I need for speed
 
-static void AM_drawFline(fline_t *fl, int color)
+static void AM_drawFline(fline_t *fl, int32_t color)
 {
 
-  register int x, y, dx, dy, sx, sy, ax, ay, d;
-  static int fuck = 0;
+  register int32_t x, y, dx, dy, sx, sy, ax, ay, d;
+  static int32_t fuck = 0;
 
   	// For debugging only
   if (   fl->a.x < 0 || fl->a.x >= f_w
@@ -648,7 +648,7 @@ static void AM_drawFline(fline_t *fl, int color)
   }
 }
 
-static void AM_drawMline(mline_t *ml, int color)
+static void AM_drawMline(mline_t *ml, int32_t color)
 {
   static fline_t fl;
 
@@ -657,7 +657,7 @@ static void AM_drawMline(mline_t *ml, int color)
 
 }
 
-static void AM_drawGrid(int color)
+static void AM_drawGrid(int32_t color)
 {
   fixed_t x, y;
   fixed_t start, end;
@@ -700,7 +700,7 @@ static void AM_drawGrid(int color)
 
 static void AM_drawWalls(void)
 {
-  int i;
+  int32_t i;
   static mline_t l;
 
   for (i=0;i<numlines;i++)
@@ -753,10 +753,10 @@ static void AM_rotate(fixed_t *x, fixed_t *y, angle_t a)
   *x = tmpx;
 }
 
-static void AM_drawLineCharacter(mline_t *lineguy, int lineguylines, fixed_t scale,
-  angle_t angle, int color, fixed_t x, fixed_t y)
+static void AM_drawLineCharacter(mline_t *lineguy, int32_t lineguylines, fixed_t scale,
+  angle_t angle, int32_t color, fixed_t x, fixed_t y)
 {
-  int i;
+  int32_t i;
   mline_t l;
 
   for (i=0;i<lineguylines;i++)
@@ -791,11 +791,11 @@ static void AM_drawLineCharacter(mline_t *lineguy, int lineguylines, fixed_t sca
 static void AM_drawPlayers(void)
 {
 
-  int i;
+  int32_t i;
   player_t *p;
-  static int their_colors[] = { GREENS, GRAYS, BROWNS, REDS };
-  int their_color = -1;
-  int color;
+  static int32_t their_colors[] = { GREENS, GRAYS, BROWNS, REDS };
+  int32_t their_color = -1;
+  int32_t color;
 
   if (!netgame)
   {
@@ -820,9 +820,9 @@ static void AM_drawPlayers(void)
   }
 }
 
-static void AM_drawThings(int colors)
+static void AM_drawThings(int32_t colors)
 {
-  int i;
+  int32_t i;
   mobj_t *t;
 
   for (i=0;i<numsectors;i++)
@@ -839,7 +839,7 @@ static void AM_drawThings(int colors)
 
 static void AM_drawMarks(void)
 {
-  int i, fx, fy, w, h;
+  int32_t i, fx, fy, w, h;
 
   for (i=0;i<AM_NUMMARKPOINTS;i++)
   {
@@ -857,7 +857,7 @@ static void AM_drawMarks(void)
   }
 }
 
-static void AM_drawCrosshair(int color)
+static void AM_drawCrosshair(int32_t color)
 {
   fb[(f_w*(f_h+1))/2] = color; // single point for now
 }

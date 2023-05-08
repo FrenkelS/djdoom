@@ -64,7 +64,7 @@ static void P_Thrust (player_t *player, angle_t angle, fixed_t move)
 
 static void P_CalcHeight (player_t *player)
 {
-	int			angle;
+	int32_t		angle;
 	fixed_t		bob;
 	
 

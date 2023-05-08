@@ -38,7 +38,7 @@ files only know about ccordinates, not the architecture of the frame buffer.
 
 */
 
-int viewwidth, scaledviewwidth, viewheight, viewwindowx, viewwindowy;
+int32_t viewwidth, scaledviewwidth, viewheight, viewwindowx, viewwindowy;
 
 /*
 ==================
@@ -51,9 +51,9 @@ int viewwidth, scaledviewwidth, viewheight, viewwindowx, viewwindowy;
 */
 
 lighttable_t	*dc_colormap	__attribute__ ((externally_visible));
-int				dc_x			__attribute__ ((externally_visible));
-int				dc_yl			__attribute__ ((externally_visible));
-int				dc_yh			__attribute__ ((externally_visible));
+int32_t			dc_x			__attribute__ ((externally_visible));
+int32_t			dc_yl			__attribute__ ((externally_visible));
+int32_t			dc_yh			__attribute__ ((externally_visible));
 fixed_t			dc_iscale		__attribute__ ((externally_visible));
 fixed_t			dc_texturemid	__attribute__ ((externally_visible));
 byte			*dc_source		__attribute__ ((externally_visible));		// first pixel in a column (possibly virtual)
@@ -61,7 +61,7 @@ byte			*dc_source		__attribute__ ((externally_visible));		// first pixel in a co
 #if defined C_ONLY
 void R_DrawColumn (void)
 {
-	int			count;
+	int32_t		count;
 	byte		*dest;
 	fixed_t		frac, fracstep;	
 
@@ -90,7 +90,7 @@ void R_DrawColumn (void)
 
 void R_DrawColumnLow (void)
 {
-	int			count;
+	int32_t		count;
 	byte		*dest;
 	fixed_t		frac, fracstep;	
 
@@ -99,7 +99,7 @@ void R_DrawColumnLow (void)
 		return;
 				
 #ifdef RANGECHECK
-	if ((unsigned)dc_x >= SCREENWIDTH || dc_yl < 0 || dc_yh >= SCREENHEIGHT)
+	if ((uint32_t)dc_x >= SCREENWIDTH || dc_yl < 0 || dc_yh >= SCREENHEIGHT)
 		I_Error ("R_DrawColumnLow: %i to %i at %i", dc_yl, dc_yh, dc_x);
 #endif
 
@@ -124,14 +124,14 @@ void R_DrawColumnLow (void)
 
 #define FUZZTABLE	50
 #define FUZZOFF	(PLANEWIDTH)
-static const int		fuzzoffset[FUZZTABLE] = {
+static const int32_t		fuzzoffset[FUZZTABLE] = {
 FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF
 };
-static int fuzzpos = 0;
+static int32_t fuzzpos = 0;
 
 void R_DrawFuzzColumn (void)
 {
-	int			count;
+	int32_t		count;
 	byte		*dest;
 	fixed_t		frac, fracstep;	
 
@@ -197,7 +197,7 @@ byte *translationtables;
 
 void R_DrawTranslatedColumn (void)
 {
-	int			count;
+	int32_t		count;
 	byte		*dest;
 	fixed_t		frac, fracstep;	
 
@@ -246,10 +246,10 @@ void R_DrawTranslatedColumn (void)
 
 void R_InitTranslationTables (void)
 {
-	int		i;
+	int32_t		i;
 
 	translationtables = Z_Malloc (256*3+255, PU_STATIC, 0);
-	translationtables = (byte *)(( (int)translationtables + 255 )& ~255);
+	translationtables = (byte *)(( (int32_t)translationtables + 255 )& ~255);
 
 //
 // translate just the 16 green colors
@@ -278,9 +278,9 @@ void R_InitTranslationTables (void)
 ================
 */
 
-int				ds_y			__attribute__ ((externally_visible));
-int				ds_x1			__attribute__ ((externally_visible));
-int				ds_x2			__attribute__ ((externally_visible));
+int32_t			ds_y			__attribute__ ((externally_visible));
+int32_t			ds_x1			__attribute__ ((externally_visible));
+int32_t			ds_x2			__attribute__ ((externally_visible));
 lighttable_t	*ds_colormap	__attribute__ ((externally_visible));
 fixed_t			ds_xfrac		__attribute__ ((externally_visible));
 fixed_t			ds_yfrac		__attribute__ ((externally_visible));
@@ -294,18 +294,18 @@ void R_DrawSpan (void)
     fixed_t		xfrac;
     fixed_t		yfrac; 
     byte*		dest; 
-    int			spot; 
-        int                     i;
-        int                     prt;
-        int                     dsp_x1;
-        int                     dsp_x2;
-        int                     countp;
+    int32_t		spot; 
+        int32_t                     i;
+        int32_t                     prt;
+        int32_t                     dsp_x1;
+        int32_t                     dsp_x2;
+        int32_t                     countp;
          
 #ifdef RANGECHECK 
     if (ds_x2 < ds_x1
         || ds_x1<0
         || ds_x2>=SCREENWIDTH  
-        || (unsigned)ds_y>SCREENHEIGHT)
+        || (uint32_t)ds_y>SCREENHEIGHT)
     {
         I_Error( "R_DrawSpan: %i to %i at %i",
                  ds_x1,ds_x2,ds_y);
@@ -348,17 +348,17 @@ void R_DrawSpanLow (void)
     fixed_t		xfrac;
     fixed_t		yfrac; 
     byte*		dest; 
-    int			spot; 
-        int                     prt;
-        int                     dsp_x1;
-        int                     dsp_x2;
-        int                     countp;
+    int32_t		spot; 
+        int32_t                     prt;
+        int32_t                     dsp_x1;
+        int32_t                     dsp_x2;
+        int32_t                     countp;
          
 #ifdef RANGECHECK 
     if (ds_x2 < ds_x1
         || ds_x1<0
         || ds_x2>=SCREENWIDTH  
-        || (unsigned)ds_y>SCREENHEIGHT)
+        || (uint32_t)ds_y>SCREENHEIGHT)
     {
         I_Error( "R_DrawSpanLow: %i to %i at %i",
                  ds_x1,ds_x2,ds_y);
@@ -429,7 +429,7 @@ void R_DrawSpanLow (void)
 =================
 */
 
-void R_InitBuffer (int width, int height)
+void R_InitBuffer (int32_t width, int32_t height)
 {
 	viewwindowx = (SCREENWIDTH-width) >> 1;
 
@@ -455,8 +455,8 @@ void R_InitBuffer (int width, int height)
 void R_FillBackScreen (void)
 {
 	byte		*src, *dest;
-	int			i, j;
-	int			x, y;
+	int32_t		i, j;
+	int32_t		x, y;
 	patch_t		*patch;
 	char		name1[] = "FLOOR7_2";
 	char		name2[] = "GRNROCK";	
@@ -516,9 +516,9 @@ void R_FillBackScreen (void)
 }
 
 
-void R_VideoErase (unsigned ofs, int count)
+void R_VideoErase (uint32_t ofs, int32_t count)
 { 
-	int		i;
+	int32_t		i;
 	byte	*src, *dest;
 	outp (SC_INDEX, SC_MAPMASK);
 	outp (SC_INDEX+1, 15);
@@ -547,7 +547,7 @@ void R_VideoErase (unsigned ofs, int count)
 
 void R_DrawViewBorder (void)
 { 
-    int		top, side, ofs, i;
+    int32_t		top, side, ofs, i;
  
 	if (scaledviewwidth == SCREENWIDTH)
 		return;

@@ -67,16 +67,16 @@ typedef	struct
 	int16_t		lightlevel;
 	int16_t		special, tag;
 
-	int			soundtraversed;		// 0 = untraversed, 1,2 = sndlines -1
+	int32_t		soundtraversed;		// 0 = untraversed, 1,2 = sndlines -1
 	mobj_t		*soundtarget;		// thing that made a sound (or null)
 	
-	int			blockbox[4];		// mapblock bounding box for height changes
+	int32_t		blockbox[4];		// mapblock bounding box for height changes
 	degenmobj_t	soundorg;			// for any sounds played by the sector
 
-	int			validcount;			// if == validcount, already checked
+	int32_t		validcount;			// if == validcount, already checked
 	mobj_t		*thinglist;			// list of mobjs in sector
 	void		*specialdata;		// thinker_t for reversable actions
-	int			linecount;
+	int32_t		linecount;
 	struct line_s	**lines;			// [linecount] size
 } sector_t;
 
@@ -100,7 +100,7 @@ typedef struct line_s
 	fixed_t		bbox[4];
 	slopetype_t	slopetype;			// to aid move clipping
 	sector_t	*frontsector, *backsector;
-	int			validcount;			// if == validcount, already checked
+	int32_t		validcount;			// if == validcount, already checked
 	void		*specialdata;		// thinker_t for reversable actions
 } line_t;
 
@@ -147,9 +147,9 @@ typedef byte	lighttable_t;		// this could be wider for >8 bit display
 typedef struct
 {
 	fixed_t		height;
-	int			picnum;
-	int			lightlevel;
-	int			minx, maxx;
+	int32_t		picnum;
+	int32_t		lightlevel;
+	int32_t		minx, maxx;
 	byte		pad1;						// leave pads for [minx-1]/[maxx+1]
 	byte		top[SCREENWIDTH];
 	byte		pad2;
@@ -161,9 +161,9 @@ typedef struct
 typedef struct drawseg_s
 {
 	seg_t		*curline;
-	int			x1, x2;
+	int32_t		x1, x2;
 	fixed_t		scale1, scale2, scalestep;
-	int			silhouette;			// 0=none, 1=bottom, 2=top, 3=both
+	int32_t		silhouette;			// 0=none, 1=bottom, 2=top, 3=both
 	fixed_t		bsilheight;			// don't clip sprites above this
 	fixed_t		tsilheight;			// don't clip sprites below this
 // pointers to lists for sprite clipping
@@ -183,16 +183,16 @@ typedef struct drawseg_s
 typedef struct vissprite_s
 {
 	struct vissprite_s	*prev, *next;
-	int			x1, x2;
-	fixed_t		gx, gy;			// for line side calculation
-	fixed_t		gz, gzt;		// global bottom / top for silhouette clipping
-	fixed_t		startfrac;		// horizontal position of x1
-	fixed_t		scale;
-	fixed_t		xiscale;		// negative if flipped
-	fixed_t		texturemid;
-	int			patch;
-	lighttable_t	*colormap;
-	int			mobjflags;		// for color translation and shadow draw
+	int32_t				x1, x2;
+	fixed_t				gx, gy;			// for line side calculation
+	fixed_t				gz, gzt;		// global bottom / top for silhouette clipping
+	fixed_t				startfrac;		// horizontal position of x1
+	fixed_t				scale;
+	fixed_t				xiscale;		// negative if flipped
+	fixed_t				texturemid;
+	int32_t				patch;
+	lighttable_t		*colormap;
+	int32_t				mobjflags;		// for color translation and shadow draw
 } vissprite_t;
 
 
@@ -215,7 +215,7 @@ typedef struct
 
 typedef struct
 {
-	int				numframes;
+	int32_t				numframes;
 	spriteframe_t	*spriteframes;
 } spritedef_t;
 
@@ -223,24 +223,24 @@ extern	spritedef_t		*sprites;
 
 //=============================================================================
 
-extern	int			numvertexes;
+extern	int32_t		numvertexes;
 extern	vertex_t	*vertexes;
 
 extern	seg_t		*segs;
 
-extern	int			numsectors;
+extern	int32_t		numsectors;
 extern	sector_t	*sectors;
 
-extern	int			numsubsectors;
+extern	int32_t		numsubsectors;
 extern	subsector_t	*subsectors;
 
-extern	int			numnodes;
+extern	int32_t		numnodes;
 extern	node_t		*nodes;
 
-extern	int			numlines;
+extern	int32_t		numlines;
 extern	line_t		*lines;
 
-extern	int			numsides;
+extern	int32_t		numsides;
 extern	side_t		*sides;
 
 
@@ -252,7 +252,7 @@ extern	player_t	*viewplayer;
 
 extern	angle_t		clipangle;
 
-extern	int			viewangletox[FINEANGLES/2];
+extern	int32_t		viewangletox[FINEANGLES/2];
 extern	angle_t		xtoviewangle[SCREENWIDTH+1];
 extern	fixed_t		finetangent[FINEANGLES/2];
 
@@ -262,31 +262,31 @@ extern	angle_t		rw_normalangle;
 //
 // R_main.c
 //
-extern	int				viewwidth, viewheight, viewwindowx, viewwindowy;
-extern	int				centery;
+extern	int32_t			viewwidth, viewheight, viewwindowx, viewwindowy;
+extern	int32_t			centery;
 extern	fixed_t			centerxfrac;
 extern	fixed_t			centeryfrac;
 extern	fixed_t			projection;
 
-extern	int				validcount;
+extern	int32_t			validcount;
 
-extern	int				sscount, linecount, loopcount;
+extern	int32_t			sscount, linecount, loopcount;
 extern	lighttable_t	*scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
 extern	lighttable_t	*zlight[LIGHTLEVELS][MAXLIGHTZ];
 
-extern	int				extralight;
+extern	int32_t			extralight;
 extern	lighttable_t	*fixedcolormap;
 
 extern	fixed_t			viewcos, viewsin;
 
-extern	int				detailshift;		// 0 = high, 1 = low
+extern	int32_t			detailshift;		// 0 = high, 1 = low
 
 extern	void		(*colfunc) (void);
 extern	void		(*basecolfunc) (void);
 extern	void		(*fuzzcolfunc) (void);
 extern	void		(*spanfunc) (void);
 
-int		R_PointOnSide (fixed_t x, fixed_t y, node_t *node);
+int32_t	R_PointOnSide (fixed_t x, fixed_t y, node_t *node);
 boolean	R_PointOnSegSide (fixed_t x, fixed_t y, seg_t *line);
 angle_t R_PointToAngle (fixed_t x, fixed_t y);
 angle_t R_PointToAngle2 (fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2);
@@ -307,25 +307,25 @@ extern	drawseg_t	drawsegs[MAXDRAWSEGS], *ds_p;
 
 extern	lighttable_t	**hscalelight, **vscalelight, **dscalelight;
 
-typedef void (*drawfunc_t) (int start, int stop);
+typedef void (*drawfunc_t) (int32_t start, int32_t stop);
 void R_ClearClipSegs (void);
 
 void R_ClearDrawSegs (void);
 void R_InitSkyMap (void);
-void R_RenderBSPNode (int bspnum);
+void R_RenderBSPNode (int32_t bspnum);
 
 //
 // R_segs.c
 //
-extern	int			rw_angle1;		// angle to line origin
+extern	int32_t			rw_angle1;		// angle to line origin
 
-void R_RenderMaskedSegRange (drawseg_t *ds, int x1, int x2);
+void R_RenderMaskedSegRange (drawseg_t *ds, int32_t x1, int32_t x2);
 
 
 //
 // R_plane.c
 //
-extern	int			skyflatnum;
+extern	int32_t		skyflatnum;
 
 extern	int16_t		*lastopening;
 
@@ -338,8 +338,8 @@ extern	fixed_t		distscale[SCREENWIDTH];
 void R_ClearPlanes (void);
 void R_DrawPlanes (void);
 
-visplane_t *R_FindPlane (fixed_t height, int picnum, int lightlevel);
-visplane_t *R_CheckPlane (visplane_t *pl, int start, int stop);
+visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel);
+visplane_t *R_CheckPlane (visplane_t *pl, int32_t start, int32_t stop);
 
 
 //
@@ -350,16 +350,16 @@ extern	fixed_t		*spritewidth;		// needed for pre rendering (fracs)
 extern	fixed_t		*spriteoffset;
 extern	fixed_t		*spritetopoffset;
 extern	lighttable_t	*colormaps;
-extern	int		viewwidth, scaledviewwidth, viewheight;
-extern	int			firstflat;
-//extern	int			numflats;
+extern	int32_t		viewwidth, scaledviewwidth, viewheight;
+extern	int32_t			firstflat;
+//extern	int32_t			numflats;
 
-extern	int			*flattranslation;		// for global animation
-extern	int			*texturetranslation;	// for global animation
+extern	int32_t			*flattranslation;		// for global animation
+extern	int32_t			*texturetranslation;	// for global animation
 
-extern	int		firstspritelump, lastspritelump;
+extern	int32_t		firstspritelump, lastspritelump;
 
-byte	*R_GetColumn (int tex, int col);
+byte	*R_GetColumn (int32_t tex, int32_t col);
 void	R_InitData (void);
 void R_PrecacheLevel (void);
 
@@ -386,7 +386,7 @@ void	R_DrawSprites (void);
 void 	R_InitSprites (void);
 void	R_ClearSprites (void);
 void	R_DrawMasked (void);
-void	R_ClipVisSprite (vissprite_t *vis, int xl, int xh);
+void	R_ClipVisSprite (vissprite_t *vis, int32_t xl, int32_t xh);
 
 //=============================================================================
 //
@@ -395,9 +395,9 @@ void	R_ClipVisSprite (vissprite_t *vis, int xl, int xh);
 //=============================================================================
 
 extern	lighttable_t	*dc_colormap;
-extern	int				dc_x;
-extern	int				dc_yl;
-extern	int				dc_yh;
+extern	int32_t			dc_x;
+extern	int32_t			dc_yl;
+extern	int32_t			dc_yh;
 extern	fixed_t			dc_iscale;
 extern	fixed_t			dc_texturemid;
 extern	byte			*dc_source;		// first pixel in a column
@@ -407,9 +407,9 @@ void 	R_DrawColumnLow (void);
 void 	R_DrawFuzzColumn (void);
 void	R_DrawTranslatedColumn (void);
 
-extern	int				ds_y;
-extern	int				ds_x1;
-extern	int				ds_x2;
+extern	int32_t			ds_y;
+extern	int32_t			ds_x1;
+extern	int32_t			ds_x2;
 extern	lighttable_t	*ds_colormap;
 extern	fixed_t			ds_xfrac;
 extern	fixed_t			ds_yfrac;
@@ -423,10 +423,10 @@ extern	byte	*dc_translation;
 void 	R_DrawSpan (void);
 void 	R_DrawSpanLow (void);
 
-void 	R_InitBuffer (int width, int height);
+void 	R_InitBuffer (int32_t width, int32_t height);
 void	R_InitTranslationTables (void);
 void R_FillBackScreen (void);
-void	R_VideoErase (unsigned ofs, int count);
+void	R_VideoErase (uint32_t ofs, int32_t count);
 void R_DrawViewBorder (void);
 
 #endif		// __R_LOCAL__

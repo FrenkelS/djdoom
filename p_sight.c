@@ -37,7 +37,7 @@ static divline_t	strace;			// from t1 to t2
 static fixed_t		t2x;
 static fixed_t		t2y;
 
-static int		sightcounts[2];
+static int32_t		sightcounts[2];
 
 
 /*
@@ -50,7 +50,7 @@ static int		sightcounts[2];
 ==============
 */
 
-static int P_DivlineSide (fixed_t x, fixed_t y, divline_t *node)
+static int32_t P_DivlineSide (fixed_t x, fixed_t y, divline_t *node)
 {
 	fixed_t	dx, dy;
 	fixed_t	left, right;
@@ -123,12 +123,12 @@ static fixed_t P_InterceptVector2 (divline_t *v2, divline_t *v1)
 ==============
 */
 
-static boolean P_CrossSubsector (int num)
+static boolean P_CrossSubsector (int32_t num)
 {
 	seg_t			*seg;
 	line_t			*line;
-	int				s1, s2;
-	int				count;
+	int32_t			s1, s2;
+	int32_t			count;
 	subsector_t		*sub;
 	sector_t		*front, *back;
 	fixed_t			opentop, openbottom;
@@ -242,10 +242,10 @@ static boolean P_CrossSubsector (int num)
 ==============
 */
 
-static boolean P_CrossBSPNode (int bspnum)
+static boolean P_CrossBSPNode (int32_t bspnum)
 {
 	node_t	*bsp;
-	int		side;
+	int32_t	side;
 
 	if (bspnum & NF_SUBSECTOR)
 	{
@@ -293,8 +293,8 @@ static boolean P_CrossBSPNode (int bspnum)
 
 boolean P_CheckSight (mobj_t *t1, mobj_t *t2)
 {
-	int		s1, s2;
-	int		pnum, bytenum, bitnum;
+	int32_t		s1, s2;
+	int32_t		pnum, bytenum, bitnum;
 
 //
 // check for trivial rejection

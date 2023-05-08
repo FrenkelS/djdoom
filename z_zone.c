@@ -40,7 +40,7 @@ automatically if needed
 
 typedef struct
 {
-	int		size;		// total bytes malloced, including header
+	int32_t		size;		// total bytes malloced, including header
 	memblock_t	blocklist;		// start / end cap for linked list
 	memblock_t	*rover;
 } memzone_t;
@@ -60,7 +60,7 @@ static memzone_t *mainzone;
 void Z_Init (void)
 {
 	memblock_t	*block;
-	int		size;
+	int32_t		size;
 
 	mainzone = (memzone_t *)I_ZoneBase (&size);
 	mainzone->size = size;
@@ -135,9 +135,9 @@ void Z_Free (void *ptr)
 
 #define MINFRAGMENT	64
 
-void *Z_Malloc (int size, int tag, void *user)
+void *Z_Malloc (int32_t size, int32_t tag, void *user)
 {
-	int		extra;
+	int32_t		extra;
 	memblock_t	*start, *rover, *new, *base;
 
 	size = (size + 3) & ~3;
@@ -225,7 +225,7 @@ void *Z_Malloc (int size, int tag, void *user)
 ========================
 */
 
-void Z_FreeTags (int lowtag, int hightag)
+void Z_FreeTags (int32_t lowtag, int32_t hightag)
 {
 	memblock_t	*block, *next;
 	
@@ -274,14 +274,14 @@ void Z_CheckHeap (void)
 ========================
 */
 
-void Z_ChangeTag2 (void *ptr, int tag)
+void Z_ChangeTag2 (void *ptr, int32_t tag)
 {
 	memblock_t	*block;
 	
 	block = (memblock_t *) ( (byte *)ptr - sizeof(memblock_t));
 	if (block->id != ZONEID)
 		I_Error ("Z_ChangeTag: freed a pointer without ZONEID");
-	if (tag >= PU_PURGELEVEL && (unsigned)block->user < 0x100)
+	if (tag >= PU_PURGELEVEL && (uint32_t)block->user < 0x100)
 		I_Error ("Z_ChangeTag: an owner is required for purgable blocks");
 	block->tag = tag;
 }

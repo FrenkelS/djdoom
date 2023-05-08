@@ -25,10 +25,10 @@
 void G_CheckDemoStatus (void);
 static void G_ReadDemoTiccmd (ticcmd_t *cmd);
 static void G_WriteDemoTiccmd (ticcmd_t *cmd);
-void G_PlayerReborn (int player);
-void G_InitNew (skill_t skill, int episode, int map);
+void G_PlayerReborn (int32_t player);
+void G_InitNew (skill_t skill, int32_t episode, int32_t map);
 
-static void G_DoReborn (int playernum);
+static void G_DoReborn (int32_t playernum);
 
 static void G_DoLoadLevel (void);
 static void G_DoNewGame (void);
@@ -46,8 +46,8 @@ gameaction_t    gameaction;
 gamestate_t     gamestate;
 skill_t         gameskill;
 boolean         respawnmonsters;
-int             gameepisode;
-int             gamemap;
+int32_t         gameepisode;
+int32_t         gamemap;
 
 boolean         paused;
 static boolean         sendpause;              // send a pause event next tic
@@ -57,7 +57,7 @@ boolean         usergame;               // ok to save / end game
 static boolean         timingdemo;             // if true, exit with report on completion
 boolean         nodrawers;              // for comparative timing purposes 
 static boolean         noblit;                 // for comparative timing purposes 
-static int             starttime;              // for comparative timing purposes
+static int32_t             starttime;              // for comparative timing purposes
 
 boolean         viewactive;
 
@@ -66,11 +66,11 @@ boolean         netgame;                // only true if packets are broadcast
 boolean         playeringame[MAXPLAYERS];
 player_t        players[MAXPLAYERS];
 
-int             consoleplayer;          // player taking events and displaying
-int             displayplayer;          // view being displayed
-int             gametic;
-static int             levelstarttic;          // gametic at level start
-int             totalkills, totalitems, totalsecret;    // for intermission
+int32_t             consoleplayer;          // player taking events and displaying
+int32_t             displayplayer;          // view being displayed
+int32_t             gametic;
+static int32_t             levelstarttic;          // gametic at level start
+int32_t             totalkills, totalitems, totalsecret;    // for intermission
 
 static char            demoname[32];
 boolean         demorecording;
@@ -92,18 +92,18 @@ byte                   *save_p;
 //
 // controls (have defaults)
 //
-int             key_right, key_left, key_up, key_down;
-int             key_strafeleft, key_straferight;
-int             key_fire, key_use, key_strafe, key_speed;
+int32_t             key_right, key_left, key_up, key_down;
+int32_t             key_strafeleft, key_straferight;
+int32_t             key_fire, key_use, key_strafe, key_speed;
 
-int             mousebfire;
-int             mousebstrafe;
-int             mousebforward;
+int32_t             mousebfire;
+int32_t             mousebstrafe;
+int32_t             mousebforward;
 
-int             joybfire;
-int             joybstrafe;
-int             joybuse;
-int             joybspeed;
+int32_t             joybfire;
+int32_t             joybstrafe;
+int32_t             joybuse;
+int32_t             joybspeed;
 
 
 
@@ -118,28 +118,28 @@ static fixed_t         angleturn[3] = {640, 1280, 320};     // + slow turn
 
 #define NUMKEYS 256
 static boolean         gamekeydown[NUMKEYS];
-static int             turnheld;                   // for accelerative turning
+static int32_t         turnheld;                   // for accelerative turning
 
 
 static boolean         mousearray[4];
 static boolean         *mousebuttons = &mousearray[1];
 	// allow [-1]
-static int             mousex, mousey;             // mouse values are used once
-static int             dclicktime, dclickstate, dclicks;
-static int             dclicktime2, dclickstate2, dclicks2;
+static int32_t         mousex, mousey;             // mouse values are used once
+static int32_t         dclicktime, dclickstate, dclicks;
+static int32_t         dclicktime2, dclickstate2, dclicks2;
 
-static int             joyxmove, joyymove;         // joystick values are repeated
+static int32_t         joyxmove, joyymove;         // joystick values are repeated
 static boolean         joyarray[5];
 static boolean         *joybuttons = &joyarray[1];     // allow [-1]
 
-static int     savegameslot;
+static int32_t savegameslot;
 static char    savedescription[32];
  
  
 #define	BODYQUESIZE	32
 
 static mobj_t *bodyque[BODYQUESIZE]; 
-int bodyqueslot; 
+int32_t bodyqueslot; 
  
 void *statcopy;				// for statistics driver
 
@@ -157,10 +157,10 @@ void *statcopy;				// for statistics driver
 
 void G_BuildTiccmd (ticcmd_t *cmd)
 {
-	int             i;
+	int32_t         i;
 	boolean         strafe, bstrafe;
-	int             speed, tspeed;
-	int             forward, side;
+	int32_t         speed, tspeed;
+	int32_t         forward, side;
 
 	ticcmd_t		*base;
 
@@ -369,7 +369,7 @@ void G_BuildTiccmd (ticcmd_t *cmd)
 
 static void G_DoLoadLevel (void)
 {
-	int             i;
+	int32_t             i;
 
 #if (APPVER_DOOMREV >= AV_DR_DM19F2) // "Sky never changes in Doom II" bug fix
 	if (commercial)
@@ -532,7 +532,7 @@ void G_Responder(event_t *ev)
 
 void G_Ticker (void)
 {
-	int                     i, buf;
+	int32_t                     i, buf;
 	ticcmd_t        *cmd;
 
 //
@@ -701,7 +701,7 @@ also see P_SpawnPlayer in P_Things
 ====================
 */
 
-static void G_PlayerFinishLevel(int player)
+static void G_PlayerFinishLevel(int32_t player)
 {
 	player_t *p;
 
@@ -726,12 +726,12 @@ static void G_PlayerFinishLevel(int player)
 ====================
 */
 
-void G_PlayerReborn(int player)
+void G_PlayerReborn(int32_t player)
 {
 	player_t *p;
-	int i;
-	int frags[MAXPLAYERS];
-	int killcount, itemcount, secretcount;
+	int32_t i;
+	int32_t frags[MAXPLAYERS];
+	int32_t killcount, itemcount, secretcount;
 
 	memcpy(frags, players[player].frags, sizeof(frags));
 	killcount = players[player].killcount;
@@ -771,13 +771,13 @@ void G_PlayerReborn(int player)
 
 void P_SpawnPlayer (mapthing_t *mthing);
 
-static boolean G_CheckSpot (int playernum, mapthing_t *mthing)
+static boolean G_CheckSpot (int32_t playernum, mapthing_t *mthing)
 {
 	fixed_t         x,y;
 	subsector_t *ss;
 	unsigned        an;
 	mobj_t      *mo;
-	int         i;
+	int32_t         i;
 	
 	if (!players[playernum].mo)
 	{
@@ -824,10 +824,10 @@ static boolean G_CheckSpot (int playernum, mapthing_t *mthing)
 ====================
 */
 
-void G_DeathMatchSpawnPlayer (int playernum)
+void G_DeathMatchSpawnPlayer (int32_t playernum)
 {
-	int             i,j;
-	int             selections;
+	int32_t             i,j;
+	int32_t             selections;
 
 	selections = deathmatch_p - deathmatchstarts;
 	if (selections < 4)
@@ -856,9 +856,9 @@ void G_DeathMatchSpawnPlayer (int playernum)
 ====================
 */
 
-static void G_DoReborn (int playernum)
+static void G_DoReborn (int32_t playernum)
 {
-	int                             i;
+	int32_t                             i;
 
 	if (!netgame)
 		gameaction = ga_loadlevel;                      // reload the level from scratch
@@ -901,7 +901,7 @@ void G_ScreenShot (void)
 
 
 // DOOM Par Times
-static int pars[4][10] =
+static int32_t pars[4][10] =
 {
 	{0},
 #if APPVER_CHEX
@@ -914,7 +914,7 @@ static int pars[4][10] =
 };
 
 // DOOM II Par Times
-static int cpars[32] =
+static int32_t cpars[32] =
 {
 	30,90,120,120,90,150,120,120,270,90,	//  1-10
 	210,150,150,150,210,150,420,150,210,150,	// 11-20
@@ -955,7 +955,7 @@ void G_SecretExitLevel (void)
 
 static void G_DoCompleted(void)
 {
-	int i;
+	int32_t i;
 
 	gameaction = ga_nothing;
 
@@ -1133,8 +1133,8 @@ void G_LoadGame (char* name)
 
 static void G_DoLoadGame(void)
 {
-	int i;
-	int a, b, c;
+	int32_t i;
+	int32_t a, b, c;
 	char vcheck[VERSIONSIZE];
 
 	gameaction = ga_nothing;
@@ -1193,7 +1193,7 @@ static void G_DoLoadGame(void)
 //
 //==========================================================================
 
-void G_SaveGame(int slot, char *description)
+void G_SaveGame(int32_t slot, char *description)
 {
 	savegameslot = slot;
 	strcpy(savedescription, description);
@@ -1213,8 +1213,8 @@ static void G_DoSaveGame(void)
 	char name[100];
 	char name2[VERSIONSIZE];
 	char *description;
-	int length;
-	int i;
+	int32_t length;
+	int32_t i;
 
 #if (APPVER_DOOMREV >= AV_DR_DM1666E)
 	if (M_CheckParm("-cdrom"))
@@ -1281,10 +1281,10 @@ static void G_DoSaveGame(void)
 */
 
 static skill_t d_skill;
-static int     d_episode;
-static int     d_map;
+static int32_t     d_episode;
+static int32_t     d_map;
 
-void G_DeferedInitNew (skill_t skill, int episode, int map)
+void G_DeferedInitNew (skill_t skill, int32_t episode, int32_t map)
 {
 	d_skill = skill;
 	d_episode = episode;
@@ -1307,11 +1307,11 @@ static void G_DoNewGame (void)
 	gameaction = ga_nothing;
 }
 
-extern  int                     skytexture;
+extern  int32_t                     skytexture;
 
-void G_InitNew(skill_t skill, int episode, int map)
+void G_InitNew(skill_t skill, int32_t episode, int32_t map)
 {
-	int i;
+	int32_t i;
 
 	if(paused)
 	{
@@ -1473,8 +1473,8 @@ static void G_WriteDemoTiccmd (ticcmd_t *cmd)
 
 void G_RecordDemo (char *name)
 {
-	int             i;
-	int             maxsize;
+	int32_t             i;
+	int32_t             maxsize;
 
 	usergame = false;
 	strcpy (demoname, name);
@@ -1492,7 +1492,7 @@ void G_RecordDemo (char *name)
 
 void G_BeginRecording(void)
 {
-	int             i;
+	int32_t             i;
 
 	demo_p = demobuffer;
 
@@ -1530,7 +1530,7 @@ void G_DeferedPlayDemo (char *name)
 static void G_DoPlayDemo (void)
 {
 	skill_t skill;
-	int             i, episode, map;
+	int32_t             i, episode, map;
 
 	gameaction = ga_nothing;
 	demobuffer = demo_p = W_CacheLumpName (defdemoname, PU_STATIC);
@@ -1593,7 +1593,7 @@ void G_TimeDemo (char *name)
 
 void G_CheckDemoStatus (void)
 {
-	int             endtime;
+	int32_t             endtime;
 
 	if (timingdemo)
 	{

@@ -28,7 +28,7 @@ sector_t	*frontsector, *backsector;
 
 drawseg_t	drawsegs[MAXDRAWSEGS], *ds_p;
 
-void R_StoreWallRange (int start, int stop);
+void R_StoreWallRange (int32_t start, int32_t stop);
 
 /*
 ====================
@@ -57,7 +57,7 @@ void R_ClearDrawSegs (void)
 
 typedef	struct
 {
-	int	first, last;
+	int32_t	first, last;
 } cliprange_t;
 
 #define	MAXSEGS	32
@@ -65,7 +65,7 @@ typedef	struct
 static cliprange_t	solidsegs[MAXSEGS], *newend;	// newend is one past the last valid seg
 
 
-static void R_ClipSolidWallSegment (int first, int last)
+static void R_ClipSolidWallSegment (int32_t first, int32_t last)
 {
 	cliprange_t	*next, *start;
 
@@ -137,7 +137,7 @@ crunch:
 ===============================================================================
 */
 
-static void R_ClipPassWallSegment (int first, int last)
+static void R_ClipPassWallSegment (int32_t first, int32_t last)
 {
 	cliprange_t	 *start;
 
@@ -208,7 +208,7 @@ void R_ClearClipSegs (void)
 
 static void R_AddLine (seg_t *line)
 {
-	int			x1, x2;
+	int32_t		x1, x2;
 	angle_t		angle1, angle2, span, tspan;
 	
 	curline = line;
@@ -297,7 +297,7 @@ clipsolid:
 ===============================================================================
 */
 
-static const int	checkcoord[12][4] = {
+static const int32_t	checkcoord[12][4] = {
 {3,0, 2,1},
 {3,0, 2,0},
 {3,1, 2,0},
@@ -313,11 +313,11 @@ static const int	checkcoord[12][4] = {
 
 static boolean R_CheckBBox (fixed_t *bspcoord)
 {
-	int			boxx, boxy, boxpos;
+	int32_t		boxx, boxy, boxpos;
 	fixed_t		x1, y1, x2, y2;
 	angle_t		angle1, angle2, span, tspan;
 	cliprange_t	*start;
-	int			sx1, sx2;
+	int32_t		sx1, sx2;
 	
 // find the corners of the box that define the edges from current viewpoint
 	if (viewx <= bspcoord[BOXLEFT])
@@ -397,9 +397,9 @@ static boolean R_CheckBBox (fixed_t *bspcoord)
 ================
 */
 
-static void R_Subsector (int num)
+static void R_Subsector (int32_t num)
 {
-	int			count;
+	int32_t		count;
 	seg_t		*line;
 	subsector_t	*sub;
 	
@@ -444,10 +444,10 @@ static void R_Subsector (int num)
 ===============================================================================
 */
 
-void R_RenderBSPNode (int bspnum)
+void R_RenderBSPNode (int32_t bspnum)
 {
 	node_t 		*bsp;
-	int			side;
+	int32_t		side;
 
 	if (bspnum & NF_SUBSECTOR)
 	{

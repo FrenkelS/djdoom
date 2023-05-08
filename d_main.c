@@ -66,15 +66,15 @@ boolean singletics = false; // debug flag to cancel adaptiveness
 
 
 
-extern int soundVolume;
-extern  int	sfxVolume;
-extern  int	musicVolume;
+extern int32_t	soundVolume;
+extern int32_t	sfxVolume;
+extern int32_t	musicVolume;
 
 extern  boolean	inhelpscreens;
 
 skill_t startskill;
-int startepisode;
-int startmap;
+int32_t startepisode;
+int32_t startmap;
 boolean autostart;
 
 FILE *debugfile;
@@ -109,8 +109,8 @@ Events can be discarded if no responder claims them
 */
 
 event_t events[MAXEVENTS];
-int eventhead;
-int eventtail;
+int32_t eventhead;
+int32_t eventtail;
 
 /*
 ================
@@ -258,7 +258,7 @@ fixed_t FixedDiv (fixed_t a, fixed_t b)
 // wipegamestate can be set to -1 to force a wipe on the next draw
 gamestate_t wipegamestate = GS_DEMOSCREEN;
 extern boolean setsizeneeded;
-extern int showMessages;
+extern int32_t showMessages;
 void R_ExecuteSetViewSize (void);
 
 static void D_Display (void)
@@ -268,11 +268,11 @@ static void D_Display (void)
 	static boolean inhelpscreensstate = false;
 	static boolean fullscreen = false;
 	static gamestate_t oldgamestate = -1;
-	static int borderdrawcount;
-	int nowtime;
-	int tics;
-	int wipestart;
-	int y;
+	static int32_t borderdrawcount;
+	int32_t nowtime;
+	int32_t tics;
+	int32_t wipestart;
+	int32_t y;
 	boolean done;
 	boolean wipe;
 	boolean redrawsbar;
@@ -471,8 +471,8 @@ static void D_DoomLoop (void)
 ===============================================================================
 */
 
-static int             demosequence;
-static int             pagetic;
+static int32_t         demosequence;
+static int32_t         pagetic;
 static char            *pagename;
 
 
@@ -605,7 +605,7 @@ void D_StartTitle (void)
 
 static char title[128]; //      print title for every printed line
 
-static int GetTextX(void)
+static int32_t GetTextX(void)
 {
 	union REGS regs;
 	regs.h.ah = 3;
@@ -614,7 +614,7 @@ static int GetTextX(void)
 	return regs.h.dl;
 }
 
-static int GetTextY(void)
+static int32_t GetTextY(void)
 {
 	union REGS regs;
 	regs.h.ah = 3;
@@ -623,7 +623,7 @@ static int GetTextY(void)
 	return regs.h.dh;
 }
 
-static void SetTextPos(int x, int y)
+static void SetTextPos(int32_t x, int32_t y)
 {
 	union REGS regs;
 	regs.h.ah = 2;
@@ -633,13 +633,13 @@ static void SetTextPos(int x, int y)
 	int386(0x10, &regs, &regs);
 }
 
-static void tprintf(char *msg, int fgcolor, int bgcolor)
+static void tprintf(char *msg, int32_t fgcolor, int32_t bgcolor)
 {
 	union REGS regs;
 	byte attr;
-	int x;
-	int y;
-	int i;
+	int32_t x;
+	int32_t y;
+	int32_t i;
 
 	attr = (bgcolor << 4) | fgcolor;
 	x = GetTextX();
@@ -663,7 +663,7 @@ static void tprintf(char *msg, int fgcolor, int bgcolor)
 
 void mprintf(char *msg)
 {
-	int x, y;
+	int32_t x, y;
 	printf(msg);
 
 	x = GetTextX();
@@ -686,7 +686,7 @@ void mprintf(char *msg)
 
 static void D_AddFile(char *file)
 {
-	int numwadfiles;
+	int32_t numwadfiles;
 	char *new;
 
 	numwadfiles = 0;
@@ -868,17 +868,17 @@ static void IdentifyVersion (void)
 */
 static void FindResponseFile (void)
 {
-	int i;
+	int32_t i;
 #define MAXARGVS 100
 	
 	for (i = 1;i < myargc;i++)
 		if (myargv[i][0] == '@')
 		{
 			FILE *handle;
-			int size;
-			int k;
-			int index;
-			int indexinfile;
+			int32_t size;
+			int32_t k;
+			int32_t index;
+			int32_t indexinfile;
 			char *infile;
 			char *file;
 			char *moreargs[20];
@@ -951,7 +951,7 @@ static void FindResponseFile (void)
 void D_DoomMain (void)
 {
 	union REGS regs;
-	int p;
+	int32_t p;
 	char file[256];
 
 	FindResponseFile ();
@@ -1079,9 +1079,9 @@ void D_DoomMain (void)
 	p = M_CheckParm ("-turbo");
 	if (p)
 	{
-		int  scale = 200;
-		extern int forwardmove[2];
-		extern int sidemove[2];
+		int32_t  scale = 200;
+		extern int32_t forwardmove[2];
+		extern int32_t sidemove[2];
 	
 		if (p<myargc-1)
 			scale = atoi (myargv[p+1]);
@@ -1172,7 +1172,7 @@ void D_DoomMain (void)
 	p = M_CheckParm ("-timer");
 	if (p && p < myargc-1 && deathmatch)
 	{
-		int time;
+		int32_t time;
 		time = atoi(myargv[p+1]);
 		printf("Levels will end after %d minute",time);
 		if (time>1)
@@ -1222,7 +1222,7 @@ void D_DoomMain (void)
 			"e3m1","e3m3","e3m3","e3m4","e3m5","e3m6","e3m7","e3m8","e3m9",
 			"dphoof","bfgga0","heada1","cybra1","spida1d1"
 		};
-		int i;
+		int32_t i;
 	
 		// Check for fake IWAD with right name,
 		// but w/o all the lumps of the registered version. 
@@ -1242,7 +1242,7 @@ void D_DoomMain (void)
 		{
 			"fatti5","map20","keena0","vileg1","skelg1"
 		};
-		int i;
+		int32_t i;
 		for (i = 0;i < 5; i++)
 			if (W_CheckNumForName(name[i])<0)
 				I_Error("\nThis is not the DOOM 2 wadfile.");

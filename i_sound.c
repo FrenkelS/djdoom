@@ -31,12 +31,12 @@
 ===============
 */
 
-static int tsm_ID;
+static int32_t tsm_ID;
 
 static void I_StartupTimer (void)
 {
 #ifndef NOTIMER
-	extern int I_TimerISR(void);
+	extern int32_t I_TimerISR(void);
 	extern void I_InitBaseTime(void);
 
 	printf("I_StartupTimer()\n");
@@ -74,30 +74,30 @@ static const char snd_prefixen[] = { 'P', 'P', 'A', 'S', 'S', 'S', 'M',
   'M', 'M', 'S', 'S', 'S'};
 #endif
 
-int snd_DesiredMusicDevice, snd_DesiredSfxDevice;
-int snd_MusicDevice;    // current music card # (index to dmxCodes)
-static int snd_SfxDevice;      // current sfx card # (index to dmxCodes)
-static int snd_MaxVolume;      // maximum volume for sound
-static int snd_MusicVolume;    // maximum volume for music
-static int dmxCodes[NUM_SCARDS]; // the dmx code for a given card
+int32_t snd_DesiredMusicDevice, snd_DesiredSfxDevice;
+int32_t snd_MusicDevice;    // current music card # (index to dmxCodes)
+static int32_t snd_SfxDevice;      // current sfx card # (index to dmxCodes)
+static int32_t snd_MaxVolume;      // maximum volume for sound
+static int32_t snd_MusicVolume;    // maximum volume for music
+static int32_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
 
-int     snd_SBport, snd_SBirq, snd_SBdma;       // sound blaster variables
-int     snd_Mport;                              // midi variables
+int32_t     snd_SBport, snd_SBirq, snd_SBdma;       // sound blaster variables
+int32_t     snd_Mport;                              // midi variables
 
 extern boolean  snd_MusicAvail, // whether music is available
 		snd_SfxAvail;   // whether sfx are available
 
-void I_PauseSong(int handle)
+void I_PauseSong(int32_t handle)
 {
   MUS_PauseSong(handle);
 }
 
-void I_ResumeSong(int handle)
+void I_ResumeSong(int32_t handle)
 {
   MUS_ResumeSong(handle);
 }
 
-void I_SetMusicVolume(int volume)
+void I_SetMusicVolume(int32_t volume)
 {
   MUS_SetMasterVolume(volume);
   snd_MusicVolume = volume;
@@ -109,19 +109,19 @@ void I_SetMusicVolume(int volume)
  *
  */
 
-int I_RegisterSong(void *data)
+int32_t I_RegisterSong(void *data)
 {
   return MUS_RegisterSong(data);
 }
 
-void I_UnRegisterSong(int handle)
+void I_UnRegisterSong(int32_t handle)
 {
   MUS_UnregisterSong(handle);
 }
 
 // Stops a song.  MUST be called before I_UnregisterSong().
 
-void I_StopSong(int handle)
+void I_StopSong(int32_t handle)
 {
   MUS_StopSong(handle);
 
@@ -129,14 +129,14 @@ void I_StopSong(int handle)
 #if 0
   // Fucking kluge pause
   {
-	int s;
-	extern volatile int ticcount;
+	int32_t s;
+	extern volatile int32_t ticcount;
 	for (s=ticcount ; ticcount - s < 10 ; );
   }
 #endif
 }
 
-void I_PlaySong(int handle, boolean looping)
+void I_PlaySong(int32_t handle, boolean looping)
 {
   MUS_ChainSong(handle, looping ? handle : -1);
   MUS_PlaySong(handle, snd_MusicVolume);
@@ -154,7 +154,7 @@ void I_PlaySong(int handle, boolean looping)
 // freed!
 
 
-int I_GetSfxLumpNum(sfxinfo_t *sound)
+int32_t I_GetSfxLumpNum(sfxinfo_t *sound)
 {
   char namebuf[9];
 
@@ -164,7 +164,7 @@ int I_GetSfxLumpNum(sfxinfo_t *sound)
 
 }
 
-int I_StartSound (void *data, int vol, int sep, int pitch)
+int32_t I_StartSound (void *data, int32_t vol, int32_t sep, int32_t pitch)
 {
   // hacks out certain PC sounds
   if (snd_SfxDevice == snd_PC
@@ -180,17 +180,17 @@ int I_StartSound (void *data, int vol, int sep, int pitch)
 
 }
 
-void I_StopSound(int handle)
+void I_StopSound(int32_t handle)
 {
   SFX_StopPatch(handle);
 }
 
-boolean I_SoundIsPlaying(int handle)
+boolean I_SoundIsPlaying(int32_t handle)
 {
   return SFX_Playing(handle) != 0;
 }
 
-void I_UpdateSoundParams(int handle, int vol, int sep, int pitch)
+void I_UpdateSoundParams(int32_t handle, int32_t vol, int32_t sep, int32_t pitch)
 {
   SFX_SetOrigin(handle, pitch, sep, vol);
 }
@@ -214,7 +214,7 @@ static void I_sndArbitrateCards(void)
 #else
   boolean codec, ensoniq, gus, adlib, sb, midi;
 #endif
-  int i, wait, dmxlump;
+  int32_t i, wait, dmxlump;
 
   snd_MaxVolume = 127;
 
@@ -329,7 +329,7 @@ static void I_sndArbitrateCards(void)
 
 void I_StartupSound (void)
 {
-  int rc;
+  int32_t rc;
 
   if (devparm)
 	printf("I_StartupSound: Hope you hear a pop.\n");
@@ -382,15 +382,15 @@ void I_ShutdownSound (void)
 //TODO implement timer
 #if 0
   {
-	int s;
-	extern volatile int ticcount;
+	int32_t s;
+	extern volatile int32_t ticcount;
 	for (s=ticcount + 30; s != ticcount ; );
   }
 #endif
   DMX_DeInit();
 }
 
-void I_SetChannels(int channels)
+void I_SetChannels(int32_t channels)
 {
   WAV_PlayMode(channels, SND_SAMPLERATE);
 }

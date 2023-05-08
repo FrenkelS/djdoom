@@ -76,8 +76,8 @@ static switchlist_t alphSwitchList[] =
 	{"\0",			"\0",		0}
 };
 
-static int			switchlist[MAXSWITCHES * 2];
-static int			numswitches;
+static int32_t			switchlist[MAXSWITCHES * 2];
+static int32_t			numswitches;
 button_t	buttonlist[MAXBUTTONS];
 
 /*
@@ -92,9 +92,9 @@ button_t	buttonlist[MAXBUTTONS];
 
 void P_InitSwitchList(void)
 {
-	int		i;
-	int		index;
-	int		episode;
+	int32_t		i;
+	int32_t		index;
+	int32_t		episode;
 	
 	episode = 1;
 	if (registered)
@@ -125,9 +125,9 @@ void P_InitSwitchList(void)
 //	Start a button counting down till it turns off.
 //
 //==================================================================
-static void P_StartButton(line_t *line,bwhere_e w,int texture,int time)
+static void P_StartButton(line_t *line,bwhere_e w,int32_t texture,int32_t time)
 {
-	int		i;
+	int32_t		i;
 
 // See if button is already pressed
 	for (i = 0; i < MAXBUTTONS; i++)
@@ -154,13 +154,13 @@ static void P_StartButton(line_t *line,bwhere_e w,int texture,int time)
 //	Tell it if switch is ok to use again (1=yes, it's a button).
 //
 //==================================================================
-void P_ChangeSwitchTexture(line_t *line,int useAgain)
+void P_ChangeSwitchTexture(line_t *line,int32_t useAgain)
 {
-	int	texTop;
-	int	texMid;
-	int	texBot;
-	int	i;
-	int	sound;
+	int32_t	texTop;
+	int32_t	texMid;
+	int32_t	texBot;
+	int32_t	i;
+	int32_t	sound;
 	
 	if (!useAgain)
 		line->special = 0;
@@ -212,7 +212,7 @@ void P_ChangeSwitchTexture(line_t *line,int useAgain)
 ===============================================================================
 */
 
-boolean P_UseSpecialLine ( mobj_t *thing, line_t *line, int side)
+boolean P_UseSpecialLine ( mobj_t *thing, line_t *line, int32_t side)
 {	
 	//
     // Use the back sides of VERY SPECIAL lines...

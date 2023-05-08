@@ -108,7 +108,7 @@ static anim_t epsd2animinfo[] =
 	{ ANIM_ALWAYS, TICRATE/4, 3, { 40, 0 } }
 };
 
-static int NUMANIMS[NUMEPISODES] =
+static int32_t NUMANIMS[NUMEPISODES] =
 {
 	sizeof(epsd0animinfo)/sizeof(anim_t),
 #if !APPVER_CHEX

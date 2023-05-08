@@ -40,6 +40,6 @@ void cht_GetParam(cheatseq_t *cht, char *buffer);
 
 void wipe_StartScreen(void);
 void wipe_EndScreen(void);
-boolean wipe_ScreenWipe(int ticks);
+boolean wipe_ScreenWipe(int32_t ticks);
 
 #endif

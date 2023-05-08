@@ -44,9 +44,9 @@ Most monsters are spawned unaware of all players, but some can be made preaware
 
 static mobj_t *soundtarget;
 
-static void P_RecursiveSound (sector_t *sec, int soundblocks)
+static void P_RecursiveSound (sector_t *sec, int32_t soundblocks)
 {
-	int			i;
+	int32_t		i;
 	line_t		*check;
 	sector_t	*other;
 
@@ -204,7 +204,7 @@ static const fixed_t yspeed[8] = {0,47000,FRACUNIT,47000,0,-47000,-FRACUNIT,-470
 
 #define	MAXSPECIALCROSS		8
 extern	line_t	*spechit[MAXSPECIALCROSS];
-extern	int			 numspechit;
+extern	int32_t			 numspechit;
 
 static boolean P_Move(mobj_t *actor)
 {
@@ -418,8 +418,8 @@ static void P_NewChaseDir (mobj_t *actor)
 
 static boolean P_LookForPlayers(mobj_t *actor, boolean allaround)
 {
-	int			c;
-	int			stop;
+	int32_t		c;
+	int32_t		stop;
 	player_t	*player;
 	angle_t		an;
 	fixed_t		dist;
@@ -541,7 +541,7 @@ void A_Look (mobj_t *actor)
 seeyou:
 	if (actor->info->seesound)
 	{
-		int		sound;
+		int32_t		sound;
 		
 		switch (actor->info->seesound)
 		{
@@ -583,7 +583,7 @@ seeyou:
 
 void A_Chase (mobj_t *actor)
 {
-	int delta;
+	int32_t delta;
 
 	if (actor->reactiontime)
 		actor->reactiontime--;
@@ -722,7 +722,7 @@ void A_FaceTarget (mobj_t *actor)
 
 void A_PosAttack (mobj_t *actor)
 {
-	int		angle, damage, slope;
+	int32_t		angle, damage, slope;
 	
 	if (!actor->target)
 		return;
@@ -739,8 +739,8 @@ void A_PosAttack (mobj_t *actor)
 
 void A_SPosAttack (mobj_t *actor)
 {
-	int		i;
-	int		angle, bangle, damage, slope;
+	int32_t		i;
+	int32_t		angle, bangle, damage, slope;
 	
 	if (!actor->target)
 		return;
@@ -760,7 +760,7 @@ void A_SPosAttack (mobj_t *actor)
 
 void A_CPosAttack (mobj_t *actor)
 {
-	int		angle, bangle, damage, slope;
+	int32_t		angle, bangle, damage, slope;
 	
 	if (!actor->target)
 		return;
@@ -821,7 +821,7 @@ void A_BspiAttack (mobj_t *actor)
 
 void A_TroopAttack (mobj_t *actor)
 {
-	int		damage;
+	int32_t		damage;
 	
 	if (!actor->target)
 		return;
@@ -843,7 +843,7 @@ void A_TroopAttack (mobj_t *actor)
 
 void A_SargAttack (mobj_t *actor)
 {
-	int		damage;
+	int32_t		damage;
 
 	if (!actor->target)
 		return;
@@ -858,7 +858,7 @@ void A_SargAttack (mobj_t *actor)
 
 void A_HeadAttack (mobj_t *actor)
 {
-	int		damage;
+	int32_t		damage;
 	
 	if (!actor->target)
 		return;
@@ -887,7 +887,7 @@ void A_CyberAttack (mobj_t *actor)
 
 void A_BruisAttack (mobj_t *actor)
 {
-	int		damage;
+	int32_t		damage;
 	
 	if (!actor->target)
 		return;
@@ -931,7 +931,7 @@ void A_SkelMissile (mobj_t *actor)
 	mo->tracer = actor->target;
 }
 
-static int	TRACEANGLE = 0xc000000;
+static int32_t	TRACEANGLE = 0xc000000;
 
 void A_Tracer (mobj_t *actor)
 {
@@ -1017,7 +1017,7 @@ void A_SkelWhoosh (mobj_t *actor)
 
 void A_SkelFist (mobj_t *actor)
 {
-	int		damage;
+	int32_t		damage;
 
 	if (!actor->target)
 		return;
@@ -1051,7 +1051,7 @@ static fixed_t		viletryy;
 
 static boolean PIT_VileCheck (mobj_t *thing)
 {
-	int			maxdist;
+	int32_t		maxdist;
 	boolean		check;
 	
 	if (!(thing->flags & MF_CORPSE) )
@@ -1094,8 +1094,8 @@ static boolean PIT_VileCheck (mobj_t *thing)
 
 void A_VileChase (mobj_t *actor)
 {
-    int			xl, xh, yl,yh;
-    int			bx, by;
+    int32_t		xl, xh, yl,yh;
+    int32_t		bx, by;
     mobjinfo_t	*info;
     mobj_t		*temp;
 	
@@ -1252,7 +1252,7 @@ void A_VileTarget (mobj_t *actor)
 void A_VileAttack (mobj_t *actor)
 {	
 	mobj_t	*fire;
-	int		an;
+	int32_t	an;
 	
 	if (!actor->target)
 		return;
@@ -1292,7 +1292,7 @@ void A_FatRaise (mobj_t *actor)
 void A_FatAttack1 (mobj_t *actor)
 {
 	mobj_t	*mo;
-	int		an;
+	int32_t	an;
 	
 	A_FaceTarget (actor);
 	// Change direction  to ...
@@ -1309,7 +1309,7 @@ void A_FatAttack1 (mobj_t *actor)
 void A_FatAttack2 (mobj_t *actor)
 {
 	mobj_t	*mo;
-	int		an;
+	int32_t	an;
 
 	A_FaceTarget (actor);
 	// Now here choose opposite deviation.
@@ -1326,7 +1326,7 @@ void A_FatAttack2 (mobj_t *actor)
 void A_FatAttack3 (mobj_t *actor)
 {
 	mobj_t	*mo;
-	int		an;
+	int32_t	an;
 
 	A_FaceTarget (actor);
     
@@ -1360,7 +1360,7 @@ void A_SkullAttack (mobj_t* actor)
 {
 	mobj_t			*dest;
 	angle_t			an;
-	int				dist;
+	int32_t			dist;
 
 	if (!actor->target)
 		return;
@@ -1397,8 +1397,8 @@ static void A_PainShootSkull (mobj_t *actor, angle_t angle)
 	fixed_t		x, y, z;
 	mobj_t		*newmobj;
 	angle_t		an;
-	int			prestep;
-	int			count;
+	int32_t		prestep;
+	int32_t		count;
 	thinker_t	*currentthinker;
 //
 // count total number of skull currently on the level
@@ -1480,7 +1480,7 @@ void A_PainDie (mobj_t *actor)
 
 void A_Scream (mobj_t *actor)
 {
-	int		sound;
+	int32_t		sound;
 	
 	switch (actor->info->deathsound)
 	{
@@ -1560,7 +1560,7 @@ void A_BossDeath (mobj_t *mo)
 	thinker_t	*th;
 	mobj_t		*mo2;
 	line_t		junk;
-	int			i;
+	int32_t		i;
 		
 	if (commercial)
 	{
@@ -1760,8 +1760,8 @@ void A_CloseShotgun2 (player_t *player, pspdef_t *psp)
 
 
 static mobj_t	*braintargets[32];
-static int		numbraintargets;
-static int		braintargeton;
+static int32_t	numbraintargets;
+static int32_t	braintargeton;
 
 void A_BrainAwake (mobj_t *mo)
 {
@@ -1804,7 +1804,7 @@ void A_BrainPain (mobj_t *mo)
 
 void A_BrainScream (mobj_t *mo)
 {
-	int			x, y, z;
+	int32_t		x, y, z;
 	mobj_t		*th;
 	
 	for (x=mo->x - 196*FRACUNIT ; x< mo->x + 320*FRACUNIT ; x+= FRACUNIT*8)
@@ -1828,7 +1828,7 @@ void A_BrainScream (mobj_t *mo)
 
 void A_BrainExplode (mobj_t *mo)
 {
-	int			x, y, z;
+	int32_t		x, y, z;
 	mobj_t		*th;
 	
 	x = mo->x + (P_Random () - P_Random ())*2048;
@@ -1856,7 +1856,7 @@ void A_BrainSpit (mobj_t *mo)
 	mobj_t *targ;
 	mobj_t *newmobj;
     
-	static int	easy = 0;
+	static int32_t	easy = 0;
 	
 	easy ^= 1;
 	if (gameskill <= sk_easy && (!easy))
@@ -1890,7 +1890,7 @@ void A_SpawnFly (mobj_t* mo)
 	mobj_t		*newmobj;
 	mobj_t		*fog;
 	mobj_t		*targ;
-	int			r;
+	int32_t		r;
 	mobjtype_t	type;
 	
 	if (--mo->reactiontime)
@@ -1952,7 +1952,7 @@ void A_PlayerScream (mobj_t *mo)
 //
 // Default death sound.
 //
-	int		sound = sfx_pldeth;
+	int32_t		sound = sfx_pldeth;
 	
 	if (commercial && mo->health < -50)
 	{
