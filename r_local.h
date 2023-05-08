@@ -63,9 +63,9 @@ struct line_s;
 typedef	struct
 {
 	fixed_t		floorheight, ceilingheight;
-	short		floorpic, ceilingpic;
-	short		lightlevel;
-	short		special, tag;
+	int16_t		floorpic, ceilingpic;
+	int16_t		lightlevel;
+	int16_t		special, tag;
 
 	int			soundtraversed;		// 0 = untraversed, 1,2 = sndlines -1
 	mobj_t		*soundtarget;		// thing that made a sound (or null)
@@ -84,7 +84,7 @@ typedef struct
 {
 	fixed_t		textureoffset;		// add this to the calculated texture col
 	fixed_t		rowoffset;			// add this to the calculated texture top
-	short		toptexture, bottomtexture, midtexture;
+	int16_t		toptexture, bottomtexture, midtexture;
 	sector_t	*sector;
 } side_t;
 
@@ -94,9 +94,9 @@ typedef struct line_s
 {
 	vertex_t	*v1, *v2;
 	fixed_t		dx,dy;				// v2 - v1 for side checking
-	short		flags;
-	short		special, tag;
-	short		sidenum[2];			// sidenum[1] will be -1 if one sided
+	int16_t		flags;
+	int16_t		special, tag;
+	int16_t		sidenum[2];			// sidenum[1] will be -1 if one sided
 	fixed_t		bbox[4];
 	slopetype_t	slopetype;			// to aid move clipping
 	sector_t	*frontsector, *backsector;
@@ -108,8 +108,8 @@ typedef struct line_s
 typedef struct subsector_s
 {
 	sector_t	*sector;
-	short		numlines;
-	short		firstline;
+	int16_t		numlines;
+	int16_t		firstline;
 } subsector_t;
 
 typedef struct
@@ -127,7 +127,7 @@ typedef struct
 {
 	fixed_t		x,y,dx,dy;			// partition line
 	fixed_t		bbox[2][4];			// bounding box for each child
-	unsigned short	children[2];		// if NF_SUBSECTOR its a subsector
+	uint16_t	children[2];		// if NF_SUBSECTOR its a subsector
 } node_t;
 
 
@@ -167,9 +167,9 @@ typedef struct drawseg_s
 	fixed_t		bsilheight;			// don't clip sprites above this
 	fixed_t		tsilheight;			// don't clip sprites below this
 // pointers to lists for sprite clipping
-	short		*sprtopclip;		// adjusted so [x1] is first value
-	short		*sprbottomclip;		// adjusted so [x1] is first value
-	short		*maskedtexturecol;	// adjusted so [x1] is first value
+	int16_t		*sprtopclip;		// adjusted so [x1] is first value
+	int16_t		*sprbottomclip;		// adjusted so [x1] is first value
+	int16_t		*maskedtexturecol;	// adjusted so [x1] is first value
 } drawseg_t;
 
 #define	SIL_NONE	0
@@ -209,7 +209,7 @@ extern	visplane_t	*floorplane, *ceilingplane;
 typedef struct
 {
 	boolean		rotate;		// if false use 0 for any position
-	short		lump[8];	// lump to use for view angles 0-7
+	int16_t		lump[8];	// lump to use for view angles 0-7
 	byte		flip[8];	// flip (1 = flip) to use for view angles 0-7
 } spriteframe_t;
 
@@ -327,10 +327,10 @@ void R_RenderMaskedSegRange (drawseg_t *ds, int x1, int x2);
 //
 extern	int			skyflatnum;
 
-extern	short			*lastopening;
+extern	int16_t		*lastopening;
 
-extern	short		floorclip[SCREENWIDTH];
-extern	short		ceilingclip[SCREENWIDTH];
+extern	int16_t		floorclip[SCREENWIDTH];
+extern	int16_t		ceilingclip[SCREENWIDTH];
 
 extern	fixed_t		yslope[SCREENHEIGHT];
 extern	fixed_t		distscale[SCREENWIDTH];
@@ -365,12 +365,12 @@ void R_PrecacheLevel (void);
 
 
 // constant arrays used for psprite clipping and initializing clipping
-extern	short	negonearray[SCREENWIDTH];
-extern	short	screenheightarray[SCREENWIDTH];
+extern	int16_t	negonearray[SCREENWIDTH];
+extern	int16_t	screenheightarray[SCREENWIDTH];
 
 // vars for R_DrawMaskedColumn
-extern	short		*mfloorclip;
-extern	short		*mceilingclip;
+extern	int16_t		*mfloorclip;
+extern	int16_t		*mceilingclip;
 extern	fixed_t		spryscale;
 extern	fixed_t		sprtopscreen;
 

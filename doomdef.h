@@ -95,12 +95,12 @@ extern byte *destview, *destscreen;	// PC direct to screen pointers
 
 
 #define MAXCHAR ((char)0x7f)
-#define MAXSHORT ((short)0x7fff)
+#define MAXSHORT ((int16_t)0x7fff)
 #define MAXINT	((int)0x7fffffff)	/* max pos 32-bit int */
 #define MAXLONG ((int32_t)0x7fffffff)
 
 #define MINCHAR ((char)0x80)
-#define MINSHORT ((short)0x8000)
+#define MINSHORT ((int16_t)0x8000)
 #define MININT 	((int)0x80000000)	/* max negative 32-bit integer */
 #define MINLONG ((int32_t)0x80000000)
 
@@ -171,8 +171,8 @@ typedef struct
 {
 	char		forwardmove;		// *2048 for move
 	char		sidemove;			// *2048 for move
-	short		angleturn;			// <<16 for angle delta
-	short		consistancy;		// checks for net game
+	int16_t		angleturn;			// <<16 for angle delta
+	int16_t		consistancy;		// checks for net game
 	byte		chatchar;
 	byte		buttons;
 } ticcmd_t;
@@ -483,28 +483,28 @@ typedef struct
 typedef struct
 {
 	int32_t	id;
-	short	intnum;			// DOOM executes an int to execute commands
+	int16_t	intnum;			// DOOM executes an int to execute commands
 
 // communication between DOOM and the driver
-	short	command;		// CMD_SEND or CMD_GET
-	short	remotenode;		// dest for send, set by get (-1 = no packet)
-	short	datalength;		// bytes in doomdata to be sent
+	int16_t	command;		// CMD_SEND or CMD_GET
+	int16_t	remotenode;		// dest for send, set by get (-1 = no packet)
+	int16_t	datalength;		// bytes in doomdata to be sent
 
 // info common to all nodes
-	short	numnodes;		// console is allways node 0
-	short	ticdup;			// 1 = no duplication, 2-5 = dup for slow nets
-	short	extratics;		// 1 = send a backup tic in every packet
-	short	deathmatch;		// 1 = deathmatch
-	short	savegame;		// -1 = new game, 0-5 = load savegame
-	short	episode;		// 1-3
-	short	map;			// 1-9
-	short	skill;			// 1-5
+	int16_t	numnodes;		// console is allways node 0
+	int16_t	ticdup;			// 1 = no duplication, 2-5 = dup for slow nets
+	int16_t	extratics;		// 1 = send a backup tic in every packet
+	int16_t	deathmatch;		// 1 = deathmatch
+	int16_t	savegame;		// -1 = new game, 0-5 = load savegame
+	int16_t	episode;		// 1-3
+	int16_t	map;			// 1-9
+	int16_t	skill;			// 1-5
 
 // info specific to this node
-	short	consoleplayer;
-	short	numplayers;
-	short	angleoffset;	// 1 = left, 0 = center, -1 = right
-	short	drone;			// 1 = drone
+	int16_t	consoleplayer;
+	int16_t	numplayers;
+	int16_t	angleoffset;	// 1 = left, 0 = center, -1 = right
+	int16_t	drone;			// 1 = drone
 
 // packet data to be sent
 	doomdata_t	data;
@@ -650,7 +650,7 @@ fixed_t	FixedMul (fixed_t a, fixed_t b);
 fixed_t	FixedDiv (fixed_t a, fixed_t b);
 
 #ifdef __BIG_ENDIAN__
-short ShortSwap(short);
+int16_t ShortSwap(int16_t);
 int32_t LongSwap(int32_t);
 #define SHORT(x)	ShortSwap(x)
 #define LONG(x)		LongSwap(x)

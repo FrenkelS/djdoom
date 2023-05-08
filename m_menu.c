@@ -143,7 +143,7 @@ static char endstring[160];
 //
 typedef struct
 {
-	short	status;		// {no cursor here, ok, arrows ok}
+	int16_t	status;		// {no cursor here, ok, arrows ok}
 	char	name[10];
 	void	(*routine)(int choice);	// choice = menu item #.
 	char	alphaKey;	  // hotkey in menu
@@ -153,17 +153,17 @@ typedef struct
 
 typedef struct menu_s
 {
-	short numitems;				// # of menu items
+	int16_t numitems;				// # of menu items
 	struct menu_s	*prevMenu;	// previous menu
 	menuitem_t		*menuitems;	// menu items
 	void	(*routine)(void);	// draw routine
-	short	x, y;				// x,y of menu
-	short	lastOn;				// last item user was on in menu
+	int16_t	x, y;				// x,y of menu
+	int16_t	lastOn;				// last item user was on in menu
 } menu_t;
 
-static short itemOn; // menu item skull is on
-static short skullAnimCounter; // skull animation counter
-static short whichSkull; // which skull to draw
+static int16_t itemOn; // menu item skull is on
+static int16_t skullAnimCounter; // skull animation counter
+static int16_t whichSkull; // which skull to draw
 
 // graphic name of skulls
 static char    skullName[2][8] = {"M_SKULL1","M_SKULL2"};
@@ -1691,10 +1691,10 @@ void M_StartControlPanel (void)
 //
 void M_Drawer (void)
 {
-	static short	x;
-	static short	y;
-	short		i;
-	short		max;
+	static int16_t	x;
+	static int16_t	y;
+	int16_t		i;
+	int16_t		max;
 	char		string[40];
 	int			start;
 

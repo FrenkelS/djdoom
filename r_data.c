@@ -34,9 +34,9 @@ typedef struct
 typedef struct
 {
 	char		name[8];		// for switch changing, etc
-	short		width;
-	short		height;
-	short		patchcount;
+	int16_t		width;
+	int16_t		height;
+	int16_t		patchcount;
 	texpatch_t	patches[1];		// [patchcount] drawn back to front
 								//  into the cached texture
 } texture_t;
@@ -53,8 +53,8 @@ static texture_t	**textures;
 static int			*texturewidthmask;
 fixed_t		*textureheight;		// needed for texture pegging
 static int			*texturecompositesize;
-static short		**texturecolumnlump;
-static unsigned short		**texturecolumnofs;
+static int16_t		**texturecolumnlump;
+static uint16_t		**texturecolumnofs;
 static byte		**texturecomposite;
 
 int			*flattranslation;		// for global animation
@@ -133,8 +133,8 @@ static void R_GenerateComposite (int texnum)
 	int			x, x1, x2;
 	int			i;
 	column_t	*patchcol;
-	short		*collump;
-	unsigned short *colofs;
+	int16_t		*collump;
+	uint16_t	*colofs;
 	
 	texture = textures[texnum];
 	block = Z_Malloc (texturecompositesize[texnum], PU_STATIC, 
@@ -193,8 +193,8 @@ static void R_GenerateLookup (int texnum)
 	patch_t		*realpatch;
 	int			x, x1, x2;
 	int			i;
-	short		*collump;
-	unsigned short	*colofs;
+	int16_t		*collump;
+	uint16_t	*colofs;
 	
 	texture = textures[texnum];
 

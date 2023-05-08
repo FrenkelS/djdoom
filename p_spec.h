@@ -167,7 +167,7 @@ typedef struct
 {
 	char	name1[9];
 	char	name2[9];
-	short	episode;
+	int16_t	episode;
 } switchlist_t;
 
 typedef enum
@@ -362,7 +362,7 @@ typedef struct
 	sector_t	*sector;
 	int			direction;
 	int			newspecial;
-	short		texture;
+	int16_t		texture;
 	fixed_t		floordestheight;
 	fixed_t		speed;
 } floormove_t;

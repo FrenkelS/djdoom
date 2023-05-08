@@ -45,8 +45,8 @@ line_t		*lines;
 int			numsides;
 side_t		*sides;
 
-short		*blockmaplump;			// offsets in blockmap are from here
-short		*blockmap;
+int16_t		*blockmaplump;			// offsets in blockmap are from here
+int16_t		*blockmap;
 int			bmapwidth, bmapheight;	// in mapblocks
 fixed_t		bmaporgx, bmaporgy;		// origin of block map
 mobj_t		**blocklinks;			// for thing chains

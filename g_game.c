@@ -83,7 +83,7 @@ boolean         precache = true;        // if true, load all graphics at start
  
 wbstartstruct_t wminfo;               	// parms for world map / intermission 
 
-static short            consistancy[MAXPLAYERS][BACKUPTICS];
+static int16_t            consistancy[MAXPLAYERS][BACKUPTICS];
 
 static byte            *savebuffer;
 byte                   *save_p;

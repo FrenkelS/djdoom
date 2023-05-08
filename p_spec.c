@@ -787,7 +787,7 @@ void P_PlayerInSpecialSector(player_t *player)
 static boolean		levelTimer;
 static int		levelTimeCount;
 
-static short	numlinespecials;
+static int16_t	numlinespecials;
 static line_t	*linespeciallist[MAXLINEANIMS];
 
 void P_UpdateSpecials (void)

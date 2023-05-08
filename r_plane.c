@@ -35,16 +35,16 @@ static int			skytexturemid;
 static visplane_t		visplanes[MAXVISPLANES], *lastvisplane;
 visplane_t		*floorplane, *ceilingplane;
 
-static short	openings[MAXOPENINGS];
-short			*lastopening;
+static int16_t	openings[MAXOPENINGS];
+int16_t			*lastopening;
 
 //
 // clip values are the solid pixel bounding the range
 // floorclip starts out SCREENHEIGHT
 // ceilingclip starts out -1
 //
-short		floorclip[SCREENWIDTH];
-short		ceilingclip[SCREENWIDTH];
+int16_t		floorclip[SCREENWIDTH];
+int16_t		ceilingclip[SCREENWIDTH];
 
 //
 // spanstart holds the start of a plane span

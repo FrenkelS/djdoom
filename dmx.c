@@ -45,7 +45,7 @@ int ENS_Detect(void) {return -1;}
 int CODEC_Detect(int *sbPort, int *sbDma) {UNUSED(sbPort); UNUSED(sbDma); return -1;}
 int GF1_Detect(void) {return -1;}
 void GF1_SetMap(char *dmxlump, int size) {UNUSED(dmxlump); UNUSED(size);}
-int SB_Detect(int *sbPort, int *sbIrq, int *sbDma, unsigned short *version) {UNUSED(sbPort); UNUSED(sbIrq); UNUSED(sbDma); UNUSED(version); return -1;}
+int SB_Detect(int *sbPort, int *sbIrq, int *sbDma, uint16_t *version) {UNUSED(sbPort); UNUSED(sbIrq); UNUSED(sbDma); UNUSED(version); return -1;}
 void SB_SetCard(int iBaseAddr, int iIrq, int iDma) {UNUSED(iBaseAddr); UNUSED(iIrq); UNUSED(iDma);}
 int AL_Detect(int *wait, int *type) {UNUSED(wait); UNUSED(type); return -1;}
 void AL_SetCard(int wait, void *genmidi) {UNUSED(wait); UNUSED(genmidi);}
@@ -55,4 +55,4 @@ void MPU_SetCard(int mPort) {UNUSED(mPort);}
 int DMX_Init(int ticrate, int maxsongs, unsigned int musicDevice, unsigned int sfxDevice) {UNUSED(ticrate); UNUSED(maxsongs); UNUSED(musicDevice); UNUSED(sfxDevice); return 0;}
 void DMX_DeInit(void) {}
 
-void WAV_PlayMode(int channels, unsigned short sampleRate) {UNUSED(channels); UNUSED(sampleRate);}
+void WAV_PlayMode(int channels, uint16_t sampleRate) {UNUSED(channels); UNUSED(sampleRate);}

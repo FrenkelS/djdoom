@@ -95,12 +95,12 @@ static boolean go = false;
 static byte *wipe_scr_start, *wipe_scr_end, *wipe_scr;
 
 
-static void wipe_shittyColMajorXform(short *array)
+static void wipe_shittyColMajorXform(int16_t *array)
 {
   int x, y;
-  short *dest;
+  int16_t *dest;
 
-  dest = (short*) Z_Malloc(SCREENWIDTH*SCREENHEIGHT, PU_STATIC, 0);
+  dest = (int16_t*) Z_Malloc(SCREENWIDTH*SCREENHEIGHT, PU_STATIC, 0);
 
   for(y=0;y<SCREENHEIGHT;y++)
     for(x=0;x<SCREENWIDTH/2;x++)
@@ -121,8 +121,8 @@ static void wipe_initMelt(void)
   memcpy(wipe_scr, wipe_scr_start, SCREENWIDTH*SCREENHEIGHT); 
   // makes this wipe faster (in theory)
   // to have stuff in column-major format
-  wipe_shittyColMajorXform((short*)wipe_scr_start);
-  wipe_shittyColMajorXform((short*)wipe_scr_end);
+  wipe_shittyColMajorXform((int16_t*)wipe_scr_start);
+  wipe_shittyColMajorXform((int16_t*)wipe_scr_end);
   // setup initial column positions
   // (y<0 => not ready to scroll yet)
   y = (int *) Z_Malloc(SCREENWIDTH*sizeof(int), PU_STATIC, 0);
@@ -139,7 +139,7 @@ static void wipe_initMelt(void)
 static boolean wipe_doMelt(int ticks)
 {
   int i, j, dy, idx;
-  short *s, *d;
+  int16_t *s, *d;
   boolean done = true;
 
   while (ticks--)
@@ -154,8 +154,8 @@ static boolean wipe_doMelt(int ticks)
       {
 	dy = (y[i] < 16) ? y[i]+1 : 8;
 	if (y[i]+dy >= SCREENHEIGHT) dy = SCREENHEIGHT - y[i];
-	s = &((short *)wipe_scr_end)[i*SCREENHEIGHT+y[i]];
-	d = &((short *)wipe_scr)[y[i]*SCREENWIDTH/2+i];
+	s = &((int16_t *)wipe_scr_end)[i*SCREENHEIGHT+y[i]];
+	d = &((int16_t *)wipe_scr)[y[i]*SCREENWIDTH/2+i];
 	idx = 0;
 	for (j=dy;j;j--)
 	{
@@ -163,8 +163,8 @@ static boolean wipe_doMelt(int ticks)
 	  idx += SCREENWIDTH/2;
 	}
 	y[i] += dy;
-	s = &((short *)wipe_scr_start)[i*SCREENHEIGHT];
-	d = &((short *)wipe_scr)[y[i]*SCREENWIDTH/2+i];
+	s = &((int16_t *)wipe_scr_start)[i*SCREENHEIGHT];
+	d = &((int16_t *)wipe_scr)[y[i]*SCREENWIDTH/2+i];
 	idx = 0;
 	for (j=SCREENHEIGHT-y[i];j;j--)
 	{

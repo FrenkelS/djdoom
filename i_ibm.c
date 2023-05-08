@@ -337,7 +337,7 @@ static void I_UpdateBox (int x, int y, int width, int height)
 {
 	int		ofs;
 	byte	*source;
-	short	*dest;
+	int16_t	*dest;
 	int		p,x1, x2;
 	int		srcdelta, destdelta;
 	int		wwide;
@@ -363,7 +363,7 @@ static void I_UpdateBox (int x, int y, int width, int height)
 	{
 		outp (SC_INDEX+1, 1<<p);
 		source = screens[0] + ofs + p;
-		dest = (short *)(destscreen + (ofs>>2));
+		dest = (int16_t *)(destscreen + (ofs>>2));
 		for (y=0 ; y<height ; y++)
 		{
 			for (x=wwide ; x ; x--)
@@ -746,7 +746,7 @@ static _go32_dpmi_seginfo oldkeyboardisr = {0}, newkeyboardisr;
 #elif defined __DMC__
 static unsigned int oldkeyboardisroffset, oldkeyboardisrsegment;
 #elif defined __CCDL__
-static unsigned short oldkeyboardisrsegment, oldkeyboardisroffset = 0;
+static uint16_t oldkeyboardisrsegment, oldkeyboardisroffset = 0;
 #elif defined __WATCOMC__
 static void (_interrupt __far *oldkeyboardisr) () = NULL;
 #endif
@@ -799,7 +799,7 @@ static void I_ShutdownKeyboard (void)
 	//TODO implement I_ShutdownKeyboard()
 #endif
 
-	*(short *)(0x41c + __djgpp_conventional_base) = *(short *)(0x41a + __djgpp_conventional_base);      // clear bios key buffer
+	*(int16_t *)(0x41c + __djgpp_conventional_base) = *(int16_t *)(0x41a + __djgpp_conventional_base);      // clear bios key buffer
 }
 
 
@@ -895,11 +895,11 @@ static void I_ReadMouse (void)
 	regs.h.al = 11;                              // read counters
 	int386 (0x33, &regs, &regs);
 #if defined __CCDL__ || defined __WATCOMC__
-	ev.data2 = (short)regs.w.cx;
-	ev.data3 = -(short)regs.w.dx;
+	ev.data2 = (int16_t)regs.w.cx;
+	ev.data3 = -(int16_t)regs.w.dx;
 #else
-	ev.data2 = (short)regs.x.cx;
-	ev.data3 = -(short)regs.x.dx;
+	ev.data2 = (int16_t)regs.x.cx;
+	ev.data3 = -(int16_t)regs.x.dx;
 #endif
 
 	D_PostEvent (&ev);
@@ -1468,28 +1468,28 @@ typedef struct
 typedef struct
 {
 	int32_t    id;
-	short   intnum;                 // DOOM executes an int to execute commands
+	int16_t   intnum;                 // DOOM executes an int to execute commands
 
 // communication between DOOM and the driver
-	short   command;                // CMD_SEND or CMD_GET
-	short   remotenode;             // dest for send, set by get (-1 = no packet)
-	short   datalength;             // bytes in doomdata to be sent
+	int16_t   command;                // CMD_SEND or CMD_GET
+	int16_t   remotenode;             // dest for send, set by get (-1 = no packet)
+	int16_t   datalength;             // bytes in doomdata to be sent
 
 // info common to all nodes
-	short   numnodes;               // console is allways node 0
-	short   ticdup;                 // 1 = no duplication, 2-5 = dup for slow nets
-	short   extratics;              // 1 = send a backup tic in every packet
-	short   deathmatch;             // 1 = deathmatch
-	short   savegame;               // -1 = new game, 0-5 = load savegame
-	short   episode;                // 1-3
-	short   map;                    // 1-9
-	short   skill;                  // 1-5
+	int16_t   numnodes;               // console is allways node 0
+	int16_t   ticdup;                 // 1 = no duplication, 2-5 = dup for slow nets
+	int16_t   extratics;              // 1 = send a backup tic in every packet
+	int16_t   deathmatch;             // 1 = deathmatch
+	int16_t   savegame;               // -1 = new game, 0-5 = load savegame
+	int16_t   episode;                // 1-3
+	int16_t   map;                    // 1-9
+	int16_t   skill;                  // 1-5
 
 // info specific to this node
-	short   consoleplayer;
-	short   numplayers;
-	short   angleoffset;    // 1 = left, 0 = center, -1 = right
-	short   drone;                  // 1 = drone
+	int16_t   consoleplayer;
+	int16_t   numplayers;
+	int16_t   angleoffset;    // 1 = left, 0 = center, -1 = right
+	int16_t   drone;                  // 1 = drone
 
 // packet data to be sent
 	doomdata_t      data;

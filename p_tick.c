@@ -105,9 +105,9 @@ void P_ArchiveWorld(void)
 	sector_t	*sec;
 	line_t		*li;
 	side_t		*si;
-	short		*put;
+	int16_t		*put;
 	
-	put = (short *)save_p;
+	put = (int16_t *)save_p;
 
 //
 // do sectors
@@ -161,9 +161,9 @@ void P_UnArchiveWorld (void)
 	sector_t	*sec;
 	line_t		*li;
 	side_t		*si;
-	short		*get;
+	int16_t		*get;
 	
-	get = (short *)save_p;
+	get = (int16_t *)save_p;
 		
 //
 // do sectors

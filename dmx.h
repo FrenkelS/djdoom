@@ -42,7 +42,7 @@ int ENS_Detect(void);
 int CODEC_Detect(int *sbPort, int *sbDma);
 int GF1_Detect(void);
 void GF1_SetMap(char *dmxlump, int size);
-int SB_Detect(int *sbPort, int *sbIrq, int *sbDma, unsigned short *version);
+int SB_Detect(int *sbPort, int *sbIrq, int *sbDma, uint16_t *version);
 void SB_SetCard(int iBaseAddr, int iIrq, int iDma);
 int AL_Detect(int *wait, int *type);
 void AL_SetCard(int wait, void *genmidi);
@@ -63,5 +63,5 @@ void MPU_SetCard(int mPort);
 int DMX_Init(int ticrate, int maxsongs, unsigned int musicDevice, unsigned int sfxDevice);
 void DMX_DeInit(void);
 
-void WAV_PlayMode(int channels, unsigned short sampleRate);
+void WAV_PlayMode(int channels, uint16_t sampleRate);
 #endif

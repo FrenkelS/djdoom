@@ -60,15 +60,15 @@ typedef union {
 		unsigned		edi, esi, ebp, reserved, ebx, edx, ecx, eax;
 	} d;
 	struct {
-		unsigned short	di, di_hi;
-		unsigned short	si, si_hi;
-		unsigned short	bp, bp_hi;
-		unsigned short	res, res_hi;
-		unsigned short	bx, bx_hi;
-		unsigned short	dx, dx_hi;
-		unsigned short	cx, cx_hi;
-		unsigned short	ax, ax_hi;
-		unsigned short	flags, es, ds, fs, gs, ip, cs, sp, ss;
+		uint16_t	di, di_hi;
+		uint16_t	si, si_hi;
+		uint16_t	bp, bp_hi;
+		uint16_t	res, res_hi;
+		uint16_t	bx, bx_hi;
+		uint16_t	dx, dx_hi;
+		uint16_t	cx, cx_hi;
+		uint16_t	ax, ax_hi;
+		uint16_t	flags, es, ds, fs, gs, ip, cs, sp, ss;
 	} x;
 } __dpmi_regs;
 

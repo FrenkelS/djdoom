@@ -57,7 +57,7 @@ static fixed_t         bottomfrac, bottomstep;
 
 lighttable_t    **walllights;
 
-static short           *maskedtexturecol;
+static int16_t           *maskedtexturecol;
 
 /*
 ================
