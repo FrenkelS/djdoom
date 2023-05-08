@@ -182,11 +182,7 @@ int I_StartSound (void *data, int vol, int sep, int pitch)
 
 void I_StopSound(int handle)
 {
-//  extern volatile long gDmaCount;
-//  long waittocount;
   SFX_StopPatch(handle);
-//  waittocount = gDmaCount + 2;
-//  while (gDmaCount < waittocount) ;
 }
 
 boolean I_SoundIsPlaying(int handle)

@@ -73,16 +73,16 @@ typedef union {
 } __dpmi_regs;
 
 typedef struct {
-	unsigned long	largest_available_free_block_in_bytes;
-	unsigned long	maximum_unlocked_page_allocation_in_pages;
-	unsigned long	maximum_locked_page_allocation_in_pages;
-	unsigned long	linear_address_space_size_in_pages;
-	unsigned long	total_number_of_unlocked_pages;
-	unsigned long	total_number_of_free_pages;
-	unsigned long	total_number_of_physical_pages;
-	unsigned long	free_linear_address_space_in_pages;
-	unsigned long	size_of_paging_file_partition_in_pages;
-	unsigned long	reserved[3];
+	uint32_t	largest_available_free_block_in_bytes;
+	uint32_t	maximum_unlocked_page_allocation_in_pages;
+	uint32_t	maximum_locked_page_allocation_in_pages;
+	uint32_t	linear_address_space_size_in_pages;
+	uint32_t	total_number_of_unlocked_pages;
+	uint32_t	total_number_of_free_pages;
+	uint32_t	total_number_of_physical_pages;
+	uint32_t	free_linear_address_space_in_pages;
+	uint32_t	size_of_paging_file_partition_in_pages;
+	uint32_t	reserved[3];
 } __dpmi_free_mem_info;
 
 #if !defined C_ONLY

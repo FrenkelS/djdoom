@@ -97,12 +97,12 @@ extern byte *destview, *destscreen;	// PC direct to screen pointers
 #define MAXCHAR ((char)0x7f)
 #define MAXSHORT ((short)0x7fff)
 #define MAXINT	((int)0x7fffffff)	/* max pos 32-bit int */
-#define MAXLONG ((long)0x7fffffff)
+#define MAXLONG ((int32_t)0x7fffffff)
 
 #define MINCHAR ((char)0x80)
 #define MINSHORT ((short)0x8000)
 #define MININT 	((int)0x80000000)	/* max negative 32-bit integer */
-#define MINLONG ((long)0x80000000)
+#define MINLONG ((int32_t)0x80000000)
 
 #define	FINEANGLES			8192
 #define	FINEMASK			(FINEANGLES-1)
@@ -482,7 +482,7 @@ typedef struct
 
 typedef struct
 {
-	long	id;
+	int32_t	id;
 	short	intnum;			// DOOM executes an int to execute commands
 
 // communication between DOOM and the driver
@@ -651,7 +651,7 @@ fixed_t	FixedDiv (fixed_t a, fixed_t b);
 
 #ifdef __BIG_ENDIAN__
 short ShortSwap(short);
-long LongSwap(long);
+int32_t LongSwap(int32_t);
 #define SHORT(x)	ShortSwap(x)
 #define LONG(x)		LongSwap(x)
 #else

@@ -1467,7 +1467,7 @@ typedef struct
 /* // FUCKED LINES
 typedef struct
 {
-	long    id;
+	int32_t    id;
 	short   intnum;                 // DOOM executes an int to execute commands
 
 // communication between DOOM and the driver
