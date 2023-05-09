@@ -58,7 +58,7 @@ A valid mobj_t is a mobj_t that has the proper subsector_t filled in for it's xy
 
 static fixed_t		tmbbox[4];
 static mobj_t		*tmthing;
-static int			tmflags;
+static int32_t		tmflags;
 static fixed_t		tmx, tmy;
 
 boolean		floatok;				// if true, move would be ok if
@@ -76,7 +76,7 @@ line_t		*ceilingline;
 // until the move is proven valid
 #define	MAXSPECIALCROSS		8
 line_t	*spechit[MAXSPECIALCROSS];
-int			 numspechit;
+int32_t			 numspechit;
 
 /*
 ===============================================================================
@@ -127,7 +127,7 @@ static boolean PIT_StompThing (mobj_t *thing)
 
 boolean P_TeleportMove (mobj_t *thing, fixed_t x, fixed_t y)
 {
-	int			xl,xh,yl,yh,bx,by;
+	int32_t			xl,xh,yl,yh,bx,by;
 	subsector_t		*newsubsec;
 
 //
@@ -265,7 +265,7 @@ static boolean PIT_CheckThing (mobj_t *thing)
 {
 	fixed_t		blockdist;
 	boolean		solid;
-	int			damage;
+	int32_t		damage;
 
 	if (!(thing->flags & (MF_SOLID|MF_SPECIAL|MF_SHOOTABLE) ))
 		return true;
@@ -372,7 +372,7 @@ numspeciallines
 
 boolean P_CheckPosition (mobj_t *thing, fixed_t x, fixed_t y)
 {
-	int			xl,xh,yl,yh,bx,by;
+	int32_t			xl,xh,yl,yh,bx,by;
 	subsector_t		*newsubsec;
 
 	tmthing = thing;
@@ -447,7 +447,7 @@ boolean P_CheckPosition (mobj_t *thing, fixed_t x, fixed_t y)
 boolean P_TryMove (mobj_t *thing, fixed_t x, fixed_t y)
 {
 	fixed_t		oldx, oldy;
-	int			side, oldside;
+	int32_t		side, oldside;
 	line_t		*ld;
 
 	floatok = false;
@@ -571,7 +571,7 @@ static fixed_t		tmxmove, tmymove;
 
 static void P_HitSlideLine (line_t *ld)
 {
-	int			side;
+	int32_t		side;
 	angle_t		lineangle, moveangle, deltaangle;
 	fixed_t		movelen, newlen;
 	
@@ -674,7 +674,7 @@ void P_SlideMove (mobj_t *mo)
 	fixed_t		leadx, leady;
 	fixed_t		trailx, traily;
 	fixed_t		newx, newy;
-	int			hitcount;
+	int32_t		hitcount;
 		
 	slidemo = mo;
 	hitcount = 0;
@@ -774,7 +774,7 @@ mobj_t		*linetarget;			// who got hit (or NULL)
 static mobj_t		*shootthing;
 static fixed_t		shootz;					// height if not aiming up or down
 									// ???: use slope for monsters?
-static int			la_damage;
+static int32_t			la_damage;
 fixed_t		attackrange;
 
 static fixed_t		aimslope;
@@ -1012,7 +1012,7 @@ fixed_t P_AimLineAttack (mobj_t *t1, angle_t angle, fixed_t distance)
 =================
 */
 
-void P_LineAttack (mobj_t *t1, angle_t angle, fixed_t distance, fixed_t slope, int damage)
+void P_LineAttack (mobj_t *t1, angle_t angle, fixed_t distance, fixed_t slope, int32_t damage)
 {
 	fixed_t		x2, y2;
 	
@@ -1043,7 +1043,7 @@ static mobj_t		*usething;
 
 static boolean		PTR_UseTraverse (intercept_t *in)
 {
-	int		side;
+	int32_t		side;
 	if (!in->d.line->special)
 	{
 		P_LineOpening (in->d.line);
@@ -1073,7 +1073,7 @@ static boolean		PTR_UseTraverse (intercept_t *in)
 
 void P_UseLines (player_t *player)
 {
-	int			angle;
+	int32_t		angle;
 	fixed_t		x1, y1, x2, y2;
 	
 	usething = player->mo;
@@ -1099,7 +1099,7 @@ void P_UseLines (player_t *player)
 
 static mobj_t		*bombsource;
 static mobj_t		*bombspot;
-static int			bombdamage;
+static int32_t		bombdamage;
 
 /*
 =================
@@ -1144,9 +1144,9 @@ static boolean PIT_RadiusAttack (mobj_t *thing)
 =================
 */
 
-void P_RadiusAttack (mobj_t *spot, mobj_t *source, int damage)
+void P_RadiusAttack (mobj_t *spot, mobj_t *source, int32_t damage)
 {
-	int			x,y, xl, xh, yl, yh;
+	int32_t		x,y, xl, xh, yl, yh;
 	fixed_t		dist;
 	
 	dist = (damage+MAXRADIUS)<<FRACBITS;
@@ -1240,7 +1240,7 @@ static boolean PIT_ChangeSector (mobj_t *thing)
 
 boolean P_ChangeSector (sector_t *sector, boolean crunch)
 {
-	int			x,y;
+	int32_t			x,y;
 	
 	nofit = false;
 	crushchange = crunch;

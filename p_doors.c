@@ -218,7 +218,7 @@ boolean EV_DoLockedDoor (line_t *line, vldoor_e type, mobj_t *thing)
 
 boolean EV_DoDoor(line_t *line, vldoor_e type)
 {
-	int secnum;
+	int32_t secnum;
 	boolean retcode;
 	sector_t *sec;
 	vldoor_t *door;
@@ -302,7 +302,7 @@ void EV_VerticalDoor(line_t *line, mobj_t *thing)
 	player_t		*player;
 	sector_t		*sec;
 	vldoor_t		*door;
-	int				side;
+	int32_t			side;
 	
 	side = 0; // only front sides can be used
 //

@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -108,7 +109,7 @@ static anim_t epsd2animinfo[] =
 	{ ANIM_ALWAYS, TICRATE/4, 3, { 40, 0 } }
 };
 
-static int NUMANIMS[NUMEPISODES] =
+static int32_t NUMANIMS[NUMEPISODES] =
 {
 	sizeof(epsd0animinfo)/sizeof(anim_t),
 #if !APPVER_CHEX

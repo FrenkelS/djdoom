@@ -51,7 +51,7 @@ static void ST_refreshBackground(void)
 //  intercept cheats.
 void ST_Responder (event_t *ev)
 {
-  int		i;
+  int32_t		i;
     
   // Filter automap on/off.
   if (ev->type == ev_keyup && ((ev->data1 & 0xffff0000) == AM_MSGHEADER))
@@ -127,8 +127,8 @@ void ST_Responder (event_t *ev)
 	else if (cht_CheckCheat(&cheat_mus, ev->data1))
 	{
 	
-	  char	buf[3];
-	  int		musnum;
+	  char		buf[3];
+	  int32_t	musnum;
 	
 	  plyr->message = STSTR_MUS;
 	  cht_GetParam(&cheat_mus, buf);
@@ -220,8 +220,8 @@ void ST_Responder (event_t *ev)
       if (cht_CheckCheat(&cheat_clev, ev->data1))
       {
 	char		buf[3];
-	int		epsd;
-	int		map;
+	int32_t		epsd;
+	int32_t		map;
       
 	cht_GetParam(&cheat_clev, buf);
       
@@ -260,11 +260,11 @@ void ST_Responder (event_t *ev)
 
 
 
-static int ST_calcPainOffset(void)
+static int32_t ST_calcPainOffset(void)
 {
-  int health;
-  static int lastcalc;
-  static int oldhealth = -1;
+  int32_t health;
+  static int32_t lastcalc;
+  static int32_t oldhealth = -1;
     
   health = plyr->health > 100 ? 100 : plyr->health;
 
@@ -285,11 +285,11 @@ static int ST_calcPainOffset(void)
 //
 static void ST_updateFaceWidget(void)
 {
-  int i;
+  int32_t i;
   angle_t badguyangle;
   angle_t diffang;
-  static int lastattackdown = -1;
-  static int priority = 0;
+  static int32_t lastattackdown = -1;
+  static int32_t priority = 0;
   boolean doevilgrin;
 
   if (priority < 10)
@@ -452,8 +452,8 @@ static void ST_updateFaceWidget(void)
 
 static void ST_updateWidgets(void)
 {
-  static int largeammo = 1994; // means "n/a"
-  int i;
+  static int32_t largeammo = 1994; // means "n/a"
+  int32_t i;
 
 // must redirect the pointer if the ready weapon has changed.
 //  if (w_ready.data != plyr->readyweapon)
@@ -463,8 +463,8 @@ static void ST_updateWidgets(void)
   else
     w_ready.num = &plyr->ammo[weaponinfo[plyr->readyweapon].ammo];
 //{
-// static int tic=0;
-// static int dir=-1;
+// static int32_t tic=0;
+// static int32_t dir=-1;
 // if (!(tic&15))
 //   plyr->ammo[weaponinfo[plyr->readyweapon].ammo]+=dir;
 // if (plyr->ammo[weaponinfo[plyr->readyweapon].ammo] == -100)
@@ -519,14 +519,14 @@ void ST_Ticker (void)
 
 }
 
-static int st_palette = 0;
+static int32_t st_palette = 0;
 
 static void ST_doPaletteStuff(void)
 {
 
-  int palette;
+  int32_t palette;
   byte *pal;
-  int cnt, bzc;
+  int32_t cnt, bzc;
 
   cnt = plyr->damagecount;
 
@@ -579,7 +579,7 @@ static void ST_doPaletteStuff(void)
 
 static void ST_drawWidgets(boolean refresh)
 {
-  int i;
+  int32_t i;
 
 // used by w_arms[] widgets
   st_armson = st_statusbaron && !deathmatch;
@@ -650,7 +650,7 @@ void ST_Drawer (boolean fullscreen, boolean refresh)
 static void ST_loadGraphics(void)
 {
 
-  int i, j, facenum;   
+  int32_t i, j, facenum;   
   char namebuf[9];
 
 // Load the numbers, tall and short
@@ -729,7 +729,7 @@ static void ST_loadData(void)
 static void ST_initData(void)
 {
 
-  int i;
+  int32_t i;
 
   st_firsttime = true;
   plyr = &players[consoleplayer];
@@ -762,7 +762,7 @@ static void ST_initData(void)
 static void ST_createWidgets(void)
 {
 
-  int i;
+  int32_t i;
 
 // ready weapon ammo
   STlib_initNum(&w_ready, ST_AMMOX, ST_AMMOY, tallnum,
@@ -783,7 +783,7 @@ static void ST_createWidgets(void)
   for(i=0;i<6;i++)
   {
     STlib_initMultIcon(&w_arms[i], ST_ARMSX+(i%3)*ST_ARMSXSPACE, ST_ARMSY+(i/3)*ST_ARMSYSPACE,
-      arms[i], (int *) &plyr->weaponowned[i+1],  &st_armson);
+      arms[i], (int32_t *) &plyr->weaponowned[i+1],  &st_armson);
   }
 
 // frags sum

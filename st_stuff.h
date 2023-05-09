@@ -227,16 +227,16 @@ static player_t *plyr;
 static boolean st_firsttime;
 
 // used to execute ST_Init() only once
-static int veryfirsttime = 1;
+static int32_t veryfirsttime = 1;
 
 // lump number for PLAYPAL
-static int lu_palette;
+static int32_t lu_palette;
 
 // used for timing
-static unsigned int st_clock;
+static uint32_t st_clock;
 
 // used for making messages go away
-static int st_msgcounter=0;
+static int32_t st_msgcounter=0;
 
 // used when in chat 
 static st_chatstateenum_t st_chatstate;
@@ -326,55 +326,55 @@ static st_number_t w_maxammo[4];
 
 
  // number of frags so far in deathmatch
-static int st_fragscount;
+static int32_t st_fragscount;
 
 // used to use appopriately pained face
-static int st_oldhealth = -1;
+static int32_t st_oldhealth = -1;
 
 // used for evil grin
 static boolean oldweaponsowned[NUMWEAPONS]; 
 
  // count until face changes
-static int st_facecount = 0;
+static int32_t st_facecount = 0;
 
 // current face index, used by w_faces
-static int st_faceindex = 0;
+static int32_t st_faceindex = 0;
 
 // holds key-type for each key box on bar
-static int keyboxes[3]; 
+static int32_t keyboxes[3]; 
 
 // a random number per tick
-static int st_randomnumber;  
+static int32_t st_randomnumber;  
 
 
 
 // Massive bunches of cheat shit
 //  to keep it from being easy to figure them out.
 // Yeah, right...
-static unsigned char cheat_mus_seq[] =
+static uint8_t cheat_mus_seq[] =
 {
   0xb2, 0x26, 0xb6, 0xae, 0xea, 1, 0, 0, 0xff
 };
 
 #if APPVER_CHEX
-unsigned char cheat_choppers_seq[] =
+uint8_t cheat_choppers_seq[] =
 {
   0x72, 0xf6, 0xa6, 0x36, // joelkoenigs
   0xf2, 0xf6, 0xa6, 0x76, 0xb2, 0xe6, 0xea, 0xff
 };
 
-unsigned char cheat_god_seq[] =
+uint8_t cheat_god_seq[] =
 {
   0x26, 0xa2, 0x6e, 0xb2, 0x26, 0x62, 0x6a, 0xae, 0xea, 0xff // davidbrus
 };
 
-unsigned char cheat_ammo_seq[] =
+uint8_t cheat_ammo_seq[] =
 {
   0xea, 0xe2, 0xf6, 0x2e, 0x2e,	// scottholman
   0x32, 0xf6, 0x36, 0xb6, 0xa2, 0x76, 0xff
 };
 
-unsigned char cheat_ammonokey_seq[] =
+uint8_t cheat_ammonokey_seq[] =
 {
   0xb6, 0xb2, 0xf2, 0xa6,	// mikekoenigs
   0xf2, 0xf6, 0xa6, 0x76, 0xb2, 0xe6, 0xea, 0xff
@@ -382,21 +382,21 @@ unsigned char cheat_ammonokey_seq[] =
 
 
 // Smashing Pumpkins Into Samml Piles Of Putried Debris.
-unsigned char cheat_noclip_seq[] =
+uint8_t cheat_noclip_seq[] =
 {
   0xe2, 0x32, 0xa2, 0x6a, 0x36, 0xa6, 0xea,	// charlesjacobi
   0x72, 0xa2, 0xe2, 0xf6, 0x62, 0xb2, 0xff
 };
 
 //
-unsigned char cheat_commercial_noclip_seq[] =
+uint8_t cheat_commercial_noclip_seq[] =
 {
   0xb2, 0x26, 0xe2, 0x36, 0xb2, 0x2a, 0xff	// idclip
 };
 
 
 
-unsigned char cheat_powerup_seq[7][13] =
+uint8_t cheat_powerup_seq[7][13] =
 {
  // andrewbenson
  { 0xa2, 0x76, 0x26, 0x6a, 0xa6, 0xee, 0x62, 0xa6, 0x76, 0xea, 0xf6, 0x76, 0xff},
@@ -415,55 +415,55 @@ unsigned char cheat_powerup_seq[7][13] =
 };
 
 
-unsigned char cheat_clev_seq[] =
+uint8_t cheat_clev_seq[] =
 {
   0x36, 0xa6, 0xa6, 0xea, 0x76, 0xba, 0x26, 0xa6, 0x6a, 1, 0, 0, 0xff // leesnyder
 };
 
 
 // my position cheat
-unsigned char cheat_mypos_seq[] =
+uint8_t cheat_mypos_seq[] =
 {
   0xf2, 0xb2, 0xb6, 0x32, 0xba, 0xa6, 0x6a, 0xea, 0xff
 };
 #else // !APPVER_CHEX
-static unsigned char cheat_choppers_seq[] =
+static uint8_t cheat_choppers_seq[] =
 {
   0xb2, 0x26, 0xe2, 0x32, 0xf6, 0x2a, 0x2a, 0xa6, 0x6a, 0xea, 0xff // id...
 };
 
-static unsigned char cheat_god_seq[] =
+static uint8_t cheat_god_seq[] =
 {
   0xb2, 0x26, 0x26, 0xaa, 0x26, 0xff  // iddqd
 };
 
-static unsigned char cheat_ammo_seq[] =
+static uint8_t cheat_ammo_seq[] =
 {
   0xb2, 0x26, 0xf2, 0x66, 0xa2, 0xff	// idkfa
 };
 
-static unsigned char cheat_ammonokey_seq[] =
+static uint8_t cheat_ammonokey_seq[] =
 {
   0xb2, 0x26, 0x66, 0xa2, 0xff	// idfa
 };
 
 
 // Smashing Pumpkins Into Samml Piles Of Putried Debris. 
-static unsigned char cheat_noclip_seq[] =
+static uint8_t cheat_noclip_seq[] =
 {
   0xb2, 0x26, 0xea, 0x2a, 0xb2,	// idspispopd
   0xea, 0x2a, 0xf6, 0x2a, 0x26, 0xff
 };
 
 //
-static unsigned char cheat_commercial_noclip_seq[] =
+static uint8_t cheat_commercial_noclip_seq[] =
 {
   0xb2, 0x26, 0xe2, 0x36, 0xb2, 0x2a, 0xff	// idclip
 }; 
 
 
 
-static unsigned char cheat_powerup_seq[7][10] =
+static uint8_t cheat_powerup_seq[7][10] =
 {
   { 0xb2, 0x26, 0x62, 0xa6, 0x32, 0xf6, 0x36, 0x26, 0x6e, 0xff }, 	// beholdv
   { 0xb2, 0x26, 0x62, 0xa6, 0x32, 0xf6, 0x36, 0x26, 0xea, 0xff }, 	// beholds
@@ -475,14 +475,14 @@ static unsigned char cheat_powerup_seq[7][10] =
 };
 
 
-static unsigned char cheat_clev_seq[] =
+static uint8_t cheat_clev_seq[] =
 {
   0xb2, 0x26,  0xe2, 0x36, 0xa6, 0x6e, 1, 0, 0, 0xff	// idclev
 };
 
 
 // my position cheat
-static unsigned char cheat_mypos_seq[] =
+static uint8_t cheat_mypos_seq[] =
 {
   0xb2, 0x26, 0xb6, 0xba, 0x2a, 0xf6, 0xea, 0xff	// idmypos
 }; 

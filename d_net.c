@@ -51,18 +51,18 @@ a gametic cannot be run until nettics[] > gametic for all players
 static ticcmd_t                localcmds[BACKUPTICS];
 
 ticcmd_t        netcmds[MAXPLAYERS][BACKUPTICS];
-static int             nettics[MAXNETNODES];
+static int32_t             nettics[MAXNETNODES];
 static boolean                 nodeingame[MAXNETNODES];        // set false as nodes leave game
 static boolean                 remoteresend[MAXNETNODES];      // set when local needs tics
-static int                             resendto[MAXNETNODES];                  // set when remote needs tics
-static int                             resendcount[MAXNETNODES];
+static int32_t                             resendto[MAXNETNODES];                  // set when remote needs tics
+static int32_t                             resendcount[MAXNETNODES];
 
-static int                             nodeforplayer[MAXPLAYERS];
+static int32_t                             nodeforplayer[MAXPLAYERS];
 
-int             maketic;
-static int                             skiptics;
-int                             ticdup;
-static int                             maxsend;        // BACKUPTICS/(2*ticdup)-1
+int32_t             maketic;
+static int32_t                             skiptics;
+int32_t                             ticdup;
+static int32_t                             maxsend;        // BACKUPTICS/(2*ticdup)-1
 
 void D_ProcessEvents (void);
 void G_BuildTiccmd (ticcmd_t *cmd);
@@ -72,28 +72,28 @@ static boolean                 reboundpacket;
 static doomdata_t              reboundstore;
 
 
-static int     NetbufferSize (void)
+static int32_t     NetbufferSize (void)
 {
-	return (int)&(((doomdata_t *)0)->cmds[netbuffer->numtics]);
+	return (int32_t)&(((doomdata_t *)0)->cmds[netbuffer->numtics]);
 }
 
-static unsigned NetbufferChecksum (void)
+static uint32_t NetbufferChecksum (void)
 {
-	unsigned                c;
-	int             i,l;
+	uint32_t                c;
+	int32_t             i,l;
 
 	c = 0x1234567;
 
-	l = (NetbufferSize () - (int)&(((doomdata_t *)0)->retransmitfrom))/4;
+	l = (NetbufferSize () - (int32_t)&(((doomdata_t *)0)->retransmitfrom))/4;
 	for (i=0 ; i<l ; i++)
-		c += ((unsigned *)&netbuffer->retransmitfrom)[i] * (i+1);
+		c += ((uint32_t *)&netbuffer->retransmitfrom)[i] * (i+1);
 
 	return c & NCMD_CHECKSUM;
 }
 
-static int ExpandTics (int low)
+static int32_t ExpandTics (int32_t low)
 {
-	int     delta;
+	int32_t     delta;
 
 	delta = low - (maketic&0xff);
 
@@ -120,7 +120,7 @@ static int ExpandTics (int low)
 ==============
 */
 
-static void HSendPacket (int node, int flags)
+static void HSendPacket (int32_t node, int32_t flags)
 {
 	netbuffer->checksum = NetbufferChecksum () | flags;
 
@@ -143,8 +143,8 @@ static void HSendPacket (int node, int flags)
 
 if (debugfile)
 {
-	int             i;
-	int             realretrans;
+	int32_t             i;
+	int32_t             realretrans;
 	if (netbuffer->checksum & NCMD_RETRANSMIT)
 		realretrans = ExpandTics (netbuffer->retransmitfrom);
 	else
@@ -205,8 +205,8 @@ static boolean HGetPacket (void)
 
 if (debugfile)
 {
-	int             realretrans;
-			int     i;
+	int32_t             realretrans;
+			int32_t     i;
 
 	if (netbuffer->checksum & NCMD_SETUP)
 		fprintf (debugfile,"setup packet\n");
@@ -239,11 +239,11 @@ static char    exitmsg[80];
 
 static void GetPackets (void)
 {
-	int             netconsole;
-	int             netnode;
+	int32_t         netconsole;
+	int32_t         netnode;
 	ticcmd_t        *src, *dest;
-	int             realend;
-	int             realstart;
+	int32_t         realend;
+	int32_t         realstart;
 
 	while (HGetPacket ())
 	{
@@ -327,7 +327,7 @@ fprintf (debugfile,"missed tics from %i (%i - %i)\n", netnode, realstart, nettic
 // update command store from the packet
 //
 {
-	int             start;
+	int32_t             start;
 
 		remoteresend[netnode] = false;
 
@@ -356,15 +356,15 @@ fprintf (debugfile,"missed tics from %i (%i - %i)\n", netnode, realstart, nettic
 =============
 */
 
-static int      gametime;
+static int32_t      gametime;
 
 void NetUpdate (void)
 {
-	int             nowtime;
-	int             newtics;
-	int                             i,j;
-	int                             realstart;
-	int                             gameticdiv;
+	int32_t             nowtime;
+	int32_t             newtics;
+	int32_t                             i,j;
+	int32_t                             realstart;
+	int32_t                             gameticdiv;
 
 //
 // check time
@@ -458,7 +458,7 @@ listen:
 static void CheckAbort (void)
 {
 	event_t *ev;
-	int             stoptic;
+	int32_t             stoptic;
 
 	stoptic = I_GetTime () + 2;
 	while (I_GetTime() < stoptic)
@@ -483,7 +483,7 @@ static void CheckAbort (void)
 
 static void D_ArbitrateNetStart (void)
 {
-	int             i;
+	int32_t             i;
 	boolean gotinfo[MAXNETNODES];
 
 	autostart = true;
@@ -558,11 +558,11 @@ static void D_ArbitrateNetStart (void)
 ===================
 */
 
-extern  int                     viewangleoffset;
+extern  int32_t                     viewangleoffset;
 
 void D_CheckNetGame (void)
 {
-	int             i;
+	int32_t             i;
 
 	for (i=0 ; i<MAXNETNODES ; i++)
 	{
@@ -610,7 +610,7 @@ void D_CheckNetGame (void)
 
 void D_QuitNetGame (void)
 {
-	int             i, j;
+	int32_t             i, j;
 
 	if (debugfile)
 		fclose (debugfile);
@@ -640,20 +640,20 @@ void D_QuitNetGame (void)
 ===============
 */
 
-static int     frameon;
-static int     frameskip[4];
-static int             oldnettics;
+static int32_t     frameon;
+static int32_t     frameskip[4];
+static int32_t             oldnettics;
 extern  boolean advancedemo;
 
 void TryRunTics (void)
 {
-	int             i;
-	int             lowtic;
-	int             entertic;
-	static int              oldentertics;
-	int                             realtics, availabletics;
-	int                             counts;
-	int                             numplaying;
+	int32_t             i;
+	int32_t             lowtic;
+	int32_t             entertic;
+	static int32_t              oldentertics;
+	int32_t                             realtics, availabletics;
+	int32_t                             counts;
+	int32_t                             numplaying;
 
 //
 // get real tics
@@ -771,8 +771,8 @@ void TryRunTics (void)
 			if (i != ticdup-1)
 			{
 				ticcmd_t        *cmd;
-				int                     buf;
-				int                     j;
+				int32_t                     buf;
+				int32_t                     j;
 
 				buf = (gametic/ticdup)%BACKUPTICS;
 				for (j=0 ; j<MAXPLAYERS ; j++)

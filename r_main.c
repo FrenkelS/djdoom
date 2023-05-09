@@ -24,28 +24,28 @@
 
 */
 
-int			viewangleoffset;
+int32_t			viewangleoffset;
 
-int			validcount = 1;		// increment every time a check is made
+int32_t			validcount = 1;		// increment every time a check is made
 
 lighttable_t	*fixedcolormap;
 extern	lighttable_t	**walllights;
 
-static int		centerx;
-int				centery	__attribute__ ((externally_visible));
+static int32_t		centerx;
+int32_t				centery	__attribute__ ((externally_visible));
 fixed_t			centerxfrac, centeryfrac;
 fixed_t			projection;
 
-static int				framecount;		// just for profiling purposes
+static int32_t				framecount;		// just for profiling purposes
 
-int		sscount;
+int32_t		sscount;
 
 fixed_t		viewx, viewy, viewz;
 angle_t		viewangle;
 fixed_t		viewcos, viewsin;
 player_t	*viewplayer;
 
-int				detailshift;		// 0 = high, 1 = low
+int32_t				detailshift;		// 0 = high, 1 = low
 
 //
 // precalculated math tables
@@ -55,7 +55,7 @@ angle_t		clipangle;
 // The viewangletox[viewangle + FINEANGLES/4] lookup maps the visible view
 // angles  to screen X coordinates, flattening the arc to a flat projection
 // plane.  There will be many angles mapped to the same X.
-int			viewangletox[FINEANGLES/2];
+int32_t			viewangletox[FINEANGLES/2];
 
 // The xtoviewangleangle[] table maps a screen pixel to the lowest viewangle
 // that maps back to x ranges from clipangle to -clipangle
@@ -73,7 +73,7 @@ lighttable_t	*scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
 static lighttable_t	*scalelightfixed[MAXLIGHTSCALE];
 lighttable_t	*zlight[LIGHTLEVELS][MAXLIGHTZ];
 
-int			extralight;			// bumped light from gun blasts
+int32_t			extralight;			// bumped light from gun blasts
 
 void		(*colfunc) (void);
 void		(*basecolfunc) (void);
@@ -90,7 +90,7 @@ void		(*spanfunc) (void);
 ===============================================================================
 */
 
-int	R_PointOnSide (fixed_t x, fixed_t y, node_t *node)
+int32_t	R_PointOnSide (fixed_t x, fixed_t y, node_t *node)
 {
 	fixed_t	dx,dy;
 	fixed_t	left, right;
@@ -188,13 +188,13 @@ boolean	R_PointOnSegSide (fixed_t x, fixed_t y, seg_t *line)
 #define	DBITS		(FRACBITS-SLOPEBITS)
 
 
-extern	int	tantoangle[SLOPERANGE+1];		// get from tables.c
+extern	int32_t	tantoangle[SLOPERANGE+1];		// get from tables.c
 
-// int	tantoangle[SLOPERANGE+1];
+// int32_t	tantoangle[SLOPERANGE+1];
 
-static int SlopeDiv (unsigned num, unsigned den)
+static int32_t SlopeDiv (uint32_t num, uint32_t den)
 {
-	unsigned ans;
+	uint32_t ans;
 	if (den < 512)
 		return SLOPERANGE;
 	ans = (num<<3)/(den>>8);
@@ -257,7 +257,7 @@ angle_t R_PointToAngle2 (fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2)
 
 fixed_t	R_PointToDist (fixed_t x, fixed_t y)
 {
-	int		angle;
+	int32_t	angle;
 	fixed_t	dx, dy, temp;
 	fixed_t	dist;
 
@@ -295,8 +295,8 @@ fixed_t	R_PointToDist (fixed_t x, fixed_t y)
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 {
 	fixed_t		scale;
-	int			anglea, angleb;
-	int			sinea, sineb;
+	int32_t		anglea, angleb;
+	int32_t		sinea, sineb;
 	fixed_t		num,den;
 
 	anglea = ANG90 + (visangle-viewangle);
@@ -332,9 +332,9 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 
 static void R_InitTextureMapping (void)
 {
-	int			i;
-	int			x;
-	int			t;
+	int32_t		i;
+	int32_t		x;
+	int32_t		t;
 	fixed_t		focallength;
 
 
@@ -409,8 +409,8 @@ static void R_InitTextureMapping (void)
 
 static void R_InitLightTables (void)
 {
-	int		i,j, level, startmap;
-	int		scale;
+	int32_t		i,j, level, startmap;
+	int32_t		scale;
 
 //
 // Calculate the light levels to use for each level / distance combination
@@ -445,9 +445,9 @@ static void R_InitLightTables (void)
 */
 
 boolean	setsizeneeded;
-static int		setblocks, setdetail;
+static int32_t		setblocks, setdetail;
 
-void R_SetViewSize (int blocks, int detail)
+void R_SetViewSize (int32_t blocks, int32_t detail)
 {
 	setsizeneeded = true;
 	setblocks = blocks;
@@ -465,7 +465,7 @@ void R_SetViewSize (int blocks, int detail)
 void R_ExecuteSetViewSize (void)
 {
 	fixed_t	cosadj, dy;
-	int		i,j, level, startmap;
+	int32_t	i,j, level, startmap;
 
 	setsizeneeded = false;
 
@@ -563,8 +563,8 @@ void R_ExecuteSetViewSize (void)
 ==============
 */
 
-extern int	detailLevel;
-extern int	screenblocks;
+extern int32_t	detailLevel;
+extern int32_t	screenblocks;
 
 void R_Init (void)
 {
@@ -595,7 +595,7 @@ void R_Init (void)
 subsector_t *R_PointInSubsector (fixed_t x, fixed_t y)
 {
 	node_t	*node;
-	int		side, nodenum;
+	int32_t	side, nodenum;
 
 	if (!numnodes)				// single subsector is a special case
 		return subsectors;
@@ -623,7 +623,7 @@ subsector_t *R_PointInSubsector (fixed_t x, fixed_t y)
 
 static void R_SetupFrame (player_t *player)
 {
-	int	i;
+	int32_t	i;
 
 	viewplayer = player;
 	viewx = player->mo->x;

@@ -48,17 +48,17 @@
 #define SHOWNEXTLOCDELAY 4
 //#define SHOWLASTLOCDELAY SHOWNEXTLOCDELAY
 
-static int acceleratestage; // used to accelerate or skip a stage
-static int me; // wbs->pnum
+static int32_t acceleratestage; // used to accelerate or skip a stage
+static int32_t me; // wbs->pnum
 static stateenum_t state;  // specifies current state
 static wbstartstruct_t *wbs; // contains information passed into intermission
 static wbplayerstruct_t *plrs;  // wbs->plyr[]
-static int cnt;  // used for general timing
-static int bcnt;// used for timing of background animation
-static int firstrefresh; // signals to refresh everything for one frame
-static int cnt_kills[MAXPLAYERS], cnt_items[MAXPLAYERS], cnt_secret[MAXPLAYERS];
-static int cnt_time, cnt_par, cnt_pause;
-static int NUMCMAPS; // # of commercial levels
+static int32_t cnt;  // used for general timing
+static int32_t bcnt;// used for timing of background animation
+static int32_t firstrefresh; // signals to refresh everything for one frame
+static int32_t cnt_kills[MAXPLAYERS], cnt_items[MAXPLAYERS], cnt_secret[MAXPLAYERS];
+static int32_t cnt_time, cnt_par, cnt_pause;
+static int32_t NUMCMAPS; // # of commercial levels
 
 //
 //	GRAPHICS
@@ -94,7 +94,7 @@ static void WI_slamBackground(void)
 // Draws "<Levelname> Finished!"
 static void WI_drawLF(void)
 {
-  int y = WI_TITLEY;
+  int32_t y = WI_TITLEY;
   // draw <LevelName> 
   V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->last]->width))/2, y, FB, lnames[wbs->last]);
   // draw "Finished!"
@@ -105,7 +105,7 @@ static void WI_drawLF(void)
 // Draws "Entering <LevelName>"
 static void WI_drawEL(void)
 {
-  int y = WI_TITLEY;
+  int32_t y = WI_TITLEY;
   // draw "Entering"
   V_DrawPatch((SCREENWIDTH - SHORT(entering->width))/2, y, FB, entering);
   // draw level
@@ -113,9 +113,9 @@ static void WI_drawEL(void)
   V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->next]->width))/2, y, FB, lnames[wbs->next]);
 }
 
-static void WI_drawOnLnode(int n, patch_t *c[])
+static void WI_drawOnLnode(int32_t n, patch_t *c[])
 {
-  int i, left, top, right, bottom;
+  int32_t i, left, top, right, bottom;
   boolean fits = false;
 
   i = 0;
@@ -149,7 +149,7 @@ static void WI_drawOnLnode(int n, patch_t *c[])
 
 static void WI_initAnimatedBack(void)
 {
-  int i;
+  int32_t i;
   anim_t *a;
 
   if (commercial)
@@ -175,7 +175,7 @@ static void WI_initAnimatedBack(void)
 
 static void WI_updateAnimatedBack(void)
 {
-  int i;
+  int32_t i;
   anim_t *a;
 
   if (commercial)
@@ -223,7 +223,7 @@ static void WI_updateAnimatedBack(void)
 
 static void WI_drawAnimatedBack(void)
 {
-    int i;
+    int32_t i;
     anim_t *a;
 
     if (commercial)
@@ -248,10 +248,11 @@ static void WI_drawAnimatedBack(void)
 // Returns new x position.
 //
 
-static int WI_drawNum (int x, int y, int n, int digits)
+static int32_t WI_drawNum (int32_t x, int32_t y, int32_t n, int32_t digits)
 {
-  int fontwidth = SHORT(num[0]->width);
-  int neg, temp;
+  int32_t fontwidth = SHORT(num[0]->width);
+  boolean neg;
+  int32_t temp;
 
   if (digits < 0)
   {
@@ -293,7 +294,7 @@ static int WI_drawNum (int x, int y, int n, int digits)
   return x;
 }
 
-static void WI_drawPercent (int x, int y, int p)
+static void WI_drawPercent (int32_t x, int32_t y, int32_t p)
 {
   if (p < 0)
     return;
@@ -305,9 +306,9 @@ static void WI_drawPercent (int x, int y, int p)
 // Display level completion time and par,
 //  or "sucks" message if overflow.
 //
-static void WI_drawTime (int x, int y, int t)
+static void WI_drawTime (int32_t x, int32_t y, int32_t t)
 {
-  int div, n;
+  int32_t div, n;
 
   if (t<0)
     return;
@@ -374,7 +375,7 @@ static void WI_updateShowNextLoc(void)
 
 static void WI_drawShowNextLoc(void)
 {
-  int i, last;
+  int32_t i, last;
 
   WI_slamBackground();
   // draw animated background
@@ -411,10 +412,10 @@ static void WI_drawNoState(void)
   WI_drawShowNextLoc();
 }
 
-static int WI_fragSum(int playernum)
+static int32_t WI_fragSum(int32_t playernum)
 {
-  int i;
-  int frags = 0;
+  int32_t i;
+  int32_t frags = 0;
     
   for (i=0 ; i<MAXPLAYERS ; i++)
     if (playeringame[i] && i!=playernum)
@@ -428,11 +429,11 @@ static int WI_fragSum(int playernum)
   return frags;
 }
 
-static int dm_state, dm_frags[MAXPLAYERS][MAXPLAYERS], dm_totals[MAXPLAYERS];
+static int32_t dm_state, dm_frags[MAXPLAYERS][MAXPLAYERS], dm_totals[MAXPLAYERS];
 
 static void WI_initDeathmatchStats(void)
 {
-  int	i, j;
+  int32_t	i, j;
 
   state = StatCount;
   acceleratestage = 0;
@@ -454,7 +455,7 @@ static void WI_initDeathmatchStats(void)
 
 static void WI_updateDeathmatchStats(void)
 {
-  int i, j;
+  int32_t i, j;
   boolean stillticking;
 
   WI_updateAnimatedBack();
@@ -534,7 +535,7 @@ static void WI_updateDeathmatchStats(void)
 
 static void WI_drawDeathmatchStats(void)
 {
-  int i, j, x, y, w;
+  int32_t i, j, x, y, w;
 
   WI_slamBackground();
   WI_drawAnimatedBack(); // draw animated background
@@ -587,11 +588,11 @@ static void WI_drawDeathmatchStats(void)
 }
 
 
-static int cnt_frags[MAXPLAYERS], dofrags, ng_state;
+static int32_t cnt_frags[MAXPLAYERS], dofrags, ng_state;
 
 static void WI_initNetgameStats(void)
 {
-  int i;
+  int32_t i;
 
   state = StatCount;
   acceleratestage = 0;
@@ -611,7 +612,7 @@ static void WI_initNetgameStats(void)
 
 static void WI_updateNetgameStats(void)
 {
-  int i, fsum;
+  int32_t i, fsum;
   boolean stillticking;
 
   WI_updateAnimatedBack();
@@ -740,8 +741,8 @@ static void WI_updateNetgameStats(void)
 
 static void WI_drawNetgameStats(void)
 {
-  int i, x, y;
-  int pwidth = SHORT(percent->width);
+  int32_t i, x, y;
+  int32_t pwidth = SHORT(percent->width);
 
   WI_slamBackground();
   WI_drawAnimatedBack();  // draw animated background
@@ -774,7 +775,7 @@ static void WI_drawNetgameStats(void)
 }
 
 
-static int sp_state;
+static int32_t sp_state;
 
 static void WI_initStats(void)
 {
@@ -878,7 +879,7 @@ static void WI_updateStats(void)
 
 static void WI_drawStats(void)
 {
-  int lh;	// line height
+  int32_t lh;	// line height
 
   lh = (3*SHORT(num[0]->height))/2;
   WI_slamBackground();
@@ -903,7 +904,7 @@ static void WI_drawStats(void)
 
 static void WI_checkForAccelerate(void)
 {
-  int i;
+  int32_t i;
   player_t *player;
 
   // check for button presses to skip delays
@@ -963,7 +964,7 @@ void WI_Ticker(void)
 
 static void WI_loadData(void)
 {
-  int i, j;
+  int32_t i, j;
   char name[9];
   anim_t *a;
 
@@ -977,7 +978,7 @@ static void WI_loadData(void)
 #endif
   bg = W_CacheLumpName(name, PU_CACHE);    // background
   V_DrawPatch(0, 0, 1, bg);
-// unsigned char *pic = screens[1];
+// uint8_t *pic = screens[1];
 // if (commercial)
 // {
 // darken the background image
@@ -1076,7 +1077,7 @@ static void WI_loadData(void)
 
 static void WI_unloadData(void)
 {
-  int i, j;
+  int32_t i, j;
 
   Z_ChangeTag(wiminus, PU_CACHE);
   for (i=0 ; i<10 ; i++) Z_ChangeTag(num[i], PU_CACHE);

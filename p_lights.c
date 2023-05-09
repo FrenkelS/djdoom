@@ -34,7 +34,7 @@
 //==================================================================
 static void T_FireFlicker (lightflash_t *flash)
 {
-	int	amount;
+	int32_t	amount;
 
 	if (--flash->count)
 		return;
@@ -168,7 +168,7 @@ void T_StrobeFlash (strobe_t *flash)
 //	After the map has been loaded, scan each sector for specials that spawn thinkers
 //
 //==================================================================
-void P_SpawnStrobeFlash (sector_t *sector,int fastOrSlow, int inSync)
+void P_SpawnStrobeFlash (sector_t *sector,int32_t fastOrSlow, int32_t inSync)
 {
 	strobe_t	*flash;
 	
@@ -198,7 +198,7 @@ void P_SpawnStrobeFlash (sector_t *sector,int fastOrSlow, int inSync)
 //==================================================================
 void EV_StartLightStrobing(line_t *line)
 {
-	int	secnum;
+	int32_t	secnum;
 	sector_t	*sec;
 	
 	secnum = -1;
@@ -219,9 +219,9 @@ void EV_StartLightStrobing(line_t *line)
 //==================================================================
 void EV_TurnTagLightsOff(line_t	*line)
 {
-	int			i;
-	int			j;
-	int			min;
+	int32_t		i;
+	int32_t		j;
+	int32_t		min;
 	sector_t	*sector;
 	sector_t	*tsec;
 	line_t		*templine;
@@ -249,10 +249,10 @@ void EV_TurnTagLightsOff(line_t	*line)
 //	TURN LINE'S TAG LIGHTS ON
 //
 //==================================================================
-void EV_LightTurnOn(line_t *line, int bright)
+void EV_LightTurnOn(line_t *line, int32_t bright)
 {
-	int			i;
-	int			j;
+	int32_t		i;
+	int32_t		j;
 	sector_t	*sector;
 	sector_t	*temp;
 	line_t		*templine;

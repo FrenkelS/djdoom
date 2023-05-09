@@ -34,15 +34,15 @@
 typedef struct
 {
 	char		identification[4];		// should be IWAD
-	int			numlumps;
-	int			infotableofs;
+	int32_t		numlumps;
+	int32_t		infotableofs;
 } wadinfo_t;
 
 
 typedef struct
 {
-	int			filepos;
-	int			size;
+	int32_t		filepos;
+	int32_t		size;
 	char		name[8];
 } filelump_t;
 
@@ -52,7 +52,7 @@ typedef struct
 //=============
 
 lumpinfo_t	*lumpinfo;		// location of each lump on disk
-static int			numlumps;
+static int32_t			numlumps;
 
 static void		**lumpcache;
 
@@ -63,7 +63,7 @@ static void		**lumpcache;
 static void ExtractFileBase (char *path, char *dest)
 {
 	char	*src;
-	int		length;
+	int32_t	length;
 
 	src = path + strlen(path) - 1;
 
@@ -85,7 +85,7 @@ static void ExtractFileBase (char *path, char *dest)
 			I_Error ("Filename base of %s >8 chars",path);
 			break; // shut up warning
 		}
-		*dest++ = toupper((int)*src++);
+		*dest++ = toupper((int32_t)*src++);
 	}
 }
 
@@ -109,18 +109,18 @@ static void ExtractFileBase (char *path, char *dest)
 ====================
 */
 
-static int			reloadlump;
+static int32_t		reloadlump;
 static char			*reloadname;
 
 static void W_AddFile (char *filename)
 {
 	wadinfo_t		header;
 	lumpinfo_t		*lump_p;
-	unsigned		i;
-	int				handle, length;
-	int				startlump;
+	uint32_t		i;
+	int32_t			handle, length;
+	int32_t			startlump;
 	filelump_t		*fileinfo, singleinfo;
-	int				storehandle;
+	int32_t			storehandle;
 	
 //
 // open the file and add to directory
@@ -204,11 +204,11 @@ static void W_AddFile (char *filename)
 void W_Reload (void)
 {
 	wadinfo_t		header;
-	int				lumpcount;
+	int32_t			lumpcount;
 	lumpinfo_t		*lump_p;
-	unsigned		i;
-	int				handle;
-	int				length;
+	uint32_t		i;
+	int32_t			handle;
+	int32_t			length;
 	filelump_t		*fileinfo;
 	
 	if (!reloadname)
@@ -265,7 +265,7 @@ void W_Reload (void)
 
 void W_InitMultipleFiles (char **filenames)
 {	
-	int		size;
+	int32_t		size;
 	
 //
 // open all the files, load headers, and count lumps
@@ -301,10 +301,10 @@ void W_InitMultipleFiles (char **filenames)
 ====================
 */
 
-int	W_CheckNumForName (char *name)
+int32_t	W_CheckNumForName (char *name)
 {
 	char	name8[9];
-	int		v1,v2;
+	int32_t		v1,v2;
 	lumpinfo_t	*lump_p;
 
 // make the name into two integers for easy compares
@@ -313,8 +313,8 @@ int	W_CheckNumForName (char *name)
 	name8[8] = 0;			// in case the name was a fill 8 chars
 	strupr (name8);			// case insensitive
 
-	v1 = *(int *)name8;
-	v2 = *(int *)&name8[4];
+	v1 = *(int32_t *)name8;
+	v2 = *(int32_t *)&name8[4];
 
 
 // scan backwards so patch lump files take precedence
@@ -322,7 +322,7 @@ int	W_CheckNumForName (char *name)
 	lump_p = lumpinfo + numlumps;
 
 	while (lump_p-- != lumpinfo)
-		if ( *(int *)lump_p->name == v1 && *(int *)&lump_p->name[4] == v2)
+		if ( *(int32_t *)lump_p->name == v1 && *(int32_t *)&lump_p->name[4] == v2)
 			return lump_p - lumpinfo;
 
 
@@ -340,9 +340,9 @@ int	W_CheckNumForName (char *name)
 ====================
 */
 
-int	W_GetNumForName (char *name)
+int32_t	W_GetNumForName (char *name)
 {
-	int	i;
+	int32_t	i;
 
 	i = W_CheckNumForName (name);
 	if (i == -1)
@@ -362,7 +362,7 @@ int	W_GetNumForName (char *name)
 ====================
 */
 
-int W_LumpLength (int lump)
+int32_t W_LumpLength (int32_t lump)
 {
 	if (lump >= numlumps)
 		I_Error ("W_LumpLength: %i >= numlumps",lump);
@@ -380,11 +380,11 @@ int W_LumpLength (int lump)
 ====================
 */
 
-void W_ReadLump (int lump, void *dest)
+void W_ReadLump (int32_t lump, void *dest)
 {
-	int			c;
+	int32_t		c;
 	lumpinfo_t	*l;
-	int			handle;
+	int32_t		handle;
 	
 	if (lump >= numlumps)
 		I_Error ("W_ReadLump: %i >= numlumps",lump);
@@ -417,10 +417,10 @@ void W_ReadLump (int lump, void *dest)
 ====================
 */
 
-void	*W_CacheLumpNum (int lump, int tag)
+void	*W_CacheLumpNum (int32_t lump, int32_t tag)
 {
 
-	if ((unsigned)lump >= numlumps)
+	if ((uint32_t)lump >= numlumps)
 		I_Error ("W_CacheLumpNum: %i >= numlumps",lump);
 		
 	if (!lumpcache[lump])
@@ -447,7 +447,7 @@ void	*W_CacheLumpNum (int lump, int tag)
 ====================
 */
 
-void	*W_CacheLumpName (char *name, int tag)
+void	*W_CacheLumpName (char *name, int32_t tag)
 {
 	return W_CacheLumpNum (W_GetNumForName(name), tag);
 }

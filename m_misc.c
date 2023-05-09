@@ -41,9 +41,9 @@ char **myargv;
 =================
 */
 
-int M_CheckParm (char *check)
+int32_t M_CheckParm (char *check)
 {
-	int     i;
+	int32_t     i;
 
 	for (i = 1;i<myargc;i++)
 	{
@@ -66,7 +66,7 @@ int M_CheckParm (char *check)
 ===============
 */
 
-static const unsigned char rndtable[256] = {
+static const uint8_t rndtable[256] = {
 	0,   8, 109, 220, 222, 241, 149, 107,  75, 248, 254, 140,  16,  66,
 	74,  21, 211,  47,  80, 242, 154,  27, 205, 128, 161,  89,  77,  36,
 	95, 110,  85,  48, 212, 140, 211, 249,  22,  79, 200,  50,  28, 188,
@@ -87,16 +87,16 @@ static const unsigned char rndtable[256] = {
 	197, 242,  98,  43,  39, 175, 254, 145, 190,  84, 118, 222, 187, 136,
 	120, 163, 236, 249
 };
-int rndindex = 0;
-static int prndindex = 0;
+int32_t rndindex = 0;
+static int32_t prndindex = 0;
 
-int P_Random (void)
+int32_t P_Random (void)
 {
 	prndindex = (prndindex+1)&0xff;
 	return rndtable[prndindex];
 }
 
-int M_Random (void)
+int32_t M_Random (void)
 {
 	rndindex = (rndindex+1)&0xff;
 	return rndtable[rndindex];
@@ -140,9 +140,9 @@ void M_AddToBox (fixed_t *box, fixed_t x, fixed_t y)
 #define O_BINARY 0
 #endif
 
-void M_WriteFile (char const *name, void *source, int length)
+void M_WriteFile (char const *name, void *source, int32_t length)
 {
-	int handle;
+	int32_t handle;
 
 	handle = open (name, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
 	if (handle == -1)
@@ -162,7 +162,7 @@ void M_WriteFile (char const *name, void *source, int length)
 
 void M_ReadFile (char const *name, byte **buffer)
 {
-	int handle, count, length;
+	int32_t handle, count, length;
 	struct stat fileinfo;
 	byte        *buf;
 
@@ -190,59 +190,59 @@ void M_ReadFile (char const *name, byte **buffer)
 ==============================================================================
 */
 
-int     usemouse;
-int     usejoystick;
+int32_t     usemouse;
+int32_t     usejoystick;
 
-extern  int     key_right, key_left, key_up, key_down;
-extern  int     key_strafeleft, key_straferight;
-extern  int     key_fire, key_use, key_strafe, key_speed;
-extern	int		key_flyup, key_flydown, key_flycenter;
-extern	int		key_lookup, key_lookdown, key_lookcenter;
-extern	int		key_invleft, key_invright, key_useartifact;
+extern  int32_t     key_right, key_left, key_up, key_down;
+extern  int32_t     key_strafeleft, key_straferight;
+extern  int32_t     key_fire, key_use, key_strafe, key_speed;
+extern	int32_t		key_flyup, key_flydown, key_flycenter;
+extern	int32_t		key_lookup, key_lookdown, key_lookcenter;
+extern	int32_t		key_invleft, key_invright, key_useartifact;
 
-extern  int         mousebfire;
-extern  int         mousebstrafe;
-extern  int         mousebforward;
+extern  int32_t         mousebfire;
+extern  int32_t         mousebstrafe;
+extern  int32_t         mousebforward;
 
-extern  int         joybfire;
-extern  int         joybstrafe;
-extern  int         joybuse;
-extern  int         joybspeed;
+extern  int32_t         joybfire;
+extern  int32_t         joybstrafe;
+extern  int32_t         joybuse;
+extern  int32_t         joybspeed;
 
-extern  int     viewwidth, viewheight;
+extern  int32_t     viewwidth, viewheight;
 
-extern int mouseSensitivity;
-extern int showMessages;
+extern int32_t mouseSensitivity;
+extern int32_t showMessages;
 
-extern int detailLevel;
+extern int32_t detailLevel;
 
-extern int sfxVolume;
-extern int musicVolume;
+extern int32_t sfxVolume;
+extern int32_t musicVolume;
 
-extern  int screenblocks;
+extern  int32_t screenblocks;
 
-extern int showMessages;
+extern int32_t showMessages;
 
 // machine-independent sound params
-extern int numChannels;
+extern int32_t numChannels;
 
 extern char *chat_macros[10];
 
 typedef struct
 {
 	char    *name;
-	int     *location;
-	int     defaultvalue;
-	int     scantranslate;      // PC scan code hack
-	int     untranslated;       // lousy hack
+	int32_t     *location;
+	int32_t     defaultvalue;
+	int32_t     scantranslate;      // PC scan code hack
+	int32_t     untranslated;       // lousy hack
 } default_t;
 
-extern int snd_DesiredMusicDevice, snd_DesiredSfxDevice;
-extern int snd_MusicDevice, // current music card # (index to dmxCodes)
+extern int32_t snd_DesiredMusicDevice, snd_DesiredSfxDevice;
+extern int32_t snd_MusicDevice, // current music card # (index to dmxCodes)
 	snd_SfxDevice; // current sfx card # (index to dmxCodes)
 
-extern int     snd_SBport, snd_SBirq, snd_SBdma;       // sound blaster variables
-extern int     snd_Mport;                              // midi variables
+extern int32_t     snd_SBport, snd_SBirq, snd_SBdma;       // sound blaster variables
+extern int32_t     snd_Mport;                              // midi variables
 
 static default_t defaults[] =
 {
@@ -300,19 +300,19 @@ static default_t defaults[] =
 
 	{"usegamma",&usegamma, 0},
 
-	{"chatmacro0", (int *) &chat_macros[0], (int) HUSTR_CHATMACRO0 },
-	{"chatmacro1", (int *) &chat_macros[1], (int) HUSTR_CHATMACRO1 },
-	{"chatmacro2", (int *) &chat_macros[2], (int) HUSTR_CHATMACRO2 },
-	{"chatmacro3", (int *) &chat_macros[3], (int) HUSTR_CHATMACRO3 },
-	{"chatmacro4", (int *) &chat_macros[4], (int) HUSTR_CHATMACRO4 },
-	{"chatmacro5", (int *) &chat_macros[5], (int) HUSTR_CHATMACRO5 },
-	{"chatmacro6", (int *) &chat_macros[6], (int) HUSTR_CHATMACRO6 },
-	{"chatmacro7", (int *) &chat_macros[7], (int) HUSTR_CHATMACRO7 },
-	{"chatmacro8", (int *) &chat_macros[8], (int) HUSTR_CHATMACRO8 },
-	{"chatmacro9", (int *) &chat_macros[9], (int) HUSTR_CHATMACRO9 }
+	{"chatmacro0", (int32_t *) &chat_macros[0], (int32_t) HUSTR_CHATMACRO0 },
+	{"chatmacro1", (int32_t *) &chat_macros[1], (int32_t) HUSTR_CHATMACRO1 },
+	{"chatmacro2", (int32_t *) &chat_macros[2], (int32_t) HUSTR_CHATMACRO2 },
+	{"chatmacro3", (int32_t *) &chat_macros[3], (int32_t) HUSTR_CHATMACRO3 },
+	{"chatmacro4", (int32_t *) &chat_macros[4], (int32_t) HUSTR_CHATMACRO4 },
+	{"chatmacro5", (int32_t *) &chat_macros[5], (int32_t) HUSTR_CHATMACRO5 },
+	{"chatmacro6", (int32_t *) &chat_macros[6], (int32_t) HUSTR_CHATMACRO6 },
+	{"chatmacro7", (int32_t *) &chat_macros[7], (int32_t) HUSTR_CHATMACRO7 },
+	{"chatmacro8", (int32_t *) &chat_macros[8], (int32_t) HUSTR_CHATMACRO8 },
+	{"chatmacro9", (int32_t *) &chat_macros[9], (int32_t) HUSTR_CHATMACRO9 }
 };
 
-static int numdefaults;
+static int32_t numdefaults;
 static char *defaultfile;
 
 /*
@@ -325,7 +325,7 @@ static char *defaultfile;
 
 void M_SaveDefaults (void)
 {
-	int     i,v;
+	int32_t     i,v;
 	FILE    *f;
 
 	f = fopen (defaultfile, "w");
@@ -364,12 +364,12 @@ extern char basedefault[];
 
 void M_LoadDefaults (void)
 {
-	int     i, len;
+	int32_t     i, len;
 	FILE    *f;
 	char    def[80];
 	char        strparm[100];
 	char    *newstring;
-	int     parm;
+	int32_t     parm;
 	boolean     isstring;
 
 //
@@ -422,7 +422,7 @@ void M_LoadDefaults (void)
 						*defaults[i].location = parm;
 					  else
 						*defaults[i].location =
-						  (int) newstring;
+						  (int32_t) newstring;
 					  break;
 				  }
 			}
@@ -459,15 +459,15 @@ typedef struct
 	char    version;
 	char    encoding;
 	char    bits_per_pixel;
-	unsigned short  xmin,ymin,xmax,ymax;
-	unsigned short  hres,vres;
-	unsigned char   palette[48];
+	uint16_t  xmin,ymin,xmax,ymax;
+	uint16_t  hres,vres;
+	uint8_t   palette[48];
 	char    reserved;
 	char    color_planes;
-	unsigned short  bytes_per_line;
-	unsigned short  palette_type;
+	uint16_t  bytes_per_line;
+	uint16_t  palette_type;
 	char    filler[58];
-	unsigned char   data;           // unbounded
+	uint8_t   data;           // unbounded
 } pcx_t;
 
 /*
@@ -478,9 +478,9 @@ typedef struct
 ==============
 */
 
-static void WritePCXfile (char *filename, byte *data, int width, int height, byte *palette)
+static void WritePCXfile (char *filename, byte *data, int32_t width, int32_t height, byte *palette)
 {
-	int     i, length;
+	int32_t     i, length;
 	pcx_t   *pcx;
 	byte        *pack;
 	
@@ -545,7 +545,7 @@ static void WritePCXfile (char *filename, byte *data, int width, int height, byt
 
 void M_ScreenShot (void)
 {
-	int     i;
+	int32_t     i;
 	byte    *linear;
 	char    lbmname[12];
 

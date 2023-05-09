@@ -1,5 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -84,8 +85,8 @@ typedef enum
 
 typedef struct
 {
-    int		x;
-    int		y;
+    int32_t		x;
+    int32_t		y;
     
 } point_t;
 
@@ -99,10 +100,10 @@ typedef struct
     animenum_t	type;
 
     // period in tics between animations
-    int		period;
+    int32_t		period;
 
     // number of animation frames
-    int		nanims;
+    int32_t		nanims;
 
     // location of animation
     point_t	loc;
@@ -110,12 +111,12 @@ typedef struct
     // ALWAYS: n/a,
     // RANDOM: period deviation (<256),
     // LEVEL: level
-    int		data1;
+    int32_t		data1;
 
     // ALWAYS: n/a,
     // RANDOM: random base period,
     // LEVEL: n/a
-    int		data2; 
+    int32_t		data2; 
 
     // actual graphics for frames of animations
     patch_t*	p[3]; 
@@ -123,16 +124,16 @@ typedef struct
     // following must be initialized to zero before use!
 
     // next value of bcnt (used in conjunction with period)
-    int		nexttic;
+    int32_t		nexttic;
 
     // last drawn animation frame
-    int		lastdrawn;
+    int32_t		lastdrawn;
 
     // next frame number to animate
-    int		ctr;
+    int32_t		ctr;
     
     // used by RANDOM and LEVEL when animating
-    int		state;  
+    int32_t		state;  
 
 } anim_t;
 

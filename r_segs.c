@@ -27,17 +27,17 @@ static boolean         segtextured;    // true if any of the segs textures might
 static boolean         markfloor;              // false if the back side is the same plane
 static boolean         markceiling;
 static boolean         maskedtexture;
-static int             toptexture, bottomtexture, midtexture;
+static int32_t         toptexture, bottomtexture, midtexture;
 
 
 angle_t         rw_normalangle;
-int                     rw_angle1;              // angle to line origin
+int32_t                     rw_angle1;              // angle to line origin
 
 //
 // wall
 //
-static int             rw_x;
-static int             rw_stopx;
+static int32_t         rw_x;
+static int32_t         rw_stopx;
 static angle_t         rw_centerangle;
 static fixed_t         rw_offset;
 fixed_t         rw_distance;
@@ -47,7 +47,7 @@ static fixed_t         rw_midtexturemid;
 static fixed_t         rw_toptexturemid;
 static fixed_t         rw_bottomtexturemid;
 
-static int                     worldtop, worldbottom, worldhigh, worldlow;
+static int32_t                     worldtop, worldbottom, worldhigh, worldlow;
 
 static fixed_t         pixhigh, pixlow;
 static fixed_t         pixhighstep, pixlowstep;
@@ -57,7 +57,7 @@ static fixed_t         bottomfrac, bottomstep;
 
 lighttable_t    **walllights;
 
-static short           *maskedtexturecol;
+static int16_t           *maskedtexturecol;
 
 /*
 ================
@@ -67,12 +67,12 @@ static short           *maskedtexturecol;
 ================
 */
 
-void R_RenderMaskedSegRange (drawseg_t *ds, int x1, int x2)
+void R_RenderMaskedSegRange (drawseg_t *ds, int32_t x1, int32_t x2)
 {
-	unsigned        index;
+	uint32_t        index;
 	column_t        *col;
-	int                     lightnum;
-	int                     texnum;
+	int32_t                     lightnum;
+	int32_t                     texnum;
 
 //
 // calculate light table
@@ -138,7 +138,7 @@ void R_RenderMaskedSegRange (drawseg_t *ds, int x1, int x2)
 			}
 
 			sprtopscreen = centeryfrac - FixedMul(dc_texturemid, spryscale);
-			dc_iscale = 0xffffffffu / (unsigned)spryscale;
+			dc_iscale = 0xffffffffu / (uint32_t)spryscale;
 
 	//
 	// draw the texture
@@ -172,10 +172,10 @@ void R_RenderMaskedSegRange (drawseg_t *ds, int x1, int x2)
 static void R_RenderSegLoop (void)
 {
 	angle_t         angle;
-	unsigned        index;
-	int                     yl, yh, mid;
+	uint32_t        index;
+	int32_t                     yl, yh, mid;
 	fixed_t         texturecolumn;
-	int                     top, bottom;
+	int32_t                     top, bottom;
 
 	texturecolumn = 0;                              // shut up warning
 
@@ -231,7 +231,7 @@ static void R_RenderSegLoop (void)
 				index = MAXLIGHTSCALE-1;
 			dc_colormap = walllights[index];
 			dc_x = rw_x;
-			dc_iscale = 0xffffffffu / (unsigned)rw_scale;
+			dc_iscale = 0xffffffffu / (uint32_t)rw_scale;
 		}
 
 //
@@ -323,13 +323,13 @@ static void R_RenderSegLoop (void)
 ======================
 */
 
-void R_StoreWallRange (int start, int stop)
+void R_StoreWallRange (int32_t start, int32_t stop)
 {
 	fixed_t         hyp;
 	fixed_t         sineval;
 	angle_t         distangle, offsetangle;
 	fixed_t         vtop;
-	int                     lightnum;
+	int32_t         lightnum;
 
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
 		return;         // don't overflow and crash

@@ -25,8 +25,8 @@
 #define BONUSADD 6
 
 // a weapon is found with two clip loads, a big item has five clip loads
-int		maxammo[NUMAMMO] = {200, 50, 300, 50};
-static const int		clipammo[NUMAMMO] = {10, 4, 20, 1};
+int32_t		maxammo[NUMAMMO] = {200, 50, 300, 50};
+static const int32_t		clipammo[NUMAMMO] = {10, 4, 20, 1};
 
 
 /*
@@ -45,9 +45,9 @@ static const int		clipammo[NUMAMMO] = {10, 4, 20, 1};
 =================== 
 */ 
 
-static boolean P_GiveAmmo (player_t *player, ammotype_t ammo, int num)
+static boolean P_GiveAmmo (player_t *player, ammotype_t ammo, int32_t num)
 {
-	int		oldammo;
+	int32_t		oldammo;
 	
 	if (ammo == am_noammo)
 		return false;
@@ -175,7 +175,7 @@ static boolean P_GiveWeapon (player_t *player, weapontype_t weapon, boolean drop
 =================== 
 */ 
 
-static boolean P_GiveBody (player_t *player, int num)
+static boolean P_GiveBody (player_t *player, int32_t num)
 {
 	if (player->health >= MAXHEALTH)
 		return false;
@@ -198,9 +198,9 @@ static boolean P_GiveBody (player_t *player, int num)
 =================== 
 */ 
 
-static boolean P_GiveArmor (player_t *player, int armortype)
+static boolean P_GiveArmor (player_t *player, int32_t armortype)
 {
-	int		hits;
+	int32_t		hits;
 	
 	hits = armortype*100;
 	if (player->armorpoints >= hits)
@@ -288,9 +288,9 @@ boolean P_GivePower (player_t *player, powertype_t power)
 void P_TouchSpecialThing (mobj_t *special, mobj_t *toucher)
 {
 	player_t	*player;
-	int			i;
+	int32_t		i;
 	fixed_t		delta;
-	int			sound;
+	int32_t		sound;
 		
 	delta = special->z - toucher->z;
 	if (delta > toucher->height || delta < -8*FRACUNIT)
@@ -679,10 +679,10 @@ static void P_KillMobj (mobj_t *source, mobj_t *target)
 ==================
 */
 
-void P_DamageMobj (mobj_t *target, mobj_t *inflictor, mobj_t *source, int damage)
+void P_DamageMobj (mobj_t *target, mobj_t *inflictor, mobj_t *source, int32_t damage)
 {
-	unsigned	ang;
-	int			saved;
+	uint32_t	ang;
+	int32_t		saved;
 	player_t	*player;
 	fixed_t		thrust;
 		

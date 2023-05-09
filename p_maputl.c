@@ -51,7 +51,7 @@ fixed_t P_AproxDistance (fixed_t dx, fixed_t dy)
 ==================
 */
 
-int P_PointOnLineSide (fixed_t x, fixed_t y, line_t *line)
+int32_t P_PointOnLineSide (fixed_t x, fixed_t y, line_t *line)
 {
 	fixed_t	dx,dy;
 	fixed_t	left, right;
@@ -89,10 +89,10 @@ int P_PointOnLineSide (fixed_t x, fixed_t y, line_t *line)
 =================
 */
 
-int P_BoxOnLineSide (fixed_t *tmbox, line_t *ld)
+int32_t P_BoxOnLineSide (fixed_t *tmbox, line_t *ld)
 {
-	int		p1 = 0;
-	int		p2 = 0;
+	int32_t		p1 = 0;
+	int32_t		p2 = 0;
 	
 	switch (ld->slopetype)
 	{
@@ -138,7 +138,7 @@ int P_BoxOnLineSide (fixed_t *tmbox, line_t *ld)
 ==================
 */
 
-static int P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t *line)
+static int32_t P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t *line)
 {
 	fixed_t	dx,dy;
 	fixed_t	left, right;
@@ -282,7 +282,7 @@ void P_LineOpening (line_t *linedef)
 
 void P_UnsetThingPosition (mobj_t *thing)
 {
-	int				blockx, blocky;
+	int32_t				blockx, blocky;
 
 	if ( ! (thing->flags & MF_NOSECTOR) )
 	{	// inert things don't need to be in blockmap
@@ -329,7 +329,7 @@ void P_SetThingPosition (mobj_t *thing)
 {
 	subsector_t		*ss;
 	sector_t		*sec;
-	int				blockx, blocky;
+	int32_t			blockx, blocky;
 	mobj_t			**link;
 	
 //
@@ -395,10 +395,10 @@ If the function returns false, exit with false without checking anything else.
 ===================
 */
 
-boolean P_BlockLinesIterator (int x, int y, boolean(*func)(line_t*) )
+boolean P_BlockLinesIterator (int32_t x, int32_t y, boolean(*func)(line_t*) )
 {
-	int			offset;
-	short		*list;
+	int32_t		offset;
+	int16_t		*list;
 	line_t		*ld;
 	
 	if (x<0 || y<0 || x>=bmapwidth || y>=bmapheight)
@@ -430,7 +430,7 @@ boolean P_BlockLinesIterator (int x, int y, boolean(*func)(line_t*) )
 ==================
 */
 
-boolean P_BlockThingsIterator (int x, int y, boolean(*func)(mobj_t*) )
+boolean P_BlockThingsIterator (int32_t x, int32_t y, boolean(*func)(mobj_t*) )
 {
 	mobj_t		*mobj;
 	
@@ -471,7 +471,7 @@ static boolean 	earlyout;
 
 static boolean PIT_AddLineIntercepts (line_t *ld)
 {
-	int			s1, s2;
+	int32_t		s1, s2;
 	fixed_t		frac;
 	divline_t	dl;
 	
@@ -523,7 +523,7 @@ static boolean PIT_AddLineIntercepts (line_t *ld)
 static boolean PIT_AddThingIntercepts (mobj_t	*thing)
 {
 	fixed_t		x1,y1, x2,y2;
-	int			s1, s2;
+	int32_t		s1, s2;
 	boolean		tracepositive;
 	divline_t	dl;
 	fixed_t		frac;
@@ -579,7 +579,7 @@ static boolean PIT_AddThingIntercepts (mobj_t	*thing)
 
 static void P_TraverseIntercepts ( traverser_t func, fixed_t maxfrac )
 {
-	int				count;
+	int32_t			count;
 	fixed_t			dist;
 	intercept_t		*scan, *in;
 	
@@ -619,14 +619,14 @@ static void P_TraverseIntercepts ( traverser_t func, fixed_t maxfrac )
 */
 
 void P_PathTraverse (fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2,
-	int flags, boolean (*trav) (intercept_t *))
+	int32_t flags, boolean (*trav) (intercept_t *))
 {
 	fixed_t	xt1,yt1,xt2,yt2;
 	fixed_t	xstep,ystep;
 	fixed_t	partial;
 	fixed_t	xintercept, yintercept;
-	int		mapx, mapy, mapxstep, mapystep;
-	int		count;
+	int32_t	mapx, mapy, mapxstep, mapystep;
+	int32_t	count;
 		
 	earlyout = flags & PT_EARLYOUT;
 		

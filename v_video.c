@@ -31,7 +31,7 @@
 #define SC_INDEX			0x3c4
 
 byte		*screens[5];
-int			dirtybox[4];
+int32_t		dirtybox[4];
 
 
 
@@ -50,7 +50,7 @@ byte gammatable[5][256] =
 
 
 
-int			usegamma;
+int32_t			usegamma;
 
 /*
 ==================
@@ -60,7 +60,7 @@ int			usegamma;
 ==================
 */
 
-void V_MarkRect (int x, int y, int width, int height)
+void V_MarkRect (int32_t x, int32_t y, int32_t width, int32_t height)
 { 
 	M_AddToBox (dirtybox, x, y);
 	M_AddToBox (dirtybox, x+width-1, y+height-1);
@@ -75,7 +75,7 @@ void V_MarkRect (int x, int y, int width, int height)
 ==================
 */
 
-void V_CopyRect (int x, int srcy, int width, int height, int desty) 
+void V_CopyRect (int32_t x, int32_t srcy, int32_t width, int32_t height, int32_t desty) 
 {
 	byte	*src, *dest;
 	 
@@ -106,17 +106,17 @@ void V_CopyRect (int x, int srcy, int width, int height, int desty)
 ==================
 */
 
-void V_DrawPatch (int x, int y, int scrn, patch_t *patch)
+void V_DrawPatch (int32_t x, int32_t y, int32_t scrn, patch_t *patch)
 {
-	int			count,col;
+	int32_t		count,col;
 	column_t	*column;
 	byte		*desttop, *dest, *source;
-	int			w;
+	int32_t		w;
 
 	y -= SHORT(patch->topoffset);
 	x -= SHORT(patch->leftoffset);
 #ifdef RANGECHECK
-	if (x<0||x+SHORT(patch->width) >SCREENWIDTH || y<0 || y+SHORT(patch->height)>SCREENHEIGHT|| (unsigned)scrn>4)
+	if (x<0||x+SHORT(patch->width) >SCREENWIDTH || y<0 || y+SHORT(patch->height)>SCREENHEIGHT|| (uint32_t)scrn>4)
 		I_Error("Bad V_DrawPatch");
 #endif
 	if (!scrn)
@@ -157,17 +157,17 @@ void V_DrawPatch (int x, int y, int scrn, patch_t *patch)
 ==================
 */
 
-void V_DrawPatchFlipped (int x, int y, int scrn, patch_t *patch)
+void V_DrawPatchFlipped (int32_t x, int32_t y, int32_t scrn, patch_t *patch)
 {
-	int			count,col;
+	int32_t			count,col;
 	column_t	*column;
 	byte		*desttop, *dest, *source;
-	int			w;
+	int32_t			w;
 
 	y -= SHORT(patch->topoffset);
 	x -= SHORT(patch->leftoffset);
 #ifdef RANGECHECK
-	if (x<0||x+SHORT(patch->width) >SCREENWIDTH || y<0 || y+SHORT(patch->height)>SCREENHEIGHT|| (unsigned)scrn>4)
+	if (x<0||x+SHORT(patch->width) >SCREENWIDTH || y<0 || y+SHORT(patch->height)>SCREENHEIGHT|| (uint32_t)scrn>4)
 		I_Error("Bad V_DrawPatch");
 #endif
 	if (!scrn)
@@ -208,12 +208,12 @@ void V_DrawPatchFlipped (int x, int y, int scrn, patch_t *patch)
 ==================
 */
 
-void V_DrawPatchDirect (int x, int y, patch_t *patch)
+void V_DrawPatchDirect (int32_t x, int32_t y, patch_t *patch)
 {
-	int			count,col;
+	int32_t		count,col;
 	column_t	*column;
 	byte		*desttop, *dest, *source;
-	int			w;
+	int32_t		w;
 	
 	y -= SHORT(patch->topoffset);
 	x -= SHORT(patch->leftoffset);
@@ -265,7 +265,7 @@ void V_DrawPatchDirect (int x, int y, patch_t *patch)
 void V_DrawBlock (byte *src)
 {
 	byte		*dest;
-	int			height;
+	int32_t		height;
 
 	V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
 	dest = screens[0];
@@ -288,7 +288,7 @@ void V_DrawBlock (byte *src)
 
 void V_Init (void)
 {
-	int		i;
+	int32_t		i;
 		
 	for (i=0 ; i<4 ; i++)
 		screens[i] = (byte *) Z_Malloc(SCREENWIDTH*SCREENHEIGHT, PU_STATIC, NULL);	

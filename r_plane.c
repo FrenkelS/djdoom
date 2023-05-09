@@ -24,9 +24,9 @@
 //
 // sky mapping
 //
-int			skyflatnum;
-int			skytexture;
-static int			skytexturemid;
+int32_t			skyflatnum;
+int32_t			skytexture;
+static int32_t	skytexturemid;
 
 //
 // opening
@@ -35,22 +35,22 @@ static int			skytexturemid;
 static visplane_t		visplanes[MAXVISPLANES], *lastvisplane;
 visplane_t		*floorplane, *ceilingplane;
 
-static short	openings[MAXOPENINGS];
-short			*lastopening;
+static int16_t	openings[MAXOPENINGS];
+int16_t			*lastopening;
 
 //
 // clip values are the solid pixel bounding the range
 // floorclip starts out SCREENHEIGHT
 // ceilingclip starts out -1
 //
-short		floorclip[SCREENWIDTH];
-short		ceilingclip[SCREENWIDTH];
+int16_t		floorclip[SCREENWIDTH];
+int16_t		ceilingclip[SCREENWIDTH];
 
 //
 // spanstart holds the start of a plane span
 // initialized to 0 at start
 //
-static int			spanstart[SCREENHEIGHT];
+static int32_t			spanstart[SCREENHEIGHT];
 
 //
 // texture mapping
@@ -103,14 +103,14 @@ BASIC PRIMITIVE
 ================
 */
 
-static void R_MapPlane (int y, int x1, int x2)
+static void R_MapPlane (int32_t y, int32_t x1, int32_t x2)
 {
 	angle_t		angle;
 	fixed_t		distance, length;
-	unsigned	index;
+	uint32_t	index;
 	
 #ifdef RANGECHECK
-	if (x2 < x1 || x1<0 || x2>=viewwidth || (unsigned)y>viewheight)
+	if (x2 < x1 || x1<0 || x2>=viewwidth || (uint32_t)y>viewheight)
 		I_Error ("R_MapPlane: %i, %i at %i",x1,x2,y);
 #endif
 
@@ -164,7 +164,7 @@ static void R_MapPlane (int y, int x1, int x2)
 
 void R_ClearPlanes (void)
 {
-	int		i;
+	int32_t	i;
 	angle_t	angle;
 	
 //
@@ -200,7 +200,7 @@ void R_ClearPlanes (void)
 ===============
 */
 
-visplane_t *R_FindPlane (fixed_t height, int picnum, int lightlevel)
+visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)
 {
 	visplane_t *check;
 
@@ -247,11 +247,11 @@ visplane_t *R_FindPlane (fixed_t height, int picnum, int lightlevel)
 ===============
 */
 
-visplane_t *R_CheckPlane (visplane_t *pl, int start, int stop)
+visplane_t *R_CheckPlane (visplane_t *pl, int32_t start, int32_t stop)
 {
-	int			intrl, intrh;
-	int			unionl, unionh;
-	int			x;
+	int32_t			intrl, intrh;
+	int32_t			unionl, unionh;
+	int32_t			x;
 	
 	if (start < pl->minx)
 	{
@@ -311,7 +311,7 @@ visplane_t *R_CheckPlane (visplane_t *pl, int start, int stop)
 ================
 */
 
-static void R_MakeSpans (int x, int t1, int b1, int t2, int b2)
+static void R_MakeSpans (int32_t x, int32_t t1, int32_t b1, int32_t t2, int32_t b2)
 {
 	while (t1 < t2 && t1<=b1)
 	{
@@ -350,9 +350,9 @@ static void R_MakeSpans (int x, int t1, int b1, int t2, int b2)
 void R_DrawPlanes (void)
 {
 	visplane_t	*pl;
-	int			light;
-	int			x, stop;
-	int			angle;
+	int32_t		light;
+	int32_t		x, stop;
+	int32_t		angle;
 
 #ifdef RANGECHECK
 	if (ds_p - drawsegs > MAXDRAWSEGS)

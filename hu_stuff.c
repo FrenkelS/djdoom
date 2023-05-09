@@ -58,9 +58,9 @@ boolean message_dontfuckwithme;
 static boolean message_nottobefuckedwith;
 
 static hu_stext_t w_message;
-static int message_counter;
+static int32_t message_counter;
 
-extern int showMessages;
+extern int32_t showMessages;
 extern boolean automapactive;
 
 static boolean headsupactive = false;
@@ -369,7 +369,7 @@ static char frenchKeyMap[128]=
 	'P','A','R','S','T','U','V','Z','X','Y','W','^','\\','$','^',127
 };
 
-static char ForeignTranslation(unsigned char ch)
+static char ForeignTranslation(uint8_t ch)
 {
   return ch < 128 ? frenchKeyMap[ch] : ch;
 }
@@ -378,7 +378,7 @@ static char ForeignTranslation(unsigned char ch)
 void HU_Init(void)
 {
 
-  int i, j;
+  int32_t i, j;
   char buffer[9];
 
 #if (APPVER_DOOMREV >= AV_DR_DM18FR)
@@ -406,7 +406,7 @@ static void HU_Stop(void)
 void HU_Start(void)
 {
 
-  int i;
+  int32_t i;
   char *s;
 
   if (headsupactive)
@@ -477,7 +477,7 @@ void HU_Erase(void)
 void HU_Ticker(void)
 {
 
-  int i;
+  int32_t i;
   boolean rc;
   char c;
 
@@ -520,7 +520,7 @@ void HU_Ticker(void)
         else
         {
           if (c >= 'a' && c <= 'z')
-            c = (char) shiftxform[(unsigned char) c];
+            c = (char) shiftxform[(uint8_t) c];
           rc = HUlib_keyInIText(&w_inputbuffer[i], c);
           if (rc && c == KEY_ENTER)
           {
@@ -551,8 +551,8 @@ void HU_Ticker(void)
 #define QUEUESIZE 128
 
 static char chatchars[QUEUESIZE];
-static int head = 0;
-static int tail = 0;
+static int32_t head = 0;
+static int32_t tail = 0;
 
 
 static void HU_queueChatChar(char c)
@@ -593,8 +593,8 @@ boolean HU_Responder(event_t *ev)
   boolean eatkey = false;
   static boolean shiftdown = false;
   static boolean altdown = false;
-  unsigned char c;
-  int i, numplayers;
+  uint8_t c;
+  int32_t i, numplayers;
     
   static char destination_keys[MAXPLAYERS] =
   {
@@ -604,7 +604,7 @@ boolean HU_Responder(event_t *ev)
 	HUSTR_KEYRED
   };
     
-  static int num_nobrainers = 0;
+  static int32_t num_nobrainers = 0;
 
   numplayers = 0;
   for (i=0 ; i<MAXPLAYERS ; i++)
@@ -706,7 +706,7 @@ boolean HU_Responder(event_t *ev)
       eatkey = HUlib_keyInIText(&w_chat, c);
       if (eatkey)
       {
-	// static unsigned char buf[20]; // DEBUG
+	// static uint8_t buf[20]; // DEBUG
 	HU_queueChatChar(c);
 		
 	// sprintf(buf, "KEY: %d => %d", ev->data1, c);

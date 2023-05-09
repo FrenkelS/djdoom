@@ -24,30 +24,30 @@
 
 void	P_SpawnMapThing (mapthing_t *mthing);
 
-int			numvertexes;
+int32_t		numvertexes;
 vertex_t	*vertexes;
 
-static int			numsegs;
+static int32_t			numsegs;
 seg_t		*segs;
 
-int			numsectors;
+int32_t		numsectors;
 sector_t	*sectors;
 
-int			numsubsectors;
+int32_t		numsubsectors;
 subsector_t	*subsectors;
 
-int			numnodes;
+int32_t		numnodes;
 node_t		*nodes;
 
-int			numlines;
+int32_t		numlines;
 line_t		*lines;
 
-int			numsides;
+int32_t		numsides;
 side_t		*sides;
 
-short		*blockmaplump;			// offsets in blockmap are from here
-short		*blockmap;
-int			bmapwidth, bmapheight;	// in mapblocks
+int16_t		*blockmaplump;			// offsets in blockmap are from here
+int16_t		*blockmap;
+int32_t		bmapwidth, bmapheight;	// in mapblocks
 fixed_t		bmaporgx, bmaporgy;		// origin of block map
 mobj_t		**blocklinks;			// for thing chains
 
@@ -64,10 +64,10 @@ mapthing_t	playerstarts[MAXPLAYERS];
 =================
 */
 
-static void P_LoadVertexes (int lump)
+static void P_LoadVertexes (int32_t lump)
 {
 	byte		*data;
-	int			i;
+	int32_t		i;
 	mapvertex_t	*ml;
 	vertex_t	*li;
 	
@@ -95,14 +95,14 @@ static void P_LoadVertexes (int lump)
 =================
 */
 
-static void P_LoadSegs (int lump)
+static void P_LoadSegs (int32_t lump)
 {
 	byte		*data;
-	int			i;
+	int32_t		i;
 	mapseg_t	*ml;
 	seg_t		*li;
-	line_t	*ldef;
-	int			linedef, side;
+	line_t		*ldef;
+	int32_t		linedef, side;
 	
 	numsegs = W_LumpLength (lump) / sizeof(mapseg_t);
 	segs = Z_Malloc (numsegs*sizeof(seg_t),PU_LEVEL,0);	
@@ -142,10 +142,10 @@ static void P_LoadSegs (int lump)
 =================
 */
 
-static void P_LoadSubsectors (int lump)
+static void P_LoadSubsectors (int32_t lump)
 {
 	byte			*data;
-	int				i;
+	int32_t			i;
 	mapsubsector_t	*ms;
 	subsector_t		*ss;
 	
@@ -174,10 +174,10 @@ static void P_LoadSubsectors (int lump)
 =================
 */
 
-static void P_LoadSectors (int lump)
+static void P_LoadSectors (int32_t lump)
 {
 	byte			*data;
-	int				i;
+	int32_t			i;
 	mapsector_t		*ms;
 	sector_t		*ss;
 	
@@ -212,10 +212,10 @@ static void P_LoadSectors (int lump)
 =================
 */
 
-static void P_LoadNodes (int lump)
+static void P_LoadNodes (int32_t lump)
 {
 	byte		*data;
-	int			i,j,k;
+	int32_t		i,j,k;
 	mapnode_t	*mn;
 	node_t		*no;
 	
@@ -252,12 +252,12 @@ static void P_LoadNodes (int lump)
 =================
 */
 
-static void P_LoadThings (int lump)
+static void P_LoadThings (int32_t lump)
 {
 	byte			*data;
-	int				i;
+	int32_t			i;
 	mapthing_t		*mt;
-	int				numthings;
+	int32_t			numthings;
 	boolean			spawn;
 	
 	data = W_CacheLumpNum (lump,PU_STATIC);
@@ -312,10 +312,10 @@ static void P_LoadThings (int lump)
 =================
 */
 
-static void P_LoadLineDefs (int lump)
+static void P_LoadLineDefs (int32_t lump)
 {
 	byte			*data;
-	int				i;
+	int32_t			i;
 	maplinedef_t	*mld;
 	line_t			*ld;
 	vertex_t		*v1, *v2;
@@ -392,10 +392,10 @@ static void P_LoadLineDefs (int lump)
 =================
 */
 
-static void P_LoadSideDefs (int lump)
+static void P_LoadSideDefs (int32_t lump)
 {
 	byte			*data;
-	int				i;
+	int32_t			i;
 	mapsidedef_t	*msd;
 	side_t			*sd;
 	
@@ -429,9 +429,9 @@ static void P_LoadSideDefs (int lump)
 =================
 */
 
-static void P_LoadBlockMap (int lump)
+static void P_LoadBlockMap (int32_t lump)
 {
-	int		i, count;
+	int32_t		i, count;
 	
 	blockmaplump = W_CacheLumpNum (lump,PU_LEVEL);
 	blockmap = blockmaplump+4;
@@ -466,13 +466,13 @@ static void P_LoadBlockMap (int lump)
 static void P_GroupLines (void)
 {
 	line_t		**linebuffer;
-	int			i, j, total;
+	int32_t		i, j, total;
 	line_t		*li;
 	sector_t	*sector;
 	subsector_t	*ss;
 	seg_t		*seg;
 	fixed_t		bbox[4];
-	int			block;
+	int32_t		block;
 	
 // look up sector number for each subsector
 	ss = subsectors;
@@ -551,11 +551,11 @@ static void P_GroupLines (void)
 =================
 */
 
-void P_SetupLevel (int episode, int map)
+void P_SetupLevel (int32_t episode, int32_t map)
 {
-	int		i;
+	int32_t	i;
 	char	lumpname[9];
-	int		lumpnum;
+	int32_t	lumpnum;
 	
 	totalkills = totalitems = totalsecret = wminfo.maxfrags = 0;
 	wminfo.partime = 180;

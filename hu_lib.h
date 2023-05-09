@@ -38,15 +38,15 @@
 typedef struct
 {
     // left-justified position of scrolling text window
-    int x, y;
+    int32_t x, y;
     
     patch_t **f;			// font
-    int sc;			// start character
+    int32_t sc;			// start character
     char l[HU_MAXLINELENGTH+1];	// line of text
-    int len;		      	// current line length
+    int32_t len;		      	// current line length
 
     // whether this line needs to be udpated
-    int needsupdate;	      
+    int32_t needsupdate;	      
 
 } hu_textline_t;
 
@@ -57,8 +57,8 @@ typedef struct
 typedef struct
 {
     hu_textline_t l[HU_MAXLINES];	// text lines to draw
-    int h;		// height in lines
-    int cl;		// current line number
+    int32_t h;		// height in lines
+    int32_t cl;		// current line number
 
     // pointer to boolean stating whether to update window
     boolean *on;
@@ -75,7 +75,7 @@ typedef struct
     hu_textline_t l;		// text line to input on
 
      // left margin past which I am not to delete characters
-    int lm;
+    int32_t lm;
 
     // pointer to boolean stating whether to update window
     boolean *on; 
@@ -92,7 +92,7 @@ typedef struct
 // textline code
 //
 
-void	HUlib_initTextLine(hu_textline_t *t, int x, int y, patch_t **f, int sc);
+void	HUlib_initTextLine(hu_textline_t *t, int32_t x, int32_t y, patch_t **f, int32_t sc);
 
 void	HUlib_addCharToTextLine(hu_textline_t *t, char ch);
 
@@ -107,7 +107,7 @@ void	HUlib_eraseTextLine(hu_textline_t *l);
 // Scrolling Text window widget routines
 //
 
-void	HUlib_initSText(hu_stext_t *s, int x, int y, int h, patch_t **font, int startchar, boolean *on);
+void	HUlib_initSText(hu_stext_t *s, int32_t x, int32_t y, int32_t h, patch_t **font, int32_t startchar, boolean *on);
 
 void	HUlib_addMessageToSText (hu_stext_t *s, char *prefix, char *msg);
 
@@ -118,13 +118,13 @@ void	HUlib_drawSText(hu_stext_t *s);
 void	HUlib_eraseSText(hu_stext_t *s); 
 
 // Input Text Line widget routines
-void	HUlib_initIText(hu_itext_t *it, int x, int y, patch_t **font, int startchar, boolean *on);
+void	HUlib_initIText(hu_itext_t *it, int32_t x, int32_t y, patch_t **font, int32_t startchar, boolean *on);
 
 // resets line and left margin
 void	HUlib_resetIText(hu_itext_t *it);
 
 // whether eaten
-boolean	HUlib_keyInIText(hu_itext_t *it, unsigned char ch);
+boolean	HUlib_keyInIText(hu_itext_t *it, uint8_t ch);
 
 void	HUlib_drawIText(hu_itext_t *it);
 

@@ -20,23 +20,23 @@
 #include "r_local.h"
 #include "soundst.h"
 
-void _dpmi_lockregion (void * inmem, int length);
-void _dpmi_unlockregion (void * inmem, int length);
+void _dpmi_lockregion (void * inmem, int32_t length);
+void _dpmi_unlockregion (void * inmem, int32_t length);
 
 static channel_t *channels; // the set of channels available
-static int snd_SfxVolume, snd_MusicVolume;
+static int32_t snd_SfxVolume, snd_MusicVolume;
 static boolean mus_paused;	// whether songs are mus_paused
 static musicinfo_t *mus_playing=0;// music currently being played
-int numChannels; // number of channels available
-static int nextcleanup;
+int32_t numChannels; // number of channels available
+static int32_t nextcleanup;
 //
 // Internals.
 //
-static int S_getChannel (void *origin, sfxinfo_t *sfxinfo);
-static boolean S_AdjustSoundParams ( mobj_t *listener, mobj_t *source, int *vol, int *sep);
-static void S_StopChannel(int cnum);
+static int32_t S_getChannel (void *origin, sfxinfo_t *sfxinfo);
+static boolean S_AdjustSoundParams ( mobj_t *listener, mobj_t *source, int32_t *vol, int32_t *sep);
+static void S_StopChannel(int32_t cnum);
 
-void S_SetMusicVolume(int volume)
+void S_SetMusicVolume(int32_t volume)
 {
   if (volume < 0 || volume > 127)
     I_Error("Attempt to set music volume at %d", volume);
@@ -61,11 +61,11 @@ static void S_StopMusic(void)
   }
 }
 
-void S_ChangeMusic (int musicnum, boolean looping)
+void S_ChangeMusic (int32_t musicnum, boolean looping)
 {
   musicinfo_t *music;
   char namebuf[9];
-  extern int snd_MusicDevice;
+  extern int32_t snd_MusicDevice;
   if (snd_MusicDevice == 2 && musicnum == mus_intro)
     musicnum = mus_introa;
   if ( (musicnum <= mus_None) || (musicnum >= NUMMUSIC) )
@@ -94,14 +94,14 @@ void S_ChangeMusic (int musicnum, boolean looping)
   mus_playing = music;
 }
 
-void S_StartMusic(int m_id)
+void S_StartMusic(int32_t m_id)
 {
     S_ChangeMusic(m_id, false);
 }
 
-static void S_StopChannel(int cnum)
+static void S_StopChannel(int32_t cnum)
 {
-  int i;
+  int32_t i;
   channel_t *c = &channels[cnum];
 
   if (c->sfxinfo)
@@ -136,7 +136,7 @@ static void S_StopChannel(int cnum)
 // If the sound is not audible, returns false.
 // Otherwise, modifies parameters and returns true.
 //
-static boolean S_AdjustSoundParams (mobj_t *listener, mobj_t *source, int *vol, int *sep)
+static boolean S_AdjustSoundParams (mobj_t *listener, mobj_t *source, int32_t *vol, int32_t *sep)
 {
   fixed_t approx_dist, adx, ady;
   angle_t angle;
@@ -176,7 +176,7 @@ static boolean S_AdjustSoundParams (mobj_t *listener, mobj_t *source, int *vol, 
   return (*vol > 0);
 }
 
-void S_SetSfxVolume(int volume)
+void S_SetSfxVolume(int32_t volume)
 {
   if (volume < 0 || volume > 127)
     I_Error("Attempt to set sfx volume at %d", volume);
@@ -206,7 +206,7 @@ void S_ResumeSound(void)
 
 void S_StopSound(void *origin)
 {
-  int cnum;
+  int32_t cnum;
 
   for (cnum=0 ; cnum<numChannels ; cnum++)
   {
@@ -222,9 +222,9 @@ void S_StopSound(void *origin)
 // S_getChannel :
 //   If none available, return -1.  Otherwise channel #.
 //
-static int S_getChannel (void *origin, sfxinfo_t *sfxinfo)
+static int32_t S_getChannel (void *origin, sfxinfo_t *sfxinfo)
 {
-  int cnum;// channel number to use
+  int32_t cnum;// channel number to use
   channel_t *c;
 
   // Find an open channel
@@ -257,15 +257,15 @@ static int S_getChannel (void *origin, sfxinfo_t *sfxinfo)
 }
 
 #if (APPVER_DOOMREV < AV_DR_DM17)
-static void S_StartSoundAtVolume(mobj_t *origin, int sfx_id, int volume)
+static void S_StartSoundAtVolume(mobj_t *origin, int32_t sfx_id, int32_t volume)
 #else
-static void S_StartSoundAtVolume(void *origin_p, int sfx_id, int volume)
+static void S_StartSoundAtVolume(void *origin_p, int32_t sfx_id, int32_t volume)
 #endif
 {
   boolean rc;
-  int sep, pitch;
+  int32_t sep, pitch;
   sfxinfo_t *sfx;
-  int cnum;
+  int32_t cnum;
 #if (APPVER_DOOMREV >= AV_DR_DM17)
   mobj_t *origin = (mobj_t *) origin_p;
 #endif
@@ -351,7 +351,7 @@ static void S_StartSoundAtVolume(void *origin_p, int sfx_id, int volume)
     _dpmi_lockregion(sfx->data, lumpinfo[sfx->lumpnum].size);
     // fprintf( stderr,
     //	     "S_StartSoundAtVolume: loading %d (lump %d) : 0x%x\n",
-    //       sfx_id, sfx->lumpnum, (int)sfx->data );
+    //       sfx_id, sfx->lumpnum, (int32_t)sfx->data );
   }
 #endif
   
@@ -364,7 +364,7 @@ static void S_StartSoundAtVolume(void *origin_p, int sfx_id, int volume)
   channels[cnum].handle = I_StartSound(sfx->data, volume, sep, pitch);
 }
 
-void S_StartSound (void *origin, int sfx_id)
+void S_StartSound (void *origin, int32_t sfx_id)
 {
 #ifdef SAWDEBUG
 // if (sfx_id == sfx_sawful)
@@ -373,10 +373,10 @@ void S_StartSound (void *origin, int sfx_id)
   S_StartSoundAtVolume(origin, sfx_id, snd_SfxVolume);
 #ifdef SAWDEBUG
 {
-  int i, n;
+  int32_t i, n;
   static mobj_t *last_saw_origins[10] = {1,1,1,1,1,1,1,1,1,1};
-  static int first_saw=0;
-  static int next_saw=0;
+  static int32_t first_saw=0;
+  static int32_t next_saw=0;
 	
   if (sfx_id == sfx_sawidl || sfx_id == sfx_sawful || sfx_id == sfx_sawhit)
   {
@@ -423,7 +423,7 @@ void S_UpdateSounds(void* listener_p)
 #endif
 {
   boolean audible;
-  int cnum,volume, sep, pitch, i;
+  int32_t cnum,volume, sep, pitch, i;
   sfxinfo_t *sfx;
   channel_t *c; 
 #if (APPVER_DOOMREV >= AV_DR_DM17)
@@ -505,9 +505,9 @@ void S_UpdateSounds(void* listener_p)
 // Sets channels, SFX and music volume,
 //  allocates channel buffer, sets S_sfx lookup.
 //
-void S_Init (int sfxVolume, int musicVolume)
+void S_Init (int32_t sfxVolume, int32_t musicVolume)
 {  
-  int i;
+  int32_t i;
 
   //fprintf( stderr, "S_Init: default sfx volume %d\n", sfxVolume);
 
@@ -543,7 +543,7 @@ void S_Init (int sfxVolume, int musicVolume)
 //
 void S_Start(void)
 {
-  int cnum, mnum;
+  int32_t cnum, mnum;
 
   // kill all playing sounds at start of level
   //  (trust me - a good idea)
@@ -561,7 +561,7 @@ void S_Start(void)
     mnum = mus_e1m1 + (gameepisode-1)*9 + gamemap-1;
 #else
   {
-    int spmus[]=
+    int32_t spmus[]=
     {
       // Song - Who? - Where?
       

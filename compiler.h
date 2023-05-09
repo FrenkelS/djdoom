@@ -57,32 +57,32 @@
 
 typedef union {
 	struct {
-		unsigned		edi, esi, ebp, reserved, ebx, edx, ecx, eax;
+		uint32_t	edi, esi, ebp, reserved, ebx, edx, ecx, eax;
 	} d;
 	struct {
-		unsigned short	di, di_hi;
-		unsigned short	si, si_hi;
-		unsigned short	bp, bp_hi;
-		unsigned short	res, res_hi;
-		unsigned short	bx, bx_hi;
-		unsigned short	dx, dx_hi;
-		unsigned short	cx, cx_hi;
-		unsigned short	ax, ax_hi;
-		unsigned short	flags, es, ds, fs, gs, ip, cs, sp, ss;
+		uint16_t	di, di_hi;
+		uint16_t	si, si_hi;
+		uint16_t	bp, bp_hi;
+		uint16_t	res, res_hi;
+		uint16_t	bx, bx_hi;
+		uint16_t	dx, dx_hi;
+		uint16_t	cx, cx_hi;
+		uint16_t	ax, ax_hi;
+		uint16_t	flags, es, ds, fs, gs, ip, cs, sp, ss;
 	} x;
 } __dpmi_regs;
 
 typedef struct {
-	unsigned long	largest_available_free_block_in_bytes;
-	unsigned long	maximum_unlocked_page_allocation_in_pages;
-	unsigned long	maximum_locked_page_allocation_in_pages;
-	unsigned long	linear_address_space_size_in_pages;
-	unsigned long	total_number_of_unlocked_pages;
-	unsigned long	total_number_of_free_pages;
-	unsigned long	total_number_of_physical_pages;
-	unsigned long	free_linear_address_space_in_pages;
-	unsigned long	size_of_paging_file_partition_in_pages;
-	unsigned long	reserved[3];
+	uint32_t	largest_available_free_block_in_bytes;
+	uint32_t	maximum_unlocked_page_allocation_in_pages;
+	uint32_t	maximum_locked_page_allocation_in_pages;
+	uint32_t	linear_address_space_size_in_pages;
+	uint32_t	total_number_of_unlocked_pages;
+	uint32_t	total_number_of_free_pages;
+	uint32_t	total_number_of_physical_pages;
+	uint32_t	free_linear_address_space_in_pages;
+	uint32_t	size_of_paging_file_partition_in_pages;
+	uint32_t	reserved[3];
 } __dpmi_free_mem_info;
 
 #if !defined C_ONLY
@@ -93,7 +93,7 @@ typedef struct {
 	parm	[eax] [ecx] \
 	modify	[edx]
 
-typedef int fixed_t;
+typedef int32_t fixed_t;
 fixed_t	FixedDiv2 (fixed_t a, fixed_t b);
 #pragma aux FixedDiv2 =		\
 	"cdq",					\
