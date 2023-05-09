@@ -746,7 +746,7 @@ static _go32_dpmi_seginfo oldkeyboardisr = {0}, newkeyboardisr;
 #elif defined __DMC__
 static unsigned oldkeyboardisroffset, oldkeyboardisrsegment;
 #elif defined __CCDL__
-static UWORD oldkeyboardisrsegment, oldkeyboardisroffset = 0;
+static uint16_t oldkeyboardisrsegment, oldkeyboardisroffset = 0;
 #elif defined __WATCOMC__
 static void (_interrupt __far *oldkeyboardisr) () = NULL;
 #endif
@@ -768,7 +768,7 @@ static void I_StartupKeyboard (void)
 
 	_segread(&segregs);
 	dpmi_get_real_interrupt(&oldkeyboardisrsegment, &oldkeyboardisroffset, KEYBOARDINT);
-	dpmi_set_protected_interrupt(KEYBOARDINT, segregs.cs, (ULONG)I_KeyboardISR);
+	dpmi_set_protected_interrupt(KEYBOARDINT, segregs.cs, (uint32_t)I_KeyboardISR);
 #elif defined __WATCOMC__
 	oldkeyboardisr = _dos_getvect(KEYBOARDINT);
 	_dos_setvect (0x8000 | KEYBOARDINT, I_KeyboardISR);
@@ -1068,10 +1068,9 @@ static void DPMIInt (int32_t i)
 
 	__dpmi_int(i, &dpmiregs);
 #elif defined __CCDL__
-	UWORD		num = i;
-	DPMI_REGS	dpmiregs;
+	DPMI_REGS		dpmiregs;
 
-	dpmi_simulate_real_interrupt(num, &dpmiregs);
+	dpmi_simulate_real_interrupt(i, &dpmiregs);
 #elif defined __WATCOMC__
 	__dpmi_regs		dpmiregs;
 	struct SREGS	segregs;
