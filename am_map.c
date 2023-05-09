@@ -25,9 +25,9 @@
 #include "am_data.h"
 
 static int32_t cheating = 0;
-static int32_t grid = 0;
+static boolean grid = false;
 
-static int32_t leveljuststarted = 1; // kluge until AM_LevelInit() is called
+static boolean leveljuststarted = true; // kluge until AM_LevelInit() is called
 
 boolean    automapactive = false;
 static int32_t finit_width = SCREENWIDTH;
@@ -72,7 +72,7 @@ static patch_t *marknums[10]; // numbers used for marking by the automap
 static mpoint_t markpoints[AM_NUMMARKPOINTS]; // where the points are
 static int32_t markpointnum = 0; // next point to be assigned
 
-static int32_t followplayer = 1; // specifies whether to follow the player around
+static boolean followplayer = true; // specifies whether to follow the player around
 
 #if APPVER_CHEX
 static uint8_t cheat_amap_seq[] =
@@ -172,7 +172,7 @@ static void AM_changeWindowLoc(void)
 {
   if (m_paninc.x || m_paninc.y)
   {
-    followplayer = 0;
+    followplayer = false;
     f_oldloc.x = MAXINT;
   }
 
@@ -261,7 +261,7 @@ static void AM_clearMarks(void)
 
 static void AM_LevelInit(void)
 {
-  leveljuststarted = 0;
+  leveljuststarted = false;
 
   f_x = f_y = 0;
   f_w = finit_width;
