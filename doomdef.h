@@ -42,7 +42,7 @@
 
 // if rangecheck is undefined, most parameter validation debugging code
 // will not be compiled
-#define RANGECHECK
+//#define RANGECHECK
 
 // all external data is defined here
 #include "doomdata.h"
