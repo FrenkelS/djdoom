@@ -190,7 +190,7 @@ static void P_XYMovement (mobj_t *mo)
 		&& (!player || (player->cmd.forwardmove== 0
 		&& player->cmd.sidemove == 0 ) ) )
 	{	// if in a walking frame, stop moving
-		if ( player&&(unsigned)((player->mo->state - states)- S_PLAY_RUN1) < 4)
+		if ( player&&(uint32_t)((player->mo->state - states)- S_PLAY_RUN1) < 4)
 			P_SetMobjState (player->mo, S_PLAY);
 
 		mo->momx = 0;

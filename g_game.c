@@ -775,7 +775,7 @@ static boolean G_CheckSpot (int32_t playernum, mapthing_t *mthing)
 {
 	fixed_t         x,y;
 	subsector_t *ss;
-	unsigned        an;
+	uint32_t        an;
 	mobj_t      *mo;
 	int32_t         i;
 	
@@ -1436,10 +1436,10 @@ static void G_ReadDemoTiccmd (ticcmd_t *cmd)
 		G_CheckDemoStatus ();
 		return;
 	}
-	cmd->forwardmove = ((signed char)*demo_p++);
-	cmd->sidemove = ((signed char)*demo_p++);
-	cmd->angleturn = ((unsigned char)*demo_p++)<<8;
-	cmd->buttons = (unsigned char)*demo_p++;
+	cmd->forwardmove = ((int8_t)*demo_p++);
+	cmd->sidemove = ((int8_t)*demo_p++);
+	cmd->angleturn = ((uint8_t)*demo_p++)<<8;
+	cmd->buttons = (uint8_t)*demo_p++;
 }
 
 static void G_WriteDemoTiccmd (ticcmd_t *cmd)

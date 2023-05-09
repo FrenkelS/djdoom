@@ -978,7 +978,7 @@ static void WI_loadData(void)
 #endif
   bg = W_CacheLumpName(name, PU_CACHE);    // background
   V_DrawPatch(0, 0, 1, bg);
-// unsigned char *pic = screens[1];
+// uint8_t *pic = screens[1];
 // if (commercial)
 // {
 // darken the background image

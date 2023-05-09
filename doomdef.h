@@ -140,7 +140,7 @@ typedef int32_t fixed_t;
 #define	ANG180	0x80000000
 #define	ANG270	0xc0000000
 
-typedef unsigned angle_t;
+typedef uint32_t angle_t;
 
 typedef enum
 {
@@ -473,7 +473,7 @@ typedef struct player_s
 
 typedef struct
 {
-	unsigned	checksum;					// high bit is retransmit request
+	uint32_t	checksum;					// high bit is retransmit request
 	byte		retransmitfrom;				// only valid if NCMD_RETRANSMIT
 	byte		starttic;
 	byte		player, numtics;

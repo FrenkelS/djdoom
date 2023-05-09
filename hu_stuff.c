@@ -369,7 +369,7 @@ static char frenchKeyMap[128]=
 	'P','A','R','S','T','U','V','Z','X','Y','W','^','\\','$','^',127
 };
 
-static char ForeignTranslation(unsigned char ch)
+static char ForeignTranslation(uint8_t ch)
 {
   return ch < 128 ? frenchKeyMap[ch] : ch;
 }
@@ -520,7 +520,7 @@ void HU_Ticker(void)
         else
         {
           if (c >= 'a' && c <= 'z')
-            c = (char) shiftxform[(unsigned char) c];
+            c = (char) shiftxform[(uint8_t) c];
           rc = HUlib_keyInIText(&w_inputbuffer[i], c);
           if (rc && c == KEY_ENTER)
           {
@@ -593,7 +593,7 @@ boolean HU_Responder(event_t *ev)
   boolean eatkey = false;
   static boolean shiftdown = false;
   static boolean altdown = false;
-  unsigned char c;
+  uint8_t c;
   int32_t i, numplayers;
     
   static char destination_keys[MAXPLAYERS] =
@@ -706,7 +706,7 @@ boolean HU_Responder(event_t *ev)
       eatkey = HUlib_keyInIText(&w_chat, c);
       if (eatkey)
       {
-	// static unsigned char buf[20]; // DEBUG
+	// static uint8_t buf[20]; // DEBUG
 	HU_queueChatChar(c);
 		
 	// sprintf(buf, "KEY: %d => %d", ev->data1, c);

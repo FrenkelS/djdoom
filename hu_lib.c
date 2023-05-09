@@ -71,7 +71,7 @@ void HUlib_drawTextLine(hu_textline_t *l, boolean drawcursor)
 {
 
   int32_t i, w, x;
-  unsigned char c;
+  uint8_t c;
 
 // draw the new stuff
   x = l->x;
@@ -234,7 +234,7 @@ void HUlib_resetIText(hu_itext_t *it)
 
 // wrapper function for handling general keyed input.
 // returns true if it ate the key
-boolean HUlib_keyInIText(hu_itext_t *it, unsigned char ch)
+boolean HUlib_keyInIText(hu_itext_t *it, uint8_t ch)
 {
 
   if (ch >= ' ' && ch <= '_') 

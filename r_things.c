@@ -72,7 +72,7 @@ static char				*spritename;
 =================
 */
 
-static void R_InstallSpriteLump (int32_t lump, unsigned frame, unsigned rotation, boolean flipped)
+static void R_InstallSpriteLump (int32_t lump, uint32_t frame, uint32_t rotation, boolean flipped)
 {
 	int32_t		r;
 
@@ -441,7 +441,7 @@ static void R_ProjectSprite (mobj_t *thing)
 // decide which patch to use for sprite reletive to player
 //
 #ifdef RANGECHECK
-	if ((unsigned)thing->sprite >= NUMSPRITES)
+	if ((uint32_t)thing->sprite >= NUMSPRITES)
 		I_Error ("R_ProjectSprite: invalid sprite number %i ",thing->sprite);
 #endif
 	sprdef = &sprites[thing->sprite];
@@ -455,7 +455,7 @@ static void R_ProjectSprite (mobj_t *thing)
 	if (sprframe->rotate)
 	{	// choose a different rotation based on player view
 		ang = R_PointToAngle (thing->x, thing->y);
-		rot = (ang-thing->angle+(unsigned)(ANG45/2)*9)>>29;
+		rot = (ang-thing->angle+(uint32_t)(ANG45/2)*9)>>29;
 		lump = sprframe->lump[rot];
 		flip = (boolean)sprframe->flip[rot];
 	}
@@ -582,7 +582,7 @@ static void R_DrawPSprite (pspdef_t *psp)
 // decide which patch to use
 //
 #ifdef RANGECHECK
-	if ( (unsigned)psp->state->sprite >= NUMSPRITES)
+	if ( (uint32_t)psp->state->sprite >= NUMSPRITES)
 		I_Error ("R_ProjectSprite: invalid sprite number %i "
 		, psp->state->sprite);
 #endif

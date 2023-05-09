@@ -117,7 +117,7 @@ static boolean grmode;
 //==================================================
 
 static boolean         joystickpresent;
-static unsigned        joystickx, joysticky;
+static uint32_t        joystickx, joysticky;
 static boolean I_ReadJoystick (void)	// returns false if not connected
 {
 	// TODO implement joystick support
@@ -1058,7 +1058,7 @@ void I_StartFrame (void)
 #if defined __WATCOMC__
 #define REALSTACKSIZE   1024
 
-static unsigned                realstackseg;
+static uint32_t                realstackseg;
 #endif
 
 static void DPMIInt (int32_t i)
@@ -1082,7 +1082,7 @@ static void DPMIInt (int32_t i)
 	regs.w.ax = 0x300;
 	regs.w.bx = i;
 	regs.w.cx = 0;
-	regs.x.edi = (unsigned)&dpmiregs;
+	regs.x.edi = (uint32_t)&dpmiregs;
 	segregs.es = segregs.ds;
 	int386x( DPMI_INT, &regs, &regs, &segregs );
 #else

@@ -215,7 +215,7 @@ static boolean P_Move(mobj_t *actor)
 	if (actor->movedir == DI_NODIR)
 		return false;
 	
-	if ((unsigned)actor->movedir >= 8)
+	if ((uint32_t)actor->movedir >= 8)
 		I_Error ("Weird actor->movedir!");
 
 	tryx = actor->x+actor->info->speed*xspeed[actor->movedir];
@@ -1190,7 +1190,7 @@ void A_FireCrackle (mobj_t *actor)
 void A_Fire (mobj_t *actor)
 {
 	mobj_t		*dest;
-	unsigned	an;
+	uint32_t	an;
 		
 	dest = actor->tracer;
 	if (!dest)

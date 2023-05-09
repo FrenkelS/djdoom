@@ -70,7 +70,7 @@ void R_DrawColumn (void)
 		return;
 				
 #ifdef RANGECHECK
-	if ((unsigned)dc_x >= SCREENWIDTH || dc_yl < 0 || dc_yh >= SCREENHEIGHT)
+	if ((uint32_t)dc_x >= SCREENWIDTH || dc_yl < 0 || dc_yh >= SCREENHEIGHT)
 		I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
 #endif
 
@@ -145,7 +145,7 @@ void R_DrawFuzzColumn (void)
 		return;
 				
 #ifdef RANGECHECK
-	if ((unsigned)dc_x >= SCREENWIDTH || dc_yl < 0 || dc_yh >= SCREENHEIGHT)
+	if ((uint32_t)dc_x >= SCREENWIDTH || dc_yl < 0 || dc_yh >= SCREENHEIGHT)
 		I_Error ("R_DrawFuzzColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
 #endif
 
@@ -206,7 +206,7 @@ void R_DrawTranslatedColumn (void)
 		return;
 				
 #ifdef RANGECHECK
-	if ((unsigned)dc_x >= SCREENWIDTH || dc_yl < 0 || dc_yh >= SCREENHEIGHT)
+	if ((uint32_t)dc_x >= SCREENWIDTH || dc_yl < 0 || dc_yh >= SCREENHEIGHT)
 		I_Error ("R_DrawTranslatedColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
 #endif
 

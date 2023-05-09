@@ -28,7 +28,7 @@
 
 typedef struct
 {
-  unsigned char *sequence, *p;
+  uint8_t *sequence, *p;
 } cheatseq_t;
 
 boolean cht_CheckCheat(cheatseq_t *cht, char key);

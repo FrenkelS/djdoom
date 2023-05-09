@@ -124,7 +124,7 @@ void	HUlib_initIText(hu_itext_t *it, int32_t x, int32_t y, patch_t **font, int32
 void	HUlib_resetIText(hu_itext_t *it);
 
 // whether eaten
-boolean	HUlib_keyInIText(hu_itext_t *it, unsigned char ch);
+boolean	HUlib_keyInIText(hu_itext_t *it, uint8_t ch);
 
 void	HUlib_drawIText(hu_itext_t *it);
 

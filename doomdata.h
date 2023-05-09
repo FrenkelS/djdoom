@@ -27,7 +27,7 @@
 #ifndef __BYTEBOOL__
 #define __BYTEBOOL__
 typedef enum {false, true} boolean;
-typedef unsigned char byte;
+typedef uint8_t byte;
 #endif
 
 /*

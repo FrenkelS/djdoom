@@ -57,7 +57,7 @@
 
 typedef union {
 	struct {
-		unsigned		edi, esi, ebp, reserved, ebx, edx, ecx, eax;
+		uint32_t	edi, esi, ebp, reserved, ebx, edx, ecx, eax;
 	} d;
 	struct {
 		uint16_t	di, di_hi;

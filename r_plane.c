@@ -107,10 +107,10 @@ static void R_MapPlane (int32_t y, int32_t x1, int32_t x2)
 {
 	angle_t		angle;
 	fixed_t		distance, length;
-	unsigned	index;
+	uint32_t	index;
 	
 #ifdef RANGECHECK
-	if (x2 < x1 || x1<0 || x2>=viewwidth || (unsigned)y>viewheight)
+	if (x2 < x1 || x1<0 || x2>=viewwidth || (uint32_t)y>viewheight)
 		I_Error ("R_MapPlane: %i, %i at %i",x1,x2,y);
 #endif
 

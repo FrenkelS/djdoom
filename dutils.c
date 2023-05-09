@@ -25,7 +25,7 @@
 //
 
 static boolean firsttime = true;
-static unsigned char cheat_xlate_table[256];
+static uint8_t cheat_xlate_table[256];
 
 
 //
@@ -49,7 +49,7 @@ boolean cht_CheckCheat(cheatseq_t *cht, char key)
   if (*cht->p == 0)
     *(cht->p++) = key;
   else if
-    (cheat_xlate_table[(unsigned char)key] == *cht->p) cht->p++;
+    (cheat_xlate_table[(uint8_t)key] == *cht->p) cht->p++;
   else
     cht->p = cht->sequence;
 
@@ -66,7 +66,7 @@ boolean cht_CheckCheat(cheatseq_t *cht, char key)
 
 void cht_GetParam(cheatseq_t *cht, char *buffer)
 {
-  unsigned char *p, c;
+  uint8_t *p, c;
 
   p = cht->sequence;
   while (*(p++) != 1)

@@ -420,7 +420,7 @@ void W_ReadLump (int32_t lump, void *dest)
 void	*W_CacheLumpNum (int32_t lump, int32_t tag)
 {
 
-	if ((unsigned)lump >= numlumps)
+	if ((uint32_t)lump >= numlumps)
 		I_Error ("W_CacheLumpNum: %i >= numlumps",lump);
 		
 	if (!lumpcache[lump])

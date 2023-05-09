@@ -69,7 +69,7 @@ static int16_t           *maskedtexturecol;
 
 void R_RenderMaskedSegRange (drawseg_t *ds, int32_t x1, int32_t x2)
 {
-	unsigned        index;
+	uint32_t        index;
 	column_t        *col;
 	int32_t                     lightnum;
 	int32_t                     texnum;
@@ -138,7 +138,7 @@ void R_RenderMaskedSegRange (drawseg_t *ds, int32_t x1, int32_t x2)
 			}
 
 			sprtopscreen = centeryfrac - FixedMul(dc_texturemid, spryscale);
-			dc_iscale = 0xffffffffu / (unsigned)spryscale;
+			dc_iscale = 0xffffffffu / (uint32_t)spryscale;
 
 	//
 	// draw the texture
@@ -231,7 +231,7 @@ static void R_RenderSegLoop (void)
 				index = MAXLIGHTSCALE-1;
 			dc_colormap = walllights[index];
 			dc_x = rw_x;
-			dc_iscale = 0xffffffffu / (unsigned)rw_scale;
+			dc_iscale = 0xffffffffu / (uint32_t)rw_scale;
 		}
 
 //

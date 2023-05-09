@@ -77,16 +77,16 @@ static int32_t     NetbufferSize (void)
 	return (int32_t)&(((doomdata_t *)0)->cmds[netbuffer->numtics]);
 }
 
-static unsigned NetbufferChecksum (void)
+static uint32_t NetbufferChecksum (void)
 {
-	unsigned                c;
+	uint32_t                c;
 	int32_t             i,l;
 
 	c = 0x1234567;
 
 	l = (NetbufferSize () - (int32_t)&(((doomdata_t *)0)->retransmitfrom))/4;
 	for (i=0 ; i<l ; i++)
-		c += ((unsigned *)&netbuffer->retransmitfrom)[i] * (i+1);
+		c += ((uint32_t *)&netbuffer->retransmitfrom)[i] * (i+1);
 
 	return c & NCMD_CHECKSUM;
 }

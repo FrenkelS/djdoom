@@ -27,7 +27,7 @@ void TSM_Remove(void);
 int32_t MUS_PauseSong(int32_t handle);
 int32_t MUS_ResumeSong(int32_t handle);
 void MUS_SetMasterVolume(int32_t volume);
-int32_t MUS_RegisterSong(unsigned char *data);
+int32_t MUS_RegisterSong(uint8_t *data);
 int32_t MUS_UnregisterSong(int32_t handle);
 int32_t MUS_StopSong(int32_t handle);
 int32_t MUS_ChainSong(int32_t handle, int32_t to);
