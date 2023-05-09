@@ -27,16 +27,8 @@
 static int32_t cheating = 0;
 static boolean grid = false;
 
-static boolean leveljuststarted = true; // kluge until AM_LevelInit() is called
-
 boolean    automapactive = false;
-static int32_t finit_width = SCREENWIDTH;
-static int32_t finit_height = SCREENHEIGHT-32;
-static int32_t f_x, f_y; // location of window on screen
-static int32_t f_w, f_h; // size of window on screen
-static int32_t lightlev; // used for funky strobing effect
 static byte *fb; // pseudo-frame buffer
-static int32_t amclock;
 
 static mpoint_t m_paninc; // how far the window pans each tic (map coords)
 static fixed_t mtof_zoommul; // how far the window zooms in each tic (map coords)
@@ -86,16 +78,14 @@ static cheatseq_t cheat_amap = { cheat_amap_seq, 0 };
 
 extern boolean viewactive;
 extern boolean singledemo;
-//extern byte screens[][SCREENWIDTH*SCREENHEIGHT];
-void V_MarkRect (int32_t x, int32_t y, int32_t width, int32_t height);
 
 
 static void AM_activateNewScale(void)
 {
   m_x += m_w/2;
   m_y += m_h/2;
-  m_w = FTOM(f_w);
-  m_h = FTOM(f_h);
+  m_w = FTOM(SCREENWIDTH);
+  m_h = FTOM(SCREENHEIGHT-ST_HEIGHT);
   m_x -= m_w/2;
   m_y -= m_h/2;
   m_x2 = m_x + m_w;
@@ -127,7 +117,7 @@ static void AM_restoreScaleAndLoc(void)
   m_y2 = m_y + m_h;
 
   // Change the scaling multipliers
-  scale_mtof = FixedDiv(f_w<<FRACBITS, m_w);
+  scale_mtof = FixedDiv(SCREENWIDTH<<FRACBITS, m_w);
   scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
 }
 
@@ -160,11 +150,11 @@ static void AM_findMinMaxBoundaries(void)
   min_w = 2*PLAYERRADIUS;
   min_h = 2*PLAYERRADIUS;
 
-  a = FixedDiv(f_w<<FRACBITS, max_w);
-  b = FixedDiv(f_h<<FRACBITS, max_h);
+  a = FixedDiv(SCREENWIDTH<<FRACBITS, max_w);
+  b = FixedDiv((SCREENHEIGHT-ST_HEIGHT)<<FRACBITS, max_h);
   min_scale_mtof = a < b ? a : b;
 
-  max_scale_mtof = FixedDiv(f_h<<FRACBITS, 2*PLAYERRADIUS);
+  max_scale_mtof = FixedDiv((SCREENHEIGHT-ST_HEIGHT)<<FRACBITS, 2*PLAYERRADIUS);
 
 }
 
@@ -202,15 +192,13 @@ static void AM_initVariables(void)
   fb = screens[0];
 
   f_oldloc.x = MAXINT;
-  amclock = 0;
-  lightlev = 0;
 
   m_paninc.x = m_paninc.y = 0;
   ftom_zoommul = FRACUNIT;
   mtof_zoommul = FRACUNIT;
 
-  m_w = FTOM(f_w);
-  m_h = FTOM(f_h);
+  m_w = FTOM(SCREENWIDTH);
+  m_h = FTOM(SCREENHEIGHT-ST_HEIGHT);
 
   // find player to center on initially
   pnum = consoleplayer;
@@ -261,13 +249,6 @@ static void AM_clearMarks(void)
 
 static void AM_LevelInit(void)
 {
-  leveljuststarted = false;
-
-  f_x = f_y = 0;
-  f_w = finit_width;
-  f_h = finit_height;
-
-
   AM_clearMarks();
 
   AM_findMinMaxBoundaries();
@@ -479,8 +460,6 @@ void AM_Ticker (void)
 
   if (!automapactive) return;
 
-  amclock++;
-
   if (followplayer) AM_doFollowPlayer();
 
   // Change the zoom if necessary
@@ -490,9 +469,9 @@ void AM_Ticker (void)
   if (m_paninc.x || m_paninc.y) AM_changeWindowLoc();
 }
 
-static void AM_clearFB(int32_t color)
+static void AM_clearFB(void)
 {
-  memset(fb, color, f_w*f_h);
+  memset(fb, BACKGROUND, SCREENWIDTH*(SCREENHEIGHT-ST_HEIGHT));
 }
 
 // Based on Cohen-Sutherland clipping algorithm but with a slightly
@@ -509,9 +488,9 @@ static boolean AM_clipMline(mline_t *ml, fline_t *fl)
 #define DOOUTCODE(oc, mx, my) \
   (oc) = 0; \
   if ((my) < 0) (oc) |= TOP; \
-  else if ((my) >= f_h) (oc) |= BOTTOM; \
+  else if ((my) >= SCREENHEIGHT-ST_HEIGHT) (oc) |= BOTTOM; \
   if ((mx) < 0) (oc) |= LEFT; \
-  else if ((mx) >= f_w) (oc) |= RIGHT
+  else if ((mx) >= SCREENWIDTH) (oc) |= RIGHT
 
   // do trivial rejects and outcodes
   if (ml->a.y > m_y2) outcode1 = TOP;
@@ -553,15 +532,15 @@ static boolean AM_clipMline(mline_t *ml, fline_t *fl)
     {
       dy = fl->a.y - fl->b.y;
       dx = fl->b.x - fl->a.x;
-      tmp.x = fl->a.x + (dx*(fl->a.y-f_h))/dy;
-      tmp.y = f_h-1;
+      tmp.x = fl->a.x + (dx*(fl->a.y-(SCREENHEIGHT-ST_HEIGHT)))/dy;
+      tmp.y = SCREENHEIGHT-ST_HEIGHT-1;
     }
     else if (outside & RIGHT)
     {
       dy = fl->b.y - fl->a.y;
       dx = fl->b.x - fl->a.x;
-      tmp.y = fl->a.y + (dy*(f_w-1 - fl->a.x))/dx;
-      tmp.x = f_w-1;
+      tmp.y = fl->a.y + (dy*(SCREENWIDTH-1 - fl->a.x))/dx;
+      tmp.x = SCREENWIDTH-1;
     }
     else if (outside & LEFT)
     {
@@ -594,16 +573,16 @@ static void AM_drawFline(fline_t *fl, int32_t color)
   static int32_t fuck = 0;
 
   	// For debugging only
-  if (   fl->a.x < 0 || fl->a.x >= f_w
-      || fl->a.y < 0 || fl->a.y >= f_h
-      || fl->b.x < 0 || fl->b.x >= f_w
-      || fl->b.y < 0 || fl->b.y >= f_h)
+  if (   fl->a.x < 0 || fl->a.x >= SCREENWIDTH
+      || fl->a.y < 0 || fl->a.y >= SCREENHEIGHT-ST_HEIGHT
+      || fl->b.x < 0 || fl->b.x >= SCREENWIDTH
+      || fl->b.y < 0 || fl->b.y >= SCREENHEIGHT-ST_HEIGHT)
   {
     fprintf(stderr, "fuck %d \r", fuck++);
     return;
   }
   
-  #define PUTDOT(xx,yy,cc) fb[(yy)*f_w+(xx)]=(cc)
+  #define PUTDOT(xx,yy,cc) fb[(yy)*SCREENWIDTH+(xx)]=(cc)
   
   dx = fl->b.x - fl->a.x;
   ax = 2 * (dx<0 ? -dx : dx);
@@ -657,7 +636,7 @@ static void AM_drawMline(mline_t *ml, int32_t color)
 
 }
 
-static void AM_drawGrid(int32_t color)
+static void AM_drawGrid(void)
 {
   fixed_t x, y;
   fixed_t start, end;
@@ -677,7 +656,7 @@ static void AM_drawGrid(int32_t color)
   {
     ml.a.x = x;
     ml.b.x = x;
-    AM_drawMline(&ml, color);
+    AM_drawMline(&ml, GRIDCOLORS);
   }
 
   // Figure out start of horizontal gridlines
@@ -694,7 +673,7 @@ static void AM_drawGrid(int32_t color)
   {
     ml.a.y = y;
     ml.b.y = y;
-    AM_drawMline(&ml, color);
+    AM_drawMline(&ml, GRIDCOLORS);
   }
 }
 
@@ -715,23 +694,23 @@ static void AM_drawWalls(void)
 	continue;
       if (!lines[i].backsector)
       {
-        AM_drawMline(&l, WALLCOLORS+lightlev);
+        AM_drawMline(&l, WALLCOLORS);
       } else {
 	if (lines[i].special == 39)
 	{ // teleporters
           AM_drawMline(&l, WALLCOLORS+WALLRANGE/2);
 	} else if (lines[i].flags & ML_SECRET) // secret door
 	{
-	  if (cheating) AM_drawMline(&l, SECRETWALLCOLORS + lightlev);
-	  else AM_drawMline(&l, WALLCOLORS+lightlev);
+	  if (cheating) AM_drawMline(&l, SECRETWALLCOLORS);
+	  else AM_drawMline(&l, WALLCOLORS);
 	} else if (lines[i].backsector->floorheight
 		   != lines[i].frontsector->floorheight) {
-	  AM_drawMline(&l, FDWALLCOLORS + lightlev); // floor level change
+	  AM_drawMline(&l, FDWALLCOLORS); // floor level change
 	} else if (lines[i].backsector->ceilingheight
 		   != lines[i].frontsector->ceilingheight) {
-	  AM_drawMline(&l, CDWALLCOLORS+lightlev); // ceiling level change
+	  AM_drawMline(&l, CDWALLCOLORS); // ceiling level change
 	} else if (cheating) {
-	  AM_drawMline(&l, TSWALLCOLORS+lightlev);
+	  AM_drawMline(&l, TSWALLCOLORS);
 	}
       }
     } else if (plr->powers[pw_allmap])
@@ -820,7 +799,7 @@ static void AM_drawPlayers(void)
   }
 }
 
-static void AM_drawThings(int32_t colors)
+static void AM_drawThings(void)
 {
   int32_t i;
   mobj_t *t;
@@ -831,7 +810,7 @@ static void AM_drawThings(int32_t colors)
     while (t)
     {
       AM_drawLineCharacter(thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
-	16<<FRACBITS, t->angle, colors+lightlev, t->x, t->y);
+	16<<FRACBITS, t->angle, THINGCOLORS, t->x, t->y);
       t = t->snext;
     }
   }
@@ -839,41 +818,37 @@ static void AM_drawThings(int32_t colors)
 
 static void AM_drawMarks(void)
 {
-  int32_t i, fx, fy, w, h;
+  int32_t i, fx, fy;
 
   for (i=0;i<AM_NUMMARKPOINTS;i++)
   {
     if (markpoints[i].x != -1)
     {
-//      w = SHORT(marknums[i]->width);
-//      h = SHORT(marknums[i]->height);
-      w = 5; // because something's wrong with the wad, i guess
-      h = 6; // because something's wrong with the wad, i guess
       fx = CXMTOF(markpoints[i].x);
       fy = CYMTOF(markpoints[i].y);
-      if (fx >= f_x && fx <= f_w - w && fy >= f_y && fy <= f_h - h)
+      if (0 <= fx && fx <= SCREENWIDTH - 5 && 0 <= fy && fy <= SCREENHEIGHT-ST_HEIGHT - 6)
 	V_DrawPatch(fx, fy, FB, marknums[i]);
     }
   }
 }
 
-static void AM_drawCrosshair(int32_t color)
+static void AM_drawCrosshair(void)
 {
-  fb[(f_w*(f_h+1))/2] = color; // single point for now
+  fb[(SCREENWIDTH*(SCREENHEIGHT-ST_HEIGHT+1))/2] = XHAIRCOLORS; // single point for now
 }
 
 void AM_Drawer(void)
 {
   if (!automapactive) return;
 
-  AM_clearFB(BACKGROUND);
-  if (grid) AM_drawGrid(GRIDCOLORS);
+  AM_clearFB();
+  if (grid) AM_drawGrid();
   AM_drawWalls();
   AM_drawPlayers();
-  if (cheating==2) AM_drawThings(THINGCOLORS);
-  AM_drawCrosshair(XHAIRCOLORS);
+  if (cheating==2) AM_drawThings();
+  AM_drawCrosshair();
 
   AM_drawMarks();
 
-  V_MarkRect(f_x, f_y, f_w, f_h);
+  V_MarkRect(0, 0, SCREENWIDTH, SCREENHEIGHT-ST_HEIGHT);
 }

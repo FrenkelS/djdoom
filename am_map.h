@@ -91,8 +91,8 @@
 #define FTOM(x) FixedMul(((x)<<16),scale_ftom)
 #define MTOF(x) (FixedMul((x),scale_mtof)>>16)
 // translates between frame-buffer and map coordinates
-#define CXMTOF(x)  (f_x + MTOF((x)-m_x))
-#define CYMTOF(y)  (f_y + (f_h - MTOF((y)-m_y)))
+#define CXMTOF(x)  (MTOF((x)-m_x))
+#define CYMTOF(y)  (SCREENHEIGHT-ST_HEIGHT - MTOF((y)-m_y))
 
 // the following is crap
 #define LINE_NEVERSEE ML_DONTDRAW
