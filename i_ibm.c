@@ -744,7 +744,7 @@ static void _interrupt I_KeyboardISR (void)
 #if defined __DJGPP__
 static _go32_dpmi_seginfo oldkeyboardisr = {0}, newkeyboardisr;
 #elif defined __DMC__
-static uint32_t oldkeyboardisroffset, oldkeyboardisrsegment;
+static unsigned oldkeyboardisroffset, oldkeyboardisrsegment;
 #elif defined __CCDL__
 static uint16_t oldkeyboardisrsegment, oldkeyboardisroffset = 0;
 #elif defined __WATCOMC__
