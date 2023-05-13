@@ -709,7 +709,7 @@ int32_t I_TimerISR (void)
 ============================================================================
 */
 
-static int32_t lastpress;
+static byte lastpress;
 
 /*
 ================
@@ -719,7 +719,13 @@ static int32_t lastpress;
 ================
 */
 
+#if defined __DJGPP__
+static void I_KeyboardISR (void)
+#elif defined __CCDL__ || defined __WATCOMC__
 static void _interrupt I_KeyboardISR (void)
+#elif defined __DMC__
+static int I_KeyboardISR (struct INT_DATA *pd)
+#endif
 {
 // Get the scan code
 
@@ -729,6 +735,10 @@ static void _interrupt I_KeyboardISR (void)
 // acknowledge the interrupt
 
 	_outbyte(0x20,0x20);
+
+#if defined __DMC__
+	return 1;
+#endif
 }
 
 
@@ -744,7 +754,7 @@ static void _interrupt I_KeyboardISR (void)
 #if defined __DJGPP__
 static _go32_dpmi_seginfo oldkeyboardisr = {0}, newkeyboardisr;
 #elif defined __DMC__
-static unsigned int oldkeyboardisroffset, oldkeyboardisrsegment;
+static boolean isKeyboardIsrSet = false;
 #elif defined __CCDL__
 static uint16_t oldkeyboardisrsegment, oldkeyboardisroffset = 0;
 #elif defined __WATCOMC__
@@ -756,13 +766,13 @@ static void I_StartupKeyboard (void)
 #if defined __DJGPP__
 	_go32_dpmi_get_protected_mode_interrupt_vector(KEYBOARDINT, &oldkeyboardisr);
 
-	newkeyboardisr.pm_offset = (int32_t)I_KeyboardISR;
 	newkeyboardisr.pm_selector = _go32_my_cs(); 
+	newkeyboardisr.pm_offset = (int32_t)I_KeyboardISR;
 	_go32_dpmi_allocate_iret_wrapper(&newkeyboardisr);
 	_go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARDINT, &newkeyboardisr);
 #elif defined __DMC__
-	int_getvector(KEYBOARDINT, &oldkeyboardisroffset, &oldkeyboardisrsegment);
-	//FIXME int_setvector(KEYBOARDINT, FP_OFF(I_KeyboardISR), FP_SEG(I_KeyboardISR));
+	int_intercept(KEYBOARDINT, I_KeyboardISR, 0);
+	isKeyboardIsrSet = true;
 #elif defined __CCDL__
 	struct SREGS	segregs;
 
@@ -771,7 +781,7 @@ static void I_StartupKeyboard (void)
 	dpmi_set_protected_interrupt(KEYBOARDINT, segregs.cs, (uint32_t)I_KeyboardISR);
 #elif defined __WATCOMC__
 	oldkeyboardisr = _dos_getvect(KEYBOARDINT);
-	_dos_setvect (0x8000 | KEYBOARDINT, I_KeyboardISR);
+	_dos_setvect (KEYBOARDINT, I_KeyboardISR);
 #else
 	//TODO implement I_StartupKeyboard()
 #endif
@@ -787,8 +797,8 @@ static void I_ShutdownKeyboard (void)
 		_go32_dpmi_free_iret_wrapper(&newkeyboardisr);
 	}
 #elif defined __DMC__
-	//if (oldkeyboardisroffset)
-	//FIXME	int_setvector (KEYBOARDINT, oldkeyboardisroffset, oldkeyboardisrsegment);
+	if (isKeyboardIsrSet)
+		int_restore(KEYBOARDINT);
 #elif defined __CCDL__
 	if (oldkeyboardisroffset)
 		dpmi_set_real_interrupt(KEYBOARDINT, oldkeyboardisrsegment, oldkeyboardisroffset);

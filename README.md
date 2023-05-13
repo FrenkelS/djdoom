@@ -21,7 +21,6 @@ There is some assembly in the code that requires [NASM](https://www.nasm.us).
 To build Doom only using C code, use the macro `C_ONLY`.
 
 There's no sound, no joystick and no Logitech Cyberman support.
-And in case of Digital Mars, no keyboard.
 
 ## How to add another compiler
 The differences between compilers specific to the Doom source code are in `compiler.h`, `d_main.c`, `i_ibm.c` and `planar.asm`.
