@@ -1287,6 +1287,19 @@ static int32_t I_GetLargestAvailableFreeBlockInBytes(void)
 	return _go32_dpmi_remaining_physical_memory();
 #elif defined __DMC__
 	return _memmax();
+#elif defined __CCDL__
+	DPMI_FREEMEM_INFO meminfo;
+
+	//There's a push/pop bug in CC386's dpmi_get_memory_info(), so we'll do it ourselves.
+	DPMI_FREEMEM_INFO *ptrmeminfo = &meminfo;
+	asm
+	{
+		mov edi, [ptrmeminfo]
+		mov eax, 0x500
+		int 0x31
+	}
+
+	return meminfo.largest_block;
 #elif defined __WATCOMC__
 	struct SREGS			segregs;
 	__dpmi_free_mem_info	meminfo;
