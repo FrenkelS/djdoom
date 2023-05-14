@@ -27,6 +27,12 @@
 
 #define mkdir(x) mkdir(x,0)
 
+//DJGPP doesn't inline inp, outp and outpw,
+//but it does inline inportb, outportb and outportw
+#define inp(port)			inportb(port)
+#define outp(port,data)		outportb(port,data)
+#define outpw(port,data)	outportw(port,data)
+
 
 
 #elif defined __DMC__
