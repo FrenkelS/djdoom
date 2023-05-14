@@ -94,19 +94,10 @@ extern  int32_t     usemouse, usejoystick;
 #define GC_COLORDONTCARE 7
 #define GC_BITMASK              8
 
-#define ATR_INDEX               0x3c0
-#define ATR_MODE                16
-#define ATR_OVERSCAN    17
-#define ATR_COLORPLANEENABLE 18
-#define ATR_PELPAN              19
-#define ATR_COLORSELECT 20
-
 #define STATUS_REGISTER_1    0x3da
 
 #define PEL_WRITE_ADR   0x3c8
-#define PEL_READ_ADR    0x3c7
 #define PEL_DATA                0x3c9
-#define PEL_MASK                0x3c6
 
 static boolean grmode;
 
@@ -128,20 +119,6 @@ static boolean I_ReadJoystick (void)	// returns false if not connected
 //==================================================
 
 #define KEYBOARDINT 9
-
-#define CRTCOFF (_inbyte(STATUS_REGISTER_1)&1)
-#define CLI     _disable()
-#define STI     _enable()
-
-#define _outbyte(x,y) (outp(x,y))
-#define _outhword(x,y) (outpw(x,y))
-
-#define _inbyte(x) (inp(x))
-#define _inhword(x) (inpw(x))
-
-#define MOUSEB1 1
-#define MOUSEB2 2
-#define MOUSEB3 4
 
 static  boolean mousepresent;
 
@@ -308,9 +285,9 @@ void I_SetPalette (byte *palette)
 		return;
 
 	I_WaitVBL (1);
-	_outbyte (PEL_WRITE_ADR, 0);
+	outp (PEL_WRITE_ADR, 0);
 	for (i = 0; i < 768; i++)
-		_outbyte (PEL_DATA, (gammatable[usegamma][*palette++])>>2);
+		outp (PEL_DATA, (gammatable[usegamma][*palette++])>>2);
 }
 
 /*
@@ -729,12 +706,12 @@ static int I_KeyboardISR (struct INT_DATA *pd)
 {
 // Get the scan code
 
-	keyboardque[kbdhead&(KBDQUESIZE-1)] = lastpress = _inbyte(0x60);
+	keyboardque[kbdhead&(KBDQUESIZE-1)] = lastpress = inp(0x60);
 	kbdhead++;
 
 // acknowledge the interrupt
 
-	_outbyte(0x20,0x20);
+	outp(0x20,0x20);
 
 #if defined __DMC__
 	return 1;
