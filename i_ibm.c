@@ -1290,7 +1290,7 @@ static int32_t I_GetLargestAvailableFreeBlockInBytes(void)
 #elif defined __CCDL__
 	DPMI_FREEMEM_INFO meminfo;
 
-	//There's a push/pop bug in CC386's dpmi_get_memory_info(), so we'll do it ourselves.
+	//There's a push/pop bug in CC386's dpmi_get_memory_info(), so we'll do it ourselves instead.
 	DPMI_FREEMEM_INFO *ptrmeminfo = &meminfo;
 	asm
 	{
