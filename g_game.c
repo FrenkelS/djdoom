@@ -1593,13 +1593,11 @@ void G_TimeDemo (char *name)
 
 void G_CheckDemoStatus (void)
 {
-	int32_t             endtime;
-
 	if (timingdemo)
 	{
-		endtime = I_GetTime ();
-		I_Error ("timed %i gametics in %i realtics",gametic
-		, endtime-starttime);
+		int32_t realtics = I_GetTime() - starttime;
+		int32_t resultfps = TICRATE * 1000 * gametic / realtics;
+		I_Error ("Timed %i gametics in %i realtics. FPS: %u.%.3u", gametic, realtics, resultfps / 1000, resultfps % 1000);
 	}
 
 	if (demoplayback)
