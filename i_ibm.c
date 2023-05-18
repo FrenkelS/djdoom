@@ -25,7 +25,7 @@
 #include "r_local.h"
 
 #define DPMI_INT 0x31
-//#define NOTIMER
+#define NOTIMER
 
 void I_StartupSound (void);
 void I_ShutdownSound (void);
@@ -124,7 +124,7 @@ static  boolean mousepresent;
 
 //===============================
 
-int32_t             ticcount;
+static int32_t             ticcount;
 
 // REGS stuff used for int calls
 static union REGS regs;
@@ -207,16 +207,7 @@ ticcmd_t *I_BaseTiccmd (void)
 ===================
 */
 
-//TODO implement timer
-#if 0
-int32_t I_GetTime (void)
-{
-#ifdef NOTIMER
-	ticcount++;
-#endif
-	return (ticcount);
-}
-#else
+#if defined NOTIMER
 #include <time.h>
 static uint32_t basetime;
 
@@ -232,6 +223,11 @@ int32_t I_GetTime (void)
 	ticks -= basetime;
 
 	return (ticks * TICRATE) / CLOCKS_PER_SEC;
+}
+#else
+int32_t I_GetTime (void)
+{
+	return ticcount;
 }
 #endif
 
@@ -414,8 +410,8 @@ void I_FinishUpdate (void)
 	// draws little dots on the bottom of the screen
 	if (devparm)
 	{
-		tics = ticcount - lasttic;
-		lasttic = ticcount;
+		tics = I_GetTime() - lasttic;
+		lasttic = I_GetTime();
 		if (tics > 20) tics = 20;
 
 		outpw (SC_INDEX, SC_MAPMASK | (1 << 8));

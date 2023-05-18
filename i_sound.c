@@ -38,11 +38,14 @@ static int32_t tsm_ID;
 
 static void I_StartupTimer (void)
 {
-#ifndef NOTIMER
-	extern int32_t I_TimerISR(void);
 	extern void I_InitBaseTime(void);
+	extern int32_t I_TimerISR(void);
 
 	printf("I_StartupTimer()\n");
+
+#if defined NOTIMER
+	I_InitBaseTime();
+#else
 	// installs master timer.  Must be done before StartupTimer()!
 	TSM_Install(SND_TICRATE);
 	tsm_ID = TSM_NewService (I_TimerISR, TICRATE, 0, 0); // max priority
@@ -50,8 +53,6 @@ static void I_StartupTimer (void)
 	{
 		I_Error("Can't register 35 Hz timer w/ DMX library");
 	}
-
-	I_InitBaseTime();
 #endif
 }
 
@@ -143,15 +144,13 @@ void I_StopSong(int32_t handle)
 {
   MUS_StopSong(handle);
 
-//TODO implement timer
-#if 0
   // Fucking kluge pause
   {
-	int32_t s;
-	extern volatile int32_t ticcount;
-	for (s=ticcount ; ticcount - s < 10 ; );
+	int32_t s = I_GetTime();
+	while (I_GetTime() - s < 10)
+	{
+	}
   }
-#endif
 }
 
 void I_PlaySong(int32_t handle, boolean looping)
@@ -395,14 +394,13 @@ void I_ShutdownSound (void)
 {
   S_PauseSound();
 
-//TODO implement timer
-#if 0
   {
-	int32_t s;
-	extern volatile int32_t ticcount;
-	for (s=ticcount + 30; s != ticcount ; );
+	int32_t s = I_GetTime();
+	while (I_GetTime() - s < 30)
+	{
+	}
   }
-#endif
+
   DMX_DeInit();
 }
 
