@@ -24,7 +24,7 @@ void _dpmi_lockregion (void * inmem, int32_t length);
 void _dpmi_unlockregion (void * inmem, int32_t length);
 
 static channel_t *channels; // the set of channels available
-static int32_t snd_SfxVolume, snd_MusicVolume;
+static int32_t snd_SfxVolume;
 static boolean mus_paused;	// whether songs are mus_paused
 static musicinfo_t *mus_playing=0;// music currently being played
 int32_t numChannels; // number of channels available
@@ -38,12 +38,10 @@ static void S_StopChannel(int32_t cnum);
 
 void S_SetMusicVolume(int32_t volume)
 {
-  if (volume < 0 || volume > 127)
+  if (volume < 0 || volume > S_MAX_VOLUME)
     I_Error("Attempt to set music volume at %d", volume);
 
-  I_SetMusicVolume(127);
   I_SetMusicVolume(volume);
-  snd_MusicVolume = volume;
 }
 
 static void S_StopMusic(void)
@@ -178,7 +176,7 @@ static boolean S_AdjustSoundParams (mobj_t *listener, mobj_t *source, int32_t *v
 
 void S_SetSfxVolume(int32_t volume)
 {
-  if (volume < 0 || volume > 127)
+  if (volume < 0 || volume > S_MAX_VOLUME)
     I_Error("Attempt to set sfx volume at %d", volume);
   snd_SfxVolume = volume;
 }

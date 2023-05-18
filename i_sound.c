@@ -21,7 +21,10 @@
 #include "doomdef.h"
 #include "dmx.h"
 #include "sounds.h"
-#include "i_sound.h"
+
+#define SND_TICRATE     140     // tic rate for updating sound
+#define SND_MAXSONGS    40      // max number of songs in game
+#define SND_SAMPLERATE  11025   // sample rate of sound effects
 
 /*
 ===============
@@ -74,18 +77,33 @@ static const char snd_prefixen[] = { 'P', 'P', 'A', 'S', 'S', 'S', 'M',
   'M', 'M', 'S', 'S', 'S'};
 #endif
 
+typedef enum
+{
+  snd_none,
+  snd_PC,
+  snd_Adlib,
+  snd_SB,
+  snd_PAS,
+  snd_GUS,
+  snd_MPU,
+  snd_MPU2,
+  snd_MPU3,
+  snd_AWE,
+#if (APPVER_DOOMREV >= AV_DR_DM18)
+  snd_ENS,
+  snd_CODEC,
+#endif
+  NUM_SCARDS
+} cardenum_t;
+
 int32_t snd_DesiredMusicDevice, snd_DesiredSfxDevice;
 int32_t snd_MusicDevice;    // current music card # (index to dmxCodes)
 static int32_t snd_SfxDevice;      // current sfx card # (index to dmxCodes)
-static int32_t snd_MaxVolume;      // maximum volume for sound
 static int32_t snd_MusicVolume;    // maximum volume for music
 static int32_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
 
 int32_t     snd_SBport, snd_SBirq, snd_SBdma;       // sound blaster variables
 int32_t     snd_Mport;                              // midi variables
-
-extern boolean  snd_MusicAvail, // whether music is available
-		snd_SfxAvail;   // whether sfx are available
 
 void I_PauseSong(int32_t handle)
 {
@@ -215,8 +233,6 @@ static void I_sndArbitrateCards(void)
   boolean codec, ensoniq, gus, adlib, sb, midi;
 #endif
   int32_t i, wait, dmxlump;
-
-  snd_MaxVolume = 127;
 
   snd_MusicDevice = snd_DesiredMusicDevice;
   snd_SfxDevice = snd_DesiredSfxDevice;

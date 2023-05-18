@@ -34,17 +34,9 @@
 #define S_ATTENUATOR		((S_CLIPPING_DIST-S_CLOSE_DIST)>>FRACBITS)
 
 #define NORM_PITCH     		128
-#define NORM_VOLUME    		snd_MaxVolume
 
-#define S_PITCH_PERTURB		1
 #define NORM_SEP			128
 #define S_STEREO_SWING		(96*0x10000)
-
-// % attenuation from front to back
-#define S_IFRACVOL			30
-
-#define NA				0
-#define S_NUMCHANNELS		2
 
 typedef struct
 {
@@ -76,27 +68,6 @@ typedef struct
 
 
 
-enum
-{
-    Music,
-    Sfx,
-    SfxLink
-};
-
-enum
-{
-    PC=1,
-    Adlib=2,
-    SB=4,
-    Midi=8
-}; // cards available
-
-enum
-{
-    sfxThrowOut=-1,
-    sfxNotUsed=0
-};
-
 void S_Start(void);
 void S_StartSound(void *origin, int32_t sound_id);
 void S_StopSound(void *origin);
@@ -112,11 +83,6 @@ void S_Init(int32_t,int32_t);
 //--------
 //SOUND IO
 //--------
-#define FREQ_LOW		0x40
-#define FREQ_NORM		0x80
-#define FREQ_HIGH		0xff
-
-
 void I_SetMusicVolume(int32_t volume);
 
 //

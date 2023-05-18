@@ -238,8 +238,6 @@ typedef struct
 } default_t;
 
 extern int32_t snd_DesiredMusicDevice, snd_DesiredSfxDevice;
-extern int32_t snd_MusicDevice, // current music card # (index to dmxCodes)
-	snd_SfxDevice; // current sfx card # (index to dmxCodes)
 
 extern int32_t     snd_SBport, snd_SBirq, snd_SBdma;       // sound blaster variables
 extern int32_t     snd_Mport;                              // midi variables
