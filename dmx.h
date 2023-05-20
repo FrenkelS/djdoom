@@ -1,5 +1,6 @@
 //
 // Copyright (C) 2015 Alexey Khokholov (Nuke.YKT)
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -29,12 +30,9 @@ void MUS_ResumeSong(int handle);
 void MUS_SetMasterVolume(int volume);
 int MUS_RegisterSong(void *data);
 int MUS_UnregisterSong(int handle);
-int MUS_QrySongPlaying(int handle);
 int MUS_StopSong(int handle);
 int MUS_ChainSong(int handle, int next);
 int MUS_PlaySong(int handle, int volume);
-int MUS_FadeInSong(int handle, int ms);
-int MUS_FadeOutSong(int handle, int ms);
 int SFX_PlayPatch(void *vdata, int pitch, int sep, int vol, int unk1, int unk2);
 void SFX_StopPatch(int handle);
 int SFX_Playing(int handle);
@@ -52,7 +50,6 @@ void DMX_DeInit(void);
 void WAV_PlayMode(int channels, int samplerate);
 int CODEC_Detect(int *a, int *b);
 int ENS_Detect(void);
-int MV_Detect(void);
 
 
 #define AHW_PC_SPEAKER 1

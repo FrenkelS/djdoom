@@ -1,6 +1,7 @@
 //
-// Copyright (C) 2015-2017 Alexey Khokholov (Nuke.YKT)
 // Copyright (C) 2005-2014 Simon Howard
+// Copyright (C) 2015-2017 Alexey Khokholov (Nuke.YKT)
+// Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,7 +22,7 @@
 #include "mus2mid.h"
 #include "pcfx.h"
 
-unsigned short divisors[] = {
+static unsigned short divisors[] = {
     0,
     6818, 6628, 6449, 6279, 6087, 5906, 5736, 5575,
     5423, 5279, 5120, 4971, 4830, 4697, 4554, 4435,
@@ -53,22 +54,22 @@ typedef struct {
     unsigned char data[];
 } dmxpcs_t;
 
-pcspkmuse_t pcspkmuse;
-int pcshandle = 0;
+static pcspkmuse_t pcspkmuse;
+static int pcshandle = 0;
 
-fx_blaster_config dmx_blaster;
+static fx_blaster_config dmx_blaster;
 
-void *mus_data = NULL;
-char *mid_data = NULL;
+static void *mus_data = NULL;
+static char *mid_data = NULL;
 
-int mus_loop = 0;
-int dmx_mus_port = 0;
-int dmx_sdev = NumSoundCards;
-int dmx_mdev = 0;
-int mus_rate = 140;
-int mus_active = 0;
-int mus_fadeout = 0;
-int mus_mastervolume = 127;
+static int mus_loop = 0;
+static int dmx_mus_port = 0;
+static int dmx_sdev = NumSoundCards;
+static int dmx_mdev = 0;
+static int mus_rate = 140;
+static int mus_active = 0;
+static int mus_fadeout = 0;
+static int mus_mastervolume = 127;
 
 void MUS_PauseSong(int handle) {
     MUSIC_Pause();
@@ -147,23 +148,7 @@ int MUS_RegisterSong(void *data) {
 int MUS_UnregisterSong(int handle) {
     return 0;
 }
-int MUS_QrySongPlaying(int handle) {
-    if (mus_active)
-    {
-        if (mus_fadeout && !MUSIC_FadeActive())
-        {
-            MUSIC_StopSong();
-            mus_active = 0;
-            mus_fadeout = 0;
-        }
-        if (!MUSIC_SongPlaying())
-        {
-            mus_active = 0;
-            mus_fadeout = 0;
-        }
-    }
-    return mus_active;
-}
+
 int MUS_StopSong(int handle) {
     long status = MUSIC_StopSong();
     mus_active = 0;
@@ -191,34 +176,6 @@ int MUS_PlaySong(int handle, int volume) {
         MUSIC_SetVolume(volume * 2);
     }
     return (status != MUSIC_Ok);
-}
-
-int MUS_FadeInSong(int handle, int ms) {
-    long status;
-    int target;
-    if (mus_data == NULL)
-    {
-        return 1;
-    }
-    target = mus_mastervolume * 2;
-    MUSIC_SetVolume(0);
-    MUSIC_FadeVolume(target, ms);
-    status = MUSIC_PlaySong((unsigned char*)mus_data, mus_loop);
-    if (status == MUSIC_Ok)
-    {
-        mus_active = 1;
-        mus_fadeout = 0;
-    }
-    return (status != MUSIC_Ok);
-}
-
-int MUS_FadeOutSong(int handle, int ms) {
-    if (!mus_active)
-        return 1;
-
-    MUSIC_FadeVolume(0, ms);
-    mus_fadeout = 1;
-    return 0;
 }
 
 int SFX_PlayPatch(void *vdata, int pitch, int sep, int vol, int unk1, int priority) {
@@ -454,10 +411,6 @@ int CODEC_Detect(int *a, int *b)
     return 1;
 }
 int ENS_Detect(void)
-{
-    return 1;
-}
-int MV_Detect(void)
 {
     return 1;
 }
