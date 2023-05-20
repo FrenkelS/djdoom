@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -50,19 +51,11 @@ typedef struct task
     int           active;
 } task;
 
-// TS_InInterrupt is TRUE during a taskman interrupt.
-// Use this if you have code that may be used both outside
-// and within interrupts.
-
-extern volatile int TS_InInterrupt;
-
 void    TS_Shutdown( void );
 task    *TS_ScheduleTask( void ( *Function )( task * ), int rate,
                           int priority, void *data );
 int     TS_Terminate( task *ptr );
 void    TS_Dispatch( void );
 void    TS_SetTaskRate( task *Task, int rate );
-void    TS_UnlockMemory( void );
-int     TS_LockMemory( void );
 
 #endif

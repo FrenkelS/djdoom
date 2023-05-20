@@ -97,7 +97,7 @@ static volatile int  TS_TimesInInterrupt;
 
 static char TS_Installed = FALSE;
 
-volatile int TS_InInterrupt = FALSE;
+static volatile int TS_InInterrupt = FALSE;
 
 /*---------------------------------------------------------------------
    Function prototypes
@@ -794,7 +794,7 @@ static void TS_LockEnd
    Unlocks all neccessary data.
 ---------------------------------------------------------------------*/
 
-void TS_UnlockMemory
+static void TS_UnlockMemory
    (
    void
    )
@@ -826,7 +826,7 @@ void TS_UnlockMemory
    Locks all neccessary data.
 ---------------------------------------------------------------------*/
 
-int TS_LockMemory
+static int TS_LockMemory
    (
    void
    )
