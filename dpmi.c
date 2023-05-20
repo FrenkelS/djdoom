@@ -41,54 +41,6 @@ static struct SREGS SegRegs;
 
 
 /*---------------------------------------------------------------------
-   Function: DPMI_GetRealModeVector
-
-   Returns the vector of a real mode interrupt.
----------------------------------------------------------------------*/
-
-unsigned long DPMI_GetRealModeVector
-   (
-   int num
-   )
-
-   {
-   unsigned long vector;
-
-   Regs.x.eax = 0x0200;
-   Regs.h.bl  = num;
-   int386( 0x31, &Regs, &Regs );
-
-   vector   = Regs.w.cx & 0xffff;
-   vector <<= 16;
-   vector  |= Regs.w.dx & 0xffff;
-
-   return( vector );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: DPMI_SetRealModeVector
-
-   Sets the vector of a real mode interrupt.
----------------------------------------------------------------------*/
-
-void DPMI_SetRealModeVector
-   (
-   int num,
-   unsigned long vector
-   )
-
-   {
-   Regs.x.eax = 0x0201;
-   Regs.h.bl  = num;
-   Regs.w.dx = vector & 0xffff;
-   Regs.w.cx = ( vector >> 16 ) & 0xffff;
-
-   int386( 0x31, &Regs, &Regs );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: DPMI_CallRealModeFunction
 
    Performs a call to a real mode function.

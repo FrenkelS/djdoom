@@ -59,8 +59,6 @@ typedef struct
    unsigned short SS;
    } dpmi_regs;
 
-unsigned long DPMI_GetRealModeVector( int num );
-void DPMI_SetRealModeVector( int num, unsigned long vector );
 int  DPMI_CallRealModeFunction( dpmi_regs *callregs );
 int  DPMI_GetDOSMemory( void **ptr, int *descriptor, unsigned length );
 int  DPMI_FreeDOSMemory( int descriptor );
