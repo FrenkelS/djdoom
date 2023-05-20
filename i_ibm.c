@@ -25,7 +25,7 @@
 #include "r_local.h"
 
 #define DPMI_INT 0x31
-#define NOTIMER
+//#define NOTIMER
 
 void I_StartupSound (void);
 void I_ShutdownSound (void);

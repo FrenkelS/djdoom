@@ -23,10 +23,42 @@
 #
 # --------------------------------------------------------------------------
 
-CCOPTS = -dAPPVER_EXEDEF=DM19 -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc -wx
+CCOPTS = -dAPPVER_EXEDEF=DM19 -dLIBVER_ASSREV=19960108 -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc -wx
 
 GLOBOBJS = &
  dmx.obj &
+ dpmiapi.obj &
+ usrhooks.obj &
+ mus2mid.obj &
+ tsmapi.obj &
+# gmtimbre.obj &
+ adlibfx.obj &
+ al_midi.obj &
+ awe32.obj &
+ blastold.obj &
+ debugio.obj &
+ dma.obj &
+ dpmi.obj &
+ fx_man.obj &
+ gus.obj &
+ gusmidi.obj &
+ guswave.obj &
+ irq.obj &
+ ll_man.obj &
+ midi.obj &
+ mpu401.obj &
+ multivoc.obj &
+ mv_mix.obj &
+ mv_mix16.obj &
+ mvreverb.obj &
+ music.obj &
+ pas16.obj &
+ pcfx.obj &
+ pitch.obj &
+ sndscape.obj &
+ sndsrc.obj &
+ task_man.obj &
+ user.obj &
  i_main.obj &
  i_ibm.obj &
  i_sound.obj &
