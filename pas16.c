@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -44,9 +45,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "irq.h"
 #include "pas16.h"
 #include "_pas16.h"
-#if (LIBVER_ASSREV < 20021225L) // *** VERSIONS RESTORATION ***
-#include "memcheck.h"
-#endif
 
 #define USESTACK
 

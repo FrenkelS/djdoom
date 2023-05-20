@@ -63,9 +63,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "multivoc.h"
 #include "_multivc.h"
 #include "debugio.h"
-#if (LIBVER_ASSREV < 20021225L) // *** VERSIONS RESTORATION ***
-#include "memcheck.h"
-#endif
 
 #define RoundFixed( fixedval, bits )            \
         (                                       \

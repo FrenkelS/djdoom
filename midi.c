@@ -48,9 +48,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "_midi.h"
 #include "midi.h"
 #include "debugio.h"
-#if (LIBVER_ASSREV < 20021225L) // *** VERSIONS RESTORATION ***
-#include "memcheck.h"
-#endif
 
 extern int MUSIC_SoundDevice;
 

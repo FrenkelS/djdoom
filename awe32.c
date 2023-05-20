@@ -35,9 +35,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "blaster.h"
 #include "ctaweapi.h"
 #include "awe32.h"
-#if (LIBVER_ASSREV < 20021225L) // *** VERSIONS RESTORATION ***
-#include "memcheck.h"
-#endif
 
 #define _inp    inp
 #define _outp   outp
