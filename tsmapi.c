@@ -10,13 +10,13 @@ typedef struct {
 
 #define MAX_TASKS 8
 
-task_t tasks[MAX_TASKS];
+static task_t tasks[MAX_TASKS];
 
 void TSM_Install(int rate) {
     memset(tasks, 0, sizeof(tasks));
 }
 
-void tsm_funch(task *t) {
+static void tsm_funch(task *t) {
     int i = (int)t->data;
     if (!tasks[i].paused)
         tasks[i].callback();
@@ -43,20 +43,6 @@ void TSM_DelService(int id) {
     {
         TS_Terminate(tasks[id].t);
         tasks[id].t = NULL;
-    }
-}
-
-void TSM_PauseService(int id) {
-    if (id >= 0)
-    {
-        tasks[id].paused = 1;
-    }
-}
-
-void TSM_ResumeService(int id) {
-    if (id >= 0)
-    {
-        tasks[id].paused = 0;
     }
 }
 
