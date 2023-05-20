@@ -34,11 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <conio.h>
 #include "dpmi.h"
 #include "task_man.h"
-#if (LIBVER_ASSREV < 20021225L) // *** VERSIONS RESTORATION ***
-#include "interrupt.h"
-#else
 #include "interrup.h"
-#endif
 #include "al_midi.h"
 #include "adlibfx.h"
 

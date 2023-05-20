@@ -41,11 +41,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <dos.h>
 #include <conio.h>
 #include <string.h>
-#if (LIBVER_ASSREV < 20021225L) // *** VERSIONS RESTORATION ***
-#include "interrupt.h"
-#else
 #include "interrup.h"
-#endif
 #include "linklist.h"
 #include "task_man.h"
 

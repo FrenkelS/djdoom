@@ -36,11 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h>
 //#include <math.h>
 #include "dpmi.h"
-#if (LIBVER_ASSREV < 20021225L) // *** VERSIONS RESTORATION ***
-#include "interrupt.h"
-#else
 #include "interrup.h"
-#endif
 #include "sndcards.h"
 #include "blaster.h"
 #include "user.h"
