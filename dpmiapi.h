@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -37,8 +38,6 @@ object files that use any of the _dpmi_lockregion and _dpmi_unlockregion
 symbols, and would be incompatible if these were simply defined as macros. */
 int _dpmi_lockregion(void *address, unsigned length);
 int _dpmi_unlockregion(void *address, unsigned length);
-int _dpmi_dosalloc(unsigned short size, unsigned int *segment);
-int _dpmi_getmemsize(void);
 
 enum DPMI_Errors
    {

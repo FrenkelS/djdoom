@@ -29,33 +29,3 @@ int _dpmi_unlockregion(void *address, unsigned length)
 {
 	return DPMI_UnlockMemory(address, length);
 }
-
-int _dpmi_dosalloc(unsigned short size, unsigned int* segment)
-{
-    char *ptr;
-	int i;
-	int ret = DPMI_GetDOSMemory((void **)&ptr, &i, size << 4);
-    if (!ret)
-        *segment = (unsigned int)ptr >> 4;
-    return ret;
-}
-
-static struct SREGS segregs;
-static union REGS regs;
-
-int _dpmi_getmemsize(void)
-{
-    int             meminfo[32];
-    int             heap;
-
-    memset (meminfo,0,sizeof(meminfo));
-    segread(&segregs);
-    segregs.es = segregs.ds;
-    regs.w.ax = 0x500;      // get memory info
-    regs.x.edi = (int)&meminfo;
-    int386x( 0x31, &regs, &regs, &segregs );
-
-    heap = meminfo[0];
-
-    return heap;
-}
