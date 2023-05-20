@@ -31,12 +31,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __DPMI_H
 #define __DPMI_H
 
-enum DPMI_Errors
-   {
-   DPMI_Warning = -2,
-   DPMI_Error   = -1,
-   DPMI_Ok      = 0
-   };
+#define DPMI_Error	-1
+#define DPMI_Ok		0
 
 typedef struct
    {

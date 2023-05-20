@@ -27,7 +27,6 @@ CCOPTS = -dAPPVER_EXEDEF=DM19 -dLIBVER_ASSREV=19960108 -omaxtnrih -ol+ -oe=32 -z
 
 GLOBOBJS = &
  dmx.obj &
- dpmiapi.obj &
  usrhooks.obj &
  mus2mid.obj &
  tsmapi.obj &

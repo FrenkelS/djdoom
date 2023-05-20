@@ -33,9 +33,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include "dpmi.h"
 
-#define TRUE  ( 1 == 1 )
-#define FALSE ( !TRUE )
-
 static union  REGS  Regs;
 static struct SREGS SegRegs;
 
@@ -116,6 +113,11 @@ int DPMI_LockMemory
    return ( DPMI_Ok );
    }
 
+void _dpmi_lockregion(void *address, unsigned length)
+{
+	DPMI_LockMemory(address, length);
+}
+
 
 /*---------------------------------------------------------------------
    Function: DPMI_LockMemoryRegion
@@ -180,6 +182,11 @@ int DPMI_UnlockMemory
 
    return ( DPMI_Ok );
    }
+
+void _dpmi_unlockregion(void *address, unsigned length)
+{
+	DPMI_UnlockMemory(address, length);
+}
 
 
 /*---------------------------------------------------------------------
