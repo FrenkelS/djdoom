@@ -117,7 +117,7 @@ modify exact [ ebx ];
 
 #pragma aux rmcallback parm [];
 
-void rmcallback
+static void rmcallback
    (
    unsigned short _far *stkp
    )
