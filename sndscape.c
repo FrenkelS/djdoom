@@ -43,7 +43,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "sndscape.h"
 #include "_sndscap.h"
 
-const int SOUNDSCAPE_Interrupts[ SOUNDSCAPE_MaxIrq + 1 ]  =
+static const int SOUNDSCAPE_Interrupts[ SOUNDSCAPE_MaxIrq + 1 ]  =
    {
    INVALID, INVALID,     0xa, INVALID,
    INVALID,     0xd, INVALID,     0xf,
@@ -51,7 +51,7 @@ const int SOUNDSCAPE_Interrupts[ SOUNDSCAPE_MaxIrq + 1 ]  =
    INVALID, INVALID, INVALID, INVALID
    };
 
-const int SOUNDSCAPE_SampleSize[ SOUNDSCAPE_MaxMixMode + 1 ] =
+static const int SOUNDSCAPE_SampleSize[ SOUNDSCAPE_MaxMixMode + 1 ] =
    {
    MONO_8BIT_SAMPLE_SIZE,  STEREO_8BIT_SAMPLE_SIZE,
    MONO_16BIT_SAMPLE_SIZE, STEREO_16BIT_SAMPLE_SIZE
@@ -72,9 +72,9 @@ static int      SOUNDSCAPE_MixMode          = SOUNDSCAPE_DefaultMixMode;
 static int      SOUNDSCAPE_SamplePacketSize = MONO_16BIT_SAMPLE_SIZE;
 static unsigned SOUNDSCAPE_SampleRate       = SOUNDSCAPE_DefaultSampleRate;
 
-volatile int   SOUNDSCAPE_SoundPlaying;
+static volatile int   SOUNDSCAPE_SoundPlaying;
 
-void ( *SOUNDSCAPE_CallBack )( void );
+static void ( *SOUNDSCAPE_CallBack )( void );
 
 static int  SOUNDSCAPE_IntController1Mask;
 static int  SOUNDSCAPE_IntController2Mask;
@@ -127,132 +127,10 @@ extern void SetStack(unsigned short selector,unsigned long stackptr);
 
 int SOUNDSCAPE_DMAChannel = -1;
 
-int SOUNDSCAPE_ErrorCode = SOUNDSCAPE_Ok;
+static int SOUNDSCAPE_ErrorCode = SOUNDSCAPE_Ok;
 
 #define SOUNDSCAPE_SetErrorCode( status ) \
    SOUNDSCAPE_ErrorCode   = ( status );
-
-
-/*---------------------------------------------------------------------
-   Function: SOUNDSCAPE_ErrorString
-
-   Returns a pointer to the error message associated with an error
-   number.  A -1 returns a pointer the current error.
----------------------------------------------------------------------*/
-
-char *SOUNDSCAPE_ErrorString
-   (
-   int ErrorNumber
-   )
-
-   {
-   char *ErrorString;
-
-   switch( ErrorNumber )
-      {
-      case SOUNDSCAPE_Warning :
-      case SOUNDSCAPE_Error :
-         ErrorString = SOUNDSCAPE_ErrorString( SOUNDSCAPE_ErrorCode );
-         break;
-
-      case SOUNDSCAPE_Ok :
-         ErrorString = "SoundScape ok.";
-         break;
-
-      case SOUNDSCAPE_EnvNotFound :
-         // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-         ErrorString = "SNDSCAPE environment variable not set.  This is used to locate SNDSCAPE.INI \n"
-                       "which is used to describe your sound card setup.";
-#else
-         ErrorString = "SNDSCAPE environment variable not set.  This is used to locate \n"
-                       "SNDSCAPE.INI which is used to describe your sound card setup.";
-#endif
-         break;
-
-      case SOUNDSCAPE_InitFileNotFound :
-         // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-         ErrorString = "Missing SNDSCAPE.INI file for SoundScape.  This file should be located in \n"
-                       "the directory indicated by the SNDSCAPE environment variable or in \n"
-                       "'C:\SNDSCAPE' if SNDSCAPE is not set.";
-#else
-         ErrorString = "Missing SNDSCAPE.INI file for SoundScape.  This file should be \n"
-                       "located in the directory indicated by the SNDSCAPE environment \n"
-                       "variable or in 'C:\SNDSCAPE' if SNDSCAPE is not set.";
-#endif
-         break;
-
-      case SOUNDSCAPE_MissingProductInfo :
-         ErrorString = "Missing 'Product' field in SNDSCAPE.INI file for SoundScape.";
-         break;
-
-      case SOUNDSCAPE_MissingPortInfo :
-         ErrorString = "Missing 'Port' field in SNDSCAPE.INI file for SoundScape.";
-         break;
-
-      case SOUNDSCAPE_MissingDMAInfo :
-         ErrorString = "Missing 'DMA' field in SNDSCAPE.INI file for SoundScape.";
-         break;
-
-      case SOUNDSCAPE_MissingIRQInfo :
-         ErrorString = "Missing 'IRQ' field in SNDSCAPE.INI file for SoundScape.";
-         break;
-
-      case SOUNDSCAPE_MissingSBIRQInfo :
-         ErrorString = "Missing 'SBIRQ' field in SNDSCAPE.INI file for SoundScape.";
-         break;
-
-      case SOUNDSCAPE_MissingSBENABLEInfo :
-         ErrorString = "Missing 'SBEnable' field in SNDSCAPE.INI file for SoundScape.";
-         break;
-
-      case SOUNDSCAPE_MissingWavePortInfo :
-         ErrorString = "Missing 'WavePort' field in SNDSCAPE.INI file for SoundScape.";
-         break;
-
-      case SOUNDSCAPE_HardwareError :
-         // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-         ErrorString = "Could not detect SoundScape.  Make sure your SNDSCAPE.INI file contains \n"
-                       "correct information about your hardware setup.";
-#else
-         ErrorString = "Could not detect SoundScape.  Make sure your SNDSCAPE.INI file \n"
-                       "contains correct information about your hardware setup.";
-#endif
-         break;
-
-      case SOUNDSCAPE_NoSoundPlaying :
-         ErrorString = "No sound playing on SoundScape.";
-         break;
-
-      case SOUNDSCAPE_InvalidSBIrq :
-         ErrorString = "Invalid SoundScape Irq in SBIRQ field of SNDSCAPE.INI.";
-         break;
-
-      case SOUNDSCAPE_UnableToSetIrq :
-         ErrorString = "Unable to set SoundScape IRQ.  Try selecting an IRQ of 7 or below.";
-         break;
-
-      case SOUNDSCAPE_DmaError :
-         ErrorString = DMA_ErrorString( DMA_Error );
-         break;
-
-      case SOUNDSCAPE_DPMI_Error :
-         ErrorString = "DPMI Error in SoundScape.";
-         break;
-
-      case SOUNDSCAPE_OutOfMemory :
-         ErrorString = "Out of conventional memory in SoundScape.";
-         break;
-
-      default :
-         ErrorString = "Unknown SoundScape error code.";
-         break;
-      }
-
-   return( ErrorString );
-   }
 
 
 /**********************************************************************
@@ -562,7 +440,7 @@ static void pcm_format
    hertz.
 ---------------------------------------------------------------------*/
 
-void SOUNDSCAPE_SetPlaybackRate
+static void SOUNDSCAPE_SetPlaybackRate
    (
    unsigned rate
    )
@@ -835,40 +713,12 @@ int SOUNDSCAPE_BeginBufferedPlayback
 
 
 /*---------------------------------------------------------------------
-   Function: SOUNDSCAPE_GetCardInfo
-
-   Returns the maximum number of bits that can represent a sample
-   (8 or 16) and the number of channels (1 for mono, 2 for stereo).
----------------------------------------------------------------------*/
-
-int SOUNDSCAPE_GetCardInfo
-   (
-   int *MaxSampleBits,
-   int *MaxChannels
-   )
-
-   {
-   int status;
-
-   status = SOUNDSCAPE_FindCard();
-   if ( status == SOUNDSCAPE_Ok )
-      {
-      *MaxChannels = 2;
-      *MaxSampleBits = 16;
-      return( SOUNDSCAPE_Ok );
-      }
-
-   return( status );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: SOUNDSCAPE_SetCallBack
 
    Specifies the user function to call at the end of a sound transfer.
 ---------------------------------------------------------------------*/
 
-void SOUNDSCAPE_SetCallBack
+static void SOUNDSCAPE_SetCallBack
    (
    void ( *func )( void )
    )

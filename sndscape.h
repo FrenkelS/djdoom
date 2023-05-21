@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -32,7 +33,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __SNDSCAPE_H
 
 extern int SOUNDSCAPE_DMAChannel;
-extern int SOUNDSCAPE_ErrorCode;
 
 enum SOUNDSCAPE_ERRORS
    {
@@ -57,15 +57,11 @@ enum SOUNDSCAPE_ERRORS
    SOUNDSCAPE_OutOfMemory
    };
 
-char    *SOUNDSCAPE_ErrorString( int ErrorNumber );
-void     SOUNDSCAPE_SetPlaybackRate( unsigned rate );
 unsigned SOUNDSCAPE_GetPlaybackRate( void );
 int      SOUNDSCAPE_SetMixMode( int mode );
 void     SOUNDSCAPE_StopPlayback( void );
 int      SOUNDSCAPE_GetCurrentPos( void );
 int      SOUNDSCAPE_BeginBufferedPlayback( char *BufferStart, int BufferSize, int NumDivisions, unsigned SampleRate, int MixMode, void ( *CallBackFunc )( void ) );
-int      SOUNDSCAPE_GetCardInfo( int *MaxSampleBits, int *MaxChannels );
-void     SOUNDSCAPE_SetCallBack( void ( *func )( void ) );
 int      SOUNDSCAPE_GetMIDIPort( void );
 int      SOUNDSCAPE_Init( void );
 void     SOUNDSCAPE_Shutdown( void );
