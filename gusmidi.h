@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -37,16 +38,11 @@ enum GUS_Errors
    GUS_FileError
    };
 
-char *GUS_ErrorString( int ErrorNumber );
-int   GUS_GetPatchMap( char *name );
-int   GUSMIDI_UnloadPatch( int prog );
-int   GUSMIDI_LoadPatch( int prog );
 void  GUSMIDI_ProgramChange( int channel, int prog );
 void  GUSMIDI_NoteOn( int chan, int note, int velocity );
 void  GUSMIDI_NoteOff( int chan, int note, int velocity );
 void  GUSMIDI_ControlChange( int channel, int number, int value );
 void  GUSMIDI_PitchBend( int channel, int lsb, int msb );
-void  GUSMIDI_ReleasePatches( void );
 void  GUSMIDI_SetVolume( int volume );
 int   GUSMIDI_GetVolume( void );
 int   GUS_Init( void );
@@ -54,6 +50,5 @@ void  GUS_Shutdown( void );
 #pragma aux GUS_Shutdown frame;
 int   GUSMIDI_Init( void );
 void  GUSMIDI_Shutdown( void );
-void *D32DosMemAlloc( unsigned size );
 
 #endif

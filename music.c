@@ -546,8 +546,8 @@ static int MUSIC_InitGUS
    Funcs->ProgramChange     = GUSMIDI_ProgramChange;
    Funcs->ChannelAftertouch = NULL;
    Funcs->PitchBend         = GUSMIDI_PitchBend;
-   Funcs->ReleasePatches    = NULL;//GUSMIDI_ReleasePatches;
-   Funcs->LoadPatch         = NULL;//GUSMIDI_LoadPatch;
+   Funcs->ReleasePatches    = NULL;
+   Funcs->LoadPatch         = NULL;
    Funcs->SetVolume         = GUSMIDI_SetVolume;
    Funcs->GetVolume         = GUSMIDI_GetVolume;
 

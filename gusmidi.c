@@ -80,7 +80,6 @@ static char  InstrumentDirectory[ 80 ];
 
 extern struct gf1_dma_buff GUS_HoldBuffer;
 
-extern unsigned long GUS_TotalMemory;
 extern int           GUS_MemConfig;
 
 static int GUSMIDI_Volume = 255;
@@ -100,7 +99,7 @@ int GUSMIDI_Installed = FALSE;
    Reads the patch map from disk.
 ---------------------------------------------------------------------*/
 
-int GUS_GetPatchMap
+static int GUS_GetPatchMap
    (
    char *name
    )
@@ -188,7 +187,7 @@ int GUS_GetPatchMap
    Unloads a patch from the GUS's memory.
 ---------------------------------------------------------------------*/
 
-int GUSMIDI_UnloadPatch
+static int GUSMIDI_UnloadPatch
    (
    int prognum
    )
@@ -227,7 +226,7 @@ int GUSMIDI_UnloadPatch
    Loads a patch into the GUS's memory.
 ---------------------------------------------------------------------*/
 
-int GUSMIDI_LoadPatch
+static int GUSMIDI_LoadPatch
    (
    int prognum
    )
@@ -411,7 +410,7 @@ void GUSMIDI_PitchBend
    Removes all the instruments from the GUS's memory.
 ---------------------------------------------------------------------*/
 
-void GUSMIDI_ReleasePatches
+static void GUSMIDI_ReleasePatches
    (
    void
    )
@@ -479,8 +478,6 @@ int GUSMIDI_Init
    {
    int ret;
    int i;
-   int startmem;
-//   unsigned long mem;
    extern int GUSWAVE_Installed;
 
    if ( GUSMIDI_Installed )
@@ -522,28 +519,10 @@ int GUSMIDI_Init
       return( ret );
       }
 
-//   if ( !GUSWAVE_Installed )
-//      {
-//      mem = gf1_malloc( 8192 );
-//      }
-
-//FIXME   startmem = gf1_mem_avail();
    for( i = 0; i < NUM_PATCHES; i++ )
       {
-      ret = GUSMIDI_LoadPatch( i );
-      if ( ret != GUS_Ok )
-         {
-         }
-//      if ( ret != GUS_Ok )
-//         {
-//         return( ret );
-//         }
+      GUSMIDI_LoadPatch( i );
       }
-
-//   if ( !GUSWAVE_Installed )
-//      {
-//      gf1_free( mem );
-//      }
 
    GUSMIDI_Installed = TRUE;
 

@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -164,15 +165,10 @@ typedef struct
    unsigned long size;
    } data_header;
 
-playbackstatus GUSWAVE_GetNextVOCBlock( VoiceNode *voice );
+static playbackstatus GUSWAVE_GetNextVOCBlock( VoiceNode *voice );
 VoiceNode *GUSWAVE_GetVoice( int handle );
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-int GUSWAVE_Play( VoiceNode *voice, int angle, int volume, int channels, int bits );
-#else
-int GUSWAVE_Play( VoiceNode *voice, int angle, int volume, int channels );
-#endif
+static int GUSWAVE_Play( VoiceNode *voice, int angle, int volume, int channels );
 
 VoiceNode *GUSWAVE_AllocVoice( int priority );
 static int GUSWAVE_InitVoices( void );

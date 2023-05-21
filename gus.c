@@ -57,7 +57,7 @@ static int GUS_Installed = 0;
 extern VoiceNode   GUSWAVE_Voices[ VOICES ];
 extern int GUSWAVE_Installed;
 
-unsigned long GUS_TotalMemory;
+static unsigned long GUS_TotalMemory;
 int           GUS_MemConfig;
 
 int GUS_AuxError  = 0;
@@ -69,82 +69,12 @@ int GUS_ErrorCode = GUS_Ok;
 
 
 /*---------------------------------------------------------------------
-   Function: GUS_ErrorString
-
-   Returns a pointer to the error message associated with an error
-   number.  A -1 returns a pointer the current error.
----------------------------------------------------------------------*/
-
-char *GUS_ErrorString
-   (
-   int ErrorNumber
-   )
-
-   {
-   char *ErrorString;
-
-   switch( ErrorNumber )
-      {
-      case GUS_Warning :
-      case GUS_Error :
-         ErrorString = GUS_ErrorString( GUS_ErrorCode );
-         break;
-
-      case GUS_Ok :
-         ErrorString = "Ultrasound music ok.";
-         break;
-
-      case GUS_OutOfMemory :
-         ErrorString = "Out of memory in GusMidi.";
-         break;
-
-      case GUS_OutOfDosMemory :
-         ErrorString = "Out of conventional (640K) memory in GusMidi.";
-         break;
-
-      case GUS_GF1Error :
-         ErrorString = "FIXME"; //FIXME gf1_error_str( GUS_AuxError );
-         break;
-
-      case GUS_InvalidIrq :
-         ErrorString = "Ultrasound IRQ must be 7 or less.";
-         break;
-
-      case GUS_ULTRADIRNotSet :
-         ErrorString = "ULTRADIR environment variable not set.";
-         break;
-
-      case GUS_MissingConfig :
-         // *** VERSIONS RESTORATION ***
-         // Uncomment the line with "GUSMIDI.INI" for the right versions
-#if (LIBVER_ASSREV < 19950821L)
-         ErrorString = "Can't find GUSMIDI.INI file.";
-#else
-         ErrorString = "Can't find ULTRAMID.INI file.";
-#endif
-         break;
-
-      case GUS_FileError :
-         ErrorString = strerror( GUS_AuxError );
-         break;
-
-      default :
-         ErrorString = "Unknown Ultrasound error code.";
-         break;
-      }
-
-   return( ErrorString );
-   }
-
-
-
-/*---------------------------------------------------------------------
    Function: D32DosMemAlloc
 
    Allocate a block of Conventional memory.
 ---------------------------------------------------------------------*/
 
-void *D32DosMemAlloc
+static void *D32DosMemAlloc
    (
    unsigned size
    )

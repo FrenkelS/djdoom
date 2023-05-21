@@ -87,78 +87,10 @@ static int GUS_Debug = FALSE;
 
 extern int GUSMIDI_Installed;
 
-int GUSWAVE_ErrorCode = GUSWAVE_Ok;
+static int GUSWAVE_ErrorCode = GUSWAVE_Ok;
 
 #define GUSWAVE_SetErrorCode( status ) \
    GUSWAVE_ErrorCode   = ( status );
-
-
-/*---------------------------------------------------------------------
-   Function: GUSWAVE_ErrorString
-
-   Returns a pointer to the error message associated with an error
-   number.  A -1 returns a pointer the current error.
----------------------------------------------------------------------*/
-
-char *GUSWAVE_ErrorString
-   (
-   int ErrorNumber
-   )
-
-   {
-   char *ErrorString;
-
-   switch( ErrorNumber )
-      {
-      case GUSWAVE_Warning :
-      case GUSWAVE_Error :
-         ErrorString = GUSWAVE_ErrorString( GUSWAVE_ErrorCode );
-         break;
-
-      case GUSWAVE_Ok :
-         ErrorString = "GUSWAVE ok.";
-         break;
-
-      case GUSWAVE_GUSError :
-         ErrorString = GUS_ErrorString( GUS_Error );
-         break;
-
-      case GUSWAVE_NotInstalled :
-         ErrorString = "GUSWAVE not installed.";
-         break;
-
-      case GUSWAVE_NoVoices :
-         ErrorString = "No free voices available to GUSWAVE.";
-         break;
-
-      case GUSWAVE_UltraNoMem :
-         ErrorString = "Not enough Ultrasound memory available for GUSWAVE.";
-         break;
-
-      case GUSWAVE_UltraNoMemMIDI :
-         ErrorString = "Not enough Ultrasound memory available for GUSWAVE.  "
-            "Try initializing Sound FX before Music.";
-         break;
-
-      case GUSWAVE_VoiceNotFound :
-         ErrorString = "No voice with matching handle found.";
-         break;
-
-      case GUSWAVE_InvalidVOCFile :
-         ErrorString = "Invalid VOC file passed in to GUSWAVE.";
-         break;
-
-      case GUSWAVE_InvalidWAVFile :
-         ErrorString = "Invalid WAV file passed in to GUSWAVE.";
-         break;
-
-      default :
-         ErrorString = "Unknown GUSWAVE error code.";
-         break;
-      }
-
-   return( ErrorString );
-   }
 
 
 /*---------------------------------------------------------------------
@@ -167,13 +99,7 @@ char *GUSWAVE_ErrorString
    GF1 callback service routine.
 ---------------------------------------------------------------------*/
 
-// *** VERSIONS RESTORATION ***
-// This array is 256 bytes long in earlier versions
-#if (LIBVER_ASSREV < 19950821L)
-char GUS_Silence[ 256 ] =
-#else
-char GUS_Silence8[ 1024 ] = //256 ] =
-#endif
+static char GUS_Silence8[ 1024 ] =
    {
    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
@@ -191,10 +117,6 @@ char GUS_Silence8[ 1024 ] = //256 ] =
    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
-
-// *** VERSIONS RESTORATION ***
-// See above comment about array size
-#if (LIBVER_ASSREV >= 19950821L)
    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
@@ -243,15 +165,9 @@ char GUS_Silence8[ 1024 ] = //256 ] =
    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80
-#endif // LIBVER_ASSREV >= 19950821L
-
-
    };
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-//unsigned short GUS_Silence16[ 128 ] =
-unsigned short GUS_Silence16[ 512 ] =
+static unsigned short GUS_Silence16[ 512 ] =
    {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -261,9 +177,6 @@ unsigned short GUS_Silence16[ 512 ] =
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-
-
-
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -289,7 +202,6 @@ unsigned short GUS_Silence16[ 512 ] =
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
    };
-#endif // LIBVER_ASSREV >= 19950821L
 
 static int LOADDS GUSWAVE_CallBack
    (
@@ -557,7 +469,7 @@ static VoiceNode *GUSWAVE_GetVoice
    playing.
 ---------------------------------------------------------------------*/
 
-int GUSWAVE_VoicePlaying
+static int GUSWAVE_VoicePlaying
    (
    int handle
    )
@@ -581,7 +493,7 @@ int GUSWAVE_VoicePlaying
    Determines the number of currently active voices.
 ---------------------------------------------------------------------*/
 
-int GUSWAVE_VoicesPlaying
+static int GUSWAVE_VoicesPlaying
    (
    void
    )
@@ -618,7 +530,7 @@ int GUSWAVE_VoicesPlaying
    Stops output of the voice associated with the specified handle.
 ---------------------------------------------------------------------*/
 
-int GUSWAVE_Kill
+static int GUSWAVE_Kill
    (
    int handle
    )
@@ -709,8 +621,6 @@ int GUSWAVE_KillAllVoices
       {
       if ( GUSWAVE_Voices[ i ].Active )
          {
-//         GUSWAVE_Kill( GUSWAVE_Voices[ i ].handle );
-
 //FIXME         gf1_stop_digital( GUSWAVE_Voices[ i ].GF1voice );
          }
       }
@@ -742,111 +652,6 @@ int GUSWAVE_KillAllVoices
 
 
 /*---------------------------------------------------------------------
-   Function: GUSWAVE_SetPitch
-
-   Sets the pitch for the voice associated with the specified handle.
----------------------------------------------------------------------*/
-
-int GUSWAVE_SetPitch
-   (
-   int handle,
-   int pitchoffset
-   )
-
-   {
-   VoiceNode *voice;
-   unsigned  flags;
-
-   flags = DisableInterrupts();
-
-   voice = GUSWAVE_GetVoice( handle );
-
-   if ( voice == NULL )
-      {
-      RestoreInterrupts( flags );
-
-      GUSWAVE_SetErrorCode( GUSWAVE_VoiceNotFound );
-      return( GUSWAVE_Warning );
-      }
-
-   if ( voice->Active )
-      {
-      voice->PitchScale  = PITCH_GetScale( pitchoffset );
-      voice->RateScale   = ( voice->SamplingRate * voice->PitchScale ) >> 16;
-//FIXME      gf1_dig_set_freq( voice->GF1voice, voice->RateScale );
-      }
-
-   RestoreInterrupts( flags );
-
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   GUSWAVE_SetErrorCode( GUSWAVE_Ok );
-#endif
-   return( GUSWAVE_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: GUSWAVE_SetPan3D
-
-   Sets the pan position of the voice with the specified handle.
----------------------------------------------------------------------*/
-
-int GUSWAVE_SetPan3D
-   (
-   int handle,
-   int angle,
-   int distance
-   )
-
-   {
-   VoiceNode *voice;
-   int        pan;
-   unsigned  flags;
-
-   flags = DisableInterrupts();
-
-   voice = GUSWAVE_GetVoice( handle );
-
-   if ( voice == NULL )
-      {
-      RestoreInterrupts( flags );
-
-      GUSWAVE_SetErrorCode( GUSWAVE_VoiceNotFound );
-      return( GUSWAVE_Warning );
-      }
-
-   if ( voice->Active )
-      {
-      angle &= 31;
-
-      pan = GUSWAVE_PanTable[ angle ];
-      if ( GUSWAVE_SwapLeftRight )
-         {
-         pan = 15 - pan;
-         }
-
-      distance = max( 0, distance );
-      distance = min( 255, distance );
-
-      voice->Volume = 255 - distance;
-      voice->Pan    = pan;
-
-//FIXME      gf1_dig_set_pan( voice->GF1voice, pan );
-//FIXME      gf1_dig_set_vol( voice->GF1voice, GUSWAVE_Volume - distance * 4 );
-      }
-
-   RestoreInterrupts( flags );
-
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   GUSWAVE_SetErrorCode( GUSWAVE_Ok );
-#endif
-   return( GUSWAVE_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: GUSWAVE_SetVolume
 
    Sets the total volume of the digitized sounds.
@@ -871,22 +676,6 @@ void GUSWAVE_SetVolume
 //FIXME         gf1_dig_set_vol( GUSWAVE_Voices[ i ].GF1voice, GUSWAVE_Volume - ( 255 - GUSWAVE_Voices[ i ].Volume ) * 4 );
          }
       }
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: GUSWAVE_GetVolume
-
-   Returns the total volume of the digitized sounds.
----------------------------------------------------------------------*/
-
-int GUSWAVE_GetVolume
-   (
-   void
-   )
-
-   {
-   return( 255 - ( ( MAX_VOLUME - GUSWAVE_Volume ) / 4 ) );
    }
 
 
@@ -963,58 +752,12 @@ static VoiceNode *GUSWAVE_AllocVoice
 
 
 /*---------------------------------------------------------------------
-   Function: GUSWAVE_VoiceAvailable
-
-   Checks if a voice can be play at the specified priority.
----------------------------------------------------------------------*/
-
-int GUSWAVE_VoiceAvailable
-   (
-   int priority
-   )
-
-   {
-   VoiceNode   *voice;
-   VoiceNode   *node;
-   unsigned    flags;
-
-   if ( GUSWAVE_VoicesPlaying() < GUSWAVE_MaxVoices )
-      {
-      return( TRUE );
-      }
-
-   flags = DisableInterrupts();
-
-   node = VoiceList.start;
-   voice = node;
-   while( node != NULL )
-      {
-      if ( node->priority < voice->priority )
-         {
-         voice = node;
-         }
-
-      node = node->next;
-      }
-
-   RestoreInterrupts( flags );
-
-   if ( priority >= voice->priority )
-      {
-      return( TRUE );
-      }
-
-   return( FALSE );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: GUSWAVE_GetNextVOCBlock
 
    Interperate the information of a VOC format sound file.
 ---------------------------------------------------------------------*/
 
-playbackstatus GUSWAVE_GetNextVOCBlock
+static playbackstatus GUSWAVE_GetNextVOCBlock
    (
    VoiceNode *voice
    )
@@ -1239,7 +982,7 @@ playbackstatus GUSWAVE_GetNextVOCBlock
    Controls playback of demand fed data.
 ---------------------------------------------------------------------*/
 
-playbackstatus GUSWAVE_GetNextWAVBlock
+static playbackstatus GUSWAVE_GetNextWAVBlock
    (
    VoiceNode *voice
    )
@@ -1273,7 +1016,7 @@ playbackstatus GUSWAVE_GetNextWAVBlock
    Controls playback of demand fed data.
 ---------------------------------------------------------------------*/
 
-playbackstatus GUSWAVE_GetNextDemandFeedBlock
+static playbackstatus GUSWAVE_GetNextDemandFeedBlock
    (
    VoiceNode *voice
    )
@@ -1314,17 +1057,12 @@ playbackstatus GUSWAVE_GetNextDemandFeedBlock
    Begins playback of digitized sound.
 ---------------------------------------------------------------------*/
 
-int GUSWAVE_Play
+static int GUSWAVE_Play
    (
    VoiceNode *voice,
    int angle,
    int volume,
    int channels
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   ,
-   int bits
-#endif
    )
 
    {
@@ -1340,12 +1078,7 @@ int GUSWAVE_Play
       type |= TYPE_STEREO;
       }
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   if ( bits == 8 )
-#else
    if ( voice->bits == 8 )
-#endif
       {
       type |= TYPE_8BIT;
       type |= TYPE_INVERT_MSB;
@@ -1407,223 +1140,6 @@ int GUSWAVE_Play
    RestoreInterrupts( flags );
 
    return( voice->handle );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: GUSWAVE_PlayVOC
-
-   Begins playback of digitized sound.
----------------------------------------------------------------------*/
-
-int GUSWAVE_PlayVOC
-   (
-   char *sample,
-   int   pitchoffset,
-   int   angle,
-   int   volume,
-   int   priority,
-   unsigned long callbackval
-   )
-
-   {
-   int handle;
-   int status;
-   playbackstatus soundstatus;
-   VoiceNode *voice;
-   unsigned flags;
-
-   // Make sure it's a valid VOC file.
-   status = strncmp( sample, "Creative Voice File", 19 );
-   if ( status != 0 )
-      {
-      // Tell multivoc that we had a bad VOC file
-      MV_ErrorCode = MV_InvalidVOCFile;
-
-      GUSWAVE_SetErrorCode( GUSWAVE_InvalidVOCFile );
-      return( GUSWAVE_Error );
-      }
-
-   // Request a voice from the voice pool
-   voice = GUSWAVE_AllocVoice( priority );
-   if ( voice == NULL )
-      {
-      if ( GUS_Debug )
-         {
-         DB_printf( "No more voices.  Skipping sound.\n" );
-         }
-      GUSWAVE_SetErrorCode( GUSWAVE_NoVoices );
-      return( GUSWAVE_Warning );
-      }
-
-   voice->NextBlock   = sample + *( unsigned short int * )( sample + 0x14 );
-   voice->LoopStart   = NULL;
-   voice->LoopCount   = 0;
-   voice->BlockLength = 0;
-   voice->PitchScale  = PITCH_GetScale( pitchoffset );
-   voice->wavetype    = VOC;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-   voice->bits        = 8;
-#endif
-//FIXME   voice->GetSound    = GUSWAVE_GetNextVOCBlock;
-   voice->length      = 0;
-   voice->next        = NULL;
-   voice->prev        = NULL;
-   voice->priority    = priority;
-   voice->callbackval = callbackval;
-
-   soundstatus = GUSWAVE_GetNextVOCBlock( voice );
-   if ( soundstatus == SoundDone )
-      {
-      flags = DisableInterrupts();
-      LL_AddToTail( VoiceNode, &VoicePool, voice );
-      RestoreInterrupts( flags );
-
-      if ( GUS_Debug )
-         {
-         DB_printf( "Voice ended before playback.\n" );
-         }
-
-      // Tell multivoc that we had a bad VOC file
-      MV_ErrorCode = MV_InvalidVOCFile;
-
-      GUSWAVE_SetErrorCode( GUSWAVE_InvalidVOCFile );
-      return( GUSWAVE_Error );
-      }
-
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   handle = GUSWAVE_Play( voice, angle, volume, 1, 8 );
-#else
-   handle = GUSWAVE_Play( voice, angle, volume, 1 );
-#endif
-   return( handle );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: GUSWAVE_PlayWAV
-
-   Begins playback of digitized sound.
----------------------------------------------------------------------*/
-
-int GUSWAVE_PlayWAV
-   (
-   char *sample,
-   int   pitchoffset,
-   int   angle,
-   int   volume,
-   int   priority,
-   unsigned long callbackval
-   )
-
-   {
-   VoiceNode *voice;
-   int        handle;
-   int        channels;
-   int        bits;
-   int        length;
-   riff_header   *riff;
-   format_header *format;
-   data_header   *data;
-
-   riff = ( riff_header * )sample;
-
-   if ( ( strncmp( riff->RIFF, "RIFF", 4 ) != 0 ) ||
-      ( strncmp( riff->WAVE, "WAVE", 4 ) != 0 ) ||
-      ( strncmp( riff->fmt, "fmt ", 4) != 0 ) )
-      {
-      GUSWAVE_SetErrorCode( GUSWAVE_InvalidWAVFile );
-      return( GUSWAVE_Error );
-      }
-
-   format = ( format_header * )( riff + 1 );
-   data   = ( data_header * )( ( ( char * )format ) + riff->format_size );
-
-   if ( format->wFormatTag != 1 )
-      {
-      GUSWAVE_SetErrorCode( GUSWAVE_InvalidWAVFile );
-      return( GUSWAVE_Error );
-      }
-
-   channels = format->nChannels;
-   if ( ( channels != 1 ) && ( channels != 2 ) )
-      {
-      GUSWAVE_SetErrorCode( GUSWAVE_InvalidWAVFile );
-      return( GUSWAVE_Error );
-      }
-
-   bits = format->nBitsPerSample;
-   if ( ( bits != 8 ) && ( bits != 16 ) )
-      {
-      GUSWAVE_SetErrorCode( GUSWAVE_InvalidWAVFile );
-      return( GUSWAVE_Error );
-      }
-
-   if ( strncmp( data->DATA, "data", 4 ) != 0 )
-      {
-      GUSWAVE_SetErrorCode( GUSWAVE_InvalidWAVFile );
-      return( GUSWAVE_Error );
-      }
-
-   // Request a voice from the voice pool
-   voice = GUSWAVE_AllocVoice( priority );
-   if ( voice == NULL )
-      {
-      if ( GUS_Debug )
-         {
-         DB_printf( "No more voices.  Skipping sound.\n" );
-         }
-      GUSWAVE_SetErrorCode( GUSWAVE_NoVoices );
-      return( GUSWAVE_Warning );
-      }
-
-   voice->wavetype    = WAV;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-   voice->bits        = bits;
-#endif
-//FIXME   voice->GetSound    = GUSWAVE_GetNextWAVBlock;
-
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-   length = data->size;
-#endif
-
-   voice->Playing     = TRUE;
-   voice->DemandFeed  = NULL;
-   voice->LoopStart   = NULL;
-   voice->LoopCount   = 0;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   voice->length      = min( data->size, 0x8000 );
-   voice->BlockLength = data->size - voice->length;//  min( loopend + 1, data->size );
-#else
-   voice->length      = min( length, 0x8000 );
-   voice->BlockLength = length - voice->length;//  min( loopend + 1, data->size );
-#endif
-   voice->sound       = ( char * )( data + 1 );
-   voice->NextBlock   = voice->sound + voice->length;
-   voice->next        = NULL;
-   voice->prev        = NULL;
-   voice->priority    = priority;
-   voice->callbackval = callbackval;
-   voice->LoopStart   = NULL;// voice->NextBlock + loopstart;
-   voice->LoopEnd     = NULL;//voice->NextBlock + min( loopend, data->size - 1 );
-   voice->LoopSize    = 0;//( voice->LoopEnd - voice->LoopStart ) + 1;
-   voice->PitchScale  = PITCH_GetScale( pitchoffset );
-   voice->SamplingRate = format->nSamplesPerSec;
-   voice->RateScale   = ( voice->SamplingRate * voice->PitchScale ) >> 16;
-
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   handle = GUSWAVE_Play( voice, angle, volume, channels, bits );
-#else
-   handle = GUSWAVE_Play( voice, angle, volume, channels );
-#endif
-
-   return( handle );
    }
 
 
@@ -1692,12 +1208,7 @@ int GUSWAVE_StartDemandFeedPlayback
    voice->SamplingRate = rate;
    voice->RateScale   = ( voice->SamplingRate * voice->PitchScale ) >> 16;
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   handle = GUSWAVE_Play( voice, angle, volume, 1, 8 );
-#else
    handle = GUSWAVE_Play( voice, angle, volume, channels );
-#endif
 
    return( handle );
    }
@@ -1709,29 +1220,13 @@ int GUSWAVE_StartDemandFeedPlayback
    Set the orientation of the left and right channels.
 ---------------------------------------------------------------------*/
 
-void GUSWAVE_SetReverseStereo
+static void GUSWAVE_SetReverseStereo
    (
    int setting
    )
 
    {
    GUSWAVE_SwapLeftRight = setting;
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: GUSWAVE_GetReverseStereo
-
-   Returns the orientation of the left and right channels.
----------------------------------------------------------------------*/
-
-int GUSWAVE_GetReverseStereo
-   (
-   void
-   )
-
-   {
-   return( GUSWAVE_SwapLeftRight );
    }
 
 
@@ -1798,22 +1293,6 @@ static int GUSWAVE_InitVoices
       }
 
    return( GUSWAVE_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: GUSWAVE_SetCallBack
-
-   Set the function to call when a voice stops.
----------------------------------------------------------------------*/
-
-void GUSWAVE_SetCallBack
-   (
-   void ( *function )( unsigned long )
-   )
-
-   {
-   GUSWAVE_CallBackFunc = function;
    }
 
 
