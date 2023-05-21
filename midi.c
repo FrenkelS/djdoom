@@ -107,10 +107,7 @@ static midifuncs *_MIDI_Funcs = NULL;
 
 static int Reset = FALSE;
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-int MIDI_Tempo = 120;
-#endif
+static int MIDI_Tempo = 120;
 
 char MIDI_PatchMap[ 128 ];
 
@@ -120,9 +117,6 @@ char MIDI_PatchMap[ 128 ];
    Memory locked functions:
 
 **********************************************************************/
-
-
-#define MIDI_LockStart _MIDI_ReadNumber
 
 
 /*---------------------------------------------------------------------
@@ -321,7 +315,7 @@ static void _MIDI_MetaEvent
    int   command;
    int   length;
    int   denominator;
-   long  tempo;
+   int   tempo;
 
    GET_NEXT_EVENT( Track, command );
    GET_NEXT_EVENT( Track, length );
@@ -568,23 +562,8 @@ static int _MIDI_InterpretControllerInfo
 // that occurs with Watcom.  This means that we cannot access Task!
 //Turned off to test if it works with Watcom 10a
 //#pragma aux _MIDI_ServiceRoutine frame;
-/*
-static void test
-   (
-   task *Task
-   )
-   {
-   _MIDI_ServiceRoutine( Task );
-   _MIDI_ServiceRoutine( Task );
-   _MIDI_ServiceRoutine( Task );
-   _MIDI_ServiceRoutine( Task );
-   }
-*/
-#if (LIBVER_ASSREV >= 19960108L) && (LIBVER_ASSREV < 19960116L) // ** VERSIONS RESTORATION
-void _MIDI_ServiceRoutine
-#else
+
 static void _MIDI_ServiceRoutine
-#endif
    (
    task *Task
    )
@@ -598,10 +577,7 @@ static void _MIDI_ServiceRoutine
    int   status;
    int   c1;
    int   c2;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    int   TimeSet = FALSE;
-#endif
 
    if ( !_MIDI_SongActive )
       {
@@ -610,47 +586,13 @@ static void _MIDI_ServiceRoutine
 
    Track = _MIDI_TrackPtr;
    tracknum = 0;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   ++_MIDI_PositionInTicks;
-#endif
+
    while( tracknum < _MIDI_NumTracks )
       {
       while ( ( Track->active ) && ( Track->delay == 0 ) )
          {
          GET_NEXT_EVENT( Track, event );
 
-         // *** VERSIONS RESTORATION ***
-         // An earlier (inline) revision of _MIDI_MetaEvent;
-         // Also includes, in a way, an inline revision of MIDI_SetTempo.
-#if (LIBVER_ASSREV < 19950821L)
-         if ( event == MIDI_META_EVENT )
-            {
-            int   length;
-            int   tempo;
-
-            GET_NEXT_EVENT( Track, event );
-            GET_NEXT_EVENT( Track, length );
-
-            switch( event )
-               {
-               case MIDI_END_OF_TRACK :
-                  Track->active = FALSE;
-
-                  _MIDI_ActiveTracks--;
-                  break;
-
-               case MIDI_TEMPO_CHANGE :
-                  tempo = 60000000L / _MIDI_ReadNumber( Track->pos, 3 );
-                  TS_SetTaskRate( _MIDI_PlayRoutine, ( tempo * _MIDI_Division ) / 60 );
-                  break;
-               }
-
-            Track->pos += length;
-            Track->delay = _MIDI_ReadDelta( Track );
-            continue;
-            }
-#else
          if ( GET_MIDI_COMMAND( event ) == MIDI_SPECIAL )
             {
             switch( event )
@@ -672,7 +614,6 @@ static void _MIDI_ServiceRoutine
 
             continue;
             }
-#endif
 
          if ( event & MIDI_RUNNING_STATUS )
             {
@@ -892,33 +833,12 @@ static int _MIDI_SendControlChange
 
 
 /*---------------------------------------------------------------------
-   Function: MIDI_RerouteMidiChannel
-
-   Sets callback function to reroute MIDI commands from specified
-   function.
----------------------------------------------------------------------*/
-
-void MIDI_RerouteMidiChannel
-   (
-   int channel,
-   int cdecl ( *function )( int event, int c1, int c2 )
-   )
-
-   {
-   if ( ( channel >= 1 ) && ( channel <= 16 ) )
-      {
-      _MIDI_RerouteFunctions[ channel - 1 ] = function;
-      }
-   }
-
-
-/*---------------------------------------------------------------------
    Function: MIDI_AllNotesOff
 
    Sends all notes off commands on all midi channels.
 ---------------------------------------------------------------------*/
 
-int MIDI_AllNotesOff
+static int MIDI_AllNotesOff
    (
    void
    )
@@ -997,56 +917,6 @@ static void _MIDI_SetChannelVolume
 
 
 /*---------------------------------------------------------------------
-   Function: MIDI_SetUserChannelVolume
-
-   Sets the volume of the specified midi channel.
----------------------------------------------------------------------*/
-
-void MIDI_SetUserChannelVolume
-   (
-   int channel,
-   int volume
-   )
-
-   {
-   // Convert channel from 1-16 to 0-15
-   channel--;
-
-   volume = max( 0, volume );
-   volume = min( volume, 256 );
-
-   if ( ( channel >= 0 ) && ( channel < NUM_MIDI_CHANNELS ) )
-      {
-      _MIDI_UserChannelVolume[ channel ] = volume;
-      _MIDI_SetChannelVolume( channel, _MIDI_ChannelVolume[ channel ] );
-      }
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MIDI_ResetUserChannelVolume
-
-   Sets the volume of the specified midi channel.
----------------------------------------------------------------------*/
-
-void MIDI_ResetUserChannelVolume
-   (
-   void
-   )
-
-   {
-   int channel;
-
-   for( channel = 0; channel < NUM_MIDI_CHANNELS; channel++ )
-      {
-      _MIDI_UserChannelVolume[ channel ] = 256;
-      }
-
-   _MIDI_SendChannelVolumes();
-   }
-
-
-/*---------------------------------------------------------------------
    Function: _MIDI_SendChannelVolumes
 
    Sets the volume on all the midi channels.
@@ -1073,7 +943,7 @@ static void _MIDI_SendChannelVolumes
    Resets the MIDI device to General Midi defaults.
 ---------------------------------------------------------------------*/
 
-int MIDI_Reset
+static int MIDI_Reset
    (
    void
    )
@@ -1157,93 +1027,6 @@ int MIDI_SetVolume
 
 
 /*---------------------------------------------------------------------
-   Function: MIDI_GetVolume
-
-   Returns the total volume of the music.
----------------------------------------------------------------------*/
-
-int MIDI_GetVolume
-   (
-   void
-   )
-
-   {
-   int volume;
-
-   if ( _MIDI_Funcs == NULL )
-      {
-      return( MIDI_NullMidiModule );
-      }
-
-   if ( _MIDI_Funcs->GetVolume )
-      {
-      volume = _MIDI_Funcs->GetVolume();
-      }
-   else
-      {
-      volume = _MIDI_TotalVolume;
-      }
-
-   return( volume );
-   }
-
-
-// *** VERSIONS RESTORATION ***
-// Originally not present
-#if (LIBVER_ASSREV >= 19950821L)
-/*---------------------------------------------------------------------
-   Function: MIDI_SetContext
-
-   Sets the song context.
----------------------------------------------------------------------*/
-
-void MIDI_SetContext
-   (
-   int context
-   )
-
-   {
-   if ( ( context > 0 ) && ( context < EMIDI_NUM_CONTEXTS ) )
-      {
-      _MIDI_Context = context;
-      }
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MIDI_GetContext
-
-   Returns the current song context.
----------------------------------------------------------------------*/
-
-int MIDI_GetContext
-   (
-   void
-   )
-
-   {
-   return _MIDI_Context;
-   }
-#endif // LIBVER_ASSREV >= 19950821L
-
-
-/*---------------------------------------------------------------------
-   Function: MIDI_SetLoopFlag
-
-   Sets whether the song should loop when finished or not.
----------------------------------------------------------------------*/
-
-void MIDI_SetLoopFlag
-   (
-   int loopflag
-   )
-
-   {
-   _MIDI_Loop = loopflag;
-   }
-
-
-/*---------------------------------------------------------------------
    Function: MIDI_ContinueSong
 
    Continues playback of a paused song.
@@ -1279,22 +1062,6 @@ void MIDI_PauseSong
       _MIDI_SongActive = FALSE;
       MIDI_AllNotesOff();
       }
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MIDI_SongPlaying
-
-   Returns whether a song is playing or not.
----------------------------------------------------------------------*/
-
-int MIDI_SongPlaying
-   (
-   void
-   )
-
-   {
-   return( _MIDI_SongActive );
    }
 
 
@@ -1335,10 +1102,7 @@ void MIDI_StopSong
       _MIDI_SongLoaded = FALSE;
 
       MIDI_Reset();
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
       _MIDI_ResetTracks();
-#endif
 
       if ( _MIDI_Funcs->ReleasePatches )
          {
@@ -1352,13 +1116,10 @@ void MIDI_StopSong
       _MIDI_NumTracks    = 0;
       _MIDI_TrackMemSize = 0;
 
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
       _MIDI_TotalTime     = 0;
       _MIDI_TotalTicks    = 0;
       _MIDI_TotalBeats    = 0;
       _MIDI_TotalMeasures = 0;
-#endif
       }
    }
 
@@ -1476,22 +1237,14 @@ int MIDI_PlaySong
       _MIDI_TotalVolume = _MIDI_Funcs->GetVolume();
       }
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   _MIDI_ResetTracks();
-#else
    _MIDI_InitEMIDI();
-#endif
 
    if ( _MIDI_Funcs->LoadPatch )
       {
       MIDI_LoadTimbres();
       }
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    _MIDI_ResetTracks();
-#endif
 
    if ( !Reset )
       {
@@ -1500,14 +1253,9 @@ int MIDI_PlaySong
 
    Reset = FALSE;
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   _MIDI_PlayRoutine = TS_ScheduleTask( _MIDI_ServiceRoutine, ( _MIDI_Division * 120 ) / 60, 1, NULL );
-#else
    _MIDI_PlayRoutine = TS_ScheduleTask( _MIDI_ServiceRoutine, 100, 1, NULL );
-//   _MIDI_PlayRoutine = TS_ScheduleTask( test, 100, 1, NULL );
    MIDI_SetTempo( 120 );
-#endif
+
    TS_Dispatch();
 
    _MIDI_SongLoaded = TRUE;
@@ -1517,229 +1265,13 @@ int MIDI_PlaySong
    }
 
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-/*---------------------------------------------------------------------
-   Function: MIDI_GetPosition
-
-   Returns the position of the song pointer.
----------------------------------------------------------------------*/
-
-int MIDI_GetPosition
-   (
-   void
-   )
-
-   {
-   return _MIDI_PositionInTicks;
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MIDI_SetPosition
-
-   Sets the position of the song pointer.
----------------------------------------------------------------------*/
-
-void MIDI_SetPosition
-   (
-   int pos
-   )
-
-   {
-
-   int   event;
-   int   channel;
-   int   command;
-   track *Track;
-   int   tracknum;
-   int   status;
-   int   c1;
-   int   c2;
-   int   length;
-   long  tempo;
-
-   if ( !_MIDI_SongLoaded )
-      {
-      return;
-      }
-
-   MIDI_PauseSong();
-
-   if ( pos < _MIDI_PositionInTicks )
-      {
-      _MIDI_ResetTracks();
-      }
-
-   while ( _MIDI_PositionInTicks < pos )
-      {
-      Track = _MIDI_TrackPtr;
-      tracknum = 0;
-      ++_MIDI_PositionInTicks;
-      while( ( tracknum < _MIDI_NumTracks ) && ( Track != NULL ) )
-         {
-         // RESTORATION - More-or-less a copy-and-paste
-         // from (an earlier revision of) _MIDI_ServiceRoutine
-         while ( ( Track->active ) && ( Track->delay == 0 ) )
-            {
-            GET_NEXT_EVENT( Track, event );
-
-            // *** VERSIONS RESTORATION ***
-            // Based on code from (earlier revision of) _MIDI_ServiceRoutine
-            if ( event == MIDI_META_EVENT )
-               {
-               GET_NEXT_EVENT( Track, event );
-               GET_NEXT_EVENT( Track, length );
-
-               switch( event )
-                  {
-                  case MIDI_END_OF_TRACK :
-                     Track->active = FALSE;
-
-                     _MIDI_ActiveTracks--;
-                     break;
-
-                  case MIDI_TEMPO_CHANGE :
-                     tempo = 60000000L / _MIDI_ReadNumber( Track->pos, 3 );
-                     TS_SetTaskRate( _MIDI_PlayRoutine, ( tempo * _MIDI_Division ) / 60 );
-                     break;
-                  }
-
-               Track->pos += length;
-               Track->delay = _MIDI_ReadDelta( Track );
-               continue;
-               }
-
-            if ( event & MIDI_RUNNING_STATUS )
-               {
-               Track->RunningStatus = event;
-               }
-            else
-               {
-               event = Track->RunningStatus;
-               Track->pos--;
-               }
-
-            channel = GET_MIDI_CHANNEL( event );
-            command = GET_MIDI_COMMAND( event );
-
-            if ( _MIDI_CommandLengths[ command ] > 0 )
-               {
-               GET_NEXT_EVENT( Track, c1 );
-               if ( _MIDI_CommandLengths[ command ] > 1 )
-                  {
-                  GET_NEXT_EVENT( Track, c2 );
-                  }
-               }
-
-            if ( _MIDI_RerouteFunctions[ channel ] != NULL )
-               {
-               status = _MIDI_RerouteFunctions[ channel ]( event, c1, c2 );
-
-               if ( status == MIDI_DONT_PLAY )
-                  {
-                  Track->delay = _MIDI_ReadDelta( Track );
-                  continue;
-                  }
-               }
-
-            switch ( command )
-               {
-               case MIDI_NOTE_OFF :
-                  break;
-
-               case MIDI_NOTE_ON :
-                  break;
-
-               case MIDI_POLY_AFTER_TCH :
-                  if ( _MIDI_Funcs->PolyAftertouch )
-                     {
-                     _MIDI_Funcs->PolyAftertouch( channel, c1, c2 );
-                     }
-                  break;
-
-               case MIDI_CONTROL_CHANGE :
-                  // *** VERSIONS RESTORATION ***
-                  // Looks like an earlier revision of _MIDI_InterpretControllerInfo
-                  // - mostly a duplicate copy and paste from _MIDI_ServiceRoutine,
-                  // albeit covering less cases
-                  if ( c1 == MIDI_MONO_MODE_ON )
-                     {
-                     Track->pos++;
-                     }
-
-                  if ( c1 == MIDI_VOLUME )
-                     {
-                     _MIDI_SetChannelVolume( channel, c2 );
-                     break;
-                     }
-
-                  if ( _MIDI_Funcs->ControlChange )
-                     {
-                     _MIDI_Funcs->ControlChange( channel, c1, c2 );
-                     }
-                  break;
-
-               case MIDI_PROGRAM_CHANGE :
-                  if ( _MIDI_Funcs->ProgramChange )
-                     {
-                     _MIDI_Funcs->ProgramChange( channel, c1 );
-                     }
-                  break;
-
-               case MIDI_AFTER_TOUCH :
-                  if ( _MIDI_Funcs->ChannelAftertouch )
-                     {
-                     _MIDI_Funcs->ChannelAftertouch( channel, c1 );
-                     }
-                  break;
-
-               case MIDI_PITCH_BEND :
-                  if ( _MIDI_Funcs->PitchBend )
-                     {
-                     _MIDI_Funcs->PitchBend( channel, c1, c2 );
-                     }
-                  break;
-
-               default :
-                  break;
-               }
-
-            Track->delay = _MIDI_ReadDelta( Track );
-            }
-
-         Track->delay--;
-         Track++;
-         tracknum++;
-
-         if ( _MIDI_ActiveTracks == 0 )
-            {
-            _MIDI_ResetTracks();
-            if ( _MIDI_Loop )
-               {
-               MIDI_ContinueSong();
-               }
-            else
-               {
-               _MIDI_SongActive = FALSE;
-               }
-            return;
-            }
-         }
-      }
-
-   MIDI_ContinueSong();
-   }
-
-#else // LIBVER_ASSREV >= 19950821L
-
 /*---------------------------------------------------------------------
    Function: MIDI_SetTempo
 
    Sets the song tempo.
 ---------------------------------------------------------------------*/
 
-void MIDI_SetTempo
+static void MIDI_SetTempo
    (
    int tempo
    )
@@ -1755,378 +1287,6 @@ void MIDI_SetTempo
 //      TS_SetTaskRate( _MIDI_PlayRoutine, tickspersecond / 4 );
       }
    _MIDI_FPSecondsPerTick = ( 1 << TIME_PRECISION ) / tickspersecond;
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MIDI_GetTempo
-
-   Returns the song tempo.
----------------------------------------------------------------------*/
-
-int MIDI_GetTempo
-   (
-   void
-   )
-
-   {
-   return( MIDI_Tempo );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: _MIDI_ProcessNextTick
-
-   Sets the position of the song pointer.
----------------------------------------------------------------------*/
-
-static int _MIDI_ProcessNextTick
-   (
-   void
-   )
-
-   {
-   int   event;
-   int   channel;
-   int   command;
-   track *Track;
-   int   tracknum;
-   int   status;
-   int   c1;
-   int   c2;
-   int   TimeSet = FALSE;
-
-   Track = _MIDI_TrackPtr;
-   tracknum = 0;
-   while( ( tracknum < _MIDI_NumTracks ) && ( Track != NULL ) )
-      {
-      while ( ( Track->active ) && ( Track->delay == 0 ) )
-         {
-         GET_NEXT_EVENT( Track, event );
-
-         if ( GET_MIDI_COMMAND( event ) == MIDI_SPECIAL )
-            {
-            switch( event )
-               {
-               case MIDI_SYSEX :
-               case MIDI_SYSEX_CONTINUE :
-                  _MIDI_SysEx( Track );
-                  break;
-
-               case MIDI_META_EVENT :
-                  _MIDI_MetaEvent( Track );
-                  break;
-               }
-
-            if ( Track->active )
-               {
-               Track->delay = _MIDI_ReadDelta( Track );
-               }
-
-            continue;
-            }
-
-         if ( event & MIDI_RUNNING_STATUS )
-            {
-            Track->RunningStatus = event;
-            }
-         else
-            {
-            event = Track->RunningStatus;
-            Track->pos--;
-            }
-
-         channel = GET_MIDI_CHANNEL( event );
-         command = GET_MIDI_COMMAND( event );
-
-         if ( _MIDI_CommandLengths[ command ] > 0 )
-            {
-            GET_NEXT_EVENT( Track, c1 );
-            if ( _MIDI_CommandLengths[ command ] > 1 )
-               {
-               GET_NEXT_EVENT( Track, c2 );
-               }
-            }
-
-         if ( _MIDI_RerouteFunctions[ channel ] != NULL )
-            {
-            status = _MIDI_RerouteFunctions[ channel ]( event, c1, c2 );
-
-            if ( status == MIDI_DONT_PLAY )
-               {
-               Track->delay = _MIDI_ReadDelta( Track );
-               continue;
-               }
-            }
-
-         switch ( command )
-            {
-            case MIDI_NOTE_OFF :
-               break;
-
-            case MIDI_NOTE_ON :
-               break;
-
-            case MIDI_POLY_AFTER_TCH :
-               if ( _MIDI_Funcs->PolyAftertouch )
-                  {
-                  _MIDI_Funcs->PolyAftertouch( channel, c1, c2 );
-                  }
-               break;
-
-            case MIDI_CONTROL_CHANGE :
-               TimeSet = _MIDI_InterpretControllerInfo( Track, TimeSet,
-                  channel, c1, c2 );
-               break;
-
-            case MIDI_PROGRAM_CHANGE :
-               if ( ( _MIDI_Funcs->ProgramChange ) &&
-                  ( !Track->EMIDI_ProgramChange ) )
-                  {
-                  _MIDI_Funcs->ProgramChange( channel, c1 );
-                  }
-               break;
-
-            case MIDI_AFTER_TOUCH :
-               if ( _MIDI_Funcs->ChannelAftertouch )
-                  {
-                  _MIDI_Funcs->ChannelAftertouch( channel, c1 );
-                  }
-               break;
-
-            case MIDI_PITCH_BEND :
-               if ( _MIDI_Funcs->PitchBend )
-                  {
-                  _MIDI_Funcs->PitchBend( channel, c1, c2 );
-                  }
-               break;
-
-            default :
-               break;
-            }
-
-         Track->delay = _MIDI_ReadDelta( Track );
-         }
-
-      Track->delay--;
-      Track++;
-      tracknum++;
-
-      if ( _MIDI_ActiveTracks == 0 )
-         {
-         break;
-         }
-      }
-
-   _MIDI_AdvanceTick();
-
-   return( TimeSet );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MIDI_SetSongTick
-
-   Sets the position of the song pointer.
----------------------------------------------------------------------*/
-
-void MIDI_SetSongTick
-   (
-   unsigned long PositionInTicks
-   )
-
-   {
-   if ( !_MIDI_SongLoaded )
-      {
-      return;
-      }
-
-   MIDI_PauseSong();
-
-   if ( PositionInTicks < _MIDI_PositionInTicks )
-      {
-      _MIDI_ResetTracks();
-      MIDI_Reset();
-      }
-
-   while( _MIDI_PositionInTicks < PositionInTicks )
-      {
-      if ( _MIDI_ProcessNextTick() )
-         {
-         break;
-         }
-      if ( _MIDI_ActiveTracks == 0 )
-         {
-         _MIDI_ResetTracks();
-         if ( !_MIDI_Loop )
-            {
-            return;
-            }
-         break;
-         }
-      }
-
-   MIDI_SetVolume( _MIDI_TotalVolume );
-   MIDI_ContinueSong();
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MIDI_SetSongTime
-
-   Sets the position of the song pointer.
----------------------------------------------------------------------*/
-
-void MIDI_SetSongTime
-   (
-   unsigned long milliseconds
-   )
-
-   {
-   unsigned long mil;
-   unsigned long sec;
-   unsigned long newtime;
-
-   if ( !_MIDI_SongLoaded )
-      {
-      return;
-      }
-
-   MIDI_PauseSong();
-
-   mil = ( ( milliseconds % 1000 ) << TIME_PRECISION ) / 1000;
-   sec = ( milliseconds / 1000 ) << TIME_PRECISION;
-   newtime = sec + mil;
-
-   if ( newtime < _MIDI_Time )
-      {
-      _MIDI_ResetTracks();
-      MIDI_Reset();
-      }
-
-   while( _MIDI_Time < newtime )
-      {
-      if ( _MIDI_ProcessNextTick() )
-         {
-         break;
-         }
-      if ( _MIDI_ActiveTracks == 0 )
-         {
-         _MIDI_ResetTracks();
-         if ( !_MIDI_Loop )
-            {
-            return;
-            }
-         break;
-         }
-      }
-
-   MIDI_SetVolume( _MIDI_TotalVolume );
-   MIDI_ContinueSong();
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MIDI_SetSongPosition
-
-   Sets the position of the song pointer.
----------------------------------------------------------------------*/
-
-void MIDI_SetSongPosition
-   (
-   int measure,
-   int beat,
-   int tick
-   )
-
-   {
-   unsigned long pos;
-
-   if ( !_MIDI_SongLoaded )
-      {
-      return;
-      }
-
-   MIDI_PauseSong();
-
-   pos = RELATIVE_BEAT( measure, beat, tick );
-
-   if ( pos < RELATIVE_BEAT( _MIDI_Measure, _MIDI_Beat, _MIDI_Tick ) )
-      {
-      _MIDI_ResetTracks();
-      MIDI_Reset();
-      }
-
-   while( RELATIVE_BEAT( _MIDI_Measure, _MIDI_Beat, _MIDI_Tick ) < pos )
-      {
-      if ( _MIDI_ProcessNextTick() )
-         {
-         break;
-         }
-      if ( _MIDI_ActiveTracks == 0 )
-         {
-         _MIDI_ResetTracks();
-         if ( !_MIDI_Loop )
-            {
-            return;
-            }
-         break;
-         }
-      }
-
-   MIDI_SetVolume( _MIDI_TotalVolume );
-   MIDI_ContinueSong();
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MIDI_GetSongPosition
-
-   Returns the position of the song pointer in Measures, beats, ticks.
----------------------------------------------------------------------*/
-
-void MIDI_GetSongPosition
-   (
-   songposition *pos
-   )
-
-   {
-   unsigned long mil;
-   unsigned long sec;
-
-   mil = ( _MIDI_Time & ( ( 1 << TIME_PRECISION ) - 1 ) ) * 1000;
-   sec = _MIDI_Time >> TIME_PRECISION;
-   pos->milliseconds = ( mil >> TIME_PRECISION ) + ( sec * 1000 );
-   pos->tickposition = _MIDI_PositionInTicks;
-   pos->measure      = _MIDI_Measure;
-   pos->beat         = _MIDI_Beat;
-   pos->tick         = _MIDI_Tick;
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MIDI_GetSongLength
-
-   Returns the length of the song.
----------------------------------------------------------------------*/
-
-void MIDI_GetSongLength
-   (
-   songposition *pos
-   )
-
-   {
-   unsigned long mil;
-   unsigned long sec;
-
-   mil = ( _MIDI_TotalTime & ( ( 1 << TIME_PRECISION ) - 1 ) ) * 1000;
-   sec = _MIDI_TotalTime >> TIME_PRECISION;
-
-   pos->milliseconds = ( mil >> TIME_PRECISION ) + ( sec * 1000 );
-   pos->measure      = _MIDI_TotalMeasures;
-   pos->beat         = _MIDI_TotalBeats;
-   pos->tick         = _MIDI_TotalTicks;
-   pos->tickposition = 0;
    }
 
 
@@ -2410,7 +1570,6 @@ static void _MIDI_InitEMIDI
 
    _MIDI_ResetTracks();
    }
-#endif // LIBVER_ASSREV < 19950821L
 
 
 /*---------------------------------------------------------------------
@@ -2419,7 +1578,7 @@ static void _MIDI_InitEMIDI
    Preloads the timbres on cards that use patch-caching.
 ---------------------------------------------------------------------*/
 
-void MIDI_LoadTimbres
+static void MIDI_LoadTimbres
    (
    void
    )
@@ -2442,21 +1601,15 @@ void MIDI_LoadTimbres
          {
          GET_NEXT_EVENT( Track, event );
 
-         // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
          if ( GET_MIDI_COMMAND( event ) == MIDI_SPECIAL )
-#endif
             {
             switch( event )
                {
-               // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
                case MIDI_SYSEX :
                case MIDI_SYSEX_CONTINUE :
                   length = _MIDI_ReadDelta( Track );
                   Track->pos += length;
                   break;
-#endif
 
                case MIDI_META_EVENT :
                   GET_NEXT_EVENT( Track, command );
@@ -2467,28 +1620,16 @@ void MIDI_LoadTimbres
                      Finished = TRUE;
                      }
 
-                  // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
                   Track->pos += length;
-                  _MIDI_ReadDelta( Track );
-                  continue;
-#else
-#if (LIBVER_ASSREV < 19960510L)
-                  Track->pos += length;
-#endif
                   break;
-#endif
                }
 
-            // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
             if ( !Finished )
                {
                _MIDI_ReadDelta( Track );
                }
 
             continue;
-#endif
             }
 
          if ( event & MIDI_RUNNING_STATUS )
@@ -2512,13 +1653,10 @@ void MIDI_LoadTimbres
                length++;
                }
 
-            // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
             if ( *Track->pos == EMIDI_PROGRAM_CHANGE )
                {
                _MIDI_Funcs->LoadPatch( *( Track->pos + 1 ) );
                }
-#endif
             }
 
          if ( channel == MIDI_RHYTHM_CHANNEL )
@@ -2543,130 +1681,4 @@ void MIDI_LoadTimbres
       }
 
    _MIDI_ResetTracks();
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MIDI_LockEnd
-
-   Used for determining the length of the functions to lock in memory.
----------------------------------------------------------------------*/
-
-static void MIDI_LockEnd
-   (
-   void
-   )
-
-   {
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MIDI_UnlockMemory
-
-   Unlocks all neccessary data.
----------------------------------------------------------------------*/
-
-void MIDI_UnlockMemory
-   (
-   void
-   )
-
-   {
-   DPMI_UnlockMemoryRegion( MIDI_LockStart, MIDI_LockEnd );
-   DPMI_UnlockMemory( ( void * )&_MIDI_CommandLengths[ 0 ],
-      sizeof( _MIDI_CommandLengths ) );
-   DPMI_Unlock( _MIDI_TrackPtr );
-   DPMI_Unlock( _MIDI_NumTracks );
-   DPMI_Unlock( _MIDI_SongActive );
-   DPMI_Unlock( _MIDI_SongLoaded );
-   DPMI_Unlock( _MIDI_Loop );
-   DPMI_Unlock( _MIDI_PlayRoutine );
-   DPMI_Unlock( _MIDI_Division );
-   DPMI_Unlock( _MIDI_ActiveTracks );
-   DPMI_Unlock( _MIDI_TotalVolume );
-   DPMI_Unlock( _MIDI_ChannelVolume );
-   DPMI_Unlock( _MIDI_Funcs );
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   DPMI_Unlock( _MIDI_PositionInTicks );
-#else
-   DPMI_Unlock( _MIDI_PositionInTicks );
-   DPMI_Unlock( _MIDI_Division );
-   DPMI_Unlock( _MIDI_Tick );
-   DPMI_Unlock( _MIDI_Beat );
-   DPMI_Unlock( _MIDI_Measure );
-   DPMI_Unlock( _MIDI_Time );
-   DPMI_Unlock( _MIDI_BeatsPerMeasure );
-   DPMI_Unlock( _MIDI_TicksPerBeat );
-   DPMI_Unlock( _MIDI_TimeBase );
-   DPMI_Unlock( _MIDI_FPSecondsPerTick );
-   DPMI_Unlock( _MIDI_Context );
-   DPMI_Unlock( _MIDI_TotalTime );
-   DPMI_Unlock( _MIDI_TotalTicks );
-   DPMI_Unlock( _MIDI_TotalBeats );
-   DPMI_Unlock( _MIDI_TotalMeasures );
-   DPMI_Unlock( MIDI_Tempo );
-#endif
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MIDI_LockMemory
-
-   Locks all neccessary data.
----------------------------------------------------------------------*/
-
-int MIDI_LockMemory
-   (
-   void
-   )
-
-   {
-   int status;
-
-   status  = DPMI_LockMemoryRegion( MIDI_LockStart, MIDI_LockEnd );
-   status |= DPMI_LockMemory( ( void * )&_MIDI_CommandLengths[ 0 ],
-      sizeof( _MIDI_CommandLengths ) );
-   status |= DPMI_Lock( _MIDI_TrackPtr );
-   status |= DPMI_Lock( _MIDI_NumTracks );
-   status |= DPMI_Lock( _MIDI_SongActive );
-   status |= DPMI_Lock( _MIDI_SongLoaded );
-   status |= DPMI_Lock( _MIDI_Loop );
-   status |= DPMI_Lock( _MIDI_PlayRoutine );
-   status |= DPMI_Lock( _MIDI_Division );
-   status |= DPMI_Lock( _MIDI_ActiveTracks );
-   status |= DPMI_Lock( _MIDI_TotalVolume );
-   status |= DPMI_Lock( _MIDI_ChannelVolume );
-   status |= DPMI_Lock( _MIDI_Funcs );
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   status |= DPMI_Lock( _MIDI_PositionInTicks );
-#else
-   status |= DPMI_Lock( _MIDI_PositionInTicks );
-   status |= DPMI_Lock( _MIDI_Division );
-   status |= DPMI_Lock( _MIDI_Tick );
-   status |= DPMI_Lock( _MIDI_Beat );
-   status |= DPMI_Lock( _MIDI_Measure );
-   status |= DPMI_Lock( _MIDI_Time );
-   status |= DPMI_Lock( _MIDI_BeatsPerMeasure );
-   status |= DPMI_Lock( _MIDI_TicksPerBeat );
-   status |= DPMI_Lock( _MIDI_TimeBase );
-   status |= DPMI_Lock( _MIDI_FPSecondsPerTick );
-   status |= DPMI_Lock( _MIDI_Context );
-   status |= DPMI_Lock( _MIDI_TotalTime );
-   status |= DPMI_Lock( _MIDI_TotalTicks );
-   status |= DPMI_Lock( _MIDI_TotalBeats );
-   status |= DPMI_Lock( _MIDI_TotalMeasures );
-   status |= DPMI_Lock( MIDI_Tempo );
-#endif
-
-   if ( status != DPMI_Ok )
-      {
-      MIDI_UnlockMemory();
-//      MIDI_SetErrorCode( MIDI_DPMI_Error );
-      return( MIDI_Error );
-      }
-
-   return( MIDI_Ok );
    }
