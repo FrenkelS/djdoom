@@ -116,45 +116,27 @@ enum BLASTER_Types
 #define BLASTER_MaxIrq            15
 
 char *BLASTER_ErrorString( int ErrorNumber );
-void  BLASTER_EnableInterrupt( void );
-void  BLASTER_DisableInterrupt( void );
-int   BLASTER_WriteDSP( unsigned data );
-int   BLASTER_ReadDSP( void );
-int   BLASTER_ResetDSP( void );
-int   BLASTER_GetDSPVersion( void );
-void  BLASTER_SpeakerOn( void );
-void  BLASTER_SpeakerOff( void );
-void  BLASTER_SetPlaybackRate( unsigned rate );
 unsigned BLASTER_GetPlaybackRate( void );
 int   BLASTER_SetMixMode( int mode );
 void  BLASTER_StopPlayback( void );
-int   BLASTER_SetupDMABuffer( char *BufferPtr, int BufferSize, int mode );
 int   BLASTER_GetCurrentPos( void );
-int   BLASTER_DSP1xx_BeginPlayback( int length );
-int   BLASTER_DSP2xx_BeginPlayback( int length );
-int   BLASTER_DSP4xx_BeginPlayback( int length );
 int   BLASTER_BeginBufferedRecord( char *BufferStart, int BufferSize,
           int NumDivisions, unsigned SampleRate, int MixMode,
           void ( *CallBackFunc )( void ) );
 int   BLASTER_BeginBufferedPlayback( char *BufferStart,
          int BufferSize, int NumDivisions, unsigned SampleRate,
          int MixMode, void ( *CallBackFunc )( void ) );
-void  BLASTER_WriteMixer( int reg, int data );
-int   BLASTER_ReadMixer( int reg );
 int   BLASTER_GetVoiceVolume( void );
 int   BLASTER_SetVoiceVolume( int volume );
 int   BLASTER_GetMidiVolume( void );
 void   BLASTER_SetMidiVolume( int volume );
 int   BLASTER_CardHasMixer( void );
-void  BLASTER_SaveVoiceVolume( void );
-void  BLASTER_RestoreVoiceVolume( void );
 void  BLASTER_SaveMidiVolume( void );
 void  BLASTER_RestoreMidiVolume( void );
 int   BLASTER_GetEnv( BLASTER_CONFIG *Config );
 int   BLASTER_SetCardSettings( BLASTER_CONFIG Config );
 int   BLASTER_GetCardSettings( BLASTER_CONFIG *Config );
 int   BLASTER_GetCardInfo( int *MaxSampleBits, int *MaxChannels );
-void  BLASTER_SetCallBack( void ( *func )( void ) );
 // *** VERSIONS RESTORATION ***
 #if (LIBVER_ASSREV < 19960116L)
 int   BLASTER_SetupWaveBlaster( int Address );
@@ -164,7 +146,5 @@ void  BLASTER_SetupWaveBlaster( void );
 void  BLASTER_ShutdownWaveBlaster( void );
 int   BLASTER_Init( void );
 void  BLASTER_Shutdown( void );
-void  BLASTER_UnlockMemory( void );
-int   BLASTER_LockMemory( void );
 
 #endif
