@@ -48,12 +48,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TRUE  ( 1 == 1 )
 #define FALSE ( !TRUE )
 
-void TextMode( void );
-#pragma aux TextMode =  \
-    "mov    ax, 0003h", \
-    "int    10h"        \
-    modify [ ax ];
-
 int MUSIC_SoundDevice = -1;
 int MUSIC_ErrorCode = MUSIC_Ok;
 
