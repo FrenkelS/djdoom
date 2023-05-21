@@ -190,7 +190,7 @@ static int AL_MaxMidiChannel = 16;
    Sends data to the Adlib using a specified port.
 ---------------------------------------------------------------------*/
 
-void AL_SendOutputToPort
+static void AL_SendOutputToPort
    (
    int  port,
    int  reg,
@@ -225,11 +225,9 @@ void AL_SendOutputToPort
    Sends data to the Adlib.
 ---------------------------------------------------------------------*/
 
-void AL_SendOutput
+static void AL_SendOutput
    (
-#if (LIBVER_ASSREV >= 19950821L) // *** VERSIONS RESTORATION ***
    int  voice,
-#endif
    int  reg,
    int  data
    )
@@ -253,9 +251,6 @@ void AL_SendOutput
 #endif
       }
    }
-#if (LIBVER_ASSREV < 19950821L) // *** VERSIONS RESTORATION *** - HACK
-#define AL_SendOutput(voice, reg, data) AL_SendOutput(reg, data)
-#endif
 
 
 /*---------------------------------------------------------------------
@@ -902,7 +897,7 @@ static void AL_CalcPitchInfo
    Sets all voices to a known (quiet) state.
 ---------------------------------------------------------------------*/
 
-void AL_FlushCard
+static void AL_FlushCard
    (
    int port
    )
@@ -954,7 +949,7 @@ void AL_FlushCard
    Sets the card send info in stereo.
 ---------------------------------------------------------------------*/
 
-void AL_StereoOn
+static void AL_StereoOn
    (
    void
    )
@@ -986,7 +981,7 @@ void AL_StereoOn
    Sets the card send info in mono.
 ---------------------------------------------------------------------*/
 
-void AL_StereoOff
+static void AL_StereoOff
    (
    void
    )
@@ -1018,7 +1013,7 @@ void AL_StereoOff
    Sets the card to a known (quiet) state.
 ---------------------------------------------------------------------*/
 
-void AL_Reset
+static void AL_Reset
    (
    void
    )
@@ -1046,81 +1041,6 @@ void AL_Reset
       {
       AL_FlushCard( ADLIB_PORT );
       }
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: AL_ReserveVoice
-
-   Marks a voice as being not available for use.  This allows the
-   driver to use the rest of the card while another driver uses the
-   reserved voice.
----------------------------------------------------------------------*/
-
-int AL_ReserveVoice
-   (
-   int voice
-   )
-
-   {
-   unsigned flags;
-
-   if ( ( voice < 0 ) || ( voice >= NUM_VOICES ) )
-      {
-      return( AL_Error );
-      }
-
-   if ( VoiceReserved[ voice ] )
-      {
-      return( AL_Warning );
-      }
-
-   flags = DisableInterrupts();
-
-   if ( Voice[ voice ].status == NOTE_ON )
-      {
-      AL_NoteOff( Voice[ voice ].channel, Voice[ voice ].key, 0 );
-      }
-
-   VoiceReserved[ voice ] = TRUE;
-   LL_Remove( VOICE, &Voice_Pool, &Voice[ voice ] );
-
-   RestoreInterrupts( flags );
-   return( AL_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: AL_ReleaseVoice
-
-   Marks a previously reserved voice as being free to use.
----------------------------------------------------------------------*/
-
-int AL_ReleaseVoice
-   (
-   int voice
-   )
-
-   {
-   unsigned flags;
-
-   if ( ( voice < 0 ) || ( voice >= NUM_VOICES ) )
-      {
-      return( AL_Error );
-      }
-
-   if ( !VoiceReserved[ voice ] )
-      {
-      return( AL_Warning );
-      }
-
-   flags = DisableInterrupts();
-
-   VoiceReserved[ voice ] = FALSE;
-   LL_AddToTail( VOICE, &Voice_Pool, &Voice[ voice ] );
-
-   RestoreInterrupts( flags );
-   return( AL_Ok );
    }
 
 
@@ -1262,7 +1182,7 @@ void AL_NoteOn
    Turns off all currently playing voices.
 ---------------------------------------------------------------------*/
 
-void AL_AllNotesOff
+static void AL_AllNotesOff
    (
    int channel
    )

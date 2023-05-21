@@ -503,8 +503,6 @@ int ADLIBFX_Init
       return( ADLIBFX_Error );
       }
 
-//JIM
-//   AL_ReserveVoice( 0 );
    ADLIBFX_Stop( ADLIBFX_VoiceHandle );
    ADLIBFX_ServiceTask = TS_ScheduleTask( &ADLIBFX_Service, 140, 2, NULL );
    TS_Dispatch();
@@ -533,8 +531,7 @@ int ADLIBFX_Shutdown
       ADLIBFX_Stop( ADLIBFX_VoiceHandle );
       TS_Terminate( ADLIBFX_ServiceTask );
       ADLIBFX_ServiceTask = NULL;
-//JIM
-//      AL_ReleaseVoice( 0 );
+
       ADLIBFX_Installed = FALSE;
 
       DPMI_UnlockMemoryRegion( ADLIBFX_LockStart, ADLIBFX_LockEnd );

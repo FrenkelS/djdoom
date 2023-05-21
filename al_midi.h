@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -39,25 +40,13 @@ enum AL_Errors
 
 #define ADLIB_PORT 0x388
 
-void AL_SendOutputToPort( int port, int reg, int data );
-#if (LIBVER_ASSREV < 19950821L) // *** VERSIONS RESTORATION ***
-void AL_SendOutput( int reg, int data );
-#else
-void AL_SendOutput( int  voice, int reg, int data );
-#endif
-void AL_StereoOn( void );
-void AL_StereoOff( void );
-int  AL_ReserveVoice( int voice );
-int  AL_ReleaseVoice( int voice );
 void AL_Shutdown( void );
 int  AL_Init( int soundcard );
 void AL_SetMaxMidiChannel( int channel );
-void AL_Reset( void );
 void AL_NoteOff( int channel, int key, int velocity );
 void AL_NoteOn( int channel, int key, int vel );
 //Turned off to test if it works with Watcom 10a
 //   #pragma aux AL_NoteOn frame;
-void AL_AllNotesOff( int channel );
 void AL_ControlChange( int channel, int type, int data );
 void AL_ProgramChange( int channel, int patch );
 void AL_SetPitchBend( int channel, int lsb, int msb );
