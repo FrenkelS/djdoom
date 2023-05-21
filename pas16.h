@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -57,25 +58,17 @@ enum PAS_ERRORS
 
 extern unsigned int PAS_DMAChannel;
 
-char *PAS_ErrorString( int ErrorNumber );
-void  PAS_SetPlaybackRate( unsigned rate );
 unsigned PAS_GetPlaybackRate( void );
 int   PAS_SetMixMode( int mode );
 void  PAS_StopPlayback( void );
 int   PAS_GetCurrentPos( void );
 int   PAS_BeginBufferedPlayback( char *BufferStart, int BufferSize, int NumDivisions, unsigned SampleRate, int MixMode, void ( *CallBackFunc )( void ) );
-int   PAS_BeginBufferedRecord( char *BufferStart, int BufferSize, int NumDivisions, unsigned SampleRate, int MixMode, void ( *CallBackFunc )( void ) );
 int   PAS_SetPCMVolume( int volume );
-int   PAS_GetPCMVolume( void );
 void  PAS_SetFMVolume( int volume );
 int   PAS_GetFMVolume( void );
-int   PAS_GetCardInfo( int *MaxSampleBits, int *MaxChannels );
-void  PAS_SetCallBack( void ( *func )( void ) );
 int   PAS_SaveMusicVolume( void );
 void  PAS_RestoreMusicVolume( void );
 int   PAS_Init( void );
 void  PAS_Shutdown( void );
-void  PAS_UnlockMemory( void );
-int   PAS_LockMemory( void );
 
 #endif

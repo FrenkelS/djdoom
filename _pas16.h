@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -204,26 +205,25 @@ typedef struct
    unsigned long FMSplit;
    } MVFunc;
 
-int     PAS_CheckForDriver( void );
-MVState *PAS_GetStateTable( void );
-MVFunc  *PAS_GetFunctionTable( void );
-int     PAS_GetCardSettings( void );
-void    PAS_EnableInterrupt( void );
-void    PAS_DisableInterrupt( void );
-void    interrupt far PAS_ServiceInterrupt( void );
-//void    interrupt PAS_ServiceInterrupt( void );
-void    PAS_Write( int Register, int Data );
-int     PAS_Read( int Register );
-void    PAS_SetSampleRateTimer( void );
-void    PAS_SetSampleBufferCount( void );
-int     PAS_SetupDMABuffer( char *BufferPtr, int BufferSize, int mode );
-int     PAS_GetFilterSetting( int rate );
-void    PAS_BeginTransfer( int mode );
+static int     PAS_CheckForDriver( void );
+static MVState *PAS_GetStateTable( void );
+static MVFunc  *PAS_GetFunctionTable( void );
+static int     PAS_GetCardSettings( void );
+static void    PAS_EnableInterrupt( void );
+static void    PAS_DisableInterrupt( void );
+static void    interrupt far PAS_ServiceInterrupt( void );
+static void    PAS_Write( int Register, int Data );
+static int     PAS_Read( int Register );
+static void    PAS_SetSampleRateTimer( void );
+static void    PAS_SetSampleBufferCount( void );
+static int     PAS_SetupDMABuffer( char *BufferPtr, int BufferSize, int mode );
+static int     PAS_GetFilterSetting( int rate );
+static void    PAS_BeginTransfer( int mode );
 int     PAS_TestAddress( int address );
-int     PAS_FindCard( void );
-int     PAS_CallMVFunction( unsigned long function, int ebx, int ecx, int edx );
-void    PAS_SaveState( void );
-void    PAS_RestoreState( void );
+static int     PAS_FindCard( void );
+static int     PAS_CallMVFunction( unsigned long function, int ebx, int ecx, int edx );
+static void    PAS_SaveState( void );
+static void    PAS_RestoreState( void );
 
 
 #pragma aux PAS_TestAddress = \

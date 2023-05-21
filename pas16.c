@@ -85,9 +85,9 @@ static int      PAS_MixMode          = PAS_DefaultMixMode;
 static unsigned PAS_SampleRate       = PAS_DefaultSampleRate;
 static int      PAS_TimeInterval     = 0;
 
-volatile int   PAS_SoundPlaying;
+static volatile int   PAS_SoundPlaying;
 
-void ( *PAS_CallBack )( void );
+static void ( *PAS_CallBack )( void );
 
 // adequate stack size
 #define kStackSize 2048
@@ -124,81 +124,10 @@ extern void SetStack(unsigned short selector,unsigned long stackptr);
    parm [ax] [edx]      \
    modify [eax edx];
 
-int PAS_ErrorCode = PAS_Ok;
+static int PAS_ErrorCode = PAS_Ok;
 
 #define PAS_SetErrorCode( status ) \
    PAS_ErrorCode   = ( status );
-
-/*---------------------------------------------------------------------
-   Function: PAS_ErrorString
-
-   Returns a pointer to the error message associated with an error
-   number.  A -1 returns a pointer the current error.
----------------------------------------------------------------------*/
-
-char *PAS_ErrorString
-   (
-   int ErrorNumber
-   )
-
-   {
-   char *ErrorString;
-
-   switch( ErrorNumber )
-      {
-      case PAS_Warning :
-      case PAS_Error :
-         ErrorString = PAS_ErrorString( PAS_ErrorCode );
-         break;
-
-      case PAS_Ok :
-         ErrorString = "Pro AudioSpectrum ok.";
-         break;
-
-      case PAS_DriverNotFound :
-         ErrorString = "MVSOUND.SYS not loaded.";
-         break;
-
-      case PAS_DmaError :
-         ErrorString = DMA_ErrorString( DMA_Error );
-         break;
-
-      case PAS_InvalidIrq :
-         ErrorString = "Invalid Pro AudioSpectrum Irq.";
-         break;
-
-      case PAS_UnableToSetIrq :
-         ErrorString = "Unable to set Pro AudioSpectrum IRQ.  Try selecting an IRQ of 7 or below.";
-         break;
-
-      case PAS_Dos4gwIrqError :
-         ErrorString = "Unsupported Pro AudioSpectrum Irq.";
-         break;
-
-      case PAS_NoSoundPlaying :
-         ErrorString = "No sound playing on Pro AudioSpectrum.";
-         break;
-
-      case PAS_CardNotFound :
-         ErrorString = "Could not find Pro AudioSpectrum.";
-         break;
-
-      case PAS_DPMI_Error :
-         ErrorString = "DPMI Error in PAS16.";
-         break;
-
-      case PAS_OutOfMemory :
-         ErrorString = "Out of conventional memory in PAS16.";
-         break;
-
-      default :
-         ErrorString = "Unknown Pro AudioSpectrum error code.";
-         break;
-      }
-
-   return( ErrorString );
-   }
-
 
 /**********************************************************************
 
@@ -216,7 +145,7 @@ char *PAS_ErrorString
    Checks to see if MVSOUND.SYS is installed.
 ---------------------------------------------------------------------*/
 
-int PAS_CheckForDriver
+static int PAS_CheckForDriver
    (
    void
    )
@@ -259,7 +188,7 @@ int PAS_CheckForDriver
    Spectrum contains only write-only registers.
 ---------------------------------------------------------------------*/
 
-MVState *PAS_GetStateTable
+static MVState *PAS_GetStateTable
    (
    void
    )
@@ -300,7 +229,7 @@ MVState *PAS_GetStateTable
    driver functions.
 ---------------------------------------------------------------------*/
 
-MVFunc *PAS_GetFunctionTable
+static MVFunc *PAS_GetFunctionTable
    (
    void
    )
@@ -340,7 +269,7 @@ MVFunc *PAS_GetFunctionTable
    Returns the DMA and the IRQ channels of the sound card.
 ---------------------------------------------------------------------*/
 
-int PAS_GetCardSettings
+static int PAS_GetCardSettings
    (
    void
    )
@@ -401,7 +330,7 @@ int PAS_GetCardSettings
    Enables the triggering of the sound card interrupt.
 ---------------------------------------------------------------------*/
 
-void PAS_EnableInterrupt
+static void PAS_EnableInterrupt
    (
    void
    )
@@ -446,7 +375,7 @@ void PAS_EnableInterrupt
    Disables the triggering of the sound card interrupt.
 ---------------------------------------------------------------------*/
 
-void PAS_DisableInterrupt
+static void PAS_DisableInterrupt
    (
    void
    )
@@ -493,7 +422,7 @@ void PAS_DisableInterrupt
    transfer.  Calls the user supplied callback function.
 ---------------------------------------------------------------------*/
 
-void interrupt far PAS_ServiceInterrupt
+static void interrupt far PAS_ServiceInterrupt
    (
    void
    )
@@ -556,7 +485,7 @@ void interrupt far PAS_ServiceInterrupt
    Writes a byte of data to the sound card.
 ---------------------------------------------------------------------*/
 
-void PAS_Write
+static void PAS_Write
    (
    int Register,
    int Data
@@ -576,7 +505,7 @@ void PAS_Write
    Reads a byte of data from the sound card.
 ---------------------------------------------------------------------*/
 
-int PAS_Read
+static int PAS_Read
    (
    int Register
    )
@@ -597,7 +526,7 @@ int PAS_Read
    Programs the Sample Rate Timer.
 ---------------------------------------------------------------------*/
 
-void PAS_SetSampleRateTimer
+static void PAS_SetSampleRateTimer
    (
    void
    )
@@ -639,7 +568,7 @@ void PAS_SetSampleRateTimer
    Programs the Sample Buffer Count.
 ---------------------------------------------------------------------*/
 
-void PAS_SetSampleBufferCount
+static void PAS_SetSampleBufferCount
    (
    void
    )
@@ -691,7 +620,7 @@ void PAS_SetSampleBufferCount
    hertz.
 ---------------------------------------------------------------------*/
 
-void PAS_SetPlaybackRate
+static void PAS_SetPlaybackRate
    (
    unsigned rate
    )
@@ -811,7 +740,7 @@ void PAS_StopPlayback
    Programs the DMAC for sound transfer.
 ---------------------------------------------------------------------*/
 
-int PAS_SetupDMABuffer
+static int PAS_SetupDMABuffer
    (
    char *BufferPtr,
    int   BufferSize,
@@ -895,7 +824,7 @@ int PAS_GetCurrentPos
    Returns the bit settings for the appropriate filter level.
 ---------------------------------------------------------------------*/
 
-int PAS_GetFilterSetting
+static int PAS_GetFilterSetting
    (
    int rate
    )
@@ -948,7 +877,7 @@ int PAS_GetFilterSetting
    Starts playback of digitized sound on the sound card.
 ---------------------------------------------------------------------*/
 
-void PAS_BeginTransfer
+static void PAS_BeginTransfer
    (
    int mode
    )
@@ -1064,45 +993,6 @@ int PAS_BeginBufferedPlayback
 
 
 /*---------------------------------------------------------------------
-   Function: PAS_BeginBufferedRecord
-
-   Begins multibuffered recording of digitized sound on the sound card.
----------------------------------------------------------------------*/
-
-int PAS_BeginBufferedRecord
-   (
-   char *BufferStart,
-   int   BufferSize,
-   int   NumDivisions,
-   unsigned SampleRate,
-   int   MixMode,
-   void ( *CallBackFunc )( void )
-   )
-
-   {
-   int DmaStatus;
-
-   PAS_StopPlayback();
-
-   PAS_SetMixMode( MixMode );
-   PAS_SetPlaybackRate( SampleRate );
-
-   PAS_TransferLength = BufferSize / NumDivisions;
-   PAS_SetCallBack( CallBackFunc );
-
-   DmaStatus = PAS_SetupDMABuffer( BufferStart, BufferSize, DMA_AutoInitWrite );
-   if ( DmaStatus == PAS_Error )
-      {
-      return( PAS_Error );
-      }
-
-   PAS_BeginTransfer( RECORD );
-
-   return( PAS_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: PAS_CallInt
 
    Calls interrupt 2fh.
@@ -1120,7 +1010,7 @@ int PAS_CallInt( int ebx, int ecx, int edx );
    Performs a call to a real mode function.
 ---------------------------------------------------------------------*/
 
-int PAS_CallMVFunction
+static int PAS_CallMVFunction
    (
    unsigned long function,
    int ebx,
@@ -1196,47 +1086,6 @@ int PAS_SetPCMVolume
 
 
 /*---------------------------------------------------------------------
-   Function: PAS_GetPCMVolume
-
-   Returns the current volume of digitized sound playback.
----------------------------------------------------------------------*/
-
-int PAS_GetPCMVolume
-   (
-   void
-   )
-
-   {
-   int leftvolume;
-   int rightvolume;
-   int totalvolume;
-
-   if ( PAS_Func == NULL )
-      {
-      return( PAS_Error );
-      }
-
-   leftvolume = PAS_CallMVFunction( PAS_Func->GetMixer, 0,
-      OUTPUTMIXER, L_PCM );
-   rightvolume = PAS_CallMVFunction( PAS_Func->GetMixer, 0,
-      OUTPUTMIXER, R_PCM );
-
-   if ( ( leftvolume == PAS_Error ) || ( rightvolume == PAS_Error ) )
-      {
-      return( PAS_Error );
-      }
-
-   leftvolume  &= 0xff;
-   rightvolume &= 0xff;
-
-   totalvolume = ( rightvolume + leftvolume ) / 2;
-   totalvolume *= 255;
-   totalvolume /= 100;
-   return( totalvolume );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: PAS_SetFMVolume
 
    Sets the volume of FM sound playback.
@@ -1297,59 +1146,12 @@ int PAS_GetFMVolume
 
 
 /*---------------------------------------------------------------------
-   Function: PAS_GetCardInfo
-
-   Returns the maximum number of bits that can represent a sample
-   (8 or 16) and the number of channels (1 for mono, 2 for stereo).
----------------------------------------------------------------------*/
-
-int PAS_GetCardInfo
-   (
-   int *MaxSampleBits,
-   int *MaxChannels
-   )
-
-   {
-   int status;
-
-   if ( PAS_State == NULL )
-      {
-      status = PAS_CheckForDriver();
-      if ( status != PAS_Ok )
-         {
-         return( status );
-         }
-
-      PAS_State = PAS_GetStateTable();
-      if ( PAS_State == NULL )
-         {
-         return( PAS_Error );
-         }
-      }
-
-   *MaxChannels = 2;
-
-   // Check board revision.  Revision # 0 can't play 16-bit data.
-   if ( ( PAS_State->intrctlr & 0xe0 ) == 0 )
-      {
-      *MaxSampleBits = 8;
-      }
-   else
-      {
-      *MaxSampleBits = 16;
-      }
-
-   return( PAS_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: PAS_SetCallBack
 
    Specifies the user function to call at the end of a sound transfer.
 ---------------------------------------------------------------------*/
 
-void PAS_SetCallBack
+static void PAS_SetCallBack
    (
    void ( *func )( void )
    )
@@ -1365,7 +1167,7 @@ void PAS_SetCallBack
    Auto-detects the port the Pro AudioSpectrum is set for.
 ---------------------------------------------------------------------*/
 
-int PAS_FindCard
+static int PAS_FindCard
    (
    void
    )
@@ -1505,7 +1307,7 @@ void PAS_RestoreMusicVolume
    Saves the original state of the PAS prior to use.
 ---------------------------------------------------------------------*/
 
-void PAS_SaveState
+static void PAS_SaveState
    (
    void
    )
@@ -1518,54 +1320,6 @@ void PAS_SaveState
    PAS_OriginalState.samplecnt    = PAS_State->samplecnt;
    PAS_OriginalState.crosschannel = PAS_State->crosschannel;
    PAS_SampleSizeConfig = PAS_Read( SampleSizeConfiguration );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: PAS_RestoreState
-
-   Restores the original state of the PAS after use.
----------------------------------------------------------------------*/
-
-void PAS_RestoreState
-   (
-   void
-   )
-
-   {
-   int LoByte;
-   int HiByte;
-
-   // Select the Sample Rate Timer
-   PAS_Write( LocalTimerControl, SelectSampleRateTimer );
-   PAS_State->tmrctlr = SelectSampleRateTimer;
-
-   PAS_Write( SampleRateTimer, PAS_OriginalState.samplerate );
-   PAS_State->samplerate = PAS_OriginalState.samplerate;
-
-   // Select the Sample Buffer Count
-   PAS_Write( LocalTimerControl, SelectSampleBufferCount );
-   PAS_State->tmrctlr = SelectSampleBufferCount;
-
-   LoByte = lobyte( PAS_OriginalState.samplecnt );
-   HiByte = hibyte( PAS_OriginalState.samplecnt );
-   PAS_Write( SampleRateTimer, LoByte );
-   PAS_Write( SampleRateTimer, HiByte );
-   PAS_State->samplecnt = PAS_OriginalState.samplecnt;
-
-   PAS_Write( CrossChannelControl, PAS_OriginalState.crosschannel );
-   PAS_State->crosschannel = PAS_OriginalState.crosschannel;
-
-   PAS_Write( SampleSizeConfiguration, PAS_SampleSizeConfig );
-
-   PAS_Write( InterruptControl, PAS_OriginalState.intrctlr );
-   PAS_State->intrctlr = PAS_OriginalState.intrctlr;
-
-   PAS_Write( AudioFilterControl, PAS_OriginalState.audiofilt );
-   PAS_State->audiofilt = PAS_OriginalState.audiofilt;
-
-   PAS_Write( LocalTimerControl, PAS_OriginalState.tmrctlr );
-   PAS_State->tmrctlr = PAS_OriginalState.tmrctlr;
    }
 
 
@@ -1813,9 +1567,6 @@ void PAS_Shutdown
       PAS_CallMVFunction( PAS_Func->SetMixer, PAS_OriginalPCMRightVolume,
          OUTPUTMIXER, R_PCM );
 
-// DEBUG
-//      PAS_RestoreState();
-
       PAS_UnlockMemory();
 
       deallocateTimerStack( StackSelector );
@@ -1832,7 +1583,7 @@ void PAS_Shutdown
    Unlocks all neccessary data.
 ---------------------------------------------------------------------*/
 
-void PAS_UnlockMemory
+static void PAS_UnlockMemory
    (
    void
    )
@@ -1876,7 +1627,7 @@ void PAS_UnlockMemory
    Locks all neccessary data.
 ---------------------------------------------------------------------*/
 
-int PAS_LockMemory
+static int PAS_LockMemory
    (
    void
    )
