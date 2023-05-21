@@ -442,21 +442,6 @@ static int BLASTER_ResetDSP
 
    outp( port, 1 );
 
-/* What the hell am I doing here?
-   count = 100;
-
-   do
-      {
-      if ( inp( port ) == 255 )
-         {
-         break;
-         }
-
-      count--;
-      }
-   while( count > 0 );
-*/
-
    count = 0x100;
    do
       {
@@ -1539,15 +1524,12 @@ int BLASTER_GetEnv
       {
       errorcode = BLASTER_CardTypeNotSet;
       }
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    else if ( ( Config->Type < BLASTER_MinCardType ) ||
       ( Config->Type > BLASTER_MaxCardType ) ||
       ( !BLASTER_CardConfig[ Config->Type ].IsSupported ) )
       {
       errorcode = BLASTER_UnsupportedCardType;
       }
-#endif
 
    if ( Config->Dma8 == UNDEFINED )
       {
@@ -1564,16 +1546,6 @@ int BLASTER_GetEnv
       errorcode = BLASTER_AddrNotSet;
       }
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   if ( ( Config->Type < BLASTER_MinCardType ) ||
-      ( Config->Type > BLASTER_MaxCardType ) ||
-      ( !BLASTER_CardConfig[ Config->Type ].IsSupported ) )
-      {
-      errorcode = BLASTER_UnsupportedCardType;
-      }
-
-#endif
    if ( errorcode != BLASTER_Ok )
       {
       status = BLASTER_Error;
