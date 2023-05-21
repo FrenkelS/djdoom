@@ -34,7 +34,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <dos.h>
 #include <stddef.h>
 #include <stdlib.h>
-//#include <math.h>
 #include "dpmi.h"
 #include "interrup.h"
 #include "sndcards.h"
@@ -115,15 +114,8 @@ static int slotVoice[ NUM_VOICES ][ 2 ] =
       { 14, 17 },  // 8
    };
 
-// *** VERSIONS RESTORATION ***
-// FIXME HACK
-#if (LIBVER_ASSREV < 19950821L)
-static int VoiceLevel[ NumChipSlots ][ 1 ];
-static int VoiceKsl[ NumChipSlots ][ 1 ];
-#else
 static int VoiceLevel[ NumChipSlots ][ 2 ];
 static int VoiceKsl[ NumChipSlots ][ 2 ];
-#endif
 
 // This table gives the offset of each slot within the chip.
 // offset = fn( slot)
@@ -135,15 +127,6 @@ static char offsetSlot[ NumChipSlots ] =
    16, 17, 18, 19, 20, 21
    };
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-static int VoiceReserved[ NUM_VOICES ] =
-   {
-   FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-   };
-
-static VOICE     Voice[ NUM_VOICES ];
-#else
 static int VoiceReserved[ NUM_VOICES * 2 ] =
    {
    FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
@@ -151,27 +134,17 @@ static int VoiceReserved[ NUM_VOICES * 2 ] =
    };
 
 static VOICE     Voice[ NUM_VOICES * 2 ];
-#endif
 static VOICELIST Voice_Pool;
 
 static CHANNEL   Channel[ NUM_CHANNELS ];
-
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-static int PitchBendRange;
-#endif
 
 static int AL_LeftPort   = 0x388;
 static int AL_RightPort  = 0x388;
 static int AL_Stereo     = FALSE;
 static int AL_SendStereo = FALSE;
 static int AL_OPL3       = FALSE;
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-#define AL_MaxMidiChannel 9
-#else
+
 static int AL_MaxMidiChannel = 16;
-#endif
 
 
 /**********************************************************************
@@ -242,13 +215,8 @@ static void AL_SendOutput
       }
    else
       {
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-      AL_SendOutputToPort( ADLIB_PORT, reg, data );
-#else
       port = ( voice == 0 ) ? AL_RightPort : AL_LeftPort;
       AL_SendOutputToPort( port, reg, data );
-#endif
       }
    }
 
@@ -267,15 +235,8 @@ static void AL_SetVoiceTimbre
    {
    int    off;
    int    slot;
-// *** VERSIONS RESTORATION ***
-// FIXME HACK
-#if (LIBVER_ASSREV < 19950821L)
-#define port 0
-#define voc voice
-#else
    int    port;
    int    voc;
-#endif
    int    patch;
    int    channel;
    TIMBRE *timbre;
@@ -299,11 +260,8 @@ static void AL_SetVoiceTimbre
    Voice[ voice ].timbre = patch;
    timbre = &ADLIB_TimbreBank[ patch ];
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    port = Voice[ voice ].port;
    voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
-#endif
    slot = slotVoice[ voc ][ 0 ];
    off  = offsetSlot[ slot ];
 
@@ -324,12 +282,7 @@ static void AL_SetVoiceTimbre
    AL_SendOutput( port, 0x40 + off, timbre->Level[ 0 ] );
    slot = slotVoice[ voc ][ 1 ];
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   if ( AL_OPL3 )
-#else
    if ( AL_SendStereo )
-#endif
       {
       AL_SendOutputToPort( AL_LeftPort, 0xC0 + voice,
          ( timbre->Feedback & 0x0f ) | 0x20 );
@@ -338,15 +291,12 @@ static void AL_SetVoiceTimbre
       }
    else
       {
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
       if ( AL_OPL3 )
          {
          AL_SendOutput( port, 0xC0 + voc, ( timbre->Feedback & 0x0f ) |
             0x30 );
          }
       else
-#endif
          {
          AL_SendOutputToPort( ADLIB_PORT, 0xC0 + voice, timbre->Feedback );
          }
@@ -365,12 +315,6 @@ static void AL_SetVoiceTimbre
    AL_SendOutput( port, 0x80 + off, timbre->Env2[ 1 ] );
    AL_SendOutput( port, 0x20 + off, timbre->SAVEK[ 1 ] );
    AL_SendOutput( port, 0xE0 + off, timbre->Wave[ 1 ] );
-// *** VERSIONS RESTORATION ***
-// FIXME REVERT HACK
-#if (LIBVER_ASSREV < 19950821L)
-#undef port
-#undef voc
-#endif
    }
 
 
@@ -389,15 +333,8 @@ static void AL_SetVoiceVolume
    int channel;
    int velocity;
    int slot;
-// *** VERSIONS RESTORATION ***
-// FIXME HACK
-#if (LIBVER_ASSREV < 19950821L)
-#define port 0
-#define voc voice
-#else
    int port;
    int voc;
-#endif
    unsigned long t1;
    unsigned long t2;
    unsigned long volume;
@@ -407,43 +344,25 @@ static void AL_SetVoiceVolume
 
    timbre = &ADLIB_TimbreBank[ Voice[ voice ].timbre ];
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   velocity = Voice[ voice ].velocity + Channel[ channel ].Velocity;
-#else
    velocity = Voice[ voice ].velocity + timbre->Velocity;
-#endif
    velocity = min( velocity, MAX_VELOCITY );
 
-#if (LIBVER_ASSREV >= 19950821L)
    voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
-#endif
+
    slot = slotVoice[ voc ][ 1 ];
-#if (LIBVER_ASSREV >= 19950821L)
    port = Voice[ voice ].port;
-#endif
 
    // amplitude
    t1  = ( unsigned )VoiceLevel[ slot ][ port ];
    t1 *= ( velocity + 0x80 );
    t1  = ( Channel[ channel ].Volume * t1 ) >> 15;
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   if ( !AL_Stereo )
-#else
    if ( !AL_SendStereo )
-#endif
       {
       volume  = t1 ^ 63;
       volume |= ( unsigned )VoiceKsl[ slot ][ port ];
 
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-      AL_SendOutputToPort( ADLIB_PORT, 0x40 + offsetSlot[ slot ], volume );
-#else
       AL_SendOutput( port, 0x40 + offsetSlot[ slot ], volume );
-#endif
 
       // Check if this timbre is Additive
       if ( timbre->Feedback & 0x01 )
@@ -458,12 +377,7 @@ static void AL_SetVoiceVolume
          volume  = t2 ^ 63;
          volume |= ( unsigned )VoiceKsl[ slot ][ port ];
 
-         // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-         AL_SendOutputToPort( ADLIB_PORT, 0x40 + offsetSlot[ slot ], volume );
-#else
          AL_SendOutput( port, 0x40 + offsetSlot[ slot ], volume );
-#endif
          }
       }
    else
@@ -531,12 +445,6 @@ static void AL_SetVoiceVolume
          AL_SendOutputToPort( AL_RightPort, 0x40 + offsetSlot[ slot ], volume );
          }
       }
-// *** VERSIONS RESTORATION ***
-// FIXME REVERT HACK
-#if (LIBVER_ASSREV < 19950821L)
-#undef port
-#undef voc
-#endif
    }
 
 
@@ -615,21 +523,12 @@ static void AL_SetVoicePitch
    int ScaleNote;
    int Octave;
    int pitch;
-// *** VERSIONS RESTORATION ***
-// FIXME HACK
-#if (LIBVER_ASSREV < 19950821L)
-#define port 0
-#define voc voice
-#else
    int port;
    int voc;
-#endif
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    port = Voice[ voice ].port;
    voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
-#endif
+
    channel = Voice[ voice ].channel;
 
    if ( channel == 9 )
@@ -643,12 +542,8 @@ static void AL_SetVoicePitch
       note  = Voice[ voice ].key + ADLIB_TimbreBank[ patch ].Transpose;
       }
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   note += Channel[ channel ].KeyOffset + Channel[ channel ].RPN - 12;
-#else
    note += Channel[ channel ].KeyOffset - 12;
-#endif
+
    if ( note > MAX_NOTE )
       {
       note = MAX_NOTE;
@@ -669,20 +564,11 @@ static void AL_SetVoicePitch
 
    pitch |= Voice[ voice ].status;
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   if ( !AL_Stereo )
-      {
-      AL_SendOutputToPort( ADLIB_PORT, 0xA0 + voc, pitch );
-      AL_SendOutputToPort( ADLIB_PORT, 0xB0 + voc, pitch >> 8 );
-      }
-#else
    if ( !AL_SendStereo )
       {
       AL_SendOutput( port, 0xA0 + voc, pitch );
       AL_SendOutput( port, 0xB0 + voc, pitch >> 8 );
       }
-#endif
    else
       {
       AL_SendOutputToPort( AL_LeftPort, 0xA0 + voice, pitch );
@@ -713,12 +599,6 @@ static void AL_SetVoicePitch
       AL_SendOutputToPort( AL_RightPort, 0xA0 + voice, pitch );
       AL_SendOutputToPort( AL_RightPort, 0xB0 + voice, pitch >> 8 );
       }
-// *** VERSIONS RESTORATION ***
-// FIXME REVERT HACK
-#if (LIBVER_ASSREV < 19950821L)
-#undef port
-#undef voc
-#endif
    }
 
 
@@ -806,18 +686,12 @@ static void AL_ResetVoices
    Voice_Pool.start = NULL;
    Voice_Pool.end = NULL;
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   PitchBendRange = AL_DefaultPitchBendRange;
-   for( index = 0; index < NUM_VOICES; index++ )
-#else
    numvoices = NUM_VOICES;
    if ( ( AL_OPL3 ) && ( !AL_Stereo ) )
       {
       numvoices = NUM_VOICES * 2;
       }
    for( index = 0; index < numvoices; index++ )
-#endif
       {
       if ( VoiceReserved[ index ] == FALSE )
          {
@@ -826,10 +700,7 @@ static void AL_ResetVoices
          Voice[ index ].velocity = 0;
          Voice[ index ].channel = -1;
          Voice[ index ].timbre = -1;
-         // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
          Voice[ index ].port = ( index < NUM_VOICES ) ? 0 : 1;
-#endif
          Voice[ index ].status = NOTE_OFF;
          LL_AddToTail( VOICE, &Voice_Pool, &Voice[ index ] );
          }
@@ -846,14 +717,10 @@ static void AL_ResetVoices
       Channel[ index ].Volume          = AL_DefaultChannelVolume;
       Channel[ index ].Pan             = 64;
       Channel[ index ].RPN             = 0;
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-      Channel[ index ].Velocity        = 0;
-#else
+
       Channel[ index ].PitchBendRange     = AL_DefaultPitchBendRange;
       Channel[ index ].PitchBendSemiTones = AL_DefaultPitchBendRange / 100;
       Channel[ index ].PitchBendHundreds  = AL_DefaultPitchBendRange % 100;
-#endif
       }
    }
 
@@ -871,23 +738,12 @@ static void AL_CalcPitchInfo
 
    {
    int    note;
-//   int    finetune;
-//   double detune;
 
    for( note = 0; note <= MAX_NOTE; note++ )
       {
       NoteMod12[ note ] = note % 12;
       NoteDiv12[ note ] = note / 12;
       }
-
-//   for( finetune = 1; finetune <= FINETUNE_MAX; finetune++ )
-//      {
-//      detune = pow( 2, ( double )finetune / ( 12.0 * FINETUNE_RANGE ) );
-//      for( note = 0; note < 12; note++ )
-//         {
-//         NotePitch[ finetune ][ note ] = ( ( double )NotePitch[ 0 ][ note ] * detune );
-//         }
-//      }
    }
 
 
@@ -911,14 +767,6 @@ static void AL_FlushCard
       {
       if ( VoiceReserved[ i ] == FALSE )
          {
-         // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-         AL_SendOutputToPort( port, 0xA0 + i, 0 );
-         AL_SendOutputToPort( port, 0xB0 + i, 0 );
-
-         AL_SendOutputToPort( port, 0xE0 + offsetSlot[ slotVoice[ i ][ 0 ] ], 0 );
-         AL_SendOutputToPort( port, 0xE0 + offsetSlot[ slotVoice[ i ][ 1 ] ], 0 );
-#else
          slot1 = offsetSlot[ slotVoice[ i ][ 0 ] ];
          slot2 = offsetSlot[ slotVoice[ i ][ 1 ] ];
 
@@ -937,7 +785,6 @@ static void AL_FlushCard
          // Maximum attenuation
          AL_SendOutputToPort( port, 0x40 + slot1, 0xff );
          AL_SendOutputToPort( port, 0x40 + slot2, 0xff );
-#endif
          }
       }
    }
@@ -964,14 +811,11 @@ static void AL_StereoOn
          AL_SendOutputToPort( AL_RightPort, 0x5, 1 );
          }
       }
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    else if ( AL_OPL3 )
       {
       // Set card to OPL3 operation
       AL_SendOutputToPort( AL_RightPort, 0x5, 1 );
       }
-#endif
    }
 
 
@@ -996,14 +840,11 @@ static void AL_StereoOff
          AL_SendOutputToPort( AL_RightPort, 0x5, 0 );
          }
       }
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    else if ( AL_OPL3 )
       {
       // Set card back to OPL2 operation
       AL_SendOutputToPort( AL_RightPort, 0x5, 0 );
       }
-#endif
    }
 
 
@@ -1027,12 +868,7 @@ static void AL_Reset
 
    AL_StereoOn();
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   if ( AL_SendStereo )
-#else
    if ( ( AL_SendStereo ) || ( AL_OPL3 ) )
-#endif
       {
       AL_FlushCard( AL_LeftPort );
       AL_FlushCard( AL_RightPort );
@@ -1059,15 +895,8 @@ void AL_NoteOff
 
    {
    int voice;
-// *** VERSIONS RESTORATION ***
-// FIXME HACK
-#if (LIBVER_ASSREV < 19950821L)
-#define port 0
-#define voc voice
-#else
    int port;
    int voc;
-#endif
 
    // We only play channels 1 through 10
    if ( channel > AL_MaxMidiChannel )
@@ -1084,15 +913,10 @@ void AL_NoteOff
 
    Voice[ voice ].status = NOTE_OFF;
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   if ( AL_Stereo )
-#else
    port = Voice[ voice ].port;
    voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
 
    if ( AL_SendStereo )
-#endif
       {
       AL_SendOutputToPort( AL_LeftPort, 0xB0 + voice,
          hibyte( Voice[ voice ].pitchleft ) );
@@ -1101,22 +925,11 @@ void AL_NoteOff
       }
    else
       {
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-      AL_SendOutputToPort( ADLIB_PORT, 0xB0 + voc, hibyte( Voice[ voice ].pitchleft ) );
-#else
       AL_SendOutput( port, 0xB0 + voc, hibyte( Voice[ voice ].pitchleft ) );
-#endif
       }
 
    LL_Remove( VOICE, &Channel[ channel ].Voices, &Voice[ voice ] );
    LL_AddToTail( VOICE, &Voice_Pool, &Voice[ voice ] );
-// *** VERSIONS RESTORATION ***
-// FIXME REVERT HACK
-#if (LIBVER_ASSREV < 19950821L)
-#undef port
-#undef voc
-#endif
    }
 
 
@@ -1240,8 +1053,6 @@ void AL_ControlChange
          AL_SetChannelDetune( channel, 0 );
          break;
 
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
       case MIDI_RPN_MSB :
          Channel[ channel ].RPN &= 0x00FF;
          Channel[ channel ].RPN |= ( data & 0xFF ) << 8;
@@ -1271,7 +1082,6 @@ void AL_ControlChange
                Channel[ channel ].PitchBendHundreds;
             }
          break;
-#endif
       }
    }
 
@@ -1326,20 +1136,11 @@ void AL_SetPitchBend
    pitchbend = lsb + ( msb << 8 );
    Channel[ channel ].Pitchbend = pitchbend;
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   TotalBend  = pitchbend * PitchBendRange;
-   TotalBend /= ( PITCHBEND_CENTER / FINETUNE_RANGE );
-
-   Channel[ channel ].KeyOffset  = ( int )( TotalBend / FINETUNE_RANGE );
-   Channel[ channel ].KeyOffset -= PitchBendRange;
-#else
    TotalBend  = pitchbend * Channel[ channel ].PitchBendRange;
    TotalBend /= ( PITCHBEND_CENTER / FINETUNE_RANGE );
 
    Channel[ channel ].KeyOffset  = ( int )( TotalBend / FINETUNE_RANGE );
    Channel[ channel ].KeyOffset -= Channel[ channel ].PitchBendSemiTones;
-#endif
 
    Channel[ channel ].KeyDetune = ( unsigned )( TotalBend % FINETUNE_RANGE );
 
@@ -1441,19 +1242,12 @@ void AL_Shutdown
    DPMI_Unlock( Voice );
    DPMI_Unlock( Voice_Pool );
    DPMI_Unlock( Channel );
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   DPMI_Unlock( PitchBendRange );
-#endif
    DPMI_Unlock( AL_LeftPort );
    DPMI_Unlock( AL_RightPort );
    DPMI_Unlock( AL_Stereo );
    DPMI_Unlock( AL_SendStereo );
    DPMI_Unlock( AL_OPL3 );
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    DPMI_Unlock( AL_MaxMidiChannel );
-#endif
    }
 
 
@@ -1485,19 +1279,12 @@ int AL_Init
    status |= DPMI_Lock( Voice );
    status |= DPMI_Lock( Voice_Pool );
    status |= DPMI_Lock( Channel );
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   status |= DPMI_Lock( PitchBendRange );
-#endif
    status |= DPMI_Lock( AL_LeftPort );
    status |= DPMI_Lock( AL_RightPort );
    status |= DPMI_Lock( AL_Stereo );
    status |= DPMI_Lock( AL_SendStereo );
    status |= DPMI_Lock( AL_OPL3 );
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    status |= DPMI_Lock( AL_MaxMidiChannel );
-#endif
 
    if ( status != DPMI_Ok )
       {
@@ -1509,10 +1296,6 @@ int AL_Init
    AL_LeftPort = 0x388;
    AL_RightPort = 0x388;
 
-   // *** VERSIONS RESTORATION ***
-   // Note there's also the code further below, (originally) temporarily
-   // commented out for ROTT, with a few differences
-#if (LIBVER_ASSREV >= 19950821L)
    switch( soundcard )
       {
       case ProAudioSpectrum :
@@ -1544,62 +1327,10 @@ int AL_Init
             }
          break;
       }
-#endif // LIBVER_ASSREV >= 19950821L
-// Temporarally commented out for ROTT.
-// Stereo FM seems to take too long on some computers and
-// causes the mouse driver to miss interrupts.
-
-/*
-   switch( soundcard )
-      {
-      case ProAudioSpectrum :
-      case SoundMan16 :
-         AL_OPL3 = TRUE;
-         AL_Stereo = TRUE;
-         AL_LeftPort  = 0x388;
-         AL_RightPort = 0x38A;
-         break;
-
-      case SoundBlaster :
-         status = BLASTER_GetCardSettings( &Blaster );
-         if ( status != BLASTER_Ok )
-            {
-            status = BLASTER_GetEnv( &Blaster );
-            if ( status != BLASTER_Ok )
-               {
-               break;
-               }
-            }
-
-         switch( Blaster.Type )
-            {
-            case SBPro2 :
-            case SB16 :
-               AL_OPL3 = TRUE;
-               AL_Stereo = TRUE;
-               AL_LeftPort  = Blaster.Address;
-               AL_RightPort = Blaster.Address + 2;
-               break;
-
-            case SBPro :
-               AL_Stereo = TRUE;
-               AL_LeftPort  = Blaster.Address;
-               AL_RightPort = Blaster.Address + 2;
-               break;
-            }
-         break;
-      }
-*/
 
    AL_CalcPitchInfo();
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   AL_ResetVoices();
-   AL_Reset();
-#else
    AL_Reset();
    AL_ResetVoices();
-#endif
 
    return( AL_Ok );
    }
@@ -1633,9 +1364,6 @@ void AL_RegisterTimbreBank
       ADLIB_TimbreBank[ i ].Wave[ 1 ]  = *( timbres++ );
       ADLIB_TimbreBank[ i ].Feedback   = *( timbres++ );
       ADLIB_TimbreBank[ i ].Transpose  = *( signed char * )( timbres++ );
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
       ADLIB_TimbreBank[ i ].Velocity   = *( signed char * )( timbres++ );
-#endif
       }
    }
