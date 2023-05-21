@@ -68,7 +68,6 @@ static int dmx_sdev = NumSoundCards;
 static int dmx_mdev = 0;
 static int mus_rate = 140;
 static int mus_active = 0;
-static int mus_fadeout = 0;
 static int mus_mastervolume = 127;
 
 void MUS_PauseSong(int handle) {
@@ -152,7 +151,6 @@ int MUS_UnregisterSong(int handle) {
 int MUS_StopSong(int handle) {
     long status = MUSIC_StopSong();
     mus_active = 0;
-    mus_fadeout = 0;
     return (status != MUSIC_Ok);
 }
 int MUS_ChainSong(int handle, int next) {
@@ -170,7 +168,6 @@ int MUS_PlaySong(int handle, int volume) {
     if (status == MUSIC_Ok)
     {
         mus_active = 1;
-        mus_fadeout = 0;
         //if (volume > mus_mastervolume)
             volume = mus_mastervolume;
         MUSIC_SetVolume(volume * 2);
