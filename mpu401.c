@@ -51,11 +51,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIDI_MONO_MODE_ON     0x7E
 #define MIDI_ALL_NOTES_OFF    0x7B
 
-int MPU_BaseAddr = MPU_DefaultAddress;
+static int MPU_BaseAddr = MPU_DefaultAddress;
 
-//unsigned MPU_Delay = 500;
-//unsigned MPU_Delay = 5000;
-unsigned MPU_Delay = 0x5000;
+static unsigned MPU_Delay = 0x5000;
 
 
 /**********************************************************************
@@ -65,16 +63,13 @@ unsigned MPU_Delay = 0x5000;
 **********************************************************************/
 
 
-#define MPU_LockStart MPU_SendMidi
-
-
 /*---------------------------------------------------------------------
    Function: MPU_SendMidi
 
    Sends a byte of MIDI data to the music device.
 ---------------------------------------------------------------------*/
 
-void MPU_SendMidi
+static void MPU_SendMidi
    (
    int data
    )
@@ -244,7 +239,7 @@ void MPU_PitchBend
    Sends a command to the MPU401 card.
 ---------------------------------------------------------------------*/
 
-void MPU_SendCommand
+static void MPU_SendCommand
    (
    int data
    )
@@ -316,7 +311,7 @@ int MPU_Reset
    Sets the MPU401 card to operate in UART mode.
 ---------------------------------------------------------------------*/
 
-int MPU_EnterUART
+static int MPU_EnterUART
    (
    void
    )
@@ -388,65 +383,4 @@ int MPU_Init
       }
 
    return( status );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MPU_LockEnd
-
-   Used for determining the length of the functions to lock in memory.
----------------------------------------------------------------------*/
-
-static void MPU_LockEnd
-   (
-   void
-   )
-
-   {
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MPU_UnlockMemory
-
-   Locks all neccessary data.
----------------------------------------------------------------------*/
-
-void MPU_UnlockMemory
-   (
-   void
-   )
-
-   {
-   DPMI_UnlockMemoryRegion( MPU_LockStart, MPU_LockEnd );
-   DPMI_Unlock( MPU_BaseAddr );
-   DPMI_Unlock( MPU_Delay );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MPU_LockMemory
-
-   Locks all neccessary data.
----------------------------------------------------------------------*/
-
-int MPU_LockMemory
-   (
-   void
-   )
-
-   {
-   int status;
-
-   status  = DPMI_LockMemoryRegion( MPU_LockStart, MPU_LockEnd );
-   status |= DPMI_Lock( MPU_BaseAddr );
-   status |= DPMI_Lock( MPU_Delay );
-
-   if ( status != DPMI_Ok )
-      {
-      MPU_UnlockMemory();
-      return( MPU_Error );
-      }
-
-   return( MPU_Ok );
    }

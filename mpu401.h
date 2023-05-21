@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -39,13 +40,7 @@ enum MPU_ERRORS
 #define MPU_CmdReset       0xff
 #define MPU_CmdAcknowledge 0xfe
 
-extern int MPU_BaseAddr;
-extern unsigned MPU_Delay;
-
-void MPU_SendCommand( int data );
-void MPU_SendMidi( int data );
 int  MPU_Reset( void );
-int  MPU_EnterUART( void );
 int  MPU_Init( int addr );
 void MPU_ResetMidi( void );
 void MPU_NoteOff( int channel, int key, int velocity );
@@ -55,7 +50,5 @@ void MPU_ControlChange( int channel, int number, int value );
 void MPU_ProgramChange( int channel, int program );
 void MPU_ChannelAftertouch( int channel, int pressure );
 void MPU_PitchBend( int channel, int lsb, int msb );
-void MPU_UnlockMemory( void );
-int  MPU_LockMemory( void );
 
 #endif
