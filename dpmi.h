@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -31,8 +32,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __DPMI_H
 #define __DPMI_H
 
-#define DPMI_Error	-1
-#define DPMI_Ok		0
+enum DPMI_Errors
+   {
+   DPMI_Error   = -1,
+   DPMI_Ok      = 0
+   };
 
 typedef struct
    {
