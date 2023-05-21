@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -212,12 +213,8 @@ static void MV_PlayVoice( VoiceNode *voice );
 static void MV_StopVoice( VoiceNode *voice );
 static void MV_ServiceVoc( void );
 
-static playbackstatus MV_GetNextVOCBlock( VoiceNode *voice );
-static playbackstatus MV_GetNextDemandFeedBlock( VoiceNode *voice );
 static playbackstatus MV_GetNextRawBlock( VoiceNode *voice );
-static playbackstatus MV_GetNextWAVBlock( VoiceNode *voice );
 
-static void       MV_ServiceRecord( void );
 static VoiceNode *MV_GetVoice( int handle );
 static VoiceNode *MV_AllocVoice( int priority );
 

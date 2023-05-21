@@ -115,7 +115,7 @@ static int MV_TotalMemory;
 
 static int   MV_BufferDescriptor;
 static int   MV_BufferEmpty[ NumberOfBuffers ];
-char *MV_MixBuffer[ NumberOfBuffers + 1 ];
+static char *MV_MixBuffer[ NumberOfBuffers + 1 ];
 
 static VoiceNode *MV_Voices = NULL;
 
@@ -159,120 +159,10 @@ int    MV_RightChannelOffset;
 
 unsigned long MV_MixPosition;
 
-int MV_ErrorCode = MV_Ok;
+static int MV_ErrorCode = MV_Ok;
 
 #define MV_SetErrorCode( status ) \
    MV_ErrorCode   = ( status );
-
-
-/*---------------------------------------------------------------------
-   Function: MV_ErrorString
-
-   Returns a pointer to the error message associated with an error
-   number.  A -1 returns a pointer the current error.
----------------------------------------------------------------------*/
-
-char *MV_ErrorString
-   (
-   int ErrorNumber
-   )
-
-   {
-   char *ErrorString;
-
-   switch( ErrorNumber )
-      {
-      case MV_Warning :
-      case MV_Error :
-         ErrorString = MV_ErrorString( MV_ErrorCode );
-         break;
-
-      case MV_Ok :
-         ErrorString = "Multivoc ok.";
-         break;
-
-      case MV_UnsupportedCard :
-         ErrorString = "Selected sound card is not supported by Multivoc.";
-         break;
-
-      case MV_NotInstalled :
-         ErrorString = "Multivoc not installed.";
-         break;
-
-      case MV_NoVoices :
-         ErrorString = "No free voices available to Multivoc.";
-         break;
-
-      case MV_NoMem :
-         ErrorString = "Out of memory in Multivoc.";
-         break;
-
-      case MV_VoiceNotFound :
-         ErrorString = "No voice with matching handle found.";
-         break;
-
-      case MV_BlasterError :
-         ErrorString = BLASTER_ErrorString( BLASTER_Error );
-         break;
-
-      case MV_PasError :
-         ErrorString = PAS_ErrorString( PAS_Error );
-         break;
-
-      case MV_SoundScapeError :
-         ErrorString = SOUNDSCAPE_ErrorString( SOUNDSCAPE_Error );
-         break;
-
-      #ifndef SOUNDSOURCE_OFF
-      case MV_SoundSourceError :
-         ErrorString = SS_ErrorString( SS_Error );
-         break;
-      #endif
-
-      case MV_DPMI_Error :
-         ErrorString = "DPMI Error in Multivoc.";
-         break;
-
-      case MV_InvalidVOCFile :
-         ErrorString = "Invalid VOC file passed in to Multivoc.";
-         break;
-
-      case MV_InvalidWAVFile :
-         ErrorString = "Invalid WAV file passed in to Multivoc.";
-         break;
-
-      case MV_InvalidMixMode :
-         ErrorString = "Invalid mix mode request in Multivoc.";
-         break;
-
-      case MV_SoundSourceFailure :
-         ErrorString = "Sound Source playback failed.";
-         break;
-
-      case MV_IrqFailure :
-         ErrorString = "Playback failed, possibly due to an invalid or conflicting IRQ.";
-         break;
-
-      case MV_DMAFailure :
-         ErrorString = "Playback failed, possibly due to an invalid or conflicting DMA channel.";
-         break;
-
-      case MV_DMA16Failure :
-         ErrorString = "Playback failed, possibly due to an invalid or conflicting DMA channel.  \n"
-                       "Make sure the 16-bit DMA channel is correct.";
-         break;
-
-      case MV_NullRecordFunction :
-         ErrorString = "Null record function passed to MV_StartRecording.";
-         break;
-
-      default :
-         ErrorString = "Unknown Multivoc error code.";
-         break;
-      }
-
-   return( ErrorString );
-   }
 
 
 /**********************************************************************
@@ -688,12 +578,10 @@ void MV_ServiceVoc
    }
 
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-int leftpage  = -1;
-int rightpage = -1;
+static int leftpage  = -1;
+static int rightpage = -1;
 
-void MV_ServiceGus( char **ptr, unsigned long *length )
+static void MV_ServiceGus( char **ptr, unsigned long *length )
    {
    if ( leftpage == MV_MixPage )
       {
@@ -706,7 +594,7 @@ void MV_ServiceGus( char **ptr, unsigned long *length )
    *length = MV_BufferSize;
    }
 
-void MV_ServiceRightGus( char **ptr, unsigned long *length )
+static void MV_ServiceRightGus( char **ptr, unsigned long *length )
    {
    if ( rightpage == MV_MixPage )
       {
@@ -718,347 +606,6 @@ void MV_ServiceRightGus( char **ptr, unsigned long *length )
    *ptr = MV_MixBuffer[ MV_MixPage ] + MV_RightChannelOffset;
    *length = MV_BufferSize;
    }
-#endif // LIBVER_ASSREV >= 19950821L
-
-/*---------------------------------------------------------------------
-   Function: MV_GetNextVOCBlock
-
-   Interperate the information of a VOC format sound file.
----------------------------------------------------------------------*/
-
-playbackstatus MV_GetNextVOCBlock
-   (
-   VoiceNode *voice
-   )
-
-   {
-   unsigned char *ptr;
-   int            blocktype;
-   int            lastblocktype;
-   unsigned long  blocklength;
-   unsigned long  samplespeed;
-   unsigned int   tc;
-   int            packtype;
-   int            voicemode;
-   int            done;
-   unsigned       BitsPerSample;
-   unsigned       Channels;
-   unsigned       Format;
-
-   if ( voice->BlockLength > 0 )
-      {
-      voice->position    -= voice->length;
-      voice->sound       += voice->length >> 16;
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-      if ( voice->bits == 16 )
-         {
-         voice->sound += voice->length >> 16;
-         }
-#endif
-      voice->length       = min( voice->BlockLength, 0x8000 );
-      voice->BlockLength -= voice->length;
-      voice->length     <<= 16;
-      return( KeepPlaying );
-      }
-
-   if ( ( voice->length > 0 ) && ( voice->LoopEnd != NULL ) &&
-      ( voice->LoopStart != NULL ) )
-      {
-      voice->BlockLength  = voice->LoopSize;
-      voice->sound        = voice->LoopStart;
-      voice->position     = 0;
-      voice->length       = min( voice->BlockLength, 0x8000 );
-      voice->BlockLength -= voice->length;
-      voice->length     <<= 16;
-      return( KeepPlaying );
-      }
-
-   ptr = ( unsigned char * )voice->NextBlock;
-
-   voice->Playing = TRUE;
-
-   voicemode = 0;
-   lastblocktype = 0;
-   packtype = 0;
-
-   done = FALSE;
-   while( !done )
-      {
-      // Stop playing if we get a NULL pointer
-      if ( ptr == NULL )
-         {
-         voice->Playing = FALSE;
-         done = TRUE;
-         break;
-         }
-
-      blocktype = ( int )*ptr;
-      blocklength = ( *( unsigned long * )( ptr + 1 ) ) & 0x00ffffff;
-      ptr += 4;
-
-      switch( blocktype )
-         {
-         case 0 :
-            // End of data
-            if ( ( voice->LoopStart == NULL ) ||
-               ( voice->LoopStart >= ( ptr - 4 ) ) )
-               {
-               voice->Playing = FALSE;
-               done = TRUE;
-               }
-            else
-               {
-               voice->BlockLength  = ( ptr - 4 ) - voice->LoopStart;
-               voice->sound        = voice->LoopStart;
-               voice->position     = 0;
-               voice->length       = min( voice->BlockLength, 0x8000 );
-               voice->BlockLength -= voice->length;
-               voice->length     <<= 16;
-               return( KeepPlaying );
-               }
-            break;
-
-         case 1 :
-            // Sound data block
-
-            // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-            voice->bits  = 8;
-#endif
-            if ( lastblocktype != 8 )
-               {
-               tc = ( unsigned int )*ptr << 8;
-               packtype = *( ptr + 1 );
-               }
-
-            ptr += 2;
-            blocklength -= 2;
-
-            samplespeed = 256000000L / ( 65536 - tc );
-
-            // Skip packed or stereo data
-            if ( ( packtype != 0 ) || ( voicemode != 0 ) )
-               {
-               ptr += blocklength;
-               }
-            else
-               {
-               done = TRUE;
-               }
-            voicemode = 0;
-            break;
-
-         case 2 :
-            // Sound continuation block
-            samplespeed = voice->SamplingRate;
-            done = TRUE;
-            break;
-
-         case 3 :
-            // Silence
-            // Not implimented.
-            ptr += blocklength;
-            break;
-
-         case 4 :
-            // Marker
-            // Not implimented.
-            ptr += blocklength;
-            break;
-
-         case 5 :
-            // ASCII string
-            // Not implimented.
-            ptr += blocklength;
-            break;
-
-         case 6 :
-            // Repeat begin
-            if ( voice->LoopEnd == NULL )
-               {
-               voice->LoopCount = *( unsigned short * )ptr;
-               voice->LoopStart = ptr + blocklength;
-               }
-            ptr += blocklength;
-            break;
-
-         case 7 :
-            // Repeat end
-            ptr += blocklength;
-            if ( lastblocktype == 6 )
-               {
-               voice->LoopCount = 0;
-               }
-            else
-               {
-               if ( ( voice->LoopCount > 0 ) && ( voice->LoopStart != NULL ) )
-                  {
-                  ptr = voice->LoopStart;
-                  if ( voice->LoopCount < 0xffff )
-                     {
-                     voice->LoopCount--;
-                     if ( voice->LoopCount == 0 )
-                        {
-                        voice->LoopStart = NULL;
-                        }
-                     }
-                  }
-               }
-            break;
-
-         case 8 :
-            // Extended block
-
-            // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-            voice->bits  = 8;
-#endif
-            tc = *( unsigned short * )ptr;
-            packtype = *( ptr + 2 );
-            voicemode = *( ptr + 3 );
-            ptr += blocklength;
-            break;
-
-         case 9 :
-            // New sound data block
-            samplespeed = *( unsigned long * )ptr;
-            BitsPerSample = ( unsigned )*( ptr + 4 );
-            Channels = ( unsigned )*( ptr + 5 );
-            Format = ( unsigned )*( unsigned short * )( ptr + 6 );
-
-            if ( ( BitsPerSample == 8 ) && ( Channels == 1 ) &&
-               ( Format == VOC_8BIT ) )
-               {
-               ptr         += 12;
-               blocklength -= 12;
-               // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-               voice->bits  = 8;
-#endif
-               done         = TRUE;
-               }
-            // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-            else if ( ( BitsPerSample == 16 ) && ( Channels == 1 ) &&
-               ( Format == VOC_16BIT ) )
-               {
-               ptr         += 12;
-               blocklength -= 12;
-               voice->bits  = 16;
-               done         = TRUE;
-               }
-#endif
-            else
-               {
-               ptr += blocklength;
-               }
-            break;
-
-         default :
-            // Unknown data.  Probably not a VOC file.
-            voice->Playing = FALSE;
-            done = TRUE;
-            break;
-         }
-
-      lastblocktype = blocktype;
-      }
-
-   if ( voice->Playing )
-      {
-      voice->NextBlock    = ptr + blocklength;
-      voice->sound        = ptr;
-
-      voice->SamplingRate = samplespeed;
-      voice->RateScale    = ( voice->SamplingRate * voice->PitchScale ) / MV_MixRate;
-
-      // Multiply by MixBufferSize - 1
-      voice->FixedPointBufferSize = ( voice->RateScale * MixBufferSize ) -
-         voice->RateScale;
-
-      if ( voice->LoopEnd != NULL )
-         {
-         if ( blocklength > ( unsigned long )voice->LoopEnd )
-            {
-            blocklength = ( unsigned long )voice->LoopEnd;
-            }
-         else
-            {
-            voice->LoopEnd = ( char * )blocklength;
-            }
-
-         voice->LoopStart = voice->sound + ( unsigned long )voice->LoopStart;
-         voice->LoopEnd   = voice->sound + ( unsigned long )voice->LoopEnd;
-         voice->LoopSize  = voice->LoopEnd - voice->LoopStart;
-         }
-
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-      if ( voice->bits == 16 )
-         {
-         blocklength /= 2;
-         }
-#endif
-
-      voice->position     = 0;
-      voice->length       = min( blocklength, 0x8000 );
-      voice->BlockLength  = blocklength - voice->length;
-      voice->length     <<= 16;
-
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-      MV_SetVoiceMixMode( voice );
-#endif
-
-      return( KeepPlaying );
-      }
-
-   return( NoMoreData );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_GetNextDemandFeedBlock
-
-   Controls playback of demand fed data.
----------------------------------------------------------------------*/
-
-playbackstatus MV_GetNextDemandFeedBlock
-   (
-   VoiceNode *voice
-   )
-
-   {
-   if ( voice->BlockLength > 0 )
-      {
-      voice->position    -= voice->length;
-      voice->sound       += voice->length >> 16;
-      voice->length       = min( voice->BlockLength, 0x8000 );
-      voice->BlockLength -= voice->length;
-      voice->length     <<= 16;
-
-      return( KeepPlaying );
-      }
-
-   if ( voice->DemandFeed == NULL )
-      {
-      return( NoMoreData );
-      }
-
-   voice->position     = 0;
-   ( voice->DemandFeed )( &voice->sound, &voice->BlockLength );
-   voice->length       = min( voice->BlockLength, 0x8000 );
-   voice->BlockLength -= voice->length;
-   voice->length     <<= 16;
-
-   if ( ( voice->length > 0 ) && ( voice->sound != NULL ) )
-      {
-      return( KeepPlaying );
-      }
-   return( NoMoreData );
-   }
-
 
 /*---------------------------------------------------------------------
    Function: MV_GetNextRawBlock
@@ -1101,77 +648,6 @@ playbackstatus MV_GetNextRawBlock
    voice->length     <<= 16;
 
    return( KeepPlaying );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_GetNextWAVBlock
-
-   Controls playback of demand fed data.
----------------------------------------------------------------------*/
-
-playbackstatus MV_GetNextWAVBlock
-   (
-   VoiceNode *voice
-   )
-
-   {
-   if ( voice->BlockLength <= 0 )
-      {
-      if ( voice->LoopStart == NULL )
-         {
-         voice->Playing = FALSE;
-         return( NoMoreData );
-         }
-
-      voice->BlockLength = voice->LoopSize;
-      voice->NextBlock   = voice->LoopStart;
-      voice->length      = 0;
-      voice->position    = 0;
-      }
-
-   voice->sound        = voice->NextBlock;
-   voice->position    -= voice->length;
-   voice->length       = min( voice->BlockLength, 0x8000 );
-   voice->NextBlock   += voice->length;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-   if ( voice->bits == 16 )
-      {
-      voice->NextBlock += voice->length;
-      }
-#endif
-   voice->BlockLength -= voice->length;
-   voice->length     <<= 16;
-
-   return( KeepPlaying );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_ServiceRecord
-
-   Starts recording of the waiting buffer.
----------------------------------------------------------------------*/
-
-static void MV_ServiceRecord
-   (
-   void
-   )
-
-   {
-   if ( MV_RecordFunc )
-      {
-      MV_RecordFunc( MV_MixBuffer[ 0 ] + MV_MixPage * MixBufferSize,
-         MixBufferSize );
-      }
-
-   // Toggle which buffer we'll mix next
-   MV_MixPage++;
-   if ( MV_MixPage >= NumberOfBuffers )
-      {
-      MV_MixPage = 0;
-      }
    }
 
 
@@ -1259,7 +735,7 @@ int MV_VoicePlaying
    Stops output of all currently active voices.
 ---------------------------------------------------------------------*/
 
-int MV_KillAllVoices
+static int MV_KillAllVoices
    (
    void
    )
@@ -1325,51 +801,6 @@ int MV_Kill
       }
 
    return( MV_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_VoicesPlaying
-
-   Determines the number of currently active voices.
----------------------------------------------------------------------*/
-
-int MV_VoicesPlaying
-   (
-   void
-   )
-
-   {
-   VoiceNode   *voice;
-   int         NumVoices = 0;
-   unsigned    flags;
-
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return( 0 );
-      }
-
-   flags = DisableInterrupts();
-
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960510L)
-   voice = VoiceList.start;
-   while( voice != NULL )
-#else
-   for( voice = VoiceList.LIBVER_ASS_MV_VOICESTART; voice != LIBVER_ASS_MV_VOICELISTEND; voice = voice->next )
-#endif
-      {
-      NumVoices++;
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960510L)
-      voice = voice->next;
-#endif
-      }
-
-   RestoreInterrupts( flags );
-
-   return( NumVoices );
    }
 
 
@@ -1462,62 +893,6 @@ VoiceNode *MV_AllocVoice
 
 
 /*---------------------------------------------------------------------
-   Function: MV_VoiceAvailable
-
-   Checks if a voice can be play at the specified priority.
----------------------------------------------------------------------*/
-
-int MV_VoiceAvailable
-   (
-   int priority
-   )
-
-   {
-   VoiceNode   *voice;
-   VoiceNode   *node;
-   unsigned    flags;
-
-   // Check if we have any free voices
-   if ( !LL_Empty( &VoicePool, next, prev ) )
-      {
-      return( TRUE );
-      }
-
-   flags = DisableInterrupts();
-   // *** VERSIONS RESTORATION ***
-
-   // check if we have a higher priority than a voice that is playing.
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960510L)
-   voice = node = VoiceList.start;
-   while( node != NULL )
-#else
-   voice = VoiceList.LIBVER_ASS_MV_VOICESTART;
-   for( node = VoiceList.LIBVER_ASS_MV_VOICESTART; node != LIBVER_ASS_MV_VOICELISTEND; node = node->next )
-#endif
-      {
-      if ( node->priority < voice->priority )
-         {
-         voice = node;
-         }
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960510L)
-      node = node->next;
-#endif
-      }
-
-   RestoreInterrupts( flags );
-
-   if ( ( voice != LIBVER_ASS_MV_VOICELISTEND ) && ( priority >= voice->priority ) )
-      {
-      return( TRUE );
-      }
-
-   return( FALSE );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: MV_SetVoicePitch
 
    Sets the pitch for the specified voice.
@@ -1570,40 +945,6 @@ int MV_SetPitch
       }
 
    MV_SetVoicePitch( voice, voice->SamplingRate, pitchoffset );
-
-   return( MV_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_SetFrequency
-
-   Sets the frequency for the voice associated with the specified handle.
----------------------------------------------------------------------*/
-
-int MV_SetFrequency
-   (
-   int handle,
-   int frequency
-   )
-
-   {
-   VoiceNode *voice;
-
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return( MV_Error );
-      }
-
-   voice = MV_GetVoice( handle );
-   if ( voice == NULL )
-      {
-      MV_SetErrorCode( MV_VoiceNotFound );
-      return( MV_Error );
-      }
-
-   MV_SetVoicePitch( voice, frequency, 0 );
 
    return( MV_Ok );
    }
@@ -1768,7 +1109,7 @@ static void MV_SetVoiceMixMode
    with the specified handle.
 ---------------------------------------------------------------------*/
 
-void MV_SetVoiceVolume
+static void MV_SetVoiceVolume
    (
    VoiceNode *voice,
    int vol,
@@ -1927,147 +1268,12 @@ int MV_SetPan
 
 
 /*---------------------------------------------------------------------
-   Function: MV_Pan3D
-
-   Set the angle and distance from the listener of the voice associated
-   with the specified handle.
----------------------------------------------------------------------*/
-
-int MV_Pan3D
-   (
-   int handle,
-   int angle,
-   int distance
-   )
-
-   {
-   int left;
-   int right;
-   int mid;
-   int volume;
-   int status;
-
-   if ( distance < 0 )
-      {
-      distance  = -distance;
-      angle    += MV_NumPanPositions / 2;
-      }
-
-   volume = MIX_VOLUME( distance );
-
-   // Ensure angle is within 0 - 31
-   angle &= MV_MaxPanPosition;
-
-   left  = MV_PanTable[ angle ][ volume ].left;
-   right = MV_PanTable[ angle ][ volume ].right;
-   mid   = max( 0, 255 - distance );
-
-   status = MV_SetPan( handle, mid, left, right );
-
-   return( status );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_SetReverb
-
-   Sets the level of reverb to add to mix.
----------------------------------------------------------------------*/
-
-void MV_SetReverb
-   (
-   int reverb
-   )
-
-   {
-   MV_ReverbLevel = MIX_VOLUME( reverb );
-   MV_ReverbTable = &MV_VolumeTable[ MV_ReverbLevel ];
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_SetFastReverb
-
-   Sets the level of reverb to add to mix.
----------------------------------------------------------------------*/
-
-void MV_SetFastReverb
-   (
-   int reverb
-   )
-
-   {
-   MV_ReverbLevel = max( 0, min( 16, reverb ) );
-   MV_ReverbTable = NULL;
-   }
-
-
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-/*---------------------------------------------------------------------
-   Function: MV_GetMaxReverbDelay
-
-   Returns the maximum delay time for reverb.
----------------------------------------------------------------------*/
-
-int MV_GetMaxReverbDelay
-   (
-   void
-   )
-
-   {
-   int maxdelay;
-
-   maxdelay = MixBufferSize * MV_NumberOfBuffers;
-
-   return maxdelay;
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_GetReverbDelay
-
-   Returns the current delay time for reverb.
----------------------------------------------------------------------*/
-
-int MV_GetReverbDelay
-   (
-   void
-   )
-
-   {
-   return MV_ReverbDelay / MV_SampleSize;
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_SetReverbDelay
-
-   Sets the delay level of reverb to add to mix.
----------------------------------------------------------------------*/
-
-void MV_SetReverbDelay
-   (
-   int delay
-   )
-
-   {
-   int maxdelay;
-
-   maxdelay = MV_GetMaxReverbDelay();
-   MV_ReverbDelay = max( MixBufferSize, min( delay, maxdelay ) );
-   MV_ReverbDelay *= MV_SampleSize;
-   }
-#endif // LIBVER_ASSREV >= 19950821L
-
-
-/*---------------------------------------------------------------------
    Function: MV_SetMixMode
 
    Prepares Multivoc to play stereo of mono digitized sounds.
 ---------------------------------------------------------------------*/
 
-int MV_SetMixMode
+static int MV_SetMixMode
    (
    int numchannels,
    int samplebits
@@ -2175,7 +1381,7 @@ int MV_SetMixMode
    Starts the sound playback engine.
 ---------------------------------------------------------------------*/
 
-int MV_StartPlayback
+static int MV_StartPlayback
    (
    void
    )
@@ -2302,7 +1508,7 @@ int MV_StartPlayback
    Stops the sound playback engine.
 ---------------------------------------------------------------------*/
 
-void MV_StopPlayback
+static void MV_StopPlayback
    (
    void
    )
@@ -2374,92 +1580,12 @@ void MV_StopPlayback
 
 
 /*---------------------------------------------------------------------
-   Function: MV_StartRecording
-
-   Starts the sound recording engine.
----------------------------------------------------------------------*/
-
-int MV_StartRecording
-   (
-   int MixRate,
-   void ( *function )( char *ptr, int length )
-   )
-
-   {
-   int status;
-
-   switch( MV_SoundCard )
-      {
-      case SoundBlaster :
-      case Awe32 :
-      case ProAudioSpectrum :
-      case SoundMan16 :
-         break;
-
-      default :
-         MV_SetErrorCode( MV_UnsupportedCard );
-         return( MV_Error );
-         break;
-      }
-
-   if ( function == NULL )
-      {
-      MV_SetErrorCode( MV_NullRecordFunction );
-      return( MV_Error );
-      }
-
-   MV_StopPlayback();
-
-   // Initialize the buffers
-   ClearBuffer_DW( MV_MixBuffer[ 0 ], SILENCE_8BIT, TotalBufferSize >> 2 );
-
-   // Set the mix buffer variables
-   MV_MixPage  = 0;
-
-   MV_RecordFunc = function;
-
-   // Start playback
-   switch( MV_SoundCard )
-      {
-      case SoundBlaster :
-      case Awe32 :
-         status = BLASTER_BeginBufferedRecord( MV_MixBuffer[ 0 ],
-            TotalBufferSize, NumberOfBuffers, MixRate, MONO_8BIT,
-            MV_ServiceRecord );
-
-         if ( status != BLASTER_Ok )
-            {
-            MV_SetErrorCode( MV_BlasterError );
-            return( MV_Error );
-            }
-         break;
-
-      case ProAudioSpectrum :
-      case SoundMan16 :
-         status = PAS_BeginBufferedRecord( MV_MixBuffer[ 0 ],
-            TotalBufferSize, NumberOfBuffers, MixRate, MONO_8BIT,
-            MV_ServiceRecord );
-
-         if ( status != PAS_Ok )
-            {
-            MV_SetErrorCode( MV_PasError );
-            return( MV_Error );
-            }
-         break;
-      }
-
-   MV_Recording = TRUE;
-   return( MV_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: MV_StopRecord
 
    Stops the sound record engine.
 ---------------------------------------------------------------------*/
 
-void MV_StopRecord
+static void MV_StopRecord
    (
    void
    )
@@ -2481,70 +1607,6 @@ void MV_StopRecord
 
    MV_Recording = FALSE;
    MV_StartPlayback();
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_StartDemandFeedPlayback
-
-   Plays a digitized sound from a user controlled buffering system.
----------------------------------------------------------------------*/
-
-int MV_StartDemandFeedPlayback
-   (
-   void ( *function )( char **ptr, unsigned long *length ),
-   int rate,
-   int pitchoffset,
-   int vol,
-   int left,
-   int right,
-   int priority,
-   unsigned long callbackval
-   )
-
-   {
-   VoiceNode *voice;
-
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return( MV_Error );
-      }
-
-   // Request a voice from the voice pool
-   voice = MV_AllocVoice( priority );
-   if ( voice == NULL )
-      {
-      MV_SetErrorCode( MV_NoVoices );
-      return( MV_Error );
-      }
-
-   voice->wavetype    = DemandFeed;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-   voice->bits        = 8;
-#endif
-   voice->GetSound    = MV_GetNextDemandFeedBlock;
-   voice->NextBlock   = NULL;
-   voice->DemandFeed  = function;
-   voice->LoopStart   = NULL;
-   voice->LoopCount   = 0;
-   voice->BlockLength = 0;
-   voice->position    = 0;
-   voice->sound       = NULL;
-   voice->length      = 0;
-   voice->BlockLength = 0;
-   voice->Playing     = TRUE;
-   voice->next        = NULL;
-   voice->prev        = NULL;
-   voice->priority    = priority;
-   voice->callbackval = callbackval;
-
-   MV_SetVoicePitch( voice, rate, pitchoffset );
-   MV_SetVoiceVolume( voice, vol, left, right );
-   MV_PlayVoice( voice );
-
-   return( voice->handle );
    }
 
 
@@ -2585,7 +1647,7 @@ int MV_PlayRaw
    priority.
 ---------------------------------------------------------------------*/
 
-int MV_PlayLoopedRaw
+static int MV_PlayLoopedRaw
    (
    char *ptr,
    unsigned long  length,
@@ -2637,404 +1699,6 @@ int MV_PlayLoopedRaw
    voice->LoopSize    = ( voice->LoopEnd - voice->LoopStart ) + 1;
 
    MV_SetVoicePitch( voice, rate, pitchoffset );
-   MV_SetVoiceVolume( voice, vol, left, right );
-   MV_PlayVoice( voice );
-
-   return( voice->handle );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_PlayWAV
-
-   Begin playback of sound data with the given sound levels and
-   priority.
----------------------------------------------------------------------*/
-
-int MV_PlayWAV
-   (
-   char *ptr,
-   int   pitchoffset,
-   int   vol,
-   int   left,
-   int   right,
-   int   priority,
-   unsigned long callbackval
-   )
-
-   {
-   int status;
-
-   status = MV_PlayLoopedWAV( ptr, -1, -1, pitchoffset, vol, left, right,
-      priority, callbackval );
-
-   return( status );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_PlayWAV3D
-
-   Begin playback of sound data at specified angle and distance
-   from listener.
----------------------------------------------------------------------*/
-
-int MV_PlayWAV3D
-   (
-   char *ptr,
-   int  pitchoffset,
-   int  angle,
-   int  distance,
-   int  priority,
-   unsigned long callbackval
-   )
-
-   {
-   int left;
-   int right;
-   int mid;
-   int volume;
-   int status;
-
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return( MV_Error );
-      }
-
-   if ( distance < 0 )
-      {
-      distance  = -distance;
-      angle    += MV_NumPanPositions / 2;
-      }
-
-   volume = MIX_VOLUME( distance );
-
-   // Ensure angle is within 0 - 31
-   angle &= MV_MaxPanPosition;
-
-   left  = MV_PanTable[ angle ][ volume ].left;
-   right = MV_PanTable[ angle ][ volume ].right;
-   mid   = max( 0, 255 - distance );
-
-   status = MV_PlayWAV( ptr, pitchoffset, mid, left, right, priority,
-      callbackval );
-
-   return( status );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_PlayLoopedWAV
-
-   Begin playback of sound data with the given sound levels and
-   priority.
----------------------------------------------------------------------*/
-
-int MV_PlayLoopedWAV
-   (
-   char *ptr,
-   long  loopstart,
-   long  loopend,
-   int   pitchoffset,
-   int   vol,
-   int   left,
-   int   right,
-   int   priority,
-   unsigned long callbackval
-   )
-
-   {
-   riff_header   *riff;
-   format_header *format;
-   data_header   *data;
-   VoiceNode     *voice;
-   int length;
-   int absloopend;
-   int absloopstart;
-
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return( MV_Error );
-      }
-
-   riff = ( riff_header * )ptr;
-
-   if ( ( strncmp( riff->RIFF, "RIFF", 4 ) != 0 ) ||
-      ( strncmp( riff->WAVE, "WAVE", 4 ) != 0 ) ||
-      ( strncmp( riff->fmt, "fmt ", 4) != 0 ) )
-      {
-      MV_SetErrorCode( MV_InvalidWAVFile );
-      return( MV_Error );
-      }
-
-   format = ( format_header * )( riff + 1 );
-   data   = ( data_header * )( ( ( char * )format ) + riff->format_size );
-
-   // Check if it's PCM data.
-   if ( format->wFormatTag != 1 )
-      {
-      MV_SetErrorCode( MV_InvalidWAVFile );
-      return( MV_Error );
-      }
-
-   if ( format->nChannels != 1 )
-      {
-      MV_SetErrorCode( MV_InvalidWAVFile );
-      return( MV_Error );
-      }
-
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   if ( format->nBitsPerSample != 8 )
-#else
-   if ( ( format->nBitsPerSample != 8 ) &&
-      ( format->nBitsPerSample != 16 ) )
-#endif
-      {
-      MV_SetErrorCode( MV_InvalidWAVFile );
-      return( MV_Error );
-      }
-
-   if ( strncmp( data->DATA, "data", 4 ) != 0 )
-      {
-      MV_SetErrorCode( MV_InvalidWAVFile );
-      return( MV_Error );
-      }
-
-   // Request a voice from the voice pool
-   voice = MV_AllocVoice( priority );
-   if ( voice == NULL )
-      {
-      MV_SetErrorCode( MV_NoVoices );
-      return( MV_Error );
-      }
-
-   voice->wavetype    = WAV;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-   voice->bits        = format->nBitsPerSample;
-#endif
-   voice->GetSound    = MV_GetNextWAVBlock;
-
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-   length = data->size;
-   absloopstart = loopstart;
-   absloopend   = loopend;
-   if ( voice->bits == 16 )
-      {
-      loopstart  *= 2;
-      data->size &= ~1;
-      loopend    *= 2;
-      length     /= 2;
-      }
-
-   loopend    = min( loopend, data->size );
-   absloopend = min( absloopend, length );
-#endif
-
-   voice->Playing     = TRUE;
-   voice->DemandFeed  = NULL;
-   voice->LoopStart   = NULL;
-   voice->LoopCount   = 0;
-   voice->position    = 0;
-   voice->length      = 0;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   voice->BlockLength = min( loopend + 1, data->size );
-#else
-   voice->BlockLength = absloopend;
-#endif
-   voice->NextBlock   = ( char * )( data + 1 );
-   voice->next        = NULL;
-   voice->prev        = NULL;
-   voice->priority    = priority;
-   voice->callbackval = callbackval;
-   voice->LoopStart   = voice->NextBlock + loopstart;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   voice->LoopEnd     = voice->NextBlock + min( loopend, data->size - 1 );
-   voice->LoopSize    = voice->LoopEnd - voice->LoopStart + 1;
-#else
-   voice->LoopEnd     = voice->NextBlock + loopend;
-   voice->LoopSize    = absloopend - absloopstart;
-#endif
-
-   if ( ( loopstart >= data->size ) || ( loopstart < 0 ) )
-      {
-      voice->LoopStart = NULL;
-      voice->LoopEnd   = NULL;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-      voice->BlockLength = data->size;
-#else
-      voice->BlockLength = length;
-#endif
-      }
-
-   MV_SetVoicePitch( voice, format->nSamplesPerSec, pitchoffset );
-   MV_SetVoiceVolume( voice, vol, left, right );
-   MV_PlayVoice( voice );
-
-   return( voice->handle );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_PlayVOC3D
-
-   Begin playback of sound data at specified angle and distance
-   from listener.
----------------------------------------------------------------------*/
-
-int MV_PlayVOC3D
-   (
-   char *ptr,
-   int  pitchoffset,
-   int  angle,
-   int  distance,
-   int  priority,
-   unsigned long callbackval
-   )
-
-   {
-   int left;
-   int right;
-   int mid;
-   int volume;
-   int status;
-
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return( MV_Error );
-      }
-
-   if ( distance < 0 )
-      {
-      distance  = -distance;
-      angle    += MV_NumPanPositions / 2;
-      }
-
-   volume = MIX_VOLUME( distance );
-
-   // Ensure angle is within 0 - 31
-   angle &= MV_MaxPanPosition;
-
-   left  = MV_PanTable[ angle ][ volume ].left;
-   right = MV_PanTable[ angle ][ volume ].right;
-   mid   = max( 0, 255 - distance );
-
-   status = MV_PlayVOC( ptr, pitchoffset, mid, left, right, priority,
-      callbackval );
-
-   return( status );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_PlayVOC
-
-   Begin playback of sound data with the given sound levels and
-   priority.
----------------------------------------------------------------------*/
-
-int MV_PlayVOC
-   (
-   char *ptr,
-   int   pitchoffset,
-   int   vol,
-   int   left,
-   int   right,
-   int   priority,
-   unsigned long callbackval
-   )
-
-   {
-   int status;
-
-   status = MV_PlayLoopedVOC( ptr, -1, -1, pitchoffset, vol, left, right,
-      priority, callbackval );
-
-   return( status );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_PlayLoopedVOC
-
-   Begin playback of sound data with the given sound levels and
-   priority.
----------------------------------------------------------------------*/
-
-int MV_PlayLoopedVOC
-   (
-   char *ptr,
-   long  loopstart,
-   long  loopend,
-   int   pitchoffset,
-   int   vol,
-   int   left,
-   int   right,
-   int   priority,
-   unsigned long callbackval
-   )
-
-   {
-   VoiceNode   *voice;
-   int          status;
-
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return( MV_Error );
-      }
-
-   // Make sure it's a valid VOC file.
-   status = strncmp( ptr, "Creative Voice File", 19 );
-   if ( status != 0 )
-      {
-      MV_SetErrorCode( MV_InvalidVOCFile );
-      return( MV_Error );
-      }
-
-   // Request a voice from the voice pool
-   voice = MV_AllocVoice( priority );
-   if ( voice == NULL )
-      {
-      MV_SetErrorCode( MV_NoVoices );
-      return( MV_Error );
-      }
-
-   voice->wavetype    = VOC;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-   voice->bits        = 8;
-#endif
-   voice->GetSound    = MV_GetNextVOCBlock;
-   voice->NextBlock   = ptr + *( unsigned short int * )( ptr + 0x14 );
-   voice->DemandFeed  = NULL;
-   voice->LoopStart   = NULL;
-   voice->LoopCount   = 0;
-   voice->BlockLength = 0;
-   voice->PitchScale  = PITCH_GetScale( pitchoffset );
-   voice->length      = 0;
-   voice->next        = NULL;
-   voice->prev        = NULL;
-   voice->priority    = priority;
-   voice->callbackval = callbackval;
-   voice->LoopStart   = ( char * )loopstart;
-   voice->LoopEnd     = ( char * )loopend;
-   voice->LoopSize    = loopend - loopstart + 1;
-
-   if ( loopstart < 0 )
-      {
-      voice->LoopStart = NULL;
-      voice->LoopEnd   = NULL;
-      }
-
    MV_SetVoiceVolume( voice, vol, left, right );
    MV_PlayVoice( voice );
 
@@ -3288,44 +1952,12 @@ void MV_SetVolume
 
 
 /*---------------------------------------------------------------------
-   Function: MV_GetVolume
-
-   Returns the volume of digitized sound playback.
----------------------------------------------------------------------*/
-
-int MV_GetVolume
-   (
-   void
-   )
-
-   {
-   return( MV_TotalVolume );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_SetCallBack
-
-   Set the function to call when a voice stops.
----------------------------------------------------------------------*/
-
-void MV_SetCallBack
-   (
-   void ( *function )( unsigned long )
-   )
-
-   {
-   MV_CallBackFunc = function;
-   }
-
-
-/*---------------------------------------------------------------------
    Function: MV_SetReverseStereo
 
    Set the orientation of the left and right channels.
 ---------------------------------------------------------------------*/
 
-void MV_SetReverseStereo
+static void MV_SetReverseStereo
    (
    int setting
    )
@@ -3336,28 +1968,12 @@ void MV_SetReverseStereo
 
 
 /*---------------------------------------------------------------------
-   Function: MV_GetReverseStereo
-
-   Returns the orientation of the left and right channels.
----------------------------------------------------------------------*/
-
-int MV_GetReverseStereo
-   (
-   void
-   )
-
-   {
-   return( MV_SwapLeftRight );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: MV_TestPlayback
 
    Checks if playback has started.
 ---------------------------------------------------------------------*/
 
-int MV_TestPlayback
+static int MV_TestPlayback
    (
    void
    )
@@ -3632,10 +2248,7 @@ int MV_Init
 
    // Set Mixer to play stereo digitized sound
    MV_SetMixMode( numchannels, samplebits );
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    MV_ReverbDelay = MV_BufferSize * 3;
-#endif
 
    // Make sure we don't cross a physical page
    if ( ( ( unsigned long )ptr & 0xffff ) + TotalBufferSize > 0x10000 )
@@ -3781,7 +2394,7 @@ int MV_Shutdown
    Unlocks all neccessary data.
 ---------------------------------------------------------------------*/
 
-void MV_UnlockMemory
+static void MV_UnlockMemory
    (
    void
    )
@@ -3845,7 +2458,7 @@ void MV_UnlockMemory
    Locks all neccessary data.
 ---------------------------------------------------------------------*/
 
-int MV_LockMemory
+static int MV_LockMemory
    (
    void
    )

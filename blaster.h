@@ -115,14 +115,10 @@ enum BLASTER_Types
 #define BLASTER_DefaultMixMode    MONO_8BIT
 #define BLASTER_MaxIrq            15
 
-char *BLASTER_ErrorString( int ErrorNumber );
 unsigned BLASTER_GetPlaybackRate( void );
 int   BLASTER_SetMixMode( int mode );
 void  BLASTER_StopPlayback( void );
 int   BLASTER_GetCurrentPos( void );
-int   BLASTER_BeginBufferedRecord( char *BufferStart, int BufferSize,
-          int NumDivisions, unsigned SampleRate, int MixMode,
-          void ( *CallBackFunc )( void ) );
 int   BLASTER_BeginBufferedPlayback( char *BufferStart,
          int BufferSize, int NumDivisions, unsigned SampleRate,
          int MixMode, void ( *CallBackFunc )( void ) );
