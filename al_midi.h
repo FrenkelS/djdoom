@@ -42,7 +42,6 @@ enum AL_Errors
 
 void AL_Shutdown( void );
 int  AL_Init( int soundcard );
-void AL_SetMaxMidiChannel( int channel );
 void AL_NoteOff( int channel, int key, int velocity );
 void AL_NoteOn( int channel, int key, int vel );
 //Turned off to test if it works with Watcom 10a

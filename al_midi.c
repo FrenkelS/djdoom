@@ -1457,24 +1457,6 @@ void AL_Shutdown
    }
 
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-/*---------------------------------------------------------------------
-   Function: AL_SetMaxMidiChannel
-
-   Sets the maximum MIDI channel that FM cards respond to.
----------------------------------------------------------------------*/
-
-void AL_SetMaxMidiChannel
-   (
-   int channel
-   )
-
-   {
-   AL_MaxMidiChannel = channel - 1;
-   }
-#endif
-
 /*---------------------------------------------------------------------
    Function: AL_Init
 
