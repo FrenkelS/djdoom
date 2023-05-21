@@ -19,14 +19,6 @@
 #include "doomdef.h"
 #include "dmx.h"
 
-void _dpmi_lockregion (void * inmem, int32_t length) {UNUSED(inmem); UNUSED(length);}
-void _dpmi_unlockregion (void * inmem, int32_t length) {UNUSED(inmem); UNUSED(length);}
-
-int32_t TSM_Install(uint32_t sndTicrate) {UNUSED(sndTicrate); return 0;}
-int32_t TSM_NewService(int32_t (*timerISR)(void), int32_t frequency, int32_t priority, int32_t pause) {UNUSED(timerISR); UNUSED(frequency); UNUSED(priority); UNUSED(pause); return 0;}
-void TSM_DelService(int32_t tsm_ID) {UNUSED(tsm_ID);}
-void TSM_Remove(void) {}
-
 int32_t MUS_PauseSong(int32_t handle) {UNUSED(handle); return 0;}
 int32_t MUS_ResumeSong(int32_t handle) {UNUSED(handle); return 0;}
 void MUS_SetMasterVolume(int32_t volume) {UNUSED(volume);}

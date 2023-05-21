@@ -16,13 +16,10 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef __DMX__
-#define __DMX__
+#ifndef _DMX_H_
+#define _DMX_H_
 
-int32_t TSM_Install(uint32_t sndTicrate);
-int32_t TSM_NewService(int32_t (*timerISR)(void), int32_t frequency, int32_t priority, int32_t pause);
-void TSM_DelService(int32_t tsm_ID);
-void TSM_Remove(void);
+#include "tsmapi.h"
 
 int32_t MUS_PauseSong(int32_t handle);
 int32_t MUS_ResumeSong(int32_t handle);
