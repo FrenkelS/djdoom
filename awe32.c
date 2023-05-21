@@ -77,7 +77,7 @@ void RestoreES( unsigned num );
         "mov  es, ax" \
         parm [ eax ];
 
-int AWE32_ErrorCode = AWE32_Ok;
+static int AWE32_ErrorCode = AWE32_Ok;
 
 #define AWE32_SetErrorCode( status ) \
    AWE32_ErrorCode = ( status );
