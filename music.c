@@ -49,136 +49,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FALSE ( !TRUE )
 
 int MUSIC_SoundDevice = -1;
-int MUSIC_ErrorCode = MUSIC_Ok;
+static int MUSIC_ErrorCode = MUSIC_Ok;
 
 static midifuncs MUSIC_MidiFunctions;
 
-static int       MUSIC_FadeLength;
-static int       MUSIC_FadeRate;
-static unsigned  MUSIC_CurrentFadeVolume;
-static unsigned  MUSIC_LastFadeVolume;
-static int       MUSIC_EndingFadeVolume;
-static task     *MUSIC_FadeTask = NULL;
-
-int MUSIC_InitAWE32( midifuncs *Funcs );
-int MUSIC_InitFM( int card, midifuncs *Funcs );
-int MUSIC_InitMidi( int card, midifuncs *Funcs, int Address );
-int MUSIC_InitGUS( midifuncs *Funcs );
+static int MUSIC_InitAWE32( midifuncs *Funcs );
+static int MUSIC_InitFM( int card, midifuncs *Funcs );
+static int MUSIC_InitMidi( int card, midifuncs *Funcs, int Address );
+static int MUSIC_InitGUS( midifuncs *Funcs );
 
 #define MUSIC_SetErrorCode( status ) \
    MUSIC_ErrorCode = ( status );
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_ErrorString
-
-   Returns a pointer to the error message associated with an error
-   number.  A -1 returns a pointer the current error.
----------------------------------------------------------------------*/
-
-char *MUSIC_ErrorString
-   (
-   int ErrorNumber
-   )
-
-   {
-   char *ErrorString;
-
-   switch( ErrorNumber )
-      {
-      case MUSIC_Warning :
-      case MUSIC_Error :
-         ErrorString = MUSIC_ErrorString( MUSIC_ErrorCode );
-         break;
-
-      case MUSIC_Ok :
-         ErrorString = "Music ok.";
-         break;
-
-      case MUSIC_ASSVersion :
-         ErrorString = "Apogee Sound System Version " ASS_VERSION_STRING "  "
-            // *** VERSIONS RESTORATION ***
-            // Note that chances are a non-Unicode char was originally used directly
-#if (LIBVER_ASSREV < 19960510L)
-            "Programmed by Jim Dos\x82\n"
-            "Copyright 1995 Apogee Software, Ltd.\n";
-#else
-            "Programmed by Jim Dose\n"
-            "(c) Copyright 1996 James R. Dose.  All Rights Reserved.\n";
-#endif
-         break;
-
-      case MUSIC_SoundCardError :
-         switch( MUSIC_SoundDevice )
-         {
-            case SoundBlaster :
-            case WaveBlaster :
-               ErrorString = BLASTER_ErrorString( BLASTER_Error );
-               break;
-
-            case ProAudioSpectrum :
-            case SoundMan16 :
-               ErrorString = PAS_ErrorString( PAS_Error );
-               break;
-
-            case Adlib :
-               ErrorString = "Adlib error.";
-               break;
-
-            case GenMidi :
-            case SoundCanvas :
-               ErrorString = "Could not detect MPU-401.";
-               break;
-
-            case SoundScape :
-               ErrorString = SOUNDSCAPE_ErrorString( SOUNDSCAPE_Error );
-               break;
-
-            case Awe32 :
-               ErrorString = AWE32_ErrorString( AWE32_Error );
-               break;
-
-            case UltraSound :
-               ErrorString = GUS_ErrorString( GUS_Error );
-               break;
-
-            default :
-               ErrorString = MUSIC_ErrorString( MUSIC_InvalidCard );
-               break;
-            }
-         break;
-
-      case MUSIC_MPU401Error :
-         ErrorString = "Could not detect MPU-401.";
-         break;
-
-      case MUSIC_InvalidCard :
-         ErrorString = "Invalid Music device.";
-         break;
-
-      case MUSIC_MidiError :
-         ErrorString = "Error playing MIDI file.";
-         break;
-
-      case MUSIC_TaskManError :
-         ErrorString = "TaskMan error.";
-         break;
-
-      case MUSIC_FMNotDetected :
-         ErrorString = "Could not detect FM chip.";
-         break;
-
-      case MUSIC_DPMI_Error :
-         ErrorString = "DPMI Error in MUSIC.";
-         break;
-
-      default :
-         ErrorString = "Unknown Music error code.";
-         break;
-      }
-
-   return( ErrorString );
-   }
-
 
 /*---------------------------------------------------------------------
    Function: MUSIC_Init
@@ -275,11 +156,6 @@ int MUSIC_Shutdown
 
    MIDI_StopSong();
 
-   if ( MUSIC_FadeTask != NULL )
-      {
-      MUSIC_StopFade();
-      }
-
    switch ( MUSIC_SoundDevice )
       {
       case Adlib :
@@ -325,27 +201,6 @@ int MUSIC_Shutdown
    }
 
 
-// *** VERSIONS RESTORATION ***
-// Originally not present
-// FIXME - Try guessing ASSREV according to changelog, ANYWHERE
-#if (LIBVER_ASSREV >= 19950821L)
-/*---------------------------------------------------------------------
-   Function: MUSIC_SetMaxFMMidiChannel
-
-   Sets the maximum MIDI channel that FM cards respond to.
----------------------------------------------------------------------*/
-
-void MUSIC_SetMaxFMMidiChannel
-   (
-   int channel
-   )
-
-   {
-   AL_SetMaxMidiChannel( channel );
-   }
-#endif
-
-
 /*---------------------------------------------------------------------
    Function: MUSIC_SetVolume
 
@@ -365,92 +220,6 @@ void MUSIC_SetVolume
       {
       MIDI_SetVolume( volume );
       }
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_SetMidiChannelVolume
-
-   Sets the volume of music playback on the specified MIDI channel.
----------------------------------------------------------------------*/
-
-void MUSIC_SetMidiChannelVolume
-   (
-   int channel,
-   int volume
-   )
-
-   {
-   MIDI_SetUserChannelVolume( channel, volume );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_ResetMidiChannelVolumes
-
-   Sets the volume of music playback on all MIDI channels to full volume.
----------------------------------------------------------------------*/
-
-void MUSIC_ResetMidiChannelVolumes
-   (
-   void
-   )
-
-   {
-   MIDI_ResetUserChannelVolume();
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_GetVolume
-
-   Returns the volume of music playback.
----------------------------------------------------------------------*/
-
-int MUSIC_GetVolume
-   (
-   void
-   )
-
-   {
-   if ( MUSIC_SoundDevice == -1 )
-      {
-      return( 0 );
-      }
-   return( MIDI_GetVolume() );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_SetLoopFlag
-
-   Set whether the music will loop or end when it reaches the end of
-   the song.
----------------------------------------------------------------------*/
-
-void MUSIC_SetLoopFlag
-   (
-   int loopflag
-   )
-
-   {
-   MIDI_SetLoopFlag( loopflag );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_SongPlaying
-
-   Returns whether there is a song playing.
----------------------------------------------------------------------*/
-
-int MUSIC_SongPlaying
-   (
-   void
-   )
-
-   {
-   return( MIDI_SongPlaying() );
    }
 
 
@@ -498,7 +267,6 @@ int MUSIC_StopSong
    )
 
    {
-   MUSIC_StopFade();
    MIDI_StopSong();
    MUSIC_SetErrorCode( MUSIC_Ok );
    return( MUSIC_Ok );
@@ -553,150 +321,7 @@ int MUSIC_PlaySong
    }
 
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-/*---------------------------------------------------------------------
-   Function: MUSIC_SetContext
-
-   Sets the song context.
----------------------------------------------------------------------*/
-
-void MUSIC_SetContext
-   (
-   int context
-   )
-
-   {
-   MIDI_SetContext( context );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_GetContext
-
-   Returns the current song context.
----------------------------------------------------------------------*/
-
-int MUSIC_GetContext
-   (
-   void
-   )
-
-   {
-   return MIDI_GetContext();
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_SetSongTick
-
-   Sets the position of the song pointer.
----------------------------------------------------------------------*/
-
-void MUSIC_SetSongTick
-   (
-   unsigned long PositionInTicks
-   )
-
-   {
-   MIDI_SetSongTick( PositionInTicks );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_SetSongTime
-
-   Sets the position of the song pointer.
----------------------------------------------------------------------*/
-
-void MUSIC_SetSongTime
-   (
-   unsigned long milliseconds
-   )
-
-   {
-   MIDI_SetSongTime( milliseconds );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_SetSongPosition
-
-   Sets the position of the song pointer.
----------------------------------------------------------------------*/
-
-void MUSIC_SetSongPosition
-   (
-   int measure,
-   int beat,
-   int tick
-   )
-
-   {
-   MIDI_SetSongPosition( measure, beat, tick );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_GetSongPosition
-
-   Returns the position of the song pointer.
----------------------------------------------------------------------*/
-
-void MUSIC_GetSongPosition
-   (
-   songposition *pos
-   )
-
-   {
-   MIDI_GetSongPosition( pos );
-   }
-#endif // LIBVER_ASSREV >= 19950821L
-// *** VERSIONS RESTORATION ***
-// FIXME - Guessing these were reversed, should unify with commented out
-// code above somehow
-#if (LIBVER_ASSREV < 19950821L)
-int MUSIC_GetPosition
-   (
-   void
-   )
-
-   {
-   return MIDI_GetPosition();
-   }
-void MUSIC_SetPosition
-   (
-   int pos
-   )
-
-   {
-   MIDI_SetPosition( pos );
-   }
-#endif // LIBVER_ASSREV < 19950821L
-
-
-
-// *** VERSIONS RESTORATION ***
-// FIXME - Guessing again
-#if (LIBVER_ASSREV >= 19950821L)
-/*---------------------------------------------------------------------
-   Function: MUSIC_GetSongLength
-
-   Returns the length of the song.
----------------------------------------------------------------------*/
-
-void MUSIC_GetSongLength
-   (
-   songposition *pos
-   )
-
-   {
-   MIDI_GetSongLength( pos );
-   }
-#endif // LIBVER_ASSREV >= 19950821L
-
-
-int MUSIC_InitAWE32
+static int MUSIC_InitAWE32
    (
    midifuncs *Funcs
    )
@@ -737,7 +362,7 @@ int MUSIC_InitAWE32
    }
 
 
-int MUSIC_InitFM
+static int MUSIC_InitFM
    (
    int card,
    midifuncs *Funcs
@@ -810,7 +435,7 @@ int MUSIC_InitFM
    return( status );
    }
 
-int MUSIC_InitMidi
+static int MUSIC_InitMidi
    (
    int        card,
    midifuncs *Funcs,
@@ -898,7 +523,7 @@ int MUSIC_InitMidi
    return( status );
    }
 
-int MUSIC_InitGUS
+static int MUSIC_InitGUS
    (
    midifuncs *Funcs
    )
@@ -929,168 +554,4 @@ int MUSIC_InitGUS
    MIDI_SetMidiFuncs( Funcs );
 
    return( status );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_FadeRoutine
-
-   Fades music volume from current level to another over a specified
-   period of time.
----------------------------------------------------------------------*/
-
-static void MUSIC_FadeRoutine
-   (
-   task *Task
-   )
-
-   {
-   int volume;
-
-   MUSIC_CurrentFadeVolume += MUSIC_FadeRate;
-   if ( MUSIC_FadeLength == 0 )
-      {
-      MIDI_SetVolume( MUSIC_EndingFadeVolume );
-      TS_Terminate( Task );
-      MUSIC_FadeTask = NULL;
-      }
-   else
-      {
-      MUSIC_FadeLength--;
-//      if ( ( MUSIC_SoundDevice == GenMidi ) &&
-//         ( ( MUSIC_FadeLength % 12 ) != 0 ) )
-//         {
-//         return;
-//         }
-
-      volume = MUSIC_CurrentFadeVolume >> 7;
-      if ( MUSIC_LastFadeVolume != volume )
-         {
-         MUSIC_LastFadeVolume = volume;
-         MIDI_SetVolume( volume );
-         }
-      }
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_FadeVolume
-
-   Fades music volume from current level to another over a specified
-   period of time.
----------------------------------------------------------------------*/
-
-int MUSIC_FadeVolume
-   (
-   int tovolume,
-   int milliseconds
-   )
-
-   {
-   int fromvolume;
-
-   if ( ( MUSIC_SoundDevice == ProAudioSpectrum ) ||
-      ( MUSIC_SoundDevice == SoundMan16 ) ||
-      ( MUSIC_SoundDevice == GenMidi ) ||
-      ( MUSIC_SoundDevice == SoundScape ) ||
-      ( MUSIC_SoundDevice == SoundCanvas ) )
-      {
-      MIDI_SetVolume( tovolume );
-      return( MUSIC_Ok );
-      }
-
-   if ( MUSIC_FadeTask != NULL )
-      {
-      MUSIC_StopFade();
-      }
-
-   tovolume = max( 0, tovolume );
-   tovolume = min( 255, tovolume );
-   fromvolume = MUSIC_GetVolume();
-
-   MUSIC_FadeLength = milliseconds / 25;
-   MUSIC_FadeRate   = ( ( tovolume - fromvolume ) << 7 ) / MUSIC_FadeLength;
-   MUSIC_LastFadeVolume = fromvolume;
-   MUSIC_CurrentFadeVolume = fromvolume << 7;
-   MUSIC_EndingFadeVolume = tovolume;
-
-   MUSIC_FadeTask = TS_ScheduleTask( MUSIC_FadeRoutine, 40, 1, NULL );
-   if ( MUSIC_FadeTask == NULL )
-      {
-      MUSIC_SetErrorCode( MUSIC_TaskManError );
-      return( MUSIC_Warning );
-      }
-
-   TS_Dispatch();
-   return( MUSIC_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_FadeActive
-
-   Returns whether the fade routine is active.
----------------------------------------------------------------------*/
-
-int MUSIC_FadeActive
-   (
-   void
-   )
-
-   {
-   return( MUSIC_FadeTask != NULL );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_StopFade
-
-   Stops fading the music.
----------------------------------------------------------------------*/
-
-void MUSIC_StopFade
-   (
-   void
-   )
-
-   {
-   if ( MUSIC_FadeTask != NULL )
-      {
-      TS_Terminate( MUSIC_FadeTask );
-      MUSIC_FadeTask = NULL;
-      }
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_RerouteMidiChannel
-
-   Sets callback function to reroute MIDI commands from specified
-   function.
----------------------------------------------------------------------*/
-
-void MUSIC_RerouteMidiChannel
-   (
-   int channel,
-   int cdecl ( *function )( int event, int c1, int c2 )
-   )
-
-   {
-   MIDI_RerouteMidiChannel( channel, function );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MUSIC_RegisterTimbreBank
-
-   Halts playback of all sounds.
----------------------------------------------------------------------*/
-
-void MUSIC_RegisterTimbreBank
-   (
-   unsigned char *timbres
-   )
-
-   {
-   AL_RegisterTimbreBank( timbres );
    }
