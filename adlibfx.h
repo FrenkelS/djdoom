@@ -70,8 +70,5 @@ int   ADLIBFX_SoundPlaying( int handle );
 int   ADLIBFX_Init( void );
 int   ADLIBFX_Shutdown( void );
    #pragma aux ADLIBFX_Shutdown frame;
-void  PCFX_UnlockMemory( void );
-   #pragma aux ADLIBFX_UnlockMemory frame;
-int   PCFX_LockMemory( void );
 
 #endif

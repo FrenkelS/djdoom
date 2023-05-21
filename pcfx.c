@@ -54,59 +54,12 @@ static int    PCFX_TotalVolume = PCFX_MaxVolume;
 static task  *PCFX_ServiceTask = NULL;
 static int    PCFX_VoiceHandle = PCFX_MinVoiceHandle;
 
-int PCFX_Installed = FALSE;
+static int PCFX_Installed = FALSE;
 
-int PCFX_ErrorCode = PCFX_Ok;
+static int PCFX_ErrorCode = PCFX_Ok;
 
 #define PCFX_SetErrorCode( status ) \
    PCFX_ErrorCode   = ( status );
-
-
-/*---------------------------------------------------------------------
-   Function: PCFX_ErrorString
-
-   Returns a pointer to the error message associated with an error
-   number.  A -1 returns a pointer the current error.
----------------------------------------------------------------------*/
-
-char *PCFX_ErrorString
-   (
-   int ErrorNumber
-   )
-
-   {
-   char *ErrorString;
-
-   switch( ErrorNumber )
-      {
-      case PCFX_Warning :
-      case PCFX_Error :
-         ErrorString = PCFX_ErrorString( PCFX_ErrorCode );
-         break;
-
-      case PCFX_Ok :
-         ErrorString = "PC FX ok.";
-         break;
-
-      case PCFX_NoVoices :
-         ErrorString = "No free voices available to PC FX.";
-         break;
-
-      case PCFX_VoiceNotFound :
-         ErrorString = "No voice with matching handle found.";
-         break;
-
-      case PCFX_DPMI_Error :
-         ErrorString = "DPMI Error in PCFX.";
-         break;
-
-      default :
-         ErrorString = "Unknown PC FX error code.";
-         break;
-      }
-
-   return( ErrorString );
-   }
 
 
 /**********************************************************************
@@ -207,27 +160,6 @@ static void PCFX_Service
          PCFX_Stop( PCFX_VoiceHandle );
          }
       }
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: PCFX_VoiceAvailable
-
-   Checks if a voice can be play at the specified priority.
----------------------------------------------------------------------*/
-
-int PCFX_VoiceAvailable
-   (
-   int priority
-   )
-
-   {
-   if ( priority < PCFX_Priority )
-      {
-      return( FALSE );
-      }
-
-   return( TRUE );
    }
 
 
@@ -338,22 +270,6 @@ int PCFX_SetTotalVolume
 
 
 /*---------------------------------------------------------------------
-   Function: PCFX_GetTotalVolume
-
-   Returns the total volume of the sound effects.
----------------------------------------------------------------------*/
-
-int PCFX_GetTotalVolume
-   (
-   void
-   )
-
-   {
-   return( PCFX_TotalVolume );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: PCFX_LockEnd
 
    Used for determining the length of the functions to lock in memory.
@@ -396,22 +312,6 @@ void PCFX_UseLookup
          pitch += value;
          }
       }
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: PCFX_SetCallBack
-
-   Set the function to call when a voice stops.
----------------------------------------------------------------------*/
-
-void PCFX_SetCallBack
-   (
-   void ( *function )( unsigned long )
-   )
-
-   {
-   PCFX_CallBackFunc = function;
    }
 
 
@@ -485,7 +385,7 @@ int PCFX_Shutdown
    Unlocks all neccessary data.
 ---------------------------------------------------------------------*/
 
-void PCFX_UnlockMemory
+static void PCFX_UnlockMemory
    (
    void
    )
@@ -514,7 +414,7 @@ void PCFX_UnlockMemory
    Locks all neccessary data.
 ---------------------------------------------------------------------*/
 
-int PCFX_LockMemory
+static int PCFX_LockMemory
    (
    void
    )

@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -51,19 +52,13 @@ typedef	struct
    char           data[];
    } PCSound;
 
-char *PCFX_ErrorString( int ErrorNumber );
 int   PCFX_Stop( int handle );
 void  PCFX_UseLookup( int use, unsigned value );
-int   PCFX_VoiceAvailable( int priority );
 int   PCFX_Play( PCSound *sound, int priority, unsigned long callbackval );
 int   PCFX_SoundPlaying( int handle );
 int   PCFX_SetTotalVolume( int volume );
-int   PCFX_GetTotalVolume( void );
-void  PCFX_SetCallBack( void ( *function )( unsigned long ) );
 int   PCFX_Init( void );
 int   PCFX_Shutdown( void );
    #pragma aux PCFX_Shutdown frame;
-void  PCFX_UnlockMemory( void );
-int   PCFX_LockMemory( void );
 
 #endif
