@@ -83,60 +83,6 @@ static int AWE32_ErrorCode = AWE32_Ok;
    AWE32_ErrorCode = ( status );
 
 
-/*---------------------------------------------------------------------
-   Function: AWE32_ErrorString
-
-   Returns a pointer to the error message associated with an error
-   number.  A -1 returns a pointer the current error.
----------------------------------------------------------------------*/
-
-char *AWE32_ErrorString
-   (
-   int ErrorNumber
-   )
-
-   {
-   char *ErrorString;
-
-   switch( ErrorNumber )
-      {
-      case AWE32_Warning :
-      case AWE32_Error :
-         ErrorString = AWE32_ErrorString( AWE32_ErrorCode );
-         break;
-
-      case AWE32_Ok :
-         ErrorString = "AWE32 ok.";
-         break;
-
-      case AWE32_SoundBlasterError :
-         ErrorString = BLASTER_ErrorString( BLASTER_Error );
-         break;
-
-      case AWE32_NotDetected :
-         ErrorString = "Could not detect AWE32.";
-         break;
-
-      case AWE32_UnableToInitialize :
-         ErrorString = "Unable to initialize AWE32.";
-
-      case AWE32_MPU401Error :
-         ErrorString = "MPU-401 initialization failed in AWE32.";
-         break;
-
-      case AWE32_DPMI_Error :
-         ErrorString = "DPMI Error in AWE32.";
-         break;
-
-      default :
-         ErrorString = "Unknown AWE32 error code.";
-         break;
-      }
-
-   return( ErrorString );
-   }
-
-
 /**********************************************************************
 
    Memory locked functions:
@@ -293,56 +239,6 @@ static void AWE32_LockEnd
    }
 
 
-// *** VERSIONS RESTORATION ***
-// Uncomment code for certain versions
-#if (LIBVER_ASSREV < 19960510L)
-static int InitMPU
-   (
-   void
-   )
-
-   {
-   volatile DWORD dwCount;
-
-   for (dwCount=0; dwCount<0x2000; dwCount++) ;
-   dwCount = 0x2000;
-   while (dwCount && _inp(MPUPort(1)) & 0x40) --dwCount;
-   _outp(MPUPort(1), MPU_RESET_CMD);
-
-   for (dwCount=0; dwCount<0x2000; dwCount++) ;
-   dwCount = 0x2000;
-   while (dwCount && _inp(MPUPort(1)) & 0x80) --dwCount;
-   _inp(MPUPort(0));
-
-   for (dwCount=0; dwCount<0x2000; dwCount++) ;
-   dwCount = 0x2000;
-   while (dwCount && _inp(MPUPort(1)) & 0x40) --dwCount;
-   _outp(MPUPort(1), MPU_RESET_CMD);
-
-   for (dwCount=0; dwCount<0x2000; dwCount++) ;
-   dwCount = 0x2000;
-   while (dwCount && _inp(MPUPort(1)) & 0x80) --dwCount;
-   _inp(MPUPort(0));
-
-   for (dwCount=0; dwCount<0x2000; dwCount++) ;
-   dwCount = 0x2000;
-   while (dwCount && _inp(MPUPort(1)) & 0x40) --dwCount;
-   _outp(MPUPort(1), MPU_ENTER_UART);
-
-   for (dwCount=0; dwCount<0x2000; dwCount++) ;
-   dwCount = 0x2000;
-   while (dwCount && _inp(MPUPort(1)) & 0x80) --dwCount;
-   if (!dwCount) return TRUE;
-   if (_inp(MPUPort(0)) != MPU_ACK_OK) return TRUE;
-
-   // mask MPU-401 interrupt
-   _outp(SBCPort(0x4), 0x83);
-   _outp(SBCPort(0x5), _inp(SBCPort(0x5)) & ~0x04);
-
-   return FALSE;
-   }
-#endif // LIBVER_ASSREV < 19950821L
-
 /*ีออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออธ*/
 /*ณ ShutdownMPU                                                    ณ*/
 /*ณ Cleans up Sound Blaster to normal state.                               ณ*/
@@ -455,10 +351,6 @@ int AWE32_Init
       return( AWE32_Error );
       }
 
-
-// *** VERSIONS RESTORATION ***
-// Choose between commented (as of v1.12) and uncommented code blocks, based on version
-#if (LIBVER_ASSREV >= 19950821L)
 //FIXME   status = awe32InitMIDI();
    if ( status )
       {
@@ -467,27 +359,6 @@ int AWE32_Init
       return( AWE32_Error );
       }
 
-#else
-    status = InitMPU();
-   if ( status )
-      {
-      ShutdownMPU();
-      status = InitMPU();
-      if ( status )
-         {
-         ShutdownMPU();
-         status = InitMPU();
-         if ( status )
-            {
-            // *** VERSIONS RESTORATION ***
-            // Do comment this one out
-            //AWE32_Shutdown();
-            AWE32_SetErrorCode( AWE32_MPU401Error )
-            return( AWE32_Error );
-            }
-         }
-      }
-#endif
    status  = DPMI_LockMemoryRegion( AWE32_LockStart, AWE32_LockEnd );
    status |= DPMI_Lock( wSBCBaseAddx );
    status |= DPMI_Lock( wEMUBaseAddx );

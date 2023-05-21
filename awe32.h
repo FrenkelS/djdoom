@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -44,7 +45,6 @@ enum AWE32_ERRORS
    AWE32_DPMI_Error
    };
 
-char *AWE32_ErrorString( int ErrorNumber );
 int  AWE32_Init( void );
 void AWE32_Shutdown( void );
 void AWE32_NoteOff( int channel, int key, int velocity );
