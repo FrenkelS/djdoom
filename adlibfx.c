@@ -56,9 +56,9 @@ static int      ADLIBFX_TotalVolume = ADLIBFX_MaxVolume;
 static task    *ADLIBFX_ServiceTask = NULL;
 static int      ADLIBFX_VoiceHandle = ADLIBFX_MinVoiceHandle;
 
-int ADLIBFX_Installed = FALSE;
+static int ADLIBFX_Installed = FALSE;
 
-int ADLIBFX_ErrorCode = ADLIBFX_Ok;
+static int ADLIBFX_ErrorCode = ADLIBFX_Ok;
 
 #define ADLIBFX_SetErrorCode( status ) \
    ADLIBFX_ErrorCode   = ( status );
