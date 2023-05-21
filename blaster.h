@@ -126,7 +126,6 @@ int   BLASTER_BeginBufferedRecord( char *BufferStart, int BufferSize,
 int   BLASTER_BeginBufferedPlayback( char *BufferStart,
          int BufferSize, int NumDivisions, unsigned SampleRate,
          int MixMode, void ( *CallBackFunc )( void ) );
-int   BLASTER_GetVoiceVolume( void );
 int   BLASTER_SetVoiceVolume( int volume );
 int   BLASTER_GetMidiVolume( void );
 void   BLASTER_SetMidiVolume( int volume );
