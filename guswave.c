@@ -99,7 +99,7 @@ static int GUSWAVE_ErrorCode = GUSWAVE_Ok;
    GF1 callback service routine.
 ---------------------------------------------------------------------*/
 
-static char GUS_Silence8[ 1024 ] =
+static unsigned char GUS_Silence8[ 1024 ] =
    {
    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
@@ -228,27 +228,15 @@ static int LOADDS GUSWAVE_CallBack
 
    if ( reason == DIG_MORE_DATA )
       {
-//      SetBorderColor(16);
       Voice = VoiceStatus[ voice ].Voice;
 
       if ( ( Voice != NULL ) && ( Voice->Playing ) )
-/*
-         {
-         *buf = ( unsigned char * )GUS_Silence16;
-         *size = 1024;
-
-         SetBorderColor(0);
-         return( DIG_MORE_DATA );
-         }
- */
          {
          status = Voice->GetSound( Voice );
          if ( status != SoundDone )
             {
             if ( ( Voice->sound == NULL ) || ( status == NoMoreData ) )
                {
-               // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
                if ( Voice->bits == 8 )
                   {
                   *buf = GUS_Silence8;
@@ -257,9 +245,6 @@ static int LOADDS GUSWAVE_CallBack
                   {
                   *buf = ( unsigned char * )GUS_Silence16;
                   }
-#else
-               *buf = GUS_Silence;
-#endif
                *size = 256;
                }
             else
@@ -270,7 +255,6 @@ static int LOADDS GUSWAVE_CallBack
             return( DIG_MORE_DATA );
             }
          }
-//      SetBorderColor(16);
       return( DIG_DONE );
       }
 
@@ -579,12 +563,6 @@ static int GUSWAVE_Kill
          }
       }
 
-//   RestoreInterrupts( flags );
-
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   GUSWAVE_SetErrorCode( GUSWAVE_Ok );
-#endif
    return( GUSWAVE_Ok );
    }
 
@@ -817,11 +795,8 @@ static playbackstatus GUSWAVE_GetNextVOCBlock
 
          case 1 :
             // Sound data block
-
-            // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
             voice->bits = 8;
-#endif
+
             if ( lastblocktype != 8 )
                {
                tc = ( unsigned int )*ptr << 8;
@@ -902,11 +877,7 @@ static playbackstatus GUSWAVE_GetNextVOCBlock
 
          case 8 :
             // Extended block
-
-            // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
             voice->bits = 8;
-#endif
             tc = *( unsigned short * )ptr;
             packtype = *( ptr + 2 );
             voicemode = *( ptr + 3 );
@@ -925,14 +896,9 @@ static playbackstatus GUSWAVE_GetNextVOCBlock
                {
                ptr += 12;
                blocklength -= 12;
-               // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
                voice->bits  = 8;
-#endif
                done = TRUE;
                }
-            // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
             else if ( ( BitsPerSample == 16 ) && ( Channels == 1 ) &&
                ( Format == VOC_16BIT ) )
                {
@@ -941,7 +907,6 @@ static playbackstatus GUSWAVE_GetNextVOCBlock
                voice->bits  = 16;
                done         = TRUE;
                }
-#endif
             else
                {
                ptr += blocklength;
@@ -973,40 +938,6 @@ static playbackstatus GUSWAVE_GetNextVOCBlock
       }
 
    return( SoundDone );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: GUSWAVE_GetNextWAVBlock
-
-   Controls playback of demand fed data.
----------------------------------------------------------------------*/
-
-static playbackstatus GUSWAVE_GetNextWAVBlock
-   (
-   VoiceNode *voice
-   )
-
-   {
-   if ( voice->BlockLength <= 0 )
-      {
-      if ( voice->LoopStart == NULL )
-         {
-         voice->Playing = FALSE;
-         return( SoundDone );
-         }
-
-      voice->BlockLength = voice->LoopSize;
-      voice->NextBlock   = voice->LoopStart;
-      voice->length      = 0;
-      }
-
-   voice->sound        = voice->NextBlock;
-   voice->length       = min( voice->BlockLength, 0x8000 );
-   voice->NextBlock   += voice->length;
-   voice->BlockLength -= voice->length;
-
-   return( KeepPlaying );
    }
 
 
@@ -1152,11 +1083,8 @@ static int GUSWAVE_Play
 int GUSWAVE_StartDemandFeedPlayback
    (
    void ( *function )( char **ptr, unsigned long *length ),
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    int   channels,
    int   bits,
-#endif
    int   rate,
    int   pitchoffset,
    int   angle,
@@ -1182,10 +1110,7 @@ int GUSWAVE_StartDemandFeedPlayback
       }
 
    voice->wavetype    = DemandFeed;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    voice->bits        = bits;
-#endif
 //FIXME   voice->GetSound    = GUSWAVE_GetNextDemandFeedBlock;
    voice->Playing     = TRUE;
    voice->DemandFeed  = function;
@@ -1193,12 +1118,7 @@ int GUSWAVE_StartDemandFeedPlayback
    voice->LoopCount   = 0;
    voice->BlockLength = 0;
    voice->length      = 256;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   voice->sound       = GUS_Silence;
-#else
-   voice->sound       = ( bits == 8 ) ? GUS_Silence8 : ( char * )GUS_Silence16;
-#endif
+   voice->sound       = ( bits == 8 ) ? GUS_Silence8 : ( unsigned char * )GUS_Silence16;
    voice->NextBlock   = NULL;
    voice->next        = NULL;
    voice->prev        = NULL;
@@ -1315,10 +1235,7 @@ int GUSWAVE_Init
       GUSWAVE_Shutdown();
       }
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    GUSWAVE_SetErrorCode( GUSWAVE_Ok );
-#endif
 
    status = GUS_Init();
    if ( status != GUS_Ok )

@@ -166,11 +166,9 @@ typedef struct
    } data_header;
 
 static playbackstatus GUSWAVE_GetNextVOCBlock( VoiceNode *voice );
-VoiceNode *GUSWAVE_GetVoice( int handle );
 
 static int GUSWAVE_Play( VoiceNode *voice, int angle, int volume, int channels );
 
-VoiceNode *GUSWAVE_AllocVoice( int priority );
 static int GUSWAVE_InitVoices( void );
 
 #endif

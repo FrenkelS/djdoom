@@ -1425,10 +1425,7 @@ static int MV_StartPlayback
          MV_DMAChannel = BLASTER_DMAChannel;
          break;
 
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
       case UltraSound :
-
          status = GUSWAVE_StartDemandFeedPlayback( MV_ServiceGus, 1,
             MV_Bits, MV_RequestedMixRate, 0, ( MV_Channels == 1 ) ?
             0 : 24, 255, 0xffff, 0 );
@@ -1453,7 +1450,6 @@ static int MV_StartPlayback
          MV_MixRate = MV_RequestedMixRate;
          MV_DMAChannel = -1;
          break;
-#endif
 
       case ProAudioSpectrum :
       case SoundMan16 :
