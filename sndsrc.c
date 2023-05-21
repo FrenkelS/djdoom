@@ -64,62 +64,16 @@ static int     SS_TransferLength  = 0;
 static int     SS_CurrentLength   = 0;
 
 static char   *SS_SoundPtr;
-volatile int   SS_SoundPlaying;
+static volatile int   SS_SoundPlaying;
 
 static task   *SS_Timer;
 
-void ( *SS_CallBack )( void );
+static void ( *SS_CallBack )( void );
 
-int SS_ErrorCode = SS_Ok;
+static int SS_ErrorCode = SS_Ok;
 
 #define SS_SetErrorCode( status ) \
    SS_ErrorCode   = ( status );
-
-/*---------------------------------------------------------------------
-   Function: SS_ErrorString
-
-   Returns a pointer to the error message associated with an error
-   number.  A -1 returns a pointer the current error.
----------------------------------------------------------------------*/
-
-char *SS_ErrorString
-   (
-   int ErrorNumber
-   )
-
-   {
-   char *ErrorString;
-
-   switch( ErrorNumber )
-      {
-      case SS_Error :
-         ErrorString = SS_ErrorString( SS_ErrorCode );
-         break;
-
-      case SS_Ok :
-         ErrorString = "Sound Source ok.";
-         break;
-
-      case SS_NotFound :
-         ErrorString = "Could not detect Sound Source.";
-         break;
-
-      case SS_NoSoundPlaying :
-         ErrorString = "No sound playing in SndSrc.";
-         break;
-
-      case SS_DPMI_Error :
-         ErrorString = "DPMI Error in SndSrc.";
-         break;
-
-      default :
-         ErrorString = "Unknown Sound Source error code.";
-         break;
-      }
-
-   return( ErrorString );
-   }
-
 
 /**********************************************************************
 
@@ -214,33 +168,6 @@ void SS_StopPlayback
 
 
 /*---------------------------------------------------------------------
-   Function: SS_GetCurrentPos
-
-   Returns the offset within the current sound being played.
----------------------------------------------------------------------*/
-
-int SS_GetCurrentPos
-   (
-   void
-   )
-
-   {
-   int offset;
-
-   if ( !SS_SoundPlaying )
-      {
-      SS_SetErrorCode( SS_NoSoundPlaying );
-      return( SS_Warning );
-      }
-
-   offset = ( int )( ( ( unsigned long )SS_SoundPtr ) -
-      ( ( unsigned long )SS_CurrentBuffer ) );
-
-   return( offset );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: SS_LockEnd
 
    Used for determining the length of the functions to lock in memory.
@@ -298,23 +225,6 @@ int SS_BeginBufferedPlayback
 
 
 /*---------------------------------------------------------------------
-   Function: SS_GetPlaybackRate
-
-   Returns the rate at which the digitized sound will be played in
-   hertz.
----------------------------------------------------------------------*/
-
-int SS_GetPlaybackRate
-   (
-   void
-   )
-
-   {
-   return( SS_SampleRate );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: SS_SetMixMode
 
    Sets the sound card to play samples in mono or stereo.
@@ -332,35 +242,12 @@ int SS_SetMixMode
 
 
 /*---------------------------------------------------------------------
-   Function: SS_SetPort
-
-   Selects which port to use to write to the Sound Source.
----------------------------------------------------------------------*/
-
-int SS_SetPort
-   (
-   int port
-   )
-
-   {
-   if ( SS_Installed )
-      {
-      SS_Shutdown();
-      }
-
-   SS_Port = port;
-
-   return( SS_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: SS_SetCallBack
 
    Specifies the user function to call at the end of a sound transfer.
 ---------------------------------------------------------------------*/
 
-void SS_SetCallBack
+static void SS_SetCallBack
    (
    void ( *func )( void )
    )
@@ -376,7 +263,7 @@ void SS_SetCallBack
    Used as a delay in SS_TestSoundSource.
 ---------------------------------------------------------------------*/
 
-void SS_TestTimer
+static void SS_TestTimer
    (
    task *Task
    )
@@ -392,7 +279,7 @@ void SS_TestTimer
    Detect if the Sound Source is located at the specified port.
 ---------------------------------------------------------------------*/
 
-int SS_TestSoundSource
+static int SS_TestSoundSource
    (
    int port
    )
@@ -446,7 +333,7 @@ int SS_TestSoundSource
    Detects which port the Sound Source is located.
 ---------------------------------------------------------------------*/
 
-int SS_DetectSoundSource
+static int SS_DetectSoundSource
    (
    void
    )
@@ -590,7 +477,7 @@ void SS_Shutdown
    Unlocks all neccessary data.
 ---------------------------------------------------------------------*/
 
-void SS_UnlockMemory
+static void SS_UnlockMemory
    (
    void
    )
@@ -622,7 +509,7 @@ void SS_UnlockMemory
    Locks all neccessary data.
 ---------------------------------------------------------------------*/
 
-int SS_LockMemory
+static int SS_LockMemory
    (
    void
    )

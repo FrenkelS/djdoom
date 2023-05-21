@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -54,17 +55,10 @@ enum SS_ERRORS
 #define SS_SampleRate  7000
 #define SS_DMAChannel  -1
 
-char *SS_ErrorString( int ErrorNumber );
 void  SS_StopPlayback( void );
-int   SS_GetCurrentPos( void );
 int   SS_BeginBufferedPlayback( char *BufferStart, int BufferSize, int NumDivisions, void ( *CallBackFunc )( void ) );
-int   SS_GetPlaybackRate( void );
 int   SS_SetMixMode( int mode );
-int   SS_SetPort( int port );
-void  SS_SetCallBack( void ( *func )( void ) );
 int   SS_Init( int soundcard );
 void  SS_Shutdown( void );
-void  SS_UnlockMemory( void );
-int   SS_LockMemory( void );
 
 #endif

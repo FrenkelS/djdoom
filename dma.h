@@ -48,11 +48,6 @@ enum DMA_Modes
    DMA_AutoInitWrite
    };
 
-char *DMA_ErrorString
-   (
-   int ErrorNumber
-   );
-
 int DMA_VerifyChannel
    (
    int channel

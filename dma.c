@@ -74,48 +74,6 @@ static int DMA_ErrorCode = DMA_Ok;
 
 
 /*---------------------------------------------------------------------
-   Function: DMA_ErrorString
-
-   Returns a pointer to the error message associated with an error
-   number.  A -1 returns a pointer the current error.
----------------------------------------------------------------------*/
-
-char *DMA_ErrorString
-   (
-   int ErrorNumber
-   )
-
-   {
-   char *ErrorString;
-
-   switch( ErrorNumber )
-      {
-      case DMA_Error :
-         ErrorString = DMA_ErrorString( DMA_ErrorCode );
-         break;
-
-      case DMA_Ok :
-         ErrorString = "DMA channel ok.";
-         break;
-
-      case DMA_ChannelOutOfRange :
-         ErrorString = "DMA channel out of valid range.";
-         break;
-
-      case DMA_InvalidChannel :
-         ErrorString = "Unsupported DMA channel.";
-         break;
-
-      default :
-         ErrorString = "Unknown DMA error code.";
-         break;
-      }
-
-   return( ErrorString );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: DMA_VerifyChannel
 
    Verifies whether a DMA channel is available to transfer data.
