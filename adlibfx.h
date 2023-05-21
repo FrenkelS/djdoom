@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -61,15 +62,11 @@ typedef	struct
 #define ADLIBFX_MaxVolume      255
 #define ADLIBFX_MinVoiceHandle 1
 
-char *ADLIBFX_ErrorString( int ErrorNumber );
 int   ADLIBFX_Stop( int handle );
 int   ADLIBFX_SetVolume( int handle, int volume );
 int   ADLIBFX_SetTotalVolume( int volume );
-int   ADLIBFX_GetTotalVolume( void );
-int   ADLIBFX_VoiceAvailable( int priority );
 int   ADLIBFX_Play( ALSound *sound, int volume, int priority, unsigned long callbackval );
 int   ADLIBFX_SoundPlaying( int handle );
-void  ADLIBFX_SetCallBack( void ( *function )( unsigned long ) );
 int   ADLIBFX_Init( void );
 int   ADLIBFX_Shutdown( void );
    #pragma aux ADLIBFX_Shutdown frame;

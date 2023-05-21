@@ -64,53 +64,6 @@ static int ADLIBFX_ErrorCode = ADLIBFX_Ok;
    ADLIBFX_ErrorCode   = ( status );
 
 
-/*---------------------------------------------------------------------
-   Function: ADLIBFX_ErrorString
-
-   Returns a pointer to the error message associated with an error
-   number.  A -1 returns a pointer the current error.
----------------------------------------------------------------------*/
-
-char *ADLIBFX_ErrorString
-   (
-   int ErrorNumber
-   )
-
-   {
-   char *ErrorString;
-
-   switch( ErrorNumber )
-      {
-      case ADLIBFX_Warning :
-      case ADLIBFX_Error :
-         ErrorString = ADLIBFX_ErrorString( ADLIBFX_ErrorCode );
-         break;
-
-      case ADLIBFX_Ok :
-         ErrorString = "Adlib FX ok.";
-         break;
-
-      case ADLIBFX_NoVoices :
-         ErrorString = "No free voices available in Adlib FX.";
-         break;
-
-      case ADLIBFX_VoiceNotFound :
-         ErrorString = "No voice with matching handle found.";
-         break;
-
-      case ADLIBFX_DPMI_Error :
-         ErrorString = "DPMI Error in AdlibFX.";
-         break;
-
-      default :
-         ErrorString = "Unknown Adlib FX error code.";
-         break;
-      }
-
-   return( ErrorString );
-   }
-
-
 /**********************************************************************
 
    Memory locked functions:
@@ -301,43 +254,6 @@ int ADLIBFX_SetTotalVolume
 
 
 /*---------------------------------------------------------------------
-   Function: ADLIBFX_GetTotalVolume
-
-   Returns the total volume of the sound effect.
----------------------------------------------------------------------*/
-
-int ADLIBFX_GetTotalVolume
-   (
-   void
-   )
-
-   {
-   return( ADLIBFX_TotalVolume );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: ADLIBFX_VoiceAvailable
-
-   Checks if a voice can be play at the specified priority.
----------------------------------------------------------------------*/
-
-int ADLIBFX_VoiceAvailable
-   (
-   int priority
-   )
-
-   {
-   if ( priority < ADLIBFX_Priority )
-      {
-      return( FALSE );
-      }
-
-   return( TRUE );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: ADLIBFX_Play
 
    Starts playback of a Muse sound effect.
@@ -449,22 +365,6 @@ static void ADLIBFX_LockEnd
    )
 
    {
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: ADLIBFX_SetCallBack
-
-   Set the function to call when a voice stops.
----------------------------------------------------------------------*/
-
-void ADLIBFX_SetCallBack
-   (
-   void ( *function )( unsigned long )
-   )
-
-   {
-   ADLIBFX_CallBackFunc = function;
    }
 
 
