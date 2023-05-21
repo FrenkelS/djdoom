@@ -27,17 +27,7 @@ static unsigned short disp_offset = 160 * 24;
 static void myutoa( unsigned num, char *string, int radix );
 static void myitoa( int num, char *string, int radix );
 
-void DB_SetXY
-   (
-   int x,
-   int y
-   )
-
-   {
-   disp_offset = ( x * 2 ) + ( y * 160 );
-   }
-
-void DB_PutChar
+static void DB_PutChar
    (
    char ch
    )
@@ -87,7 +77,7 @@ void DB_PutChar
       }
    }
 
-int DB_PrintString
+static int DB_PrintString
    (
    char *string
    )
@@ -181,7 +171,7 @@ int DB_PrintNum
    return( count );
    }
 
-int DB_PrintUnsigned
+static int DB_PrintUnsigned
    (
    unsigned long number,
    int radix

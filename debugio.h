@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,11 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __DEBUGIO_H
 #define __DEBUGIO_H
 
-void DB_SetXY( int x, int y );
-void DB_PutChar( char ch );
-int  DB_PrintString( char *string );
 int  DB_PrintNum( int number );
-int  DB_PrintUnsigned( unsigned long number, int radix );
 int  DB_printf( char *fmt, ... );
 
 #endif
