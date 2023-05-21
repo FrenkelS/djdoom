@@ -18,8 +18,6 @@
 
 #include "tsmapi.h"
 
-typedef int SFX_HANDLE;
-
 int AL_DetectFM(void);
 int MPU_Init(int addr);
 int GUS_Init(void);
@@ -52,14 +50,15 @@ int CODEC_Detect(int *a, int *b);
 int ENS_Detect(void);
 
 
-#define AHW_PC_SPEAKER 1
-#define AHW_ADLIB 2
-#define AHW_AWE32 4
-#define AHW_SOUND_BLASTER 8
-#define AHW_MPU_401 16
-#define AHW_ULTRA_SOUND 32
-#define AHW_MEDIA_VISION 64
-#define AHW_ENSONIQ 256
-#define AHW_CODEC 512
+#define AHW_PC_SPEAKER		0x0001L
+#define AHW_ADLIB			0x0002L
+#define AHW_AWE32			0x0004L
+#define AHW_SOUND_BLASTER	0x0008L
+#define AHW_MPU_401			0x0010L
+#define AHW_ULTRA_SOUND		0x0020L
+#define AHW_MEDIA_VISION	0x0040L
+
+#define AHW_ENSONIQ 		0x0100L
+#define AHW_CODEC			0x0200L
 
 #endif
