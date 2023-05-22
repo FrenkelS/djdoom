@@ -304,28 +304,18 @@ static int32_t USRHOOKS_GetMem(void **ptr, uint32_t size)
    Adds a new task to our list of tasks.
 ---------------------------------------------------------------------*/
 
-#define LL_AddNode(rootnode, newnode, next, prev)	\
-	{												\
-		(newnode)->next = (rootnode);				\
-		(newnode)->prev = (rootnode)->prev;			\
-		(rootnode)->prev->next = (newnode);			\
-		(rootnode)->prev = (newnode);				\
-	}
-
-#define LL_SortedInsertion(rootnode,insertnode,next,prev,type,sortparm)				\
-	{																				\
-		type *hoya;																	\
-																					\
-		hoya = (rootnode)->next;													\
-		while((hoya != (rootnode)) && ((insertnode)->sortparm > hoya->sortparm))	\
-			hoya = hoya->next;														\
-																					\
-		LL_AddNode(hoya,(insertnode),next,prev);									\
-   }
-
 static void TS_AddTask(task *node)
 {
-	LL_SortedInsertion(TaskList, node, next, prev, task, priority);
+	task *ptr;
+
+	ptr = TaskList->next;
+	while ((ptr != TaskList) && (node->priority > ptr->priority))
+		ptr = ptr->next;
+
+	node->next = ptr;
+	node->prev = ptr->prev;
+	ptr->prev->next = node;
+	ptr->prev = node;
 }
 
 
@@ -369,14 +359,6 @@ task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority, 
    Ends processing of a specific task.
 ---------------------------------------------------------------------*/
 
-#define LL_RemoveNode(node,next,prev)		\
-	{										\
-		(node)->prev->next = (node)->next;	\
-		(node)->next->prev = (node)->prev;	\
-		(node)->next = (node);				\
-		(node)->prev = (node);				\
-	}
-
 void TS_Terminate(task *NodeToRemove)
 {
 	task *ptr;
@@ -391,16 +373,15 @@ void TS_Terminate(task *NodeToRemove)
 
 		if (ptr == NodeToRemove)
 		{
-			LL_RemoveNode(NodeToRemove, next, prev);
+			NodeToRemove->prev->next = NodeToRemove->next;
+			NodeToRemove->next->prev = NodeToRemove->prev;
 			NodeToRemove->next = NULL;
 			NodeToRemove->prev = NULL;
 			free(NodeToRemove);
 
 			TS_SetTimerToMaxTaskRate();
 
-			RestoreInterrupts(flags);
-
-			return;
+			break;
 		}
 
 		ptr = next;
