@@ -19,9 +19,9 @@
 #ifndef _TSMAPI_H_
 #define _TSMAPI_H_
 
-int32_t TSM_Install(uint32_t sndTicrate);
-int32_t TSM_NewService(int32_t (*timerISR)(void), int32_t frequency, int32_t priority, int32_t pause);
-void TSM_DelService(int32_t tsm_ID);
+void TSM_Install(uint32_t rate);
+int32_t TSM_NewService(void(*timerISR)(void), int32_t rate, int32_t priority, int32_t pause);
+void TSM_DelService(int32_t id);
 void TSM_Remove(void);
 
 #endif

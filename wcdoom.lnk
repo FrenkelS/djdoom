@@ -16,7 +16,7 @@ alias R_DrawColumn_=_R_DrawColumn, R_DrawColumnLow_=_R_DrawColumnLow, R_DrawSpan
 
 file dmx.obj
 file tsmapi.obj
-file dpmi.obj
+file task_man.obj
 file i_main.obj
 file i_ibm.obj
 file i_sound.obj

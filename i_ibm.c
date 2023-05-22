@@ -25,7 +25,7 @@
 #include "r_local.h"
 
 #define DPMI_INT 0x31
-#define NOTIMER
+//#define NOTIMER
 
 void I_StartupSound (void);
 void I_ShutdownSound (void);
@@ -668,10 +668,9 @@ void   I_StartTic (void)
 ================
 */
 
-int32_t I_TimerISR (void)
+void I_TimerISR (void)
 {
 	ticcount++;
-	return 0;
 }
 
 /*
@@ -1117,20 +1116,10 @@ static void I_StartupDPMI (void)
 #if defined __DJGPP__
 	__djgpp_nearptr_enable();
 #elif defined __WATCOMC__
-	void _dpmi_lockregion (void * inmem, int32_t length);
-	extern char __begtext;
-	extern char ___Argc;
-
 //
 // allocate a decent stack for real mode ISRs
 //
 	realstackseg = (int32_t)I_AllocLow (REALSTACKSIZE) >> 4;
-
-//
-// lock the entire program down
-//
-
-	_dpmi_lockregion (&__begtext, &___Argc - &__begtext);
 #endif
 }
 
