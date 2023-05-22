@@ -55,6 +55,9 @@
 
 #define UNUSED(x)	(x = x)	// for pesky compiler / lint warnings
 
+#define LOBYTE(w)	(((uint8_t *)&w)[0])
+#define HIBYTE(w)	(((uint8_t *)&w)[1])
+
 extern byte *destview, *destscreen;	// PC direct to screen pointers
 
 //

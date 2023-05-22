@@ -146,8 +146,8 @@ static void TS_SetClockSpeed(int32_t speed)
 		TaskServiceRate = 0x10000L;
 
 	outp(0x43, 0x36);
-	outp(0x40, TaskServiceRate);
-	outp(0x40, TaskServiceRate >> 8);
+	outp(0x40, LOBYTE(TaskServiceRate));
+	outp(0x40, HIBYTE(TaskServiceRate));
 
 	RestoreInterrupts(flags);
 }
