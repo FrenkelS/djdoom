@@ -56,8 +56,6 @@ static volatile long TaskServiceCount = 0;
 
 static boolean TS_Installed = false;
 
-static volatile boolean TS_InInterrupt = false;
-
 
 /*---------------------------------------------------------------------
    Function prototypes
@@ -189,8 +187,6 @@ static void __interrupt __far TS_ServiceSchedule(void)
 	task *ptr;
 	task *next;
 
-	TS_InInterrupt = true;
-
 	ptr = TaskList->next;
 	while (ptr != TaskList)
 	{
@@ -217,8 +213,6 @@ static void __interrupt __far TS_ServiceSchedule(void)
 	}
 
 	outp(0x20, 0x20);
-
-	TS_InInterrupt = false;
 }
 
 
