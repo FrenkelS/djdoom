@@ -62,17 +62,43 @@ static boolean TS_Installed = false;
 ---------------------------------------------------------------------*/
 
 static uint32_t DisableInterrupts(void);
+static void RestoreInterrupts(uint32_t flags);
+
+
+#if defined __DMC__ || defined __CCDL__
+static uint32_t DisableInterrupts(void)
+{
+	asm
+	{
+		pushfd
+		pop eax
+		cli
+	}
+	return _EAX;
+}
+
+static void RestoreInterrupts(uint32_t flags)
+{
+	asm
+	{
+		mov eax, [flags]
+		push eax
+		popfd
+	}
+}
+
+#elif defined __WATCOMC__
 #pragma aux DisableInterrupts =	\
    "pushfd",					\
    "pop eax",					\
-   "cli";
+   "cli"						\
+   value [eax];
 
-
-static void RestoreInterrupts(uint32_t flags);
 #pragma aux RestoreInterrupts =	\
    "push eax",					\
    "popfd"						\
    parm [eax];
+#endif
 
 
 /*---------------------------------------------------------------------
