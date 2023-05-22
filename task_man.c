@@ -31,8 +31,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <conio.h>
 #include <dos.h>
-#include <stdint.h>
-#include <stdlib.h>
 #include "doomdef.h"
 #include "task_man.h"
 
@@ -270,35 +268,6 @@ void TS_Shutdown(void)
 
 
 /*---------------------------------------------------------------------
-   Function: USRHOOKS_GetMem
-
-   Allocates the requested amount of memory and returns a pointer to
-   its location, or NULL if an error occurs.  NOTE: pointer is assumed
-   to be dword aligned.
----------------------------------------------------------------------*/
-
-enum USRHOOKS_Errors
-{
-	USRHOOKS_Error	= -1,
-	USRHOOKS_Ok		= 0
-};
-
-static int32_t USRHOOKS_GetMem(void **ptr, uint32_t size)
-{
-	void *memory;
-
-	memory = malloc(size);
-	if (memory == NULL)
-		return USRHOOKS_Error;
-	else
-	{
-		*ptr = memory;
-		return USRHOOKS_Ok;
-	}
-}
-
-
-/*---------------------------------------------------------------------
    Function: TS_AddTask
 
    Adds a new task to our list of tasks.
@@ -325,28 +294,24 @@ static void TS_AddTask(task *node)
    Schedules a new task for processing.
 ---------------------------------------------------------------------*/
 
-task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority, void *data)
+task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority, int32_t taskId)
 {
 	task *ptr;
 
-	int32_t status;
-
-	ptr = NULL;
-
-	status = USRHOOKS_GetMem((void **) &ptr, sizeof(task));
-	if (status == USRHOOKS_Ok)
+	ptr = malloc(sizeof(task));
+	if (ptr != NULL)
 	{
 		if (!TS_Installed)
 			TS_Startup();
 
 		ptr->TaskService = Function;
-		ptr->data = data;
+		ptr->taskId = taskId;
 		ptr->rate = TS_SetTimer(rate);
 		ptr->count = 0;
 		ptr->priority = priority;
 		ptr->active = false;
 
-		TS_AddTask( ptr );
+		TS_AddTask(ptr);
 	}
 
 	return ptr;

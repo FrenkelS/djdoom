@@ -37,37 +37,37 @@ void TSM_Install(uint32_t rate)
 
 static void tsm_funch(task *t)
 {
-	int32_t i = (int32_t)t->data;
-	tasks[i].callback();
+	int32_t taskId = t->taskId;
+	tasks[taskId].callback();
 }
 
 int32_t TSM_NewService(void(*function)(void), int32_t rate, int32_t priority, int32_t pause)
 {
-	int32_t i;
+	int32_t taskId;
 
 	UNUSED(pause);
 
-	for (i = 0; i < MAX_TASKS; i++)
+	for (taskId = 0; taskId < MAX_TASKS; taskId++)
 	{
-		if (tasks[i].t == NULL)
+		if (tasks[taskId].t == NULL)
 			break;
 	}
 
-	if (i == MAX_TASKS)
+	if (taskId == MAX_TASKS)
 		return -1;
 
-	tasks[i].callback = function;
-	tasks[i].t = TS_ScheduleTask(tsm_funch, rate, priority, (void*)i);
+	tasks[taskId].callback = function;
+	tasks[taskId].t = TS_ScheduleTask(tsm_funch, rate, priority, taskId);
 	TS_Dispatch();
-	return i;
+	return taskId;
 }
 
-void TSM_DelService(int32_t id)
+void TSM_DelService(int32_t taskId)
 {
-	if (id >= 0)
+	if (taskId >= 0)
 	{
-		TS_Terminate(tasks[id].t);
-		tasks[id].t = NULL;
+		TS_Terminate(tasks[taskId].t);
+		tasks[taskId].t = NULL;
 	}
 }
 

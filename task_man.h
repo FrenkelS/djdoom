@@ -34,18 +34,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef struct task
 {
-	struct	task	*next;
-	struct	task	*prev;
-	void			(*TaskService)(struct task *);
-	void			*data;
-	long			rate;
-	volatile long	count;
-	int				priority;
-	int				active;
+	struct task			*next;
+	struct task			*prev;
+	void				(*TaskService)(struct task *);
+	int32_t				taskId;
+	int32_t				rate;
+	volatile int32_t	count;
+	int32_t				priority;
+	boolean				active;
 } task;
 
 void TS_Shutdown(void);
-task *TS_ScheduleTask(void (*function)(task *), int32_t rate, int32_t priority, void *data);
+task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority, int32_t taskId);
 void TS_Terminate(task *ptr);
 void TS_Dispatch(void);
 

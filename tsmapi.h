@@ -21,7 +21,7 @@
 
 void TSM_Install(uint32_t rate);
 int32_t TSM_NewService(void(*timerISR)(void), int32_t rate, int32_t priority, int32_t pause);
-void TSM_DelService(int32_t id);
+void TSM_DelService(int32_t taskId);
 void TSM_Remove(void);
 
 #endif
