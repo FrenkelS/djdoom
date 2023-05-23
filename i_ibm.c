@@ -731,7 +731,7 @@ static boolean isKeyboardIsrSet = false;
 static uint16_t oldkeyboardisrselector;
 static uint32_t oldkeyboardisroffset = 0;
 #elif defined __WATCOMC__
-static void (_interrupt __far *oldkeyboardisr) () = NULL;
+static void (_interrupt _far *oldkeyboardisr) (void) = NULL;
 #endif
 
 static void I_StartupKeyboard (void)

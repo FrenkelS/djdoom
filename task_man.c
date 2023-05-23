@@ -49,7 +49,14 @@ typedef struct
 static task HeadTask;
 static task *TaskList = &HeadTask;
 
-static void (__interrupt __far *OldInt8)(void);
+#if defined __DJGPP__
+static _go32_dpmi_seginfo OldInt8, NewInt8;
+#elif defined __CCDL__
+static uint16_t OldInt8selector;
+static uint32_t OldInt8offset;
+#elif defined __WATCOMC__
+static void (_interrupt _far *OldInt8)(void);
+#endif
 
 static volatile long TaskServiceRate  = 0x10000L;
 static volatile long TaskServiceCount = 0;
@@ -87,17 +94,42 @@ static void RestoreInterrupts(uint32_t flags)
 	}
 }
 
+#elif defined __DJGPP__
+static uint32_t DisableInterrupts(void)
+{
+	uint32_t a;
+	asm
+	(
+		"pushfl \n"
+		"popl %0 \n"
+		"cli"
+		: "=r" (a)
+	);
+	return a;
+}
+
+static void RestoreInterrupts(uint32_t flags)
+{
+	asm
+	(
+		"pushl %0 \n"
+		"popfl"
+		:
+		: "r" (flags)
+	);
+}
+
 #elif defined __WATCOMC__
 #pragma aux DisableInterrupts =	\
-   "pushfd",					\
-   "pop eax",					\
-   "cli"						\
-   value [eax];
+	"pushfd",					\
+	"pop eax",					\
+	"cli"						\
+	value [eax];
 
 #pragma aux RestoreInterrupts =	\
-   "push eax",					\
-   "popfd"						\
-   parm [eax];
+	"push eax",					\
+	"popfd"						\
+	parm [eax];
 #endif
 
 
@@ -208,7 +240,13 @@ static void TS_SetTimerToMaxTaskRate(void)
    Interrupt service routine
 ---------------------------------------------------------------------*/
 
-static void __interrupt __far TS_ServiceSchedule(void)
+#if defined __DJGPP__
+static void TS_ServiceSchedule (void)
+#elif defined __CCDL__ || defined __WATCOMC__
+static void _interrupt _far TS_ServiceSchedule (void)
+#elif defined __DMC__
+static int TS_ServiceSchedule (struct INT_DATA *pd)
+#endif
 {
 	task *ptr;
 	task *next;
@@ -235,9 +273,29 @@ static void __interrupt __far TS_ServiceSchedule(void)
 	if (TaskServiceCount > 0xffffL)
 	{
 		TaskServiceCount &= 0xffff;
+#if defined __DJGPP__
+		asm volatile
+		(
+			"cli \n"
+			"pushfl \n"
+			"lcall *%0"
+			:
+			: "m" (OldInt8.pm_offset)
+		);
+#elif defined __WATCOMC__
 		_chain_intr(OldInt8);
-	} else
+#elif defined __CCDL__
+		//TODO call OldInt8() instead of acknowledging the interrupt
 		outp(0x20, 0x20);
+#elif defined __DMC__
+		return 0;
+#endif
+	} else {
+		outp(0x20, 0x20);
+#if defined __DMC__
+		return 1;
+#endif
+	}
 }
 
 
@@ -246,6 +304,8 @@ static void __interrupt __far TS_ServiceSchedule(void)
 
    Sets up the task service routine.
 ---------------------------------------------------------------------*/
+
+#define TIMERINT 8
 
 static void TS_Startup(void)
 {
@@ -257,8 +317,27 @@ static void TS_Startup(void)
 		TaskServiceRate  = 0x10000L;
 		TaskServiceCount = 0;
 
-		OldInt8 = _dos_getvect(0x08);
-		_dos_setvect(0x08, TS_ServiceSchedule);
+#if defined __DJGPP__
+		_go32_dpmi_get_protected_mode_interrupt_vector(TIMERINT, &OldInt8);
+
+		NewInt8.pm_selector = _go32_my_cs(); 
+		NewInt8.pm_offset = (int32_t)TS_ServiceSchedule;
+		_go32_dpmi_allocate_iret_wrapper(&NewInt8);
+		_go32_dpmi_set_protected_mode_interrupt_vector(TIMERINT, &NewInt8);
+#elif defined __DMC__
+		int_intercept(TIMERINT, TS_ServiceSchedule, 0);
+#elif defined __CCDL__
+		{
+			struct SREGS	segregs;
+
+			_segread(&segregs);
+			dpmi_get_protected_interrupt(&OldInt8selector, &OldInt8offset, TIMERINT);
+			dpmi_set_protected_interrupt(TIMERINT, segregs.cs, (uint32_t)TS_ServiceSchedule);
+		}
+#elif defined __WATCOMC__
+		OldInt8 = _dos_getvect(TIMERINT);
+		_dos_setvect(TIMERINT, TS_ServiceSchedule);
+#endif
 
 		TS_Installed = true;
 	}
@@ -279,7 +358,16 @@ void TS_Shutdown(void)
 
 		TS_SetClockSpeed(0);
 
-		_dos_setvect(0x08, OldInt8);
+#if defined __DJGPP__
+		_go32_dpmi_set_protected_mode_interrupt_vector(TIMERINT, &OldInt8);
+		_go32_dpmi_free_iret_wrapper(&NewInt8);
+#elif defined __DMC__
+		int_restore(TIMERINT);
+#elif defined __CCDL__
+		dpmi_set_protected_interrupt(TIMERINT, OldInt8selector, OldInt8offset);
+#elif defined __WATCOMC__
+		_dos_setvect(TIMERINT, OldInt8);
+#endif
 
 		TS_Installed = false;
 	}

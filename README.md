@@ -9,10 +9,13 @@ The goal of this project is to:
   - [Watcom](https://github.com/open-watcom/open-watcom-v2)
 * Show the modifications required in the code for it to be compilable by the compilers.
 
-The code is based on [gamesrc-ver-recreation](https://bitbucket.org/gamesrc-ver-recreation/doom/src/master)
+The code is based on [gamesrc-ver-recreation](https://bitbucket.org/gamesrc-ver-recreation/doom)
 and it took inspiration from
+[Apogee Sound System](https://bitbucket.org/gamesrc-ver-recreation/audiolib),
+[Apogee Sound System backed DMX wrapper](https://bitbucket.org/gamesrc-ver-recreation/apodmx),
 [doomgeneric](https://github.com/ozkl/doomgeneric),
 [Doom Vanille](https://github.com/AXDOOMER/doom-vanille),
+[Executor](https://github.com/ctm/executor),
 [FastDoom](https://github.com/viti95/FastDoom),
 [Quake](https://github.com/id-Software/Quake) and
 [Quake 2](https://github.com/id-Software/Quake-2).
