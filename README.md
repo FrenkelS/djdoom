@@ -23,7 +23,7 @@ To build Doom only using C code, use the macro `C_ONLY`.
 There's no sound, no joystick and no Logitech Cyberman support.
 
 ## How to add other compilers
-The differences between compilers specific to the Doom source code are in `compiler.h`, `d_main.c`, `i_ibm.c` and `planar.asm`.
+The differences between compilers specific to the Doom source code are in `compiler.h`, `d_main.c`, `i_ibm.c`, `planar.asm` and `task_man.c`.
 Search in those files for the pre-defined compiler macros and start hacking.
 
 |Compiler    |Set environment variables|Compile code|Pre-defined compiler macro|
