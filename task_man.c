@@ -236,9 +236,8 @@ static void __interrupt __far TS_ServiceSchedule(void)
 	{
 		TaskServiceCount &= 0xffff;
 		_chain_intr(OldInt8);
-	}
-
-	outp(0x20, 0x20);
+	} else
+		outp(0x20, 0x20);
 }
 
 
