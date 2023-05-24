@@ -124,7 +124,7 @@ static  boolean mousepresent;
 
 //===============================
 
-static int32_t             ticcount;
+static volatile int32_t ticcount;
 
 // REGS stuff used for int calls
 static union REGS regs;
