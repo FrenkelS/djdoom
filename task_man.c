@@ -274,7 +274,7 @@ static int TS_ServiceSchedule (struct INT_DATA *pd)
 	{
 		TaskServiceCount &= 0xffff;
 #if defined __DJGPP__
-		asm volatile
+		asm
 		(
 			"cli \n"
 			"pushfl \n"
