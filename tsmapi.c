@@ -17,28 +17,61 @@
 //
 
 #include "doomdef.h"
+#include "task_man.h"
 #include "tsmapi.h"
 
-int32_t TSM_Install(uint32_t sndTicrate)
+typedef struct {
+	task *t;
+	void (*callback)(void);
+} task_t;
+
+#define MAX_TASKS 8
+
+static task_t tasks[MAX_TASKS];
+
+void TSM_Install(uint32_t rate)
 {
-	UNUSED(sndTicrate);
-	return 0;
+	UNUSED(rate);
+	memset(tasks, 0, sizeof(tasks));
 }
 
-int32_t TSM_NewService(int32_t (*timerISR)(void), int32_t frequency, int32_t priority, int32_t pause)
+static void tsm_funch(task *t)
 {
-	UNUSED(timerISR);
-	UNUSED(frequency);
-	UNUSED(priority);
+	int32_t taskId = t->taskId;
+	tasks[taskId].callback();
+}
+
+int32_t TSM_NewService(void(*function)(void), int32_t rate, int32_t priority, int32_t pause)
+{
+	int32_t taskId;
+
 	UNUSED(pause);
-	return 0;
+
+	for (taskId = 0; taskId < MAX_TASKS; taskId++)
+	{
+		if (tasks[taskId].t == NULL)
+			break;
+	}
+
+	if (taskId == MAX_TASKS)
+		return -1;
+
+	tasks[taskId].callback = function;
+	tasks[taskId].t = TS_ScheduleTask(tsm_funch, rate, priority, taskId);
+	TS_Dispatch();
+	return taskId;
 }
 
-void TSM_DelService(int32_t tsm_ID)
+void TSM_DelService(int32_t taskId)
 {
-	UNUSED(tsm_ID);
+	if (taskId >= 0)
+	{
+		TS_Terminate(tasks[taskId].t);
+		tasks[taskId].t = NULL;
+	}
 }
 
 void TSM_Remove(void)
 {
+	TS_Shutdown();
 }

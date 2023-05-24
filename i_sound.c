@@ -39,7 +39,7 @@ static int32_t tsm_ID;
 static void I_StartupTimer (void)
 {
 	extern void I_InitBaseTime(void);
-	extern int32_t I_TimerISR(void);
+	extern void I_TimerISR(void);
 
 	printf("I_StartupTimer()\n");
 

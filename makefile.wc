@@ -28,7 +28,7 @@ CCOPTS = -dAPPVER_EXEDEF=DM19 -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc -wx
 GLOBOBJS = &
  dmx.obj &
  tsmapi.obj &
- dpmi.obj &
+ task_man.obj &
  i_main.obj &
  i_ibm.obj &
  i_sound.obj &
