@@ -32,24 +32,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <dos.h>
 #include <stdlib.h>
 #include <conio.h>
-#include "dpmi.h"
-#include "task_man.h"
-#include "interrup.h"
+#include "doomdef.h"
 #include "pcfx.h"
+#include "task_man.h"
 
 #define TRUE  ( 1 == 1 )
 #define FALSE ( !TRUE )
 
-static void PCFX_Service( task *Task );
+static void PCFX_Service(task *Task);
 
 static long   PCFX_LengthLeft;
 static char  *PCFX_Sound = NULL;
 static int    PCFX_LastSample;
-static short  PCFX_Lookup[ 256 ];
+static short  PCFX_Lookup[256];
 static int    PCFX_UseLookupFlag = FALSE;
 static int    PCFX_Priority;
 static unsigned long PCFX_CallBackVal;
-static void   ( *PCFX_CallBackFunc )( unsigned long ) = NULL;
+static void   (*PCFX_CallBackFunc)(unsigned long) = NULL;
 static int    PCFX_TotalVolume = PCFX_MaxVolume;
 static task  *PCFX_ServiceTask = NULL;
 static int    PCFX_VoiceHandle = PCFX_MinVoiceHandle;
@@ -58,18 +57,73 @@ static int PCFX_Installed = FALSE;
 
 static int PCFX_ErrorCode = PCFX_Ok;
 
-#define PCFX_SetErrorCode( status ) \
-   PCFX_ErrorCode   = ( status );
+#define PCFX_SetErrorCode(status) \
+   PCFX_ErrorCode   = (status);
 
 
-/**********************************************************************
-
-   Memory locked functions:
-
-**********************************************************************/
+static uint32_t DisableInterrupts(void);
+static void RestoreInterrupts(uint32_t flags);
 
 
-#define PCFX_LockStart PCFX_Stop
+#if defined __DMC__ || defined __CCDL__
+static uint32_t DisableInterrupts(void)
+{
+	asm
+	{
+		pushfd
+		pop eax
+		cli
+	}
+	return _EAX;
+}
+
+static void RestoreInterrupts(uint32_t flags)
+{
+	asm
+	{
+		mov eax, [flags]
+		push eax
+		popfd
+	}
+}
+
+#elif defined __DJGPP__
+static uint32_t DisableInterrupts(void)
+{
+	uint32_t a;
+	asm
+	(
+		"pushfl \n"
+		"popl %0 \n"
+		"cli"
+		: "=r" (a)
+	);
+	return a;
+}
+
+static void RestoreInterrupts(uint32_t flags)
+{
+	asm
+	(
+		"pushl %0 \n"
+		"popfl"
+		:
+		: "r" (flags)
+	);
+}
+
+#elif defined __WATCOMC__
+#pragma aux DisableInterrupts =	\
+	"pushfd",					\
+	"pop eax",					\
+	"cli"						\
+	value [eax];
+
+#pragma aux RestoreInterrupts =	\
+	"push eax",					\
+	"popfd"						\
+	parm [eax];
+#endif
 
 
 /*---------------------------------------------------------------------
@@ -78,39 +132,33 @@ static int PCFX_ErrorCode = PCFX_Ok;
    Halts playback of the currently playing sound effect.
 ---------------------------------------------------------------------*/
 
-int PCFX_Stop
-   (
-   int handle
-   )
+int PCFX_Stop(int handle)
+{
+	unsigned flags;
 
-   {
-   unsigned flags;
+	if ((handle != PCFX_VoiceHandle) || (PCFX_Sound == NULL))
+	{
+		PCFX_SetErrorCode(PCFX_VoiceNotFound);
+		return PCFX_Warning;
+	}
 
-   if ( ( handle != PCFX_VoiceHandle ) || ( PCFX_Sound == NULL ) )
-      {
-      PCFX_SetErrorCode( PCFX_VoiceNotFound );
-      return( PCFX_Warning );
-      }
+	flags = DisableInterrupts();
 
-   flags = DisableInterrupts();
+	// Turn off speaker
+	outp(0x61, inp(0x61) & 0xfc);
 
-   // Turn off speaker
-   outp( 0x61, inp( 0x61 ) & 0xfc );
+	PCFX_Sound      = NULL;
+	PCFX_LengthLeft = 0;
+	PCFX_Priority   = 0;
+	PCFX_LastSample = 0;
 
-   PCFX_Sound      = NULL;
-   PCFX_LengthLeft = 0;
-   PCFX_Priority   = 0;
-   PCFX_LastSample = 0;
+	RestoreInterrupts(flags);
 
-   RestoreInterrupts( flags );
+	if (PCFX_CallBackFunc)
+		PCFX_CallBackFunc(PCFX_CallBackVal);
 
-   if ( PCFX_CallBackFunc )
-      {
-      PCFX_CallBackFunc( PCFX_CallBackVal );
-      }
-
-   return( PCFX_Ok );
-   }
+	return PCFX_Ok;
+}
 
 
 /*---------------------------------------------------------------------
@@ -119,48 +167,40 @@ int PCFX_Stop
    Task Manager routine to perform the playback of a sound effect.
 ---------------------------------------------------------------------*/
 
-static void PCFX_Service
-   (
-   task *Task
-   )
+static void PCFX_Service(task *Task)
+{
+	unsigned value;
 
-   {
-   unsigned value;
+	UNUSED(Task);
 
-   if ( PCFX_Sound )
-      {
-      if ( PCFX_UseLookupFlag )
-         {
-         value = PCFX_Lookup[ *PCFX_Sound ];
-         PCFX_Sound++;
-         }
-      else
-         {
-         value = *( short int * )PCFX_Sound;
-         PCFX_Sound += sizeof( short int );
-         }
+	if (PCFX_Sound)
+	{
+		if (PCFX_UseLookupFlag)
+		{
+			value = PCFX_Lookup[*PCFX_Sound];
+			PCFX_Sound++;
+		} else {
+			value = *(short int *)PCFX_Sound;
+			PCFX_Sound += sizeof(short int);
+		}
 
-      if ( ( PCFX_TotalVolume > 0 ) && ( value != PCFX_LastSample ) )
-         {
-         PCFX_LastSample = value;
-         if ( value )
-            {
-            outp( 0x43, 0xb6 );
-            outp( 0x42, value );
-            outp( 0x42, value >> 8 );
-            outp( 0x61, inp( 0x61 ) | 0x3 );
-            }
-         else
-            {
-            outp( 0x61, inp( 0x61 ) & 0xfc );
-            }
-         }
-      if ( --PCFX_LengthLeft == 0 )
-         {
-         PCFX_Stop( PCFX_VoiceHandle );
-         }
-      }
-   }
+		if ((PCFX_TotalVolume > 0) && (value != PCFX_LastSample))
+		{
+			PCFX_LastSample = value;
+			if (value)
+			{
+				outp(0x43, 0xb6);
+				outp(0x42, value);
+				outp(0x42, value >> 8);
+				outp(0x61, inp(0x61) | 0x3);
+			} else
+				outp(0x61, inp(0x61) & 0xfc);
+		}
+
+		if (--PCFX_LengthLeft == 0)
+			PCFX_Stop(PCFX_VoiceHandle);
+	}
+}
 
 
 /*---------------------------------------------------------------------
@@ -169,48 +209,38 @@ static void PCFX_Service
    Starts playback of a Muse sound effect.
 ---------------------------------------------------------------------*/
 
-int PCFX_Play
-   (
-   PCSound *sound,
-   int priority,
-   unsigned long callbackval
-   )
+int PCFX_Play(PCSound *sound, int priority, unsigned long callbackval)
+{
+	unsigned flags;
 
-   {
-   unsigned flags;
+	if (priority < PCFX_Priority)
+	{
+		PCFX_SetErrorCode(PCFX_NoVoices);
+		return PCFX_Warning;
+	}
 
-   if ( priority < PCFX_Priority )
-      {
-      PCFX_SetErrorCode( PCFX_NoVoices );
-      return( PCFX_Warning );
-      }
+	PCFX_Stop(PCFX_VoiceHandle);
 
-   PCFX_Stop( PCFX_VoiceHandle );
+	PCFX_VoiceHandle++;
+	if (PCFX_VoiceHandle < PCFX_MinVoiceHandle)
+		PCFX_VoiceHandle = PCFX_MinVoiceHandle;
 
-   PCFX_VoiceHandle++;
-   if ( PCFX_VoiceHandle < PCFX_MinVoiceHandle )
-      {
-      PCFX_VoiceHandle = PCFX_MinVoiceHandle;
-      }
+	flags = DisableInterrupts();
 
-   flags = DisableInterrupts();
+	PCFX_LengthLeft = sound->length;
 
-   PCFX_LengthLeft = sound->length;
+	if (!PCFX_UseLookupFlag)
+		PCFX_LengthLeft >>= 1;
 
-   if ( !PCFX_UseLookupFlag )
-      {
-      PCFX_LengthLeft >>= 1;
-      }
+	PCFX_Priority = priority;
 
-   PCFX_Priority = priority;
+	PCFX_Sound = &sound->data;
+	PCFX_CallBackVal = callbackval;
 
-   PCFX_Sound = &sound->data;
-   PCFX_CallBackVal = callbackval;
+	RestoreInterrupts(flags);
 
-   RestoreInterrupts( flags );
-
-   return( PCFX_VoiceHandle );
-   }
+	return PCFX_VoiceHandle;
+}
 
 
 /*---------------------------------------------------------------------
@@ -219,22 +249,10 @@ int PCFX_Play
    Checks if a sound effect is currently playing.
 ---------------------------------------------------------------------*/
 
-int PCFX_SoundPlaying
-   (
-   int handle
-   )
-
-   {
-   int status;
-
-   status = FALSE;
-   if ( ( handle == PCFX_VoiceHandle ) && ( PCFX_LengthLeft > 0 ) )
-      {
-      status = TRUE;
-      }
-
-   return( status );
-   }
+int PCFX_SoundPlaying(int handle)
+{
+	return (handle == PCFX_VoiceHandle) && (PCFX_LengthLeft > 0);
+}
 
 
 /*---------------------------------------------------------------------
@@ -243,45 +261,22 @@ int PCFX_SoundPlaying
    Sets the total volume of the sound effects.
 ---------------------------------------------------------------------*/
 
-int PCFX_SetTotalVolume
-   (
-   int volume
-   )
+int PCFX_SetTotalVolume(int volume)
+{
+	unsigned flags = DisableInterrupts();
 
-   {
-   unsigned flags;
+	volume = max(volume, 0);
+	volume = min(volume, PCFX_MaxVolume);
 
-   flags = DisableInterrupts();
+	PCFX_TotalVolume = volume;
 
-   volume = max( volume, 0 );
-   volume = min( volume, PCFX_MaxVolume );
+	if (volume == 0)
+		outp(0x61, inp(0x61) & 0xfc);
 
-   PCFX_TotalVolume = volume;
+	RestoreInterrupts(flags);
 
-   if ( volume == 0 )
-      {
-      outp( 0x61, inp( 0x61 ) & 0xfc );
-      }
-
-   RestoreInterrupts( flags );
-
-   return( PCFX_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: PCFX_LockEnd
-
-   Used for determining the length of the functions to lock in memory.
----------------------------------------------------------------------*/
-
-static void PCFX_LockEnd
-   (
-   void
-   )
-
-   {
-   }
+	return PCFX_Ok;
+}
 
 
 /*---------------------------------------------------------------------
@@ -290,29 +285,24 @@ static void PCFX_LockEnd
    Sets up a pitch lookup table for PC sound effects.
 ---------------------------------------------------------------------*/
 
-void PCFX_UseLookup
-   (
-   int use,
-   unsigned value
-   )
+void PCFX_UseLookup(int use, unsigned value)
+{
+	int pitch;
+	int index;
 
-   {
-   int pitch;
-   int index;
+	PCFX_Stop(PCFX_VoiceHandle);
 
-   PCFX_Stop( PCFX_VoiceHandle );
-
-   PCFX_UseLookupFlag = use;
-   if ( use )
-      {
-      pitch = 0;
-      for( index = 0; index < 256; index++ )
-         {
-         PCFX_Lookup[ index ] = pitch;
-         pitch += value;
-         }
-      }
-   }
+	PCFX_UseLookupFlag = use;
+	if (use)
+	{
+		pitch = 0;
+		for(index = 0; index < 256; index++)
+		{
+			PCFX_Lookup[index] = pitch;
+			pitch += value;
+		}
+	}
+}
 
 
 /*---------------------------------------------------------------------
@@ -321,37 +311,22 @@ void PCFX_UseLookup
    Initializes the sound effect engine.
 ---------------------------------------------------------------------*/
 
-int PCFX_Init
-   (
-   void
-   )
+int PCFX_Init(void)
+{
+	if (PCFX_Installed)
+		PCFX_Shutdown();
 
-   {
-   int status;
+	PCFX_UseLookup(TRUE, 60);
+	PCFX_Stop(PCFX_VoiceHandle);
+	PCFX_ServiceTask = TS_ScheduleTask(&PCFX_Service, 140, 2, 0);
+	TS_Dispatch();
 
-   if ( PCFX_Installed )
-      {
-      PCFX_Shutdown();
-      }
+	PCFX_CallBackFunc = NULL;
+	PCFX_Installed = TRUE;
 
-   status = PCFX_LockMemory();
-   if ( status != PCFX_Ok )
-      {
-      PCFX_UnlockMemory();
-      return( status );
-      }
-
-   PCFX_UseLookup( TRUE, 60 );
-   PCFX_Stop( PCFX_VoiceHandle );
-   PCFX_ServiceTask = TS_ScheduleTask( &PCFX_Service, 140, 2, NULL );
-   TS_Dispatch();
-
-   PCFX_CallBackFunc = NULL;
-   PCFX_Installed = TRUE;
-
-   PCFX_SetErrorCode( PCFX_Ok );
-   return( PCFX_Ok );
-   }
+	PCFX_SetErrorCode(PCFX_Ok);
+	return PCFX_Ok;
+}
 
 
 /*---------------------------------------------------------------------
@@ -360,89 +335,14 @@ int PCFX_Init
    Ends the use of the sound effect engine.
 ---------------------------------------------------------------------*/
 
-int PCFX_Shutdown
-   (
-   void
-   )
+void PCFX_Shutdown(void)
+{
+	if (PCFX_Installed)
+	{
+		PCFX_Stop(PCFX_VoiceHandle);
+		TS_Terminate(PCFX_ServiceTask);
+		PCFX_Installed = FALSE;
+	}
 
-   {
-   if ( PCFX_Installed )
-      {
-      PCFX_Stop( PCFX_VoiceHandle );
-      TS_Terminate( PCFX_ServiceTask );
-      PCFX_UnlockMemory();
-      PCFX_Installed = FALSE;
-      }
-
-   PCFX_SetErrorCode( PCFX_Ok );
-   return( PCFX_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: PCFX_UnlockMemory
-
-   Unlocks all neccessary data.
----------------------------------------------------------------------*/
-
-static void PCFX_UnlockMemory
-   (
-   void
-   )
-
-   {
-   DPMI_UnlockMemoryRegion( PCFX_LockStart, PCFX_LockEnd );
-   DPMI_Unlock( PCFX_LengthLeft );
-   DPMI_Unlock( PCFX_Sound );
-   DPMI_Unlock( PCFX_LastSample );
-   DPMI_Unlock( PCFX_Lookup );
-   DPMI_Unlock( PCFX_UseLookupFlag );
-   DPMI_Unlock( PCFX_Priority );
-   DPMI_Unlock( PCFX_CallBackVal );
-   DPMI_Unlock( PCFX_CallBackFunc );
-   DPMI_Unlock( PCFX_TotalVolume );
-   DPMI_Unlock( PCFX_ServiceTask );
-   DPMI_Unlock( PCFX_VoiceHandle );
-   DPMI_Unlock( PCFX_Installed );
-   DPMI_Unlock( PCFX_ErrorCode );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: PCFX_LockMemory
-
-   Locks all neccessary data.
----------------------------------------------------------------------*/
-
-static int PCFX_LockMemory
-   (
-   void
-   )
-
-   {
-   int status;
-
-   status  = DPMI_LockMemoryRegion( PCFX_LockStart, PCFX_LockEnd );
-   status |= DPMI_Lock( PCFX_LengthLeft );
-   status |= DPMI_Lock( PCFX_Sound );
-   status |= DPMI_Lock( PCFX_LastSample );
-   status |= DPMI_Lock( PCFX_Lookup );
-   status |= DPMI_Lock( PCFX_UseLookupFlag );
-   status |= DPMI_Lock( PCFX_Priority );
-   status |= DPMI_Lock( PCFX_CallBackVal );
-   status |= DPMI_Lock( PCFX_CallBackFunc );
-   status |= DPMI_Lock( PCFX_TotalVolume );
-   status |= DPMI_Lock( PCFX_ServiceTask );
-   status |= DPMI_Lock( PCFX_VoiceHandle );
-   status |= DPMI_Lock( PCFX_Installed );
-   status |= DPMI_Lock( PCFX_ErrorCode );
-
-   if ( status != DPMI_Ok )
-      {
-      PCFX_UnlockMemory();
-      PCFX_SetErrorCode( PCFX_DPMI_Error );
-      return( PCFX_Error );
-      }
-
-   return( PCFX_Ok );
-   }
+	PCFX_SetErrorCode(PCFX_Ok);
+}

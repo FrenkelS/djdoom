@@ -58,7 +58,7 @@ int   PCFX_Play( PCSound *sound, int priority, unsigned long callbackval );
 int   PCFX_SoundPlaying( int handle );
 int   PCFX_SetTotalVolume( int volume );
 int   PCFX_Init( void );
-int   PCFX_Shutdown( void );
+void  PCFX_Shutdown( void );
    #pragma aux PCFX_Shutdown frame;
 
 #endif

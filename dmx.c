@@ -18,8 +18,9 @@
 
 #include "doomdef.h"
 #include "dmx.h"
+#include "pcfx.h"
 
-static unsigned short divisors[] = {
+static uint16_t divisors[] = {
 	0,
 	6818, 6628, 6449, 6279, 6087, 5906, 5736, 5575,
 	5423, 5279, 5120, 4971, 4830, 4697, 4554, 4435,
@@ -40,19 +41,19 @@ static unsigned short divisors[] = {
 };
 
 typedef struct {
-	unsigned int length;
-	unsigned short priority;
-	unsigned short data[0x10000];
+	uint32_t length;
+	uint16_t priority;
+	uint16_t data[0x10000];
 } pcspkmuse_t;
 
 typedef struct {
-	unsigned short id;
-	unsigned short length;
-	unsigned char data[];
+	uint16_t id;
+	uint16_t length;
+	uint8_t data[];
 } dmxpcs_t;
 
 static pcspkmuse_t pcspkmuse;
-static int pcshandle = 0;
+static uint32_t pcshandle = 0;
 
 int32_t MUS_PauseSong(int32_t handle) {UNUSED(handle); return 0;}
 int32_t MUS_ResumeSong(int32_t handle) {UNUSED(handle); return 0;}
@@ -65,14 +66,16 @@ int32_t MUS_PlaySong(int32_t handle, int32_t volume) {UNUSED(handle); UNUSED(vol
 
 int32_t SFX_PlayPatch(void *vdata, int32_t pitch, int32_t sep, int32_t volume, int32_t flags, int32_t priority)
 {
-	unsigned int rate;
-	unsigned long len;
-	unsigned char *data = (unsigned char*)vdata;
-	unsigned int type = (data[1] << 8) | data[0];
+	uint8_t *data = (uint8_t*)vdata;
+	uint32_t type = (data[1] << 8) | data[0];
 	dmxpcs_t *dmxpcs = (dmxpcs_t*)vdata;
-	unsigned short i;
+	uint16_t i;
 
+	UNUSED(pitch);
+	UNUSED(sep);
+	UNUSED(volume);
 	UNUSED(flags);
+	UNUSED(priority);
 
 	if (type == 0)
 	{
@@ -85,16 +88,6 @@ int32_t SFX_PlayPatch(void *vdata, int32_t pitch, int32_t sep, int32_t volume, i
 		pcshandle = PCFX_Play((PCSound *)&pcspkmuse, 100, 0);
 		return pcshandle | 0x8000;
 	}
-	else if (type == 3)
-	{
-		rate = (data[3] << 8) | data[2];
-		len = (data[7] << 24) | (data[6] << 16) | (data[5] << 8) | data[4];
-		if (len <= 48) {
-			return -1;
-		}
-		len -= 32;
-		return FX_PlayRaw(data + 24, len, rate, ((pitch - 128) * 2400) / 128, volume * 2, ((254 - sep) * volume) / 63, ((sep)* volume) / 63, 127-priority, 0);
-	}
 	else
 		return 0;
 }
@@ -103,8 +96,6 @@ void SFX_StopPatch(int32_t handle)
 {
 	if (handle & 0x8000)
 		PCFX_Stop(handle & 0x7fff);
-	else
-		FX_StopSound(handle);
 }
 
 int32_t SFX_Playing(int32_t handle)
@@ -112,16 +103,15 @@ int32_t SFX_Playing(int32_t handle)
 	if (handle & 0x8000)
 		return PCFX_SoundPlaying(handle & 0x7fff);
 	else
-		return FX_SoundActive(handle);
+		return 0;
 }
 
 void SFX_SetOrigin(int32_t handle, int32_t pitch, int32_t sep, int32_t volume)
 {
-	if (!(handle & 0x8000))
-	{
-		FX_SetPan(handle, volume * 2, ((254 - sep) * volume) / 63, ((sep)* volume) / 63);
-		FX_SetPitch(handle, ((pitch - 128) * 2400) / 128);
-	}
+	UNUSED(handle);
+	UNUSED(pitch);
+	UNUSED(sep);
+	UNUSED(volume);
 }
 
 
@@ -139,68 +129,22 @@ void MPU_SetCard(int32_t mPort) {UNUSED(mPort);}
 
 int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32_t sfxDevice)
 {
-	long status, device;
-	mus_rate = ticrate;
-	dmx_sdev = sfxDevice;
-	status = 0;
-
+	UNUSED(ticrate);
 	UNUSED(maxsongs);
+	UNUSED(musicDevice);
 
-	switch (musicDevice) {
-	case 0:
-		device = NumSoundCards;
-		break;
-	case AHW_ADLIB:
-		if (sfxDevice & AHW_SOUND_BLASTER)
-			device = SoundBlaster;
-		else
-			device = Adlib;
-		break;
-	case AHW_SOUND_BLASTER:
-		device = SoundBlaster;
-		break;
-	case AHW_MPU_401:
-		device = GenMidi;
-		break;
-	case AHW_ULTRA_SOUND:
-		device = UltraSound;
-		break;
-	default:
-		return -1;
-		break;
-	}
-	dmx_mdev = device;
-	if (device == SoundBlaster)
-	{
-		int MaxVoices;
-		int MaxBits;
-		int MaxChannels;
-
-		FX_SetupSoundBlaster(dmx_blaster, (int *)&MaxVoices, (int *)&MaxBits, (int *)&MaxChannels);
-	}
-	status = MUSIC_Init(device, dmx_mus_port);
-	if (status == MUSIC_Ok) {
-		MUSIC_SetVolume(0);
-	}
 	if (sfxDevice & AHW_PC_SPEAKER)
 	{
 		PCFX_Init();
 		PCFX_SetTotalVolume(255);
 		PCFX_UseLookup(0, 0);
 	}
-	return musicDevice | sfxDevice;
+	return sfxDevice;
 }
 
 void DMX_DeInit(void)
 {
-	MUSIC_Shutdown();
-	FX_Shutdown();
 	PCFX_Shutdown();
-	remove("ULTRAMID.INI");
-	if (mid_data)
-	{
-		free(mid_data);
-	}
 }
 
 
