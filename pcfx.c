@@ -200,7 +200,7 @@ static int32_t MY_PCFX_Play(PCSound *sound)
 	flags = DisableInterrupts();
 
 	PCFX_LengthLeft = sound->length;
-	PCFX_Sound = &sound->data;
+	PCFX_Sound = &sound->data[0];
 
 	RestoreInterrupts(flags);
 
