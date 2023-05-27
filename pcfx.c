@@ -145,7 +145,7 @@ static int32_t ASS_PCFX_Play(PCSound *sound)
 	return PCFX_VoiceHandle;
 }
 
-static uint16_t divisors[] = {
+static const uint16_t divisors[] = {
 	0,
 	6818, 6628, 6449, 6279, 6087, 5906, 5736, 5575,
 	5423, 5279, 5120, 4971, 4830, 4697, 4554, 4435,
