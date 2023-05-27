@@ -48,69 +48,7 @@ static int32_t	PCFX_VoiceHandle = PCFX_MinVoiceHandle;
 static boolean	PCFX_Installed = false;
 
 
-static uint32_t DisableInterrupts(void);
-static void RestoreInterrupts(uint32_t flags);
-
-
-#if defined __DMC__ || defined __CCDL__
-static uint32_t DisableInterrupts(void)
-{
-	asm
-	{
-		pushfd
-		pop eax
-		cli
-	}
-	return _EAX;
-}
-
-static void RestoreInterrupts(uint32_t flags)
-{
-	asm
-	{
-		mov eax, [flags]
-		push eax
-		popfd
-	}
-}
-
-#elif defined __DJGPP__
-static uint32_t DisableInterrupts(void)
-{
-	uint32_t a;
-	asm
-	(
-		"pushfl \n"
-		"popl %0 \n"
-		"cli"
-		: "=r" (a)
-	);
-	return a;
-}
-
-static void RestoreInterrupts(uint32_t flags)
-{
-	asm
-	(
-		"pushl %0 \n"
-		"popfl"
-		:
-		: "r" (flags)
-	);
-}
-
-#elif defined __WATCOMC__
-#pragma aux DisableInterrupts =	\
-	"pushfd",					\
-	"pop eax",					\
-	"cli"						\
-	value [eax];
-
-#pragma aux RestoreInterrupts =	\
-	"push eax",					\
-	"popfd"						\
-	parm [eax];
-#endif
+#include "interrup.h"
 
 
 /*---------------------------------------------------------------------
