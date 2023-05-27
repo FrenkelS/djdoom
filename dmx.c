@@ -63,7 +63,7 @@ int32_t SFX_Playing(int32_t handle)
 		return 0;
 }
 
-void SFX_SetOrigin(int32_t handle, int32_t pitch, int32_t sep, int32_t volume) {UNUSED(handle); UNUSED(pitch); UNUSED(sep); UNUSED(volume); }
+void SFX_SetOrigin(int32_t handle, int32_t pitch, int32_t sep, int32_t volume) {UNUSED(handle); UNUSED(pitch); UNUSED(sep); UNUSED(volume);}
 
 
 int32_t ENS_Detect(void) {return -1;}
