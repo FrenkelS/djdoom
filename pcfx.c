@@ -119,9 +119,9 @@ static void RestoreInterrupts(uint32_t flags)
    Halts playback of the currently playing sound effect.
 ---------------------------------------------------------------------*/
 
-void PCFX_Stop(int handle)
+void PCFX_Stop(int32_t handle)
 {
-	unsigned flags;
+	uint32_t flags;
 
 	if ((handle != PCFX_VoiceHandle) || (PCFX_Sound == NULL))
 		return;
@@ -147,14 +147,14 @@ void PCFX_Stop(int handle)
 
 static void PCFX_Service(task *Task)
 {
-	unsigned value;
+	uint32_t value;
 
 	UNUSED(Task);
 
 	if (PCFX_Sound)
 	{
-		value = *(short int *)PCFX_Sound;
-		PCFX_Sound += sizeof(short int);
+		value = *(int16_t *)PCFX_Sound;
+		PCFX_Sound += sizeof(int16_t);
 
 		if (value != PCFX_LastSample)
 		{
@@ -187,9 +187,9 @@ typedef	struct
 	uint8_t		data[];
 } PCSound;
 
-static int MY_PCFX_Play(PCSound *sound)
+static int32_t MY_PCFX_Play(PCSound *sound)
 {
-	unsigned flags;
+	uint32_t flags;
 
 	PCFX_Stop(PCFX_VoiceHandle);
 
@@ -230,17 +230,17 @@ static uint16_t divisors[] = {
 };
 
 typedef struct {
-	uint32_t length;
-	uint16_t data[0x10000];
+	uint32_t	length;
+	uint16_t	data[0x10000];
 } pcspkmuse_t;
 
 typedef struct {
-	uint16_t id;
-	uint16_t length;
-	uint8_t data[];
+	uint16_t	id;
+	uint16_t	length;
+	uint8_t		data[];
 } dmxpcs_t;
 
-int PCFX_Play(void *vdata)
+int32_t PCFX_Play(void *vdata)
 {
 	dmxpcs_t *dmxpcs = (dmxpcs_t *)vdata;
 	uint_fast16_t i;
@@ -259,7 +259,7 @@ int PCFX_Play(void *vdata)
    Checks if a sound effect is currently playing.
 ---------------------------------------------------------------------*/
 
-int PCFX_SoundPlaying(int handle)
+int32_t PCFX_SoundPlaying(int32_t handle)
 {
 	return (handle == PCFX_VoiceHandle) && (PCFX_LengthLeft > 0);
 }
