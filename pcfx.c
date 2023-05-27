@@ -200,8 +200,6 @@ static int32_t MY_PCFX_Play(PCSound *sound)
 	flags = DisableInterrupts();
 
 	PCFX_LengthLeft = sound->length;
-	PCFX_LengthLeft >>= 1;
-
 	PCFX_Sound = &sound->data;
 
 	RestoreInterrupts(flags);
@@ -246,7 +244,7 @@ int32_t PCFX_Play(void *vdata)
 	uint_fast16_t i;
 
 	pcspkmuse_t pcspkmuse;
-	pcspkmuse.length = dmxpcs->length * 2;
+	pcspkmuse.length = dmxpcs->length;
 	for (i = 0; i < dmxpcs->length; i++)
 		pcspkmuse.data[i] = divisors[dmxpcs->data[i]];
 
