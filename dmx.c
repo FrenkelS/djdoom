@@ -42,7 +42,6 @@ static uint16_t divisors[] = {
 
 typedef struct {
 	uint32_t length;
-	uint16_t priority;
 	uint16_t data[0x10000];
 } pcspkmuse_t;
 
@@ -80,11 +79,10 @@ int32_t SFX_PlayPatch(void *vdata, int32_t pitch, int32_t sep, int32_t volume, i
 
 		pcspkmuse_t pcspkmuse;
 		pcspkmuse.length = dmxpcs->length * 2;
-		pcspkmuse.priority = 100;
 		for (i = 0; i < dmxpcs->length; i++)
 			pcspkmuse.data[i] = divisors[dmxpcs->data[i]];
 
-		pcshandle = PCFX_Play((PCSound *)&pcspkmuse, 100);
+		pcshandle = PCFX_Play((PCSound *)&pcspkmuse);
 		return pcshandle | 0x8000;
 	}
 	else

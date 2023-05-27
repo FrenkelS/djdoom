@@ -48,12 +48,11 @@ enum PCFX_Errors
 typedef	struct
 {
 	unsigned long  length;
-	short int      priority;
 	char           data[];
 } PCSound;
 
 void  PCFX_Stop(int handle);
-int   PCFX_Play(PCSound *sound, int priority);
+int   PCFX_Play(PCSound *sound);
 int   PCFX_SoundPlaying(int handle);
 void  PCFX_Init(void);
 void  PCFX_Shutdown(void);

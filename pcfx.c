@@ -46,7 +46,6 @@ static char  *PCFX_Sound = NULL;
 static int    PCFX_LastSample;
 static short  PCFX_Lookup[256];
 static int    PCFX_UseLookupFlag = FALSE;
-static int    PCFX_Priority;
 static int    PCFX_TotalVolume = PCFX_MaxVolume;
 static task  *PCFX_ServiceTask = NULL;
 static int    PCFX_VoiceHandle = PCFX_MinVoiceHandle;
@@ -147,7 +146,6 @@ void PCFX_Stop(int handle)
 
 	PCFX_Sound      = NULL;
 	PCFX_LengthLeft = 0;
-	PCFX_Priority   = 0;
 	PCFX_LastSample = 0;
 
 	RestoreInterrupts(flags);
@@ -202,15 +200,9 @@ static void PCFX_Service(task *Task)
    Starts playback of a Muse sound effect.
 ---------------------------------------------------------------------*/
 
-int PCFX_Play(PCSound *sound, int priority)
+int PCFX_Play(PCSound *sound)
 {
 	unsigned flags;
-
-	if (priority < PCFX_Priority)
-	{
-		PCFX_SetErrorCode(PCFX_NoVoices);
-		return PCFX_Warning;
-	}
 
 	PCFX_Stop(PCFX_VoiceHandle);
 
@@ -224,8 +216,6 @@ int PCFX_Play(PCSound *sound, int priority)
 
 	if (!PCFX_UseLookupFlag)
 		PCFX_LengthLeft >>= 1;
-
-	PCFX_Priority = priority;
 
 	PCFX_Sound = &sound->data;
 
