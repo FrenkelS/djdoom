@@ -58,6 +58,7 @@ static void		*mus_data = NULL;
 static uint8_t	*mid_data = NULL;
 
 static int32_t mus_loop = 0;
+static int32_t dmx_mus_port = 0;
 static int32_t dmx_mdev = 0;
 static int32_t mus_rate = 140;
 static int32_t mus_mastervolume = 127;
@@ -215,8 +216,21 @@ int32_t SB_Detect(int32_t *sbPort, int32_t *sbIrq, int32_t *sbDma, uint16_t *ver
 void SB_SetCard(int32_t iBaseAddr, int32_t iIrq, int32_t iDma) {UNUSED(iBaseAddr); UNUSED(iIrq); UNUSED(iDma);}
 int32_t AL_Detect(int32_t *wait, int32_t *type) {UNUSED(wait); UNUSED(type); return -1;}
 void AL_SetCard(int32_t wait, void *genmidi) {UNUSED(wait); UNUSED(genmidi);}
-int32_t MPU_Detect(int32_t *mPort, int32_t *type) {UNUSED(mPort); UNUSED(type); return -1;}
-void MPU_SetCard(int32_t mPort) {UNUSED(mPort);}
+
+int32_t MPU_Detect(int32_t *mPort, int32_t *type)
+{
+	UNUSED(type);
+
+	if (mPort == NULL)
+		return -1;
+	else
+		return MPU_Init(*mPort);
+}
+
+void MPU_SetCard(int32_t mPort)
+{
+	dmx_mus_port = mPort;
+}
 
 
 int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32_t sfxDevice)
