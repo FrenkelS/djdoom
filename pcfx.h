@@ -34,14 +34,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <stdint.h>
 
-typedef	struct
-{
-	uint32_t	length;
-	uint8_t		data[];
-} PCSound;
-
 void	PCFX_Stop(int32_t handle);
-int32_t	PCFX_Play(PCSound *sound);
+int32_t	PCFX_Play(void *vdata);
 int32_t	PCFX_SoundPlaying(int32_t handle);
 void	PCFX_Init(int32_t ticrate);
 void	PCFX_Shutdown(void);

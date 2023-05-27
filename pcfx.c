@@ -162,8 +162,8 @@ static void PCFX_Service(task *Task)
 			if (value)
 			{
 				outp(0x43, 0xb6);
-				outp(0x42, value);
-				outp(0x42, value >> 8);
+				outp(0x42, LOBYTE(value));
+				outp(0x42, HIBYTE(value));
 				outp(0x61, inp(0x61) | 0x3);
 			} else
 				outp(0x61, inp(0x61) & 0xfc);
@@ -181,7 +181,13 @@ static void PCFX_Service(task *Task)
    Starts playback of a Muse sound effect.
 ---------------------------------------------------------------------*/
 
-int PCFX_Play(PCSound *sound)
+typedef	struct
+{
+	uint32_t	length;
+	uint8_t		data[];
+} PCSound;
+
+static int MY_PCFX_Play(PCSound *sound)
 {
 	unsigned flags;
 
@@ -203,6 +209,49 @@ int PCFX_Play(PCSound *sound)
 	return PCFX_VoiceHandle;
 }
 
+static uint16_t divisors[] = {
+	0,
+	6818, 6628, 6449, 6279, 6087, 5906, 5736, 5575,
+	5423, 5279, 5120, 4971, 4830, 4697, 4554, 4435,
+	4307, 4186, 4058, 3950, 3836, 3728, 3615, 3519,
+	3418, 3323, 3224, 3131, 3043, 2960, 2875, 2794,
+	2711, 2633, 2560, 2485, 2415, 2348, 2281, 2213,
+	2153, 2089, 2032, 1975, 1918, 1864, 1810, 1757,
+	1709, 1659, 1612, 1565, 1521, 1478, 1435, 1395,
+	1355, 1316, 1280, 1242, 1207, 1173, 1140, 1107,
+	1075, 1045, 1015,  986,  959,  931,  905,  879,
+	 854,  829,  806,  783,  760,  739,  718,  697,
+	 677,  658,  640,  621,  604,  586,  570,  553,
+	 538,  522,  507,  493,  479,  465,  452,  439,
+	 427,  415,  403,  391,  380,  369,  359,  348,
+	 339,  329,  319,  310,  302,  293,  285,  276,
+	 269,  261,  253,  246,  239,  232,  226,  219,
+	 213,  207,  201,  195,  190,  184,  179,
+};
+
+typedef struct {
+	uint32_t length;
+	uint16_t data[0x10000];
+} pcspkmuse_t;
+
+typedef struct {
+	uint16_t id;
+	uint16_t length;
+	uint8_t data[];
+} dmxpcs_t;
+
+int PCFX_Play(void *vdata)
+{
+	dmxpcs_t *dmxpcs = (dmxpcs_t *)vdata;
+	uint_fast16_t i;
+
+	pcspkmuse_t pcspkmuse;
+	pcspkmuse.length = dmxpcs->length * 2;
+	for (i = 0; i < dmxpcs->length; i++)
+		pcspkmuse.data[i] = divisors[dmxpcs->data[i]];
+
+	return MY_PCFX_Play((PCSound *)&pcspkmuse);
+}
 
 /*---------------------------------------------------------------------
    Function: PCFX_SoundPlaying

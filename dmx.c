@@ -20,37 +20,6 @@
 #include "dmx.h"
 #include "pcfx.h"
 
-static uint16_t divisors[] = {
-	0,
-	6818, 6628, 6449, 6279, 6087, 5906, 5736, 5575,
-	5423, 5279, 5120, 4971, 4830, 4697, 4554, 4435,
-	4307, 4186, 4058, 3950, 3836, 3728, 3615, 3519,
-	3418, 3323, 3224, 3131, 3043, 2960, 2875, 2794,
-	2711, 2633, 2560, 2485, 2415, 2348, 2281, 2213,
-	2153, 2089, 2032, 1975, 1918, 1864, 1810, 1757,
-	1709, 1659, 1612, 1565, 1521, 1478, 1435, 1395,
-	1355, 1316, 1280, 1242, 1207, 1173, 1140, 1107,
-	1075, 1045, 1015,  986,  959,  931,  905,  879,
-	 854,  829,  806,  783,  760,  739,  718,  697,
-	 677,  658,  640,  621,  604,  586,  570,  553,
-	 538,  522,  507,  493,  479,  465,  452,  439,
-	 427,  415,  403,  391,  380,  369,  359,  348,
-	 339,  329,  319,  310,  302,  293,  285,  276,
-	 269,  261,  253,  246,  239,  232,  226,  219,
-	 213,  207,  201,  195,  190,  184,  179,
-};
-
-typedef struct {
-	uint32_t length;
-	uint16_t data[0x10000];
-} pcspkmuse_t;
-
-typedef struct {
-	uint16_t id;
-	uint16_t length;
-	uint8_t data[];
-} dmxpcs_t;
-
 int32_t MUS_PauseSong(int32_t handle) {UNUSED(handle); return 0;}
 int32_t MUS_ResumeSong(int32_t handle) {UNUSED(handle); return 0;}
 void MUS_SetMasterVolume(int32_t volume) {UNUSED(volume);}
@@ -73,16 +42,7 @@ int32_t SFX_PlayPatch(void *vdata, int32_t pitch, int32_t sep, int32_t volume, i
 
 	if (type == 0)
 	{
-		dmxpcs_t *dmxpcs = (dmxpcs_t *)vdata;
-		uint_fast16_t i;
-		uint32_t pcshandle;
-
-		pcspkmuse_t pcspkmuse;
-		pcspkmuse.length = dmxpcs->length * 2;
-		for (i = 0; i < dmxpcs->length; i++)
-			pcspkmuse.data[i] = divisors[dmxpcs->data[i]];
-
-		pcshandle = PCFX_Play((PCSound *)&pcspkmuse);
+		uint32_t pcshandle = PCFX_Play(vdata);
 		return pcshandle | 0x8000;
 	}
 	else
