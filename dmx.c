@@ -31,8 +31,7 @@ int32_t MUS_PlaySong(int32_t handle, int32_t volume) {UNUSED(handle); UNUSED(vol
 
 int32_t SFX_PlayPatch(void *vdata, int32_t pitch, int32_t sep, int32_t volume, int32_t flags, int32_t priority)
 {
-	uint8_t *data = (uint8_t*)vdata;
-	uint32_t type = (data[1] << 8) | data[0];
+	uint16_t type = ((uint16_t*)vdata)[0];
 
 	UNUSED(pitch);
 	UNUSED(sep);
