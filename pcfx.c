@@ -50,11 +50,6 @@ static int    PCFX_VoiceHandle = PCFX_MinVoiceHandle;
 
 static int PCFX_Installed = FALSE;
 
-static int PCFX_ErrorCode = PCFX_Ok;
-
-#define PCFX_SetErrorCode(status) \
-   PCFX_ErrorCode   = (status);
-
 
 static uint32_t DisableInterrupts(void);
 static void RestoreInterrupts(uint32_t flags);
@@ -132,10 +127,7 @@ void PCFX_Stop(int handle)
 	unsigned flags;
 
 	if ((handle != PCFX_VoiceHandle) || (PCFX_Sound == NULL))
-	{
-		PCFX_SetErrorCode(PCFX_VoiceNotFound);
 		return;
-	}
 
 	flags = DisableInterrupts();
 
@@ -266,8 +258,6 @@ void PCFX_Init(void)
 
 	PCFX_Installed = TRUE;
 
-	PCFX_SetErrorCode(PCFX_Ok);
-
 	PCFX_SetTotalVolume(255);
 }
 
@@ -286,6 +276,4 @@ void PCFX_Shutdown(void)
 		TS_Terminate(PCFX_ServiceTask);
 		PCFX_Installed = FALSE;
 	}
-
-	PCFX_SetErrorCode(PCFX_Ok);
 }

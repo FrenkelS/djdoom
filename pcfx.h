@@ -32,16 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __PCFX_H
 #define __PCFX_H
 
-enum PCFX_Errors
-{
-	PCFX_Warning = -2,
-	PCFX_Error   = -1,
-	PCFX_Ok      = 0,
-	PCFX_NoVoices,
-	PCFX_VoiceNotFound,
-	PCFX_DPMI_Error
-};
-
 #define PCFX_MaxVolume      255
 #define PCFX_MinVoiceHandle 1
 
