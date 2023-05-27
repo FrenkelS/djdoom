@@ -52,9 +52,6 @@ typedef struct {
 	uint8_t data[];
 } dmxpcs_t;
 
-static pcspkmuse_t pcspkmuse;
-static uint32_t pcshandle = 0;
-
 int32_t MUS_PauseSong(int32_t handle) {UNUSED(handle); return 0;}
 int32_t MUS_ResumeSong(int32_t handle) {UNUSED(handle); return 0;}
 void MUS_SetMasterVolume(int32_t volume) {UNUSED(volume);}
@@ -68,8 +65,6 @@ int32_t SFX_PlayPatch(void *vdata, int32_t pitch, int32_t sep, int32_t volume, i
 {
 	uint8_t *data = (uint8_t*)vdata;
 	uint32_t type = (data[1] << 8) | data[0];
-	dmxpcs_t *dmxpcs = (dmxpcs_t*)vdata;
-	uint16_t i;
 
 	UNUSED(pitch);
 	UNUSED(sep);
@@ -79,13 +74,17 @@ int32_t SFX_PlayPatch(void *vdata, int32_t pitch, int32_t sep, int32_t volume, i
 
 	if (type == 0)
 	{
+		dmxpcs_t *dmxpcs = (dmxpcs_t *)vdata;
+		uint_fast16_t i;
+		uint32_t pcshandle;
+
+		pcspkmuse_t pcspkmuse;
 		pcspkmuse.length = dmxpcs->length * 2;
 		pcspkmuse.priority = 100;
 		for (i = 0; i < dmxpcs->length; i++)
-		{
 			pcspkmuse.data[i] = divisors[dmxpcs->data[i]];
-		}
-		pcshandle = PCFX_Play((PCSound *)&pcspkmuse, 100, 0);
+
+		pcshandle = PCFX_Play((PCSound *)&pcspkmuse, 100);
 		return pcshandle | 0x8000;
 	}
 	else
@@ -134,11 +133,8 @@ int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32
 	UNUSED(musicDevice);
 
 	if (sfxDevice & AHW_PC_SPEAKER)
-	{
 		PCFX_Init();
-		PCFX_SetTotalVolume(255);
-		PCFX_UseLookup(0, 0);
-	}
+
 	return sfxDevice;
 }
 

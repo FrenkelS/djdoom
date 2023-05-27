@@ -33,32 +33,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __PCFX_H
 
 enum PCFX_Errors
-   {
-   PCFX_Warning = -2,
-   PCFX_Error   = -1,
-   PCFX_Ok      = 0,
-   PCFX_NoVoices,
-   PCFX_VoiceNotFound,
-   PCFX_DPMI_Error
-   };
+{
+	PCFX_Warning = -2,
+	PCFX_Error   = -1,
+	PCFX_Ok      = 0,
+	PCFX_NoVoices,
+	PCFX_VoiceNotFound,
+	PCFX_DPMI_Error
+};
 
 #define PCFX_MaxVolume      255
 #define PCFX_MinVoiceHandle 1
 
 typedef	struct
-   {
-   unsigned long  length;
-   short int      priority;
-   char           data[];
-   } PCSound;
+{
+	unsigned long  length;
+	short int      priority;
+	char           data[];
+} PCSound;
 
-int   PCFX_Stop( int handle );
-void  PCFX_UseLookup( int use, unsigned value );
-int   PCFX_Play( PCSound *sound, int priority, unsigned long callbackval );
-int   PCFX_SoundPlaying( int handle );
-int   PCFX_SetTotalVolume( int volume );
-int   PCFX_Init( void );
-void  PCFX_Shutdown( void );
+void  PCFX_Stop(int handle);
+int   PCFX_Play(PCSound *sound, int priority);
+int   PCFX_SoundPlaying(int handle);
+void  PCFX_Init(void);
+void  PCFX_Shutdown(void);
    #pragma aux PCFX_Shutdown frame;
 
 #endif

@@ -47,8 +47,6 @@ static int    PCFX_LastSample;
 static short  PCFX_Lookup[256];
 static int    PCFX_UseLookupFlag = FALSE;
 static int    PCFX_Priority;
-static unsigned long PCFX_CallBackVal;
-static void   (*PCFX_CallBackFunc)(unsigned long) = NULL;
 static int    PCFX_TotalVolume = PCFX_MaxVolume;
 static task  *PCFX_ServiceTask = NULL;
 static int    PCFX_VoiceHandle = PCFX_MinVoiceHandle;
@@ -132,14 +130,14 @@ static void RestoreInterrupts(uint32_t flags)
    Halts playback of the currently playing sound effect.
 ---------------------------------------------------------------------*/
 
-int PCFX_Stop(int handle)
+void PCFX_Stop(int handle)
 {
 	unsigned flags;
 
 	if ((handle != PCFX_VoiceHandle) || (PCFX_Sound == NULL))
 	{
 		PCFX_SetErrorCode(PCFX_VoiceNotFound);
-		return PCFX_Warning;
+		return;
 	}
 
 	flags = DisableInterrupts();
@@ -153,11 +151,6 @@ int PCFX_Stop(int handle)
 	PCFX_LastSample = 0;
 
 	RestoreInterrupts(flags);
-
-	if (PCFX_CallBackFunc)
-		PCFX_CallBackFunc(PCFX_CallBackVal);
-
-	return PCFX_Ok;
 }
 
 
@@ -209,7 +202,7 @@ static void PCFX_Service(task *Task)
    Starts playback of a Muse sound effect.
 ---------------------------------------------------------------------*/
 
-int PCFX_Play(PCSound *sound, int priority, unsigned long callbackval)
+int PCFX_Play(PCSound *sound, int priority)
 {
 	unsigned flags;
 
@@ -235,7 +228,6 @@ int PCFX_Play(PCSound *sound, int priority, unsigned long callbackval)
 	PCFX_Priority = priority;
 
 	PCFX_Sound = &sound->data;
-	PCFX_CallBackVal = callbackval;
 
 	RestoreInterrupts(flags);
 
@@ -261,7 +253,7 @@ int PCFX_SoundPlaying(int handle)
    Sets the total volume of the sound effects.
 ---------------------------------------------------------------------*/
 
-int PCFX_SetTotalVolume(int volume)
+static void PCFX_SetTotalVolume(int volume)
 {
 	unsigned flags = DisableInterrupts();
 
@@ -274,8 +266,6 @@ int PCFX_SetTotalVolume(int volume)
 		outp(0x61, inp(0x61) & 0xfc);
 
 	RestoreInterrupts(flags);
-
-	return PCFX_Ok;
 }
 
 
@@ -311,7 +301,7 @@ void PCFX_UseLookup(int use, unsigned value)
    Initializes the sound effect engine.
 ---------------------------------------------------------------------*/
 
-int PCFX_Init(void)
+void PCFX_Init(void)
 {
 	if (PCFX_Installed)
 		PCFX_Shutdown();
@@ -321,11 +311,12 @@ int PCFX_Init(void)
 	PCFX_ServiceTask = TS_ScheduleTask(&PCFX_Service, 140, 2, 0);
 	TS_Dispatch();
 
-	PCFX_CallBackFunc = NULL;
 	PCFX_Installed = TRUE;
 
 	PCFX_SetErrorCode(PCFX_Ok);
-	return PCFX_Ok;
+
+	PCFX_SetTotalVolume(255);
+	PCFX_UseLookup(0, 0);
 }
 
 
