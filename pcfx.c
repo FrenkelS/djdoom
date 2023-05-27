@@ -125,7 +125,7 @@ typedef	struct
 	uint8_t		data[];
 } PCSound;
 
-static int32_t MY_PCFX_Play(PCSound *sound)
+static int32_t ASS_PCFX_Play(PCSound *sound)
 {
 	uint32_t flags;
 
@@ -186,7 +186,7 @@ int32_t PCFX_Play(void *vdata)
 	for (i = 0; i < dmxpcs->length; i++)
 		pcspkmuse.data[i] = divisors[dmxpcs->data[i]];
 
-	return MY_PCFX_Play((PCSound *)&pcspkmuse);
+	return ASS_PCFX_Play((PCSound *)&pcspkmuse);
 }
 
 /*---------------------------------------------------------------------
