@@ -46,7 +46,7 @@ int32_t SFX_PlayPatch(void *vdata, int32_t pitch, int32_t sep, int32_t volume, i
 		return pcshandle | 0x8000;
 	}
 	else
-		return 0;
+		return -1;
 }
 
 void SFX_StopPatch(int32_t handle)
