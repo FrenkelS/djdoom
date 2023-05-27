@@ -19,36 +19,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 /**********************************************************************
-   module: TASK_MAN.C
+   module: PCFX.H
 
    author: James R. Dose
-   date:   July 25, 1994
+   date:   April 1, 1994
 
-   Public header for TASK_MAN.C, a low level timer task scheduler.
+   Public header for PCFX.C
 
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#ifndef __TASK_MAN_H
-#define __TASK_MAN_H
+#ifndef __PCFX_H
+#define __PCFX_H
 
 #include <stdint.h>
 
-typedef struct task
-{
-	struct task			*next;
-	struct task			*prev;
-	void				(*TaskService)(struct task *);
-	int32_t				taskId;
-	int32_t				rate;
-	volatile int32_t	count;
-	int32_t				priority;
-	boolean				active;
-} task;
-
-void TS_Shutdown(void);
-task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority, int32_t taskId);
-void TS_Terminate(task *ptr);
-void TS_Dispatch(void);
+void	PCFX_Stop(int32_t handle);
+int32_t	PCFX_Play(void *vdata);
+int32_t	PCFX_SoundPlaying(int32_t handle);
+void	PCFX_Init(int32_t ticrate);
+void	PCFX_Shutdown(void);
 
 #endif

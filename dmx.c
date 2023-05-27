@@ -18,6 +18,7 @@
 
 #include "doomdef.h"
 #include "dmx.h"
+#include "pcfx.h"
 
 int32_t MUS_PauseSong(int32_t handle) {UNUSED(handle); return 0;}
 int32_t MUS_ResumeSong(int32_t handle) {UNUSED(handle); return 0;}
@@ -28,10 +29,41 @@ int32_t MUS_StopSong(int32_t handle) {UNUSED(handle); return 0;}
 int32_t MUS_ChainSong(int32_t handle, int32_t to) {UNUSED(handle); UNUSED(to); return 0;}
 int32_t MUS_PlaySong(int32_t handle, int32_t volume) {UNUSED(handle); UNUSED(volume); return 0;}
 
-int32_t SFX_PlayPatch(void *data, int32_t pitch, int32_t sep, int32_t volume, int32_t flags, int32_t priority) {UNUSED(data); UNUSED(pitch); UNUSED(sep); UNUSED(volume); UNUSED(flags); UNUSED(priority); return -1;}
-void SFX_StopPatch(int32_t handle) {UNUSED(handle);}
-int32_t SFX_Playing(int32_t handle) {UNUSED(handle); return 0;}
+int32_t SFX_PlayPatch(void *vdata, int32_t pitch, int32_t sep, int32_t volume, int32_t flags, int32_t priority)
+{
+	uint16_t type = ((uint16_t*)vdata)[0];
+
+	UNUSED(pitch);
+	UNUSED(sep);
+	UNUSED(volume);
+	UNUSED(flags);
+	UNUSED(priority);
+
+	if (type == 0)
+	{
+		uint32_t pcshandle = PCFX_Play(vdata);
+		return pcshandle | 0x8000;
+	}
+	else
+		return -1;
+}
+
+void SFX_StopPatch(int32_t handle)
+{
+	if (handle & 0x8000)
+		PCFX_Stop(handle & 0x7fff);
+}
+
+int32_t SFX_Playing(int32_t handle)
+{
+	if (handle & 0x8000)
+		return PCFX_SoundPlaying(handle & 0x7fff);
+	else
+		return 0;
+}
+
 void SFX_SetOrigin(int32_t handle, int32_t pitch, int32_t sep, int32_t volume) {UNUSED(handle); UNUSED(pitch); UNUSED(sep); UNUSED(volume);}
+
 
 int32_t ENS_Detect(void) {return -1;}
 int32_t CODEC_Detect(int32_t *sbPort, int32_t *sbDma) {UNUSED(sbPort); UNUSED(sbDma); return -1;}
@@ -44,7 +76,22 @@ void AL_SetCard(int32_t wait, void *genmidi) {UNUSED(wait); UNUSED(genmidi);}
 int32_t MPU_Detect(int32_t *mPort, int32_t *type) {UNUSED(mPort); UNUSED(type); return -1;}
 void MPU_SetCard(int32_t mPort) {UNUSED(mPort);}
 
-int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32_t sfxDevice) {UNUSED(ticrate); UNUSED(maxsongs); UNUSED(musicDevice); UNUSED(sfxDevice); return 0;}
-void DMX_DeInit(void) {}
+
+int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32_t sfxDevice)
+{
+	UNUSED(maxsongs);
+	UNUSED(musicDevice);
+
+	if (sfxDevice & AHW_PC_SPEAKER)
+		PCFX_Init(ticrate);
+
+	return sfxDevice;
+}
+
+void DMX_DeInit(void)
+{
+	PCFX_Shutdown();
+}
+
 
 void WAV_PlayMode(int32_t channels, uint16_t sampleRate) {UNUSED(channels); UNUSED(sampleRate);}
