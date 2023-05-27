@@ -29,25 +29,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#include <dos.h>
-#include <stdlib.h>
 #include <conio.h>
+#include <dos.h>
 #include "doomdef.h"
 #include "pcfx.h"
 #include "task_man.h"
 
-#define TRUE  ( 1 == 1 )
-#define FALSE ( !TRUE )
+#define PCFX_MinVoiceHandle 1
 
 static void PCFX_Service(task *Task);
 
-static long   PCFX_LengthLeft;
-static char  *PCFX_Sound = NULL;
-static int    PCFX_LastSample;
-static task  *PCFX_ServiceTask = NULL;
-static int    PCFX_VoiceHandle = PCFX_MinVoiceHandle;
+static int32_t	PCFX_LengthLeft;
+static uint8_t	*PCFX_Sound = NULL;
+static int32_t	PCFX_LastSample;
+static task		*PCFX_ServiceTask = NULL;
+static int32_t	PCFX_VoiceHandle = PCFX_MinVoiceHandle;
 
-static int PCFX_Installed = FALSE;
+static boolean	PCFX_Installed = false;
 
 
 static uint32_t DisableInterrupts(void);
@@ -224,16 +222,16 @@ int PCFX_SoundPlaying(int handle)
    Initializes the sound effect engine.
 ---------------------------------------------------------------------*/
 
-void PCFX_Init(void)
+void PCFX_Init(int32_t ticrate)
 {
 	if (PCFX_Installed)
-		PCFX_Shutdown();
+		return;
 
 	PCFX_Stop(PCFX_VoiceHandle);
-	PCFX_ServiceTask = TS_ScheduleTask(&PCFX_Service, 140, 2, 0);
+	PCFX_ServiceTask = TS_ScheduleTask(&PCFX_Service, ticrate, 2, 0);
 	TS_Dispatch();
 
-	PCFX_Installed = TRUE;
+	PCFX_Installed = true;
 }
 
 
@@ -249,6 +247,6 @@ void PCFX_Shutdown(void)
 	{
 		PCFX_Stop(PCFX_VoiceHandle);
 		TS_Terminate(PCFX_ServiceTask);
-		PCFX_Installed = FALSE;
+		PCFX_Installed = false;
 	}
 }

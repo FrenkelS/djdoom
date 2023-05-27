@@ -126,12 +126,11 @@ void MPU_SetCard(int32_t mPort) {UNUSED(mPort);}
 
 int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32_t sfxDevice)
 {
-	UNUSED(ticrate);
 	UNUSED(maxsongs);
 	UNUSED(musicDevice);
 
 	if (sfxDevice & AHW_PC_SPEAKER)
-		PCFX_Init();
+		PCFX_Init(ticrate);
 
 	return sfxDevice;
 }

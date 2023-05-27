@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    author: James R. Dose
    date:   April 1, 1994
 
-   Public header for ADLIBFX.C
+   Public header for PCFX.C
 
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
@@ -32,19 +32,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __PCFX_H
 #define __PCFX_H
 
-#define PCFX_MinVoiceHandle 1
+#include <stdint.h>
 
 typedef	struct
 {
-	unsigned long  length;
-	char           data[];
+	uint32_t	length;
+	uint8_t		data[];
 } PCSound;
 
-void  PCFX_Stop(int handle);
-int   PCFX_Play(PCSound *sound);
-int   PCFX_SoundPlaying(int handle);
-void  PCFX_Init(void);
-void  PCFX_Shutdown(void);
-   #pragma aux PCFX_Shutdown frame;
+void	PCFX_Stop(int32_t handle);
+int32_t	PCFX_Play(PCSound *sound);
+int32_t	PCFX_SoundPlaying(int32_t handle);
+void	PCFX_Init(int32_t ticrate);
+void	PCFX_Shutdown(void);
 
 #endif
