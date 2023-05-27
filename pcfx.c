@@ -44,7 +44,6 @@ static void PCFX_Service(task *Task);
 static long   PCFX_LengthLeft;
 static char  *PCFX_Sound = NULL;
 static int    PCFX_LastSample;
-static int    PCFX_TotalVolume = PCFX_MaxVolume;
 static task  *PCFX_ServiceTask = NULL;
 static int    PCFX_VoiceHandle = PCFX_MinVoiceHandle;
 
@@ -159,7 +158,7 @@ static void PCFX_Service(task *Task)
 		value = *(short int *)PCFX_Sound;
 		PCFX_Sound += sizeof(short int);
 
-		if ((PCFX_TotalVolume > 0) && (value != PCFX_LastSample))
+		if (value != PCFX_LastSample)
 		{
 			PCFX_LastSample = value;
 			if (value)
@@ -220,28 +219,6 @@ int PCFX_SoundPlaying(int handle)
 
 
 /*---------------------------------------------------------------------
-   Function: PCFX_SetTotalVolume
-
-   Sets the total volume of the sound effects.
----------------------------------------------------------------------*/
-
-static void PCFX_SetTotalVolume(int volume)
-{
-	unsigned flags = DisableInterrupts();
-
-	volume = max(volume, 0);
-	volume = min(volume, PCFX_MaxVolume);
-
-	PCFX_TotalVolume = volume;
-
-	if (volume == 0)
-		outp(0x61, inp(0x61) & 0xfc);
-
-	RestoreInterrupts(flags);
-}
-
-
-/*---------------------------------------------------------------------
    Function: PCFX_Init
 
    Initializes the sound effect engine.
@@ -257,8 +234,6 @@ void PCFX_Init(void)
 	TS_Dispatch();
 
 	PCFX_Installed = TRUE;
-
-	PCFX_SetTotalVolume(255);
 }
 
 

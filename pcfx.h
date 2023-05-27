@@ -32,7 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __PCFX_H
 #define __PCFX_H
 
-#define PCFX_MaxVolume      255
 #define PCFX_MinVoiceHandle 1
 
 typedef	struct
