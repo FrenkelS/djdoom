@@ -98,7 +98,7 @@ typedef enum
 } cardenum_t;
 
 int32_t snd_DesiredMusicDevice, snd_DesiredSfxDevice;
-int32_t snd_MusicDevice;    // current music card # (index to dmxCodes)
+static int32_t snd_MusicDevice;    // current music card # (index to dmxCodes)
 static int32_t snd_SfxDevice;      // current sfx card # (index to dmxCodes)
 static int32_t snd_MusicVolume;    // maximum volume for music
 static int32_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
@@ -340,6 +340,11 @@ static void I_sndArbitrateCards(void)
 
 }
 
+boolean I_IsAdlib(void)
+{
+	return snd_MusicDevice == snd_Adlib;
+}
+
 // inits all sound stuff
 
 void I_StartupSound (void)
@@ -350,16 +355,16 @@ void I_StartupSound (void)
 	printf("I_StartupSound: Hope you hear a pop.\n");
 
   // initialize dmxCodes[]
-  dmxCodes[0] = 0;
-  dmxCodes[snd_PC] = AHW_PC_SPEAKER;
+  dmxCodes[snd_none]  = 0;
+  dmxCodes[snd_PC]    = AHW_PC_SPEAKER;
   dmxCodes[snd_Adlib] = AHW_ADLIB;
-  dmxCodes[snd_SB] = AHW_SOUND_BLASTER;
-  dmxCodes[snd_PAS] = AHW_MEDIA_VISION;
-  dmxCodes[snd_GUS] = AHW_ULTRA_SOUND;
-  dmxCodes[snd_MPU] = AHW_MPU_401;
-  dmxCodes[snd_AWE] = AHW_AWE32;
+  dmxCodes[snd_SB]    = AHW_SOUND_BLASTER;
+  dmxCodes[snd_PAS]   = AHW_MEDIA_VISION;
+  dmxCodes[snd_GUS]   = AHW_ULTRA_SOUND;
+  dmxCodes[snd_MPU]   = AHW_MPU_401;
+  dmxCodes[snd_AWE]   = AHW_AWE32;
 #if (APPVER_DOOMREV >= AV_DR_DM18)
-  dmxCodes[snd_ENS] = AHW_ENSONIQ;
+  dmxCodes[snd_ENS]   = AHW_ENSONIQ;
   dmxCodes[snd_CODEC] = AHW_CODEC;
 #endif
 

@@ -59,8 +59,8 @@ void S_ChangeMusic (int32_t musicnum, boolean looping)
 {
   musicinfo_t *music;
   char namebuf[9];
-  extern int32_t snd_MusicDevice;
-  if (snd_MusicDevice == 2 && musicnum == mus_intro)
+  extern boolean I_IsAdlib(void);
+  if (I_IsAdlib() && musicnum == mus_intro)
     musicnum = mus_introa;
   if ( (musicnum <= mus_None) || (musicnum >= NUMMUSIC) )
   {
