@@ -41,9 +41,9 @@ typedef enum
 
 enum MUSIC_ERRORS
 {
-	MUSIC_Warning = -2,
-	MUSIC_Error   = -1,
-	MUSIC_Ok      = 0,
+	MUSIC_Warning	= -2,
+	MUSIC_Error		= -1,
+	MUSIC_Ok		= 0,
 	MUSIC_ASSVersion,
 	MUSIC_SoundCardError,
 	MUSIC_MPU401Error,
@@ -235,18 +235,49 @@ void MPU_SetCard(int32_t mPort)
 
 int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32_t sfxDevice)
 {
+	int32_t status, device;
+
 	UNUSED(maxsongs);
-	UNUSED(musicDevice);
+
+	mus_rate = ticrate;
+
+	switch (musicDevice) {
+	case 0:
+		device = NumSoundCards;
+		break;
+	case AHW_ADLIB:
+		device = sfxDevice & AHW_SOUND_BLASTER ? SoundBlaster : Adlib;
+		break;
+	case AHW_SOUND_BLASTER:
+		device = SoundBlaster;
+		break;
+	case AHW_MPU_401:
+		device = GenMidi;
+		break;
+	case AHW_ULTRA_SOUND:
+		device = UltraSound;
+		break;
+	default:
+		return -1;
+	}
+	dmx_mdev = device;
+
+	status = MUSIC_Init(dmx_mdev, dmx_mus_port);
+	if (status == MUSIC_Ok)
+		MUSIC_SetVolume(0);
 
 	if (sfxDevice & AHW_PC_SPEAKER)
 		PCFX_Init(ticrate);
 
-	return sfxDevice;
+	return musicDevice | sfxDevice;
 }
 
 void DMX_DeInit(void)
 {
+	MUSIC_Shutdown();
 	PCFX_Shutdown();
+	if (mid_data)
+		free(mid_data);
 }
 
 
