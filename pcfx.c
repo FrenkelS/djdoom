@@ -44,8 +44,6 @@ static void PCFX_Service(task *Task);
 static long   PCFX_LengthLeft;
 static char  *PCFX_Sound = NULL;
 static int    PCFX_LastSample;
-static short  PCFX_Lookup[256];
-static int    PCFX_UseLookupFlag = FALSE;
 static int    PCFX_TotalVolume = PCFX_MaxVolume;
 static task  *PCFX_ServiceTask = NULL;
 static int    PCFX_VoiceHandle = PCFX_MinVoiceHandle;
@@ -166,14 +164,8 @@ static void PCFX_Service(task *Task)
 
 	if (PCFX_Sound)
 	{
-		if (PCFX_UseLookupFlag)
-		{
-			value = PCFX_Lookup[*PCFX_Sound];
-			PCFX_Sound++;
-		} else {
-			value = *(short int *)PCFX_Sound;
-			PCFX_Sound += sizeof(short int);
-		}
+		value = *(short int *)PCFX_Sound;
+		PCFX_Sound += sizeof(short int);
 
 		if ((PCFX_TotalVolume > 0) && (value != PCFX_LastSample))
 		{
@@ -213,9 +205,7 @@ int PCFX_Play(PCSound *sound)
 	flags = DisableInterrupts();
 
 	PCFX_LengthLeft = sound->length;
-
-	if (!PCFX_UseLookupFlag)
-		PCFX_LengthLeft >>= 1;
+	PCFX_LengthLeft >>= 1;
 
 	PCFX_Sound = &sound->data;
 
@@ -260,32 +250,6 @@ static void PCFX_SetTotalVolume(int volume)
 
 
 /*---------------------------------------------------------------------
-   Function: PCFX_UseLookup
-
-   Sets up a pitch lookup table for PC sound effects.
----------------------------------------------------------------------*/
-
-void PCFX_UseLookup(int use, unsigned value)
-{
-	int pitch;
-	int index;
-
-	PCFX_Stop(PCFX_VoiceHandle);
-
-	PCFX_UseLookupFlag = use;
-	if (use)
-	{
-		pitch = 0;
-		for(index = 0; index < 256; index++)
-		{
-			PCFX_Lookup[index] = pitch;
-			pitch += value;
-		}
-	}
-}
-
-
-/*---------------------------------------------------------------------
    Function: PCFX_Init
 
    Initializes the sound effect engine.
@@ -296,7 +260,6 @@ void PCFX_Init(void)
 	if (PCFX_Installed)
 		PCFX_Shutdown();
 
-	PCFX_UseLookup(TRUE, 60);
 	PCFX_Stop(PCFX_VoiceHandle);
 	PCFX_ServiceTask = TS_ScheduleTask(&PCFX_Service, 140, 2, 0);
 	TS_Dispatch();
@@ -306,7 +269,6 @@ void PCFX_Init(void)
 	PCFX_SetErrorCode(PCFX_Ok);
 
 	PCFX_SetTotalVolume(255);
-	PCFX_UseLookup(0, 0);
 }
 
 
