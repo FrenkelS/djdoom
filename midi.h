@@ -33,18 +33,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __MIDI_H
 
 enum MIDI_Errors
-   {
-   MIDI_Warning = -2,
-   MIDI_Error   = -1,
-   MIDI_Ok      = 0,
-   MIDI_NullMidiModule,
-   MIDI_InvalidMidiFile,
-   MIDI_UnknownMidiFormat,
-   MIDI_NoTracks,
-   MIDI_InvalidTrack,
-   MIDI_NoMemory,
-   MIDI_DPMI_Error
-   };
+{
+	MIDI_Warning = -2,
+	MIDI_Error   = -1,
+	MIDI_Ok      = 0,
+	MIDI_NullMidiModule,
+	MIDI_InvalidMidiFile,
+	MIDI_UnknownMidiFormat,
+	MIDI_NoTracks,
+	MIDI_InvalidTrack,
+	MIDI_NoMemory,
+	MIDI_DPMI_Error
+};
 
 
 #define MIDI_PASS_THROUGH 1
@@ -52,28 +52,26 @@ enum MIDI_Errors
 
 #define MIDI_MaxVolume 255
 
-extern char MIDI_PatchMap[ 128 ];
-
 typedef struct
    {
-   void ( *NoteOff )( int channel, int key, int velocity );
-   void ( *NoteOn )( int channel, int key, int velocity );
-   void ( *PolyAftertouch )( int channel, int key, int pressure );
-   void ( *ControlChange )( int channel, int number, int value );
-   void ( *ProgramChange )( int channel, int program );
-   void ( *ChannelAftertouch )( int channel, int pressure );
-   void ( *PitchBend )( int channel, int lsb, int msb );
-   void ( *ReleasePatches )( void );
-   void ( *LoadPatch )( int number );
-   void ( *SetVolume )( int volume );
-   int  ( *GetVolume )( void );
+   void (*NoteOff)(int32_t channel, int32_t key, int32_t velocity);
+   void (*NoteOn)(int32_t channel, int32_t key, int32_t velocity);
+   void (*PolyAftertouch)(int32_t channel, int32_t key, int32_t pressure);
+   void (*ControlChange)(int32_t channel, int32_t number, int32_t value);
+   void (*ProgramChange)(int32_t channel, int32_t program);
+   void (*ChannelAftertouch)(int32_t channel, int32_t pressure);
+   void (*PitchBend)(int32_t channel, int32_t lsb, int32_t msb);
+   void (*ReleasePatches)(void);
+   void (*LoadPatch)(int32_t number);
+   void (*SetVolume)(int32_t volume);
+   int32_t (*GetVolume)(void);
    } midifuncs;
 
-int  MIDI_SetVolume( int volume );
-void MIDI_SetMidiFuncs( midifuncs *funcs );
-void MIDI_ContinueSong( void );
-void MIDI_PauseSong( void );
-void MIDI_StopSong( void );
-int  MIDI_PlaySong( unsigned char *song, int loopflag );
+int32_t MIDI_SetVolume(int32_t volume);
+void    MIDI_SetMidiFuncs(midifuncs *funcs);
+void    MIDI_ContinueSong(void);
+void    MIDI_PauseSong(void);
+void    MIDI_StopSong(void);
+int32_t MIDI_PlaySong(uint8_t *song, int32_t loopflag);
 
 #endif

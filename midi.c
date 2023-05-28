@@ -229,7 +229,7 @@ static boolean Reset = false;
 
 static int MIDI_Tempo = 120;
 
-char MIDI_PatchMap[ 128 ];
+uint8_t MIDI_PatchMap[128];
 
 
 /*---------------------------------------------------------------------
@@ -483,7 +483,7 @@ static int32_t _MIDI_InterpretControllerInfo(track *Track, boolean TimeSet, int3
       case EMIDI_PROGRAM_CHANGE :
          if ( Track->EMIDI_ProgramChange )
             {
-            _MIDI_Funcs->ProgramChange( channel, MIDI_PatchMap[ c2 & 0x7f ] );
+            _MIDI_Funcs->ProgramChange(channel, MIDI_PatchMap[c2 & 0x7f]);
             }
          break;
 
@@ -761,7 +761,7 @@ static void _MIDI_ServiceRoutine
                if ( ( _MIDI_Funcs->ProgramChange ) &&
                   ( !Track->EMIDI_ProgramChange ) )
                   {
-                  _MIDI_Funcs->ProgramChange( channel, MIDI_PatchMap[ c1 & 0x7f ] );
+                  _MIDI_Funcs->ProgramChange(channel, MIDI_PatchMap[c1 & 0x7f]);
                   }
                break;
 
@@ -1007,10 +1007,7 @@ static int MIDI_Reset
    Sets the total volume of the music.
 ---------------------------------------------------------------------*/
 
-int MIDI_SetVolume
-   (
-   int volume
-   )
+int32_t MIDI_SetVolume(int32_t volume)
 
    {
    int i;
@@ -1151,13 +1148,8 @@ void MIDI_StopSong
    Begins playback of a MIDI song.
 ---------------------------------------------------------------------*/
 
-int MIDI_PlaySong
-   (
-   unsigned char *song,
-   int loopflag
-   )
-
-   {
+int32_t MIDI_PlaySong(uint8_t *song, int32_t loopflag)
+{
    int    numtracks;
    int    format;
    long   headersize;
@@ -1256,7 +1248,7 @@ int MIDI_PlaySong
 
    Reset = false;
 
-   _MIDI_PlayRoutine = TS_ScheduleTask( _MIDI_ServiceRoutine, 100, 1, NULL );
+   _MIDI_PlayRoutine = TS_ScheduleTask( _MIDI_ServiceRoutine, 100, 1, 0);
    MIDI_SetTempo( 120 );
 
    TS_Dispatch();
