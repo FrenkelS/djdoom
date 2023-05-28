@@ -86,9 +86,11 @@ int32_t MUS_RegisterSong(uint8_t *data)
 	FILE *mus;
 	FILE *mid;
 	uint32_t midlen;
-	uint16_t len;
+	uint16_t len = ((uint16_t*)data)[2] + ((uint16_t*)data)[3];
+	extern boolean mus2mid(FILE *musinput, FILE *midioutput, int32_t rate, boolean adlibhack);
+
 	mus_data = NULL;
-	len = ((uint16_t*)data)[2] + ((uint16_t*)data)[3];
+
 	if (mid_data)
 		free(mid_data);
 
