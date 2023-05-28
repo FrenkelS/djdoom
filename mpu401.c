@@ -34,7 +34,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <dos.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "dpmi.h"
 #include "user.h"
 #include "mpu401.h"
 
@@ -54,13 +53,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static int MPU_BaseAddr = MPU_DefaultAddress;
 
 static unsigned MPU_Delay = 0x5000;
-
-
-/**********************************************************************
-
-   Memory locked functions:
-
-**********************************************************************/
 
 
 /*---------------------------------------------------------------------

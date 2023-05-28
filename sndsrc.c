@@ -40,7 +40,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h>
 #include <dos.h>
 #include <conio.h>
-#include "dpmi.h"
 #include "task_man.h"
 #include "sndcards.h"
 #include "user.h"
@@ -74,16 +73,6 @@ static int SS_ErrorCode = SS_Ok;
 
 #define SS_SetErrorCode( status ) \
    SS_ErrorCode   = ( status );
-
-/**********************************************************************
-
-   Memory locked functions:
-
-**********************************************************************/
-
-
-#define SS_LockStart SS_ServiceInterrupt
-
 
 /*---------------------------------------------------------------------
    Function: SS_ServiceInterrupt
@@ -164,21 +153,6 @@ void SS_StopPlayback
 
       SS_BufferStart = NULL;
       }
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: SS_LockEnd
-
-   Used for determining the length of the functions to lock in memory.
----------------------------------------------------------------------*/
-
-static void SS_LockEnd
-   (
-   void
-   )
-
-   {
    }
 
 
@@ -418,13 +392,6 @@ int SS_Init
       return( SS_Warning );
       }
 
-   status = SS_LockMemory();
-   if ( status != SS_Ok )
-      {
-      SS_UnlockMemory();
-      return( status );
-      }
-
    status = SS_Ok;
 
    outp( SS_Port + 2, 4 );
@@ -465,82 +432,5 @@ void SS_Shutdown
 
    SS_SetCallBack( NULL );
 
-   SS_UnlockMemory();
-
    SS_Installed = FALSE;
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: SS_UnlockMemory
-
-   Unlocks all neccessary data.
----------------------------------------------------------------------*/
-
-static void SS_UnlockMemory
-   (
-   void
-   )
-
-   {
-   DPMI_UnlockMemoryRegion( SS_LockStart, SS_LockEnd );
-   DPMI_Unlock( SS_Installed );
-   DPMI_Unlock( SS_Port );
-   DPMI_Unlock( SS_OffCommand );
-   DPMI_Unlock( SS_BufferStart );
-   DPMI_Unlock( SS_BufferEnd );
-   DPMI_Unlock( SS_CurrentBuffer );
-   DPMI_Unlock( SS_BufferNum );
-   DPMI_Unlock( SS_NumBuffers );
-   DPMI_Unlock( SS_TotalBufferSize );
-   DPMI_Unlock( SS_TransferLength );
-   DPMI_Unlock( SS_CurrentLength );
-   DPMI_Unlock( SS_SoundPtr );
-   DPMI_Unlock( SS_SoundPlaying );
-   DPMI_Unlock( SS_Timer );
-   DPMI_Unlock( SS_CallBack );
-   DPMI_Unlock( SS_ErrorCode );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: SS_LockMemory
-
-   Locks all neccessary data.
----------------------------------------------------------------------*/
-
-static int SS_LockMemory
-   (
-   void
-   )
-
-   {
-   int status;
-
-   status  = DPMI_LockMemoryRegion( SS_LockStart, SS_LockEnd );
-   status |= DPMI_Lock( SS_Installed );
-   status |= DPMI_Lock( SS_Port );
-   status |= DPMI_Lock( SS_OffCommand );
-   status |= DPMI_Lock( SS_BufferStart );
-   status |= DPMI_Lock( SS_BufferEnd );
-   status |= DPMI_Lock( SS_CurrentBuffer );
-   status |= DPMI_Lock( SS_BufferNum );
-   status |= DPMI_Lock( SS_NumBuffers );
-   status |= DPMI_Lock( SS_TotalBufferSize );
-   status |= DPMI_Lock( SS_TransferLength );
-   status |= DPMI_Lock( SS_CurrentLength );
-   status |= DPMI_Lock( SS_SoundPtr );
-   status |= DPMI_Lock( SS_SoundPlaying );
-   status |= DPMI_Lock( SS_Timer );
-   status |= DPMI_Lock( SS_CallBack );
-   status |= DPMI_Lock( SS_ErrorCode );
-
-   if ( status != DPMI_Ok )
-      {
-      SS_UnlockMemory();
-      SS_SetErrorCode( SS_DPMI_Error );
-      return( SS_Error );
-      }
-
-   return( SS_Ok );
    }

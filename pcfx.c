@@ -32,7 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <dos.h>
 #include <stdlib.h>
 #include <conio.h>
-#include "dpmi.h"
 #include "task_man.h"
 #include "interrup.h"
 #include "pcfx.h"
@@ -60,16 +59,6 @@ static int PCFX_ErrorCode = PCFX_Ok;
 
 #define PCFX_SetErrorCode( status ) \
    PCFX_ErrorCode   = ( status );
-
-
-/**********************************************************************
-
-   Memory locked functions:
-
-**********************************************************************/
-
-
-#define PCFX_LockStart PCFX_Stop
 
 
 /*---------------------------------------------------------------------
@@ -270,21 +259,6 @@ int PCFX_SetTotalVolume
 
 
 /*---------------------------------------------------------------------
-   Function: PCFX_LockEnd
-
-   Used for determining the length of the functions to lock in memory.
----------------------------------------------------------------------*/
-
-static void PCFX_LockEnd
-   (
-   void
-   )
-
-   {
-   }
-
-
-/*---------------------------------------------------------------------
    Function: PCFX_UseLookup
 
    Sets up a pitch lookup table for PC sound effects.
@@ -334,13 +308,6 @@ int PCFX_Init
       PCFX_Shutdown();
       }
 
-   status = PCFX_LockMemory();
-   if ( status != PCFX_Ok )
-      {
-      PCFX_UnlockMemory();
-      return( status );
-      }
-
    PCFX_UseLookup( TRUE, 60 );
    PCFX_Stop( PCFX_VoiceHandle );
    PCFX_ServiceTask = TS_ScheduleTask( &PCFX_Service, 140, 2, NULL );
@@ -370,79 +337,9 @@ int PCFX_Shutdown
       {
       PCFX_Stop( PCFX_VoiceHandle );
       TS_Terminate( PCFX_ServiceTask );
-      PCFX_UnlockMemory();
       PCFX_Installed = FALSE;
       }
 
    PCFX_SetErrorCode( PCFX_Ok );
-   return( PCFX_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: PCFX_UnlockMemory
-
-   Unlocks all neccessary data.
----------------------------------------------------------------------*/
-
-static void PCFX_UnlockMemory
-   (
-   void
-   )
-
-   {
-   DPMI_UnlockMemoryRegion( PCFX_LockStart, PCFX_LockEnd );
-   DPMI_Unlock( PCFX_LengthLeft );
-   DPMI_Unlock( PCFX_Sound );
-   DPMI_Unlock( PCFX_LastSample );
-   DPMI_Unlock( PCFX_Lookup );
-   DPMI_Unlock( PCFX_UseLookupFlag );
-   DPMI_Unlock( PCFX_Priority );
-   DPMI_Unlock( PCFX_CallBackVal );
-   DPMI_Unlock( PCFX_CallBackFunc );
-   DPMI_Unlock( PCFX_TotalVolume );
-   DPMI_Unlock( PCFX_ServiceTask );
-   DPMI_Unlock( PCFX_VoiceHandle );
-   DPMI_Unlock( PCFX_Installed );
-   DPMI_Unlock( PCFX_ErrorCode );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: PCFX_LockMemory
-
-   Locks all neccessary data.
----------------------------------------------------------------------*/
-
-static int PCFX_LockMemory
-   (
-   void
-   )
-
-   {
-   int status;
-
-   status  = DPMI_LockMemoryRegion( PCFX_LockStart, PCFX_LockEnd );
-   status |= DPMI_Lock( PCFX_LengthLeft );
-   status |= DPMI_Lock( PCFX_Sound );
-   status |= DPMI_Lock( PCFX_LastSample );
-   status |= DPMI_Lock( PCFX_Lookup );
-   status |= DPMI_Lock( PCFX_UseLookupFlag );
-   status |= DPMI_Lock( PCFX_Priority );
-   status |= DPMI_Lock( PCFX_CallBackVal );
-   status |= DPMI_Lock( PCFX_CallBackFunc );
-   status |= DPMI_Lock( PCFX_TotalVolume );
-   status |= DPMI_Lock( PCFX_ServiceTask );
-   status |= DPMI_Lock( PCFX_VoiceHandle );
-   status |= DPMI_Lock( PCFX_Installed );
-   status |= DPMI_Lock( PCFX_ErrorCode );
-
-   if ( status != DPMI_Ok )
-      {
-      PCFX_UnlockMemory();
-      PCFX_SetErrorCode( PCFX_DPMI_Error );
-      return( PCFX_Error );
-      }
-
    return( PCFX_Ok );
    }

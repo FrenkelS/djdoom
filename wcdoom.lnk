@@ -26,7 +26,6 @@ file awe32.obj
 file blastold.obj
 file debugio.obj
 file dma.obj
-file dpmi.obj
 file fx_man.obj
 file gus.obj
 file gusmidi.obj

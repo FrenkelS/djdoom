@@ -32,7 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <dos.h>
 #include <stdlib.h>
 #include <conio.h>
-#include "dpmi.h"
 #include "task_man.h"
 #include "interrup.h"
 #include "al_midi.h"
@@ -63,15 +62,6 @@ static int ADLIBFX_ErrorCode = ADLIBFX_Ok;
 #define ADLIBFX_SetErrorCode( status ) \
    ADLIBFX_ErrorCode   = ( status );
 
-
-/**********************************************************************
-
-   Memory locked functions:
-
-**********************************************************************/
-
-
-#define ADLIBFX_LockStart ADLIBFX_SendOutput
 
 /*---------------------------------------------------------------------
    Function: ADLIBFX_SendOutput
@@ -354,21 +344,6 @@ int ADLIBFX_SoundPlaying
 
 
 /*---------------------------------------------------------------------
-   Function: ADLIBFX_LockEnd
-
-   Used for determining the length of the functions to lock in memory.
----------------------------------------------------------------------*/
-
-static void ADLIBFX_LockEnd
-   (
-   void
-   )
-
-   {
-   }
-
-
-/*---------------------------------------------------------------------
    Function: ADLIBFX_Init
 
    Initializes the sound effect engine.
@@ -380,27 +355,10 @@ int ADLIBFX_Init
    )
 
    {
-   int status;
 
    if ( ADLIBFX_Installed )
       {
       ADLIBFX_Shutdown();
-      }
-
-   status  = DPMI_LockMemoryRegion( ADLIBFX_LockStart, ADLIBFX_LockEnd );
-   status |= DPMI_Lock( ADLIBFX_VoiceHandle );
-   status |= DPMI_Lock( ADLIBFX_Sound );
-   status |= DPMI_Lock( ADLIBFX_ErrorCode );
-   status |= DPMI_Lock( ADLIBFX_SoundPtr );
-   status |= DPMI_Lock( ADLIBFX_LengthLeft );
-   status |= DPMI_Lock( ADLIBFX_Priority );
-   status |= DPMI_Lock( ADLIBFX_CallBackFunc );
-   status |= DPMI_Lock( ADLIBFX_Block );
-
-   if ( status != DPMI_Ok )
-      {
-      ADLIBFX_SetErrorCode( ADLIBFX_DPMI_Error );
-      return( ADLIBFX_Error );
       }
 
    ADLIBFX_Stop( ADLIBFX_VoiceHandle );
@@ -433,16 +391,6 @@ int ADLIBFX_Shutdown
       ADLIBFX_ServiceTask = NULL;
 
       ADLIBFX_Installed = FALSE;
-
-      DPMI_UnlockMemoryRegion( ADLIBFX_LockStart, ADLIBFX_LockEnd );
-      DPMI_Unlock( ADLIBFX_VoiceHandle );
-      DPMI_Unlock( ADLIBFX_Sound );
-      DPMI_Unlock( ADLIBFX_ErrorCode );
-      DPMI_Unlock( ADLIBFX_SoundPtr );
-      DPMI_Unlock( ADLIBFX_LengthLeft );
-      DPMI_Unlock( ADLIBFX_Priority );
-      DPMI_Unlock( ADLIBFX_CallBackFunc );
-      DPMI_Unlock( ADLIBFX_Block );
       }
 
    ADLIBFX_SetErrorCode( ADLIBFX_Ok );

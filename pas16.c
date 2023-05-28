@@ -35,7 +35,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "dpmi.h"
 #include "dma.h"
 #include "interrup.h"
 #include "irq.h"
@@ -128,16 +127,6 @@ static int PAS_ErrorCode = PAS_Ok;
 
 #define PAS_SetErrorCode( status ) \
    PAS_ErrorCode   = ( status );
-
-/**********************************************************************
-
-   Memory locked functions:
-
-**********************************************************************/
-
-
-#define PAS_LockStart PAS_CheckForDriver
-
 
 /*---------------------------------------------------------------------
    Function: PAS_CheckForDriver
@@ -1010,6 +999,62 @@ int PAS_CallInt( int ebx, int ecx, int edx );
    Performs a call to a real mode function.
 ---------------------------------------------------------------------*/
 
+enum DPMI_Errors
+   {
+   DPMI_Error   = -1,
+   DPMI_Ok      = 0
+   };
+
+static union  REGS  Regs;
+static struct SREGS SegRegs;
+
+typedef struct
+   {
+   unsigned long  EDI;
+   unsigned long  ESI;
+   unsigned long  EBP;
+   unsigned long  Reserved;
+   unsigned long  EBX;
+   unsigned long  EDX;
+   unsigned long  ECX;
+   unsigned long  EAX;
+   unsigned short Flags;
+   unsigned short ES;
+   unsigned short DS;
+   unsigned short FS;
+   unsigned short GS;
+   unsigned short IP;
+   unsigned short CS;
+   unsigned short SP;
+   unsigned short SS;
+   } dpmi_regs;
+
+static int DPMI_CallRealModeFunction
+   (
+   dpmi_regs *callregs
+   )
+
+   {
+   // Setup our registers to call DPMI
+   Regs.w.ax = 0x0301;
+   Regs.h.bl = 0;
+   Regs.h.bh = 0;
+   Regs.w.cx = 0;
+
+   SegRegs.es = FP_SEG( callregs );
+   Regs.x.edi = FP_OFF( callregs );
+
+   // Call Real-mode procedure with Far Return Frame
+   int386x( 0x31, &Regs, &Regs, &SegRegs );
+
+   if ( Regs.x.cflag )
+      {
+      return( DPMI_Error );
+      }
+
+   return( DPMI_Ok );
+   }
+
 static int PAS_CallMVFunction
    (
    unsigned long function,
@@ -1324,21 +1369,6 @@ static void PAS_SaveState
 
 
 /*---------------------------------------------------------------------
-   Function: PAS_LockEnd
-
-   Used for determining the length of the functions to lock in memory.
----------------------------------------------------------------------*/
-
-static void PAS_LockEnd
-   (
-   void
-   )
-
-   {
-   }
-
-
-/*---------------------------------------------------------------------
    Function: allocateTimerStack
 
    Allocate a block of memory from conventional (low) memory and return
@@ -1473,17 +1503,9 @@ int PAS_Init
 
    PAS_DMABuffer = NULL;
 
-   status = PAS_LockMemory();
-   if ( status != PAS_Ok )
-      {
-      PAS_UnlockMemory();
-      return( status );
-      }
-
    StackSelector = allocateTimerStack( kStackSize );
    if ( StackSelector == NULL )
       {
-      PAS_UnlockMemory();
       PAS_SetErrorCode( PAS_OutOfMemory );
       return( PAS_Error );
       }
@@ -1503,7 +1525,6 @@ int PAS_Init
       status = IRQ_SetVector( Interrupt, PAS_ServiceInterrupt );
       if ( status != IRQ_Ok )
          {
-         PAS_UnlockMemory();
          deallocateTimerStack( StackSelector );
          StackSelector = NULL;
          PAS_SetErrorCode( PAS_UnableToSetIrq );
@@ -1567,110 +1588,9 @@ void PAS_Shutdown
       PAS_CallMVFunction( PAS_Func->SetMixer, PAS_OriginalPCMRightVolume,
          OUTPUTMIXER, R_PCM );
 
-      PAS_UnlockMemory();
-
       deallocateTimerStack( StackSelector );
       StackSelector = NULL;
 
       PAS_Installed = FALSE;
       }
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: PAS_UnlockMemory
-
-   Unlocks all neccessary data.
----------------------------------------------------------------------*/
-
-static void PAS_UnlockMemory
-   (
-   void
-   )
-
-   {
-   DPMI_UnlockMemoryRegion( PAS_LockStart, PAS_LockEnd );
-   DPMI_Unlock( PAS_Interrupts );
-   DPMI_Unlock( PAS_OldInt );
-   DPMI_Unlock( PAS_IntController1Mask );
-   DPMI_Unlock( PAS_IntController2Mask  );
-   DPMI_Unlock( PAS_Installed );
-   DPMI_Unlock( PAS_TranslateCode );
-   DPMI_Unlock( PAS_OriginalPCMLeftVolume );
-   DPMI_Unlock( PAS_OriginalPCMRightVolume );
-   DPMI_Unlock( PAS_OriginalFMLeftVolume );
-   DPMI_Unlock( PAS_OriginalFMRightVolume );
-   DPMI_Unlock( PAS_DMAChannel );
-   DPMI_Unlock( PAS_Irq );
-   DPMI_Unlock( PAS_State );
-   DPMI_Unlock( PAS_Func );
-   DPMI_Unlock( PAS_OriginalState );
-   DPMI_Unlock( PAS_SampleSizeConfig );
-   DPMI_Unlock( PAS_DMABuffer );
-   DPMI_Unlock( PAS_DMABufferEnd );
-   DPMI_Unlock( PAS_CurrentDMABuffer );
-   DPMI_Unlock( PAS_TotalDMABufferSize );
-   DPMI_Unlock( PAS_TransferLength );
-   DPMI_Unlock( PAS_MixMode );
-   DPMI_Unlock( PAS_SampleRate );
-   DPMI_Unlock( PAS_TimeInterval );
-   DPMI_Unlock( PAS_SoundPlaying );
-   DPMI_Unlock( PAS_CallBack );
-   DPMI_Unlock( PAS_ErrorCode );
-   DPMI_Unlock( irqstatus );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: PAS_LockMemory
-
-   Locks all neccessary data.
----------------------------------------------------------------------*/
-
-static int PAS_LockMemory
-   (
-   void
-   )
-
-   {
-   int status;
-
-   status  = DPMI_LockMemoryRegion( PAS_LockStart, PAS_LockEnd );
-   status |= DPMI_Lock( PAS_Interrupts );
-   status |= DPMI_Lock( PAS_OldInt );
-   status |= DPMI_Lock( PAS_IntController1Mask );
-   status |= DPMI_Lock( PAS_IntController2Mask  );
-   status |= DPMI_Lock( PAS_Installed );
-   status |= DPMI_Lock( PAS_TranslateCode );
-   status |= DPMI_Lock( PAS_OriginalPCMLeftVolume );
-   status |= DPMI_Lock( PAS_OriginalPCMRightVolume );
-   status |= DPMI_Lock( PAS_OriginalFMLeftVolume );
-   status |= DPMI_Lock( PAS_OriginalFMRightVolume );
-   status |= DPMI_Lock( PAS_DMAChannel );
-   status |= DPMI_Lock( PAS_Irq );
-   status |= DPMI_Lock( PAS_State );
-   status |= DPMI_Lock( PAS_Func );
-   status |= DPMI_Lock( PAS_OriginalState );
-   status |= DPMI_Lock( PAS_SampleSizeConfig );
-   status |= DPMI_Lock( PAS_DMABuffer );
-   status |= DPMI_Lock( PAS_DMABufferEnd );
-   status |= DPMI_Lock( PAS_CurrentDMABuffer );
-   status |= DPMI_Lock( PAS_TotalDMABufferSize );
-   status |= DPMI_Lock( PAS_TransferLength );
-   status |= DPMI_Lock( PAS_MixMode );
-   status |= DPMI_Lock( PAS_SampleRate );
-   status |= DPMI_Lock( PAS_TimeInterval );
-   status |= DPMI_Lock( PAS_SoundPlaying );
-   status |= DPMI_Lock( PAS_CallBack );
-   status |= DPMI_Lock( PAS_ErrorCode );
-   status |= DPMI_Lock( irqstatus );
-
-   if ( status != DPMI_Ok )
-      {
-      PAS_UnlockMemory();
-      PAS_SetErrorCode( PAS_DPMI_Error );
-      return( PAS_Error );
-      }
-
-   return( PAS_Ok );
    }

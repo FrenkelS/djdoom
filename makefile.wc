@@ -37,7 +37,6 @@ GLOBOBJS = &
  blastold.obj &
  debugio.obj &
  dma.obj &
- dpmi.obj &
  fx_man.obj &
  gus.obj &
  gusmidi.obj &

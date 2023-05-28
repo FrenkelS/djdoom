@@ -83,13 +83,6 @@ int MUSIC_Init
       return( MUSIC_Error );
       }
 
-   status = LL_LockMemory();
-   if ( status != LL_Ok )
-      {
-      MUSIC_SetErrorCode( MUSIC_DPMI_Error );
-      return( MUSIC_Error );
-      }
-
    for( i = 0; i < 128; i++ )
       {
       MIDI_PatchMap[ i ] = i;
@@ -127,11 +120,6 @@ int MUSIC_Init
       default :
          MUSIC_SetErrorCode( MUSIC_InvalidCard );
          status = MUSIC_Error;
-      }
-
-   if ( status != MUSIC_Ok )
-      {
-      LL_UnlockMemory();
       }
 
    return( status );
@@ -194,8 +182,6 @@ int MUSIC_Shutdown
          GUSMIDI_Shutdown();
          break;
       }
-
-   LL_UnlockMemory();
 
    return( status );
    }

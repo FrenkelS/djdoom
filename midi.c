@@ -35,7 +35,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include "sndcards.h"
 #include "interrup.h"
-#include "dpmi.h"
 #include "standard.h"
 #include "task_man.h"
 #include "ll_man.h"
@@ -110,13 +109,6 @@ static int Reset = FALSE;
 static int MIDI_Tempo = 120;
 
 char MIDI_PatchMap[ 128 ];
-
-
-/**********************************************************************
-
-   Memory locked functions:
-
-**********************************************************************/
 
 
 /*---------------------------------------------------------------------
@@ -1109,7 +1101,6 @@ void MIDI_StopSong
          _MIDI_Funcs->ReleasePatches();
          }
 
-      DPMI_UnlockMemory( _MIDI_TrackPtr, _MIDI_TrackMemSize );
       USRHOOKS_FreeMem( _MIDI_TrackPtr );
 
       _MIDI_TrackPtr     = NULL;
@@ -1197,26 +1188,12 @@ int MIDI_PlaySong
       return( MIDI_NoMemory );
       }
 
-   status = DPMI_LockMemory( _MIDI_TrackPtr, _MIDI_TrackMemSize );
-   if ( status != DPMI_Ok )
-      {
-      USRHOOKS_FreeMem( _MIDI_TrackPtr );
-
-      _MIDI_TrackPtr     = NULL;
-      _MIDI_TrackMemSize = 0;
-      _MIDI_NumTracks    = 0;
-//      MIDI_SetErrorCode( MIDI_DPMI_Error );
-      return( MIDI_Error );
-      }
-
    CurrentTrack = _MIDI_TrackPtr;
    numtracks    = _MIDI_NumTracks;
    while( numtracks-- )
       {
       if ( *( unsigned long * )ptr != MIDI_TRACK_SIGNATURE )
          {
-         DPMI_UnlockMemory( _MIDI_TrackPtr, _MIDI_TrackMemSize );
-
          USRHOOKS_FreeMem( _MIDI_TrackPtr );
 
          _MIDI_TrackPtr = NULL;

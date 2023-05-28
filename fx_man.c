@@ -180,18 +180,6 @@ int FX_Init
       return( FX_Error );
       }
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   if ( LL_LockMemory() != LL_Ok )
-#else
-   status = LL_LockMemory();
-   if ( status != LL_Ok )
-#endif
-      {
-      FX_SetErrorCode( FX_DPMI_Error );
-      return( FX_Error );
-      }
-
    FX_MixRate = mixrate;
 
    // *** VERSIONS RESTORATION ***
@@ -257,7 +245,6 @@ int FX_Init
 
    if ( status != FX_Ok )
       {
-      LL_UnlockMemory();
       }
    // *** VERSIONS RESTORATION ***
 #if (LIBVER_ASSREV >= 19950821L)
@@ -341,7 +328,6 @@ int FX_Shutdown
 #if (LIBVER_ASSREV >= 19950821L)
    FX_Installed = FALSE;
 #endif
-   LL_UnlockMemory();
 
    return( status );
    }

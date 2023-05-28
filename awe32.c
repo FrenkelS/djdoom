@@ -31,7 +31,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <conio.h>
 #include <string.h>
-#include "dpmi.h"
 #include "blaster.h"
 #include "ctaweapi.h"
 #include "awe32.h"
@@ -81,16 +80,6 @@ static int AWE32_ErrorCode = AWE32_Ok;
 
 #define AWE32_SetErrorCode( status ) \
    AWE32_ErrorCode = ( status );
-
-
-/**********************************************************************
-
-   Memory locked functions:
-
-**********************************************************************/
-
-
-#define AWE32_LockStart AWE32_NoteOff
 
 
 void AWE32_NoteOff
@@ -224,21 +213,6 @@ void AWE32_PitchBend
    }
 
 
-/*---------------------------------------------------------------------
-   Function: AWE32_LockEnd
-
-   Used for determining the length of the functions to lock in memory.
----------------------------------------------------------------------*/
-
-static void AWE32_LockEnd
-   (
-   void
-   )
-
-   {
-   }
-
-
 /*ีออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออธ*/
 /*ณ ShutdownMPU                                                    ณ*/
 /*ณ Cleans up Sound Blaster to normal state.                               ณ*/
@@ -359,31 +333,6 @@ int AWE32_Init
       return( AWE32_Error );
       }
 
-   status  = DPMI_LockMemoryRegion( AWE32_LockStart, AWE32_LockEnd );
-   status |= DPMI_Lock( wSBCBaseAddx );
-   status |= DPMI_Lock( wEMUBaseAddx );
-   status |= DPMI_Lock( wMpuBaseAddx );
-   status |= DPMI_Lock( spSound );
-   status |= DPMI_Lock( lBankSizes );
-   status |= DPMI_LockMemory( NoteFlags, sizeof( NoteFlags ) );
-
-   // Lock awe32 library
-//FIXME   status  = DPMI_LockMemoryRegion( __midieng_code, __midieng_ecode );
-//FIXME   status  = DPMI_LockMemoryRegion( __midieng_code(), __midieng_ecode() );
-//FIXME   status  = DPMI_LockMemoryRegion( __nrpn_code, __nrpn_ecode );
-//FIXME   status  = DPMI_LockMemoryRegion( __nrpn_code(), __nrpn_ecode() );
-//FIXME   status  = DPMI_LockMemoryRegion( &__midivar_data, &__midivar_edata );
-//FIXME   status  = DPMI_LockMemoryRegion( &__nrpnvar_data, &__nrpnvar_edata );
-//FIXME   status  = DPMI_LockMemoryRegion( &__embed_data, &__embed_edata );
-
-   if ( status != DPMI_Ok )
-      {
-      ShutdownMPU();
-//FIXME      awe32Terminate();
-      AWE32_SetErrorCode( AWE32_DPMI_Error );
-      return( AWE32_Error );
-      }
-
    // Set the number of voices to use to 32
    awe32NumG = 32;
 
@@ -406,21 +355,4 @@ void AWE32_Shutdown
    {
    ShutdownMPU();
 //FIXME   awe32Terminate();
-
-   DPMI_UnlockMemoryRegion( AWE32_LockStart, AWE32_LockEnd );
-   DPMI_Unlock( wSBCBaseAddx );
-   DPMI_Unlock( wEMUBaseAddx );
-   DPMI_Unlock( wMpuBaseAddx );
-   DPMI_Unlock( spSound );
-   DPMI_Unlock( lBankSizes );
-   DPMI_UnlockMemory( NoteFlags, sizeof( NoteFlags ) );
-
-   // Unlock awe32 library
-//FIXME   DPMI_UnlockMemoryRegion( __midieng_code, __midieng_ecode );
-//FIXME   DPMI_UnlockMemoryRegion( __midieng_code(), __midieng_ecode() );
-//FIXME   DPMI_UnlockMemoryRegion( __nrpn_code, __nrpn_ecode );
-//FIXME   DPMI_UnlockMemoryRegion( __nrpn_code(), __nrpn_ecode() );
-//FIXME   DPMI_UnlockMemoryRegion( &__midivar_data, &__midivar_edata );
-//FIXME   DPMI_UnlockMemoryRegion( &__nrpnvar_data, &__nrpnvar_edata );
-//FIXME   DPMI_UnlockMemoryRegion( &__embed_data, &__embed_edata );
    }

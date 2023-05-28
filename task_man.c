@@ -33,7 +33,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FALSE ( !TRUE )
 
 //#define USESTACK
-#define LOCKMEMORY
 #define NOINTS
 #define USE_USRHOOKS
 
@@ -44,13 +43,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "interrup.h"
 #include "linklist.h"
 #include "task_man.h"
-
-#ifdef USESTACK
-#include "dpmi.h"
-#endif
-#ifdef LOCKMEMORY
-#include "dpmi.h"
-#endif
 
 #ifdef USE_USRHOOKS
 #include "usrhooks.h"
@@ -134,16 +126,6 @@ extern void SetStack(unsigned short selector,unsigned long stackptr);
 	"mov  esp,edx"			\
 	parm [ax] [edx]		\
 	modify [eax edx];
-
-
-/**********************************************************************
-
-   Memory locked functions:
-
-**********************************************************************/
-
-
-#define TS_LockStart TS_FreeTaskList
 
 
 /*---------------------------------------------------------------------
@@ -507,30 +489,12 @@ static int TS_Startup
    {
    if ( !TS_Installed )
       {
-#ifdef LOCKMEMORY
-
-      int status;
-
-      status = TS_LockMemory();
-      if ( status != TASK_Ok )
-         {
-         TS_UnlockMemory();
-         return( status );
-         }
-
-#endif
 
 #ifdef USESTACK
 
 	   StackSelector = allocateTimerStack( kStackSize );
       if ( StackSelector == NULL )
          {
-
-#ifdef LOCKMEMORY
-
-         TS_UnlockMemory();
-
-#endif
          return( TASK_Error );
          }
 
@@ -591,14 +555,6 @@ void TS_Shutdown
 
 #endif
 
-      // Set Date and Time from CMOS
-//      RestoreRealTimeClock();
-
-#ifdef LOCKMEMORY
-
-      TS_UnlockMemory();
-
-#endif
       TS_Installed = FALSE;
       }
    }
@@ -769,214 +725,3 @@ void TS_SetTaskRate
 
    RestoreInterrupts( flags );
    }
-
-
-#ifdef LOCKMEMORY
-
-/*---------------------------------------------------------------------
-   Function: TS_LockEnd
-
-   Used for determining the length of the functions to lock in memory.
----------------------------------------------------------------------*/
-
-static void TS_LockEnd
-   (
-   void
-   )
-
-   {
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: TS_UnlockMemory
-
-   Unlocks all neccessary data.
----------------------------------------------------------------------*/
-
-static void TS_UnlockMemory
-   (
-   void
-   )
-
-   {
-   DPMI_UnlockMemoryRegion( TS_LockStart, TS_LockEnd );
-   DPMI_Unlock( TaskList );
-   DPMI_Unlock( OldInt8 );
-   DPMI_Unlock( TaskServiceRate );
-   DPMI_Unlock( TaskServiceCount );
-   DPMI_Unlock( TS_Installed );
-
-#ifndef NOINTS
-   DPMI_Unlock( TS_TimesInInterrupt );
-#endif
-
-#ifdef USESTACK
-   DPMI_Unlock( StackSelector );
-   DPMI_Unlock( StackPointer );
-   DPMI_Unlock( oldStackSelector );
-   DPMI_Unlock( oldStackPointer );
-#endif
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: TS_LockMemory
-
-   Locks all neccessary data.
----------------------------------------------------------------------*/
-
-static int TS_LockMemory
-   (
-   void
-   )
-
-   {
-   int status;
-
-   status  = DPMI_LockMemoryRegion( TS_LockStart, TS_LockEnd );
-   status |= DPMI_Lock( TaskList );
-   status |= DPMI_Lock( OldInt8 );
-   status |= DPMI_Lock( TaskServiceRate );
-   status |= DPMI_Lock( TaskServiceCount );
-   status |= DPMI_Lock( TS_Installed );
-
-#ifndef NOINTS
-   status |= DPMI_Lock( TS_TimesInInterrupt );
-#endif
-
-#ifdef USESTACK
-   status |= DPMI_Lock( StackSelector );
-   status |= DPMI_Lock( StackPointer );
-   status |= DPMI_Lock( oldStackSelector );
-   status |= DPMI_Lock( oldStackPointer );
-#endif
-
-   if ( status != DPMI_Ok )
-      {
-      TS_UnlockMemory();
-      return( TASK_Error );
-      }
-
-   return( TASK_Ok );
-   }
-
-#endif
-
-/*
-// Converts a hex byte to an integer
-
-static int btoi
-   (
-   unsigned char bcd
-   )
-
-   {
-   unsigned b;
-   unsigned c;
-   unsigned d;
-
-   b = bcd / 16;
-   c = bcd - b * 16;
-   d = b * 10 + c;
-   return( d );
-   }
-
-
-static void RestoreRealTimeClock
-   (
-   void
-   )
-
-   {
-   int read;
-   int i;
-   int hr;
-   int min;
-   int sec;
-   int cent;
-   int yr;
-   int mo;
-   int day;
-   int year;
-   union REGS inregs;
-
-   // Read Real Time Clock Time.
-   read = FALSE;
-	inregs.h.ah = 0x02;
-   for( i = 1; i <= 3; i++ )
-      {
-      int386( 0x1A, &inregs, &inregs );
-      if ( inregs.x.cflag == 0 )
-         {
-         read = TRUE;
-         }
-      }
-
-   if ( read )
-      {
-      //and convert BCD to integer format
-      hr  = btoi( inregs.h.ch );
-      min = btoi( inregs.h.cl );
-      sec = btoi( inregs.h.dh );
-
-      // Read Real Time Clock Date.
-      inregs.h.ah = 0x04;
-      int386( 0x1A, &inregs, &inregs );
-      if ( inregs.x.cflag == 0 )
-         {
-         //and convert BCD to integer format
-         cent = btoi( inregs.h.ch );
-         yr   = btoi( inregs.h.cl );
-         mo   = btoi( inregs.h.dh );
-         day  = btoi( inregs.h.dl );
-         year = cent * 100 + yr;
-
-         // Set System Time.
-         inregs.h.ch = hr;
-         inregs.h.cl = min;
-         inregs.h.dh = sec;
-         inregs.h.dl = 0;
-         inregs.h.ah = 0x2D;
-         int386( 0x21, &inregs, &inregs );
-
-         // Set System Date.
-         inregs.w.cx = year;
-         inregs.h.dh = mo;
-         inregs.h.dl = day;
-         inregs.h.ah = 0x2B;
-         int386( 0x21, &inregs, &inregs );
-         }
-      }
-   }
-*/
-/*
-   struct dostime_t time;
-   struct dosdate_t date;
-
-   outp(0x70,0);
-   time.second=inp(0x71);
-   outp(0x70,2);
-   time.minute=inp(0x71);
-   outp(0x70,4);
-   time.hour=inp(0x71);
-
-   outp(0x70,7);
-   date.day=inp(0x71);
-   outp(0x70,8);
-   date.month=inp(0x71);
-   outp(0x70,9);
-   date.year=inp(0x71);
-
-   time.second=(time.second&0x0f)+((time.second>>4)*10);
-   time.minute=(time.minute&0x0f)+((time.minute>>4)*10);
-   time.hour=(time.hour&0x0f)+((time.hour>>4)*10);
-
-   date.day=(date.day&0x0f)+((date.day>>4)*10);
-   date.month=(date.month&0x0f)+((date.month>>4)*10);
-   date.year=(date.year&0x0f)+((date.year>>4)*10);
-
-   _dos_settime(&time);
-   _dos_setdate(&date);
-
-*/

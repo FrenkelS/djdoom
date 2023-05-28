@@ -31,7 +31,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <stdlib.h>
 //#include <math.h>
-#include "dpmi.h"
 #include "standard.h"
 #include "pitch.h"
 
@@ -88,50 +87,6 @@ static unsigned long PitchTable[ 12 ][ MAXDETUNE ] =
       0x1f576, 0x1f69f, 0x1f7c9, 0x1f8f3, 0x1fa1e, 0x1fb4a, 0x1fc76, 0x1fda3,
       0x1fed1 }
    };
-
-
-//static int PITCH_Installed = FALSE;
-
-
-/*---------------------------------------------------------------------
-   Function: PITCH_Init
-
-   Initializes pitch table.
----------------------------------------------------------------------*/
-/*
-void PITCH_Init
-   (
-   void
-   )
-
-   {
-   int note;
-   int detune;
-
-   if ( !PITCH_Installed )
-      {
-      for( note = 0; note < 12; note++ )
-         {
-         for( detune = 0; detune < MAXDETUNE; detune++ )
-            {
-            PitchTable[ note ][ detune ] = 0x10000 *
-               pow( 2, ( note * MAXDETUNE + detune ) / ( 12.0 * MAXDETUNE ) );
-            }
-         }
-
-      PITCH_Installed = TRUE;
-      }
-   }
-*/
-
-/**********************************************************************
-
-   Memory locked functions:
-
-**********************************************************************/
-
-
-#define PITCH_LockStart PITCH_GetScale
 
 
 /*---------------------------------------------------------------------
@@ -195,65 +150,4 @@ unsigned long PITCH_GetScale
       }
 
    return( scale );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: PITCH_LockEnd
-
-   Used for determining the length of the functions to lock in memory.
----------------------------------------------------------------------*/
-
-static void PITCH_LockEnd
-   (
-   void
-   )
-
-   {
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: PITCH_UnlockMemory
-
-   Unlocks all neccessary data.
----------------------------------------------------------------------*/
-
-void PITCH_UnlockMemory
-   (
-   void
-   )
-
-   {
-   DPMI_UnlockMemoryRegion( PITCH_LockStart, PITCH_LockEnd );
-   DPMI_Unlock( PitchTable );
-//   DPMI_Unlock( PITCH_Installed );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: PITCH_LockMemory
-
-   Unlocks all neccessary data.
----------------------------------------------------------------------*/
-
-int PITCH_LockMemory
-   (
-   void
-   )
-
-   {
-   int status;
-
-   status  = DPMI_LockMemoryRegion( PITCH_LockStart, PITCH_LockEnd );
-   status |= DPMI_Lock( PitchTable );
-//   status |= DPMI_Lock( PITCH_Installed );
-
-   if ( status != DPMI_Ok )
-      {
-      PITCH_UnlockMemory();
-      return( PITCH_Error );
-      }
-
-   return( PITCH_Ok );
    }
