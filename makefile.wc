@@ -56,7 +56,6 @@ GLOBOBJS = &
  sndscape.obj &
  sndsrc.obj &
  task_man.obj &
- user.obj &
  i_main.obj &
  i_ibm.obj &
  i_sound.obj &

@@ -44,7 +44,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "pcfx.h"
 #endif
 #include "ll_man.h"
-#include "user.h"
 #include "fx_man.h"
 
 #define TRUE  ( 1 == 1 )
@@ -173,12 +172,6 @@ int FX_Init
       FX_Shutdown();
       }
 #endif
-
-   if ( USER_CheckParameter( "ASSVER" ) )
-      {
-      FX_SetErrorCode( FX_ASSVersion );
-      return( FX_Error );
-      }
 
    FX_MixRate = mixrate;
 

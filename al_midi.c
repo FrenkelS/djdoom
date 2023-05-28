@@ -37,7 +37,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "interrup.h"
 #include "sndcards.h"
 #include "blaster.h"
-#include "user.h"
 #include "al_midi.h"
 #include "_al_midi.h"
 #include "ll_man.h"
@@ -1157,11 +1156,6 @@ int AL_DetectFM
    int status1;
    int status2;
    int i;
-
-   if ( USER_CheckParameter( NO_ADLIB_DETECTION ) )
-      {
-      return( FALSE );
-      }
 
    AL_SendOutputToPort( ADLIB_PORT, 4, 0x60 );   // Reset T1 & T2
    AL_SendOutputToPort( ADLIB_PORT, 4, 0x80 );   // Reset IRQ

@@ -39,7 +39,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "interrup.h"
 #include "ll_man.h"
 #include "pitch.h"
-#include "user.h"
 #include "multivoc.h"
 #include "_guswave.h"
 #include "newgf1.h"
@@ -1244,7 +1243,7 @@ int GUSWAVE_Init
       return( GUSWAVE_Error );
       }
 
-   GUS_Debug = USER_CheckParameter( "DEBUGGUS" );
+   GUS_Debug = FALSE;
 
    GUSWAVE_MaxVoices = min( numvoices, VOICES );
    GUSWAVE_MaxVoices = max( GUSWAVE_MaxVoices, 0 );

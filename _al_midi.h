@@ -21,8 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef ___AL_MIDI_H
 #define ___AL_MIDI_H
 
-#define NO_ADLIB_DETECTION    "NOAL"
-
 #define STEREO_DETUNE 5
 
 #define lobyte( num )   ( ( unsigned )*( ( char * )&( num ) ) )

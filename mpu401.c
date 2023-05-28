@@ -34,7 +34,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <dos.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "user.h"
 #include "mpu401.h"
 
 #define MIDI_NOTE_OFF         0x80
@@ -353,13 +352,6 @@ int MPU_Init
    {
    int status;
    int count;
-   char *ptr;
-
-   ptr = USER_GetText( "MPUDELAY" );
-   if ( ptr != NULL )
-      {
-      MPU_Delay = ( unsigned )atol( ptr );
-      }
 
    MPU_BaseAddr = addr;
 

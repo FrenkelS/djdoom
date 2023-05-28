@@ -42,7 +42,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <conio.h>
 #include "task_man.h"
 #include "sndcards.h"
-#include "user.h"
 #include "sndsrc.h"
 
 #define TRUE  ( 1 == 1 )
@@ -313,24 +312,6 @@ static int SS_DetectSoundSource
    )
 
    {
-   if ( USER_CheckParameter( SELECT_SOUNDSOURCE_PORT1 ) )
-      {
-      SS_Port = SS_Port1;
-      return( TRUE );
-      }
-
-   if ( USER_CheckParameter( SELECT_SOUNDSOURCE_PORT2 ) )
-      {
-      SS_Port = SS_Port2;
-      return( TRUE );
-      }
-
-   if ( USER_CheckParameter( SELECT_SOUNDSOURCE_PORT3 ) )
-      {
-      SS_Port = SS_Port3;
-      return( TRUE );
-      }
-
    if ( SS_TestSoundSource( SS_Port1 ) )
       {
       SS_Port = SS_Port1;
@@ -373,8 +354,7 @@ int SS_Init
       SS_Shutdown();
       }
 
-   if ( ( soundcard == TandySoundSource ) ||
-      ( USER_CheckParameter( SELECT_TANDY_SOUNDSOURCE ) ) )
+   if ( ( soundcard == TandySoundSource ) )
       {
       // Tandy
       SS_OffCommand = 0x0e;

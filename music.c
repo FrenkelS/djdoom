@@ -43,7 +43,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "awe32.h"
 #include "sndscape.h"
 #include "ll_man.h"
-#include "user.h"
 
 #define TRUE  ( 1 == 1 )
 #define FALSE ( !TRUE )
@@ -76,12 +75,6 @@ int MUSIC_Init
    {
    int i;
    int status;
-
-   if ( USER_CheckParameter( "ASSVER" ) )
-      {
-      MUSIC_SetErrorCode( MUSIC_ASSVersion );
-      return( MUSIC_Error );
-      }
 
    for( i = 0; i < 128; i++ )
       {

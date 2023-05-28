@@ -42,11 +42,6 @@ enum SS_ERRORS
    SS_DPMI_Error
    };
 
-#define SELECT_SOUNDSOURCE_PORT1 "ss1"
-#define SELECT_SOUNDSOURCE_PORT2 "ss2"
-#define SELECT_SOUNDSOURCE_PORT3 "ss3"
-#define SELECT_TANDY_SOUNDSOURCE "sst"
-
 #define SS_Port1 0x3bc
 #define SS_Port2 0x378
 #define SS_Port3 0x278
