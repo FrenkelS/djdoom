@@ -20,9 +20,6 @@
 #include "r_local.h"
 #include "soundst.h"
 
-void _dpmi_lockregion (void * inmem, int32_t length);
-void _dpmi_unlockregion (void * inmem, int32_t length);
-
 static channel_t *channels; // the set of channels available
 static int32_t snd_SfxVolume;
 static boolean mus_paused;	// whether songs are mus_paused
@@ -53,7 +50,6 @@ static void S_StopMusic(void)
     I_StopSong(mus_playing->handle);
     I_UnRegisterSong(mus_playing->handle);
     Z_ChangeTag(mus_playing->data, PU_CACHE);
-    _dpmi_unlockregion(mus_playing->data, lumpinfo[mus_playing->lumpnum].size);
     mus_playing->data = 0;
     mus_playing = 0;
   }
@@ -85,7 +81,6 @@ void S_ChangeMusic (int32_t musicnum, boolean looping)
   }
   // load & register it
   music->data = (void *) W_CacheLumpNum(music->lumpnum, PU_MUSIC);
-    _dpmi_lockregion(music->data, lumpinfo[music->lumpnum].size);
   music->handle = I_RegisterSong(music->data);
   // play it
   I_PlaySong(music->handle, looping);
@@ -346,7 +341,6 @@ static void S_StartSoundAtVolume(void *origin_p, int32_t sfx_id, int32_t volume)
   if (!sfx->data)
   {
     sfx->data = (void *) W_CacheLumpNum(sfx->lumpnum, PU_MUSIC);
-    _dpmi_lockregion(sfx->data, lumpinfo[sfx->lumpnum].size);
     // fprintf( stderr,
     //	     "S_StartSoundAtVolume: loading %d (lump %d) : 0x%x\n",
     //       sfx_id, sfx->lumpnum, (int32_t)sfx->data );
@@ -437,7 +431,6 @@ void S_UpdateSounds(void* listener_p)
         if (--S_sfx[i].usefulness == -1)
         {
           Z_ChangeTag(S_sfx[i].data, PU_CACHE);
-	  _dpmi_unlockregion(S_sfx[i].data, lumpinfo[S_sfx[i].lumpnum].size);
           S_sfx[i].data = 0;
         }
       }
