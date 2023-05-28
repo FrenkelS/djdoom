@@ -38,16 +38,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "usrhooks.h"
 #include "interrup.h"
 #include "dma.h"
-// *** VERSIONS RESTORATION ***
-// FIXME GUESSING
-#if (LIBVER_ASSREV < 19960510L)
+
 #include "ll_man.h"
-// FIXME - HUGE HACK
 #define LL_Empty(a,b,c) ((a)->start == NULL)
 #define LL_Reset( list, next, prev ) (list)->start = NULL; (list)->end = NULL // Based on macro from LINKLIST.H
-#else
-#include "linklist.h"
-#endif
+
 #include "sndcards.h"
 #include "blaster.h"
 #include "sndscape.h"
