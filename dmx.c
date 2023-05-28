@@ -19,41 +19,10 @@
 
 #include "doomdef.h"
 #include "dmx.h"
+#include "music.h"
 #include "pcfx.h"
+#include "sndcards.h"
 
-typedef enum
-{
-	SoundBlaster,
-	ProAudioSpectrum,
-	SoundMan16,
-	Adlib,
-	GenMidi,
-	SoundCanvas,
-	Awe32,
-	WaveBlaster,
-	SoundScape,
-	UltraSound,
-	SoundSource,
-	TandySoundSource,
-	PC,
-	NumSoundCards
-} soundcardnames;
-
-enum MUSIC_ERRORS
-{
-	MUSIC_Warning	= -2,
-	MUSIC_Error		= -1,
-	MUSIC_Ok		= 0,
-	MUSIC_ASSVersion,
-	MUSIC_SoundCardError,
-	MUSIC_MPU401Error,
-	MUSIC_InvalidCard,
-	MUSIC_MidiError,
-	MUSIC_TaskManError,
-	MUSIC_FMNotDetected,
-	MUSIC_DPMI_Error
-};
-   
 static void		*mus_data = NULL;
 static uint8_t	*mid_data = NULL;
 

@@ -29,6 +29,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
+#include <stdint.h>
+
 static uint32_t DisableInterrupts(void);
 static void RestoreInterrupts(uint32_t flags);
 

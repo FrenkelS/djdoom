@@ -57,34 +57,41 @@ static void S_StopMusic(void)
 
 void S_ChangeMusic (int32_t musicnum, boolean looping)
 {
-  musicinfo_t *music;
-  char namebuf[9];
-  extern boolean I_IsAdlib(void);
-  if (I_IsAdlib() && musicnum == mus_intro)
-    musicnum = mus_introa;
-  if ( (musicnum <= mus_None) || (musicnum >= NUMMUSIC) )
-  {
-    I_Error("Bad music number %d", musicnum);
-    return; // shut up warning
-  }
-  else
-    music = &S_music[musicnum];
-  if (mus_playing == music)
-    return;
-  // shutdown old music
-  S_StopMusic();
-  // get lumpnum if neccessary
-  if (!music->lumpnum)
-  {
-    sprintf(namebuf, "d_%s", music->name);
-    music->lumpnum = W_GetNumForName(namebuf);
-  }
-  // load & register it
-  music->data = (void *) W_CacheLumpNum(music->lumpnum, PU_MUSIC);
-  music->handle = I_RegisterSong(music->data);
-  // play it
-  I_PlaySong(music->handle, looping);
-  mus_playing = music;
+	musicinfo_t *music;
+	char namebuf[9];
+	extern boolean I_IsAdlib(void);
+
+	if (I_IsAdlib() && musicnum == mus_intro)
+		musicnum = mus_introa;
+
+	if ( (musicnum <= mus_None) || (musicnum >= NUMMUSIC) )
+	{
+		I_Error("Bad music number %d", musicnum);
+		return; // shut up warning
+	}
+	else
+		music = &S_music[musicnum];
+
+	if (mus_playing == music)
+		return;
+
+	// shutdown old music
+	S_StopMusic();
+
+	// get lumpnum if neccessary
+	if (!music->lumpnum)
+	{
+		sprintf(namebuf, "d_%s", music->name);
+		music->lumpnum = W_GetNumForName(namebuf);
+	}
+
+	// load & register it
+	music->data = (void *) W_CacheLumpNum(music->lumpnum, PU_MUSIC);
+	music->handle = I_RegisterSong(music->data);
+
+	// play it
+	I_PlaySong(music->handle, looping);
+	mus_playing = music;
 }
 
 void S_StartMusic(int32_t m_id)

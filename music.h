@@ -19,37 +19,52 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 /**********************************************************************
-   module: TASK_MAN.C
+   module: MUSIC.H
 
    author: James R. Dose
-   date:   July 25, 1994
+   date:   March 25, 1994
 
-   Public header for TASK_MAN.C, a low level timer task scheduler.
+   Public header for MUSIC.C
 
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#ifndef __TASK_MAN_H
-#define __TASK_MAN_H
+#ifndef __MUSIC_H
+#define __MUSIC_H
 
-#include "doomdef.h"
+#include <stdint.h>
+#include "sndcards.h"
 
-typedef struct task
+enum MUSIC_ERRORS
 {
-	struct task			*next;
-	struct task			*prev;
-	void				(*TaskService)(struct task *);
-	int32_t				taskId;
-	int32_t				rate;
-	volatile int32_t	count;
-	int32_t				priority;
-	boolean				active;
-} task;
+	MUSIC_Warning = -2,
+	MUSIC_Error   = -1,
+	MUSIC_Ok      = 0,
+	MUSIC_ASSVersion,
+	MUSIC_SoundCardError,
+	MUSIC_MPU401Error,
+	MUSIC_InvalidCard,
+	MUSIC_MidiError,
+	MUSIC_TaskManError,
+	MUSIC_FMNotDetected,
+	MUSIC_DPMI_Error
+};
 
-void TS_Shutdown(void);
-task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority, int32_t taskId);
-void TS_Terminate(task *ptr);
-void TS_Dispatch(void);
-void TS_SetTaskRate(task *Task, int32_t rate);
+typedef struct
+{
+	uint32_t tickposition;
+	uint32_t milliseconds;
+	uint32_t measure;
+	uint32_t beat;
+	uint32_t tick;
+} songposition;
+
+int32_t MUSIC_Init(int32_t SoundCard, int32_t Address);
+void    MUSIC_Shutdown(void);
+void    MUSIC_SetVolume(int32_t volume);
+void    MUSIC_Continue(void);
+void    MUSIC_Pause(void);
+void    MUSIC_StopSong(void);
+int32_t MUSIC_PlaySong(uint8_t *song, int32_t loopflag);
 
 #endif

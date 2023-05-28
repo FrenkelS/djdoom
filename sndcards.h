@@ -1,6 +1,5 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
-Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,37 +18,47 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 /**********************************************************************
-   module: TASK_MAN.C
+   module: SNDCARDS.H
 
    author: James R. Dose
-   date:   July 25, 1994
+   date:   March 31, 1994
 
-   Public header for TASK_MAN.C, a low level timer task scheduler.
+   Contains enumerated type definitions for sound cards.
 
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#ifndef __TASK_MAN_H
-#define __TASK_MAN_H
+#ifndef __SNDCARDS_H
+#define __SNDCARDS_H
 
-#include "doomdef.h"
+// *** VERSIONS RESTORATION ***
+#if (LIBVER_ASSREV < 19950821L)
+#define ASS_VERSION_STRING "1.04"
+#elif (LIBVER_ASSREV < 19960116L)
+#define ASS_VERSION_STRING "1.09"
+#elif (LIBVER_ASSREV < 19960510L)
+#define ASS_VERSION_STRING "1.1"
+#else
+#define ASS_VERSION_STRING "1.12"
+#endif
 
-typedef struct task
-{
-	struct task			*next;
-	struct task			*prev;
-	void				(*TaskService)(struct task *);
-	int32_t				taskId;
-	int32_t				rate;
-	volatile int32_t	count;
-	int32_t				priority;
-	boolean				active;
-} task;
-
-void TS_Shutdown(void);
-task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority, int32_t taskId);
-void TS_Terminate(task *ptr);
-void TS_Dispatch(void);
-void TS_SetTaskRate(task *Task, int32_t rate);
+typedef enum
+   {
+//   ASS_NoSound,
+   SoundBlaster,
+   ProAudioSpectrum,
+   SoundMan16,
+   Adlib,
+   GenMidi,
+   SoundCanvas,
+   Awe32,
+   WaveBlaster,
+   SoundScape,
+   UltraSound,
+   SoundSource,
+   TandySoundSource,
+   PC,
+   NumSoundCards
+   } soundcardnames;
 
 #endif

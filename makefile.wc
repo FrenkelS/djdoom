@@ -27,7 +27,10 @@ CCOPTS = -dAPPVER_EXEDEF=DM19 -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc -wx
 
 GLOBOBJS = &
  dmx.obj &
+ midi.obj &
+ mpu401.obj &
  mus2mid.obj &
+ music.obj &
  pcfx.obj &
  tsmapi.obj &
  task_man.obj &

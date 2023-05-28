@@ -418,3 +418,20 @@ void TS_Dispatch(void)
 
 	RestoreInterrupts(flags);
 }
+
+
+/*---------------------------------------------------------------------
+   Function: TS_SetTaskRate
+
+   Sets the rate at which the specified task is serviced.
+---------------------------------------------------------------------*/
+
+void TS_SetTaskRate(task *Task, int32_t rate)
+{
+	uint32_t flags = DisableInterrupts();
+
+	Task->rate = TS_SetTimer(rate);
+	TS_SetTimerToMaxTaskRate();
+
+	RestoreInterrupts(flags);
+}
