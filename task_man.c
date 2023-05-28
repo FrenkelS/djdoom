@@ -535,7 +535,7 @@ task *TS_ScheduleTask
          }
 
       ptr->TaskService = Function;
-      ptr->data = data;
+      ptr->taskId = data;
       ptr->rate = TS_SetTimer( rate );
       ptr->count = 0;
       ptr->priority = priority;

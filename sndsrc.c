@@ -236,14 +236,10 @@ static void SS_SetCallBack
    Used as a delay in SS_TestSoundSource.
 ---------------------------------------------------------------------*/
 
-static void SS_TestTimer
-   (
-   task *Task
-   )
-
-   {
-   ( *( int * )( Task->data ) )++;
-   }
+static void SS_TestTimer(task *Task)
+{
+	Task->taskId++;
+}
 
 
 /*---------------------------------------------------------------------

@@ -44,7 +44,7 @@ typedef struct task
     struct   task *next;
     struct   task *prev;
     void          ( *TaskService )( struct task * );
-    void          *data;
+    int           taskId;
     long          rate;
     volatile long count;
     int           priority;
