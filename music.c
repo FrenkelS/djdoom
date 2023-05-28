@@ -61,14 +61,8 @@ static int32_t MUSIC_InitGUS(midifuncs *Funcs);
 
 int32_t MUSIC_Init(int32_t SoundCard, int32_t Address)
 {
-	int32_t i;
-	int32_t status;
-	extern uint8_t MIDI_PatchMap[128];
+	int32_t status = MUSIC_Ok;
 
-	for (i = 0; i < 128; i++)
-		MIDI_PatchMap[i] = i;
-
-	status = MUSIC_Ok;
 	MUSIC_SoundDevice = SoundCard;
 
 	switch (SoundCard)

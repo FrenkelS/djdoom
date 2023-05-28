@@ -229,8 +229,6 @@ static boolean Reset = false;
 
 static int MIDI_Tempo = 120;
 
-uint8_t MIDI_PatchMap[128];
-
 
 /*---------------------------------------------------------------------
    Function: _MIDI_ReadNumber
@@ -483,7 +481,7 @@ static int32_t _MIDI_InterpretControllerInfo(track *Track, boolean TimeSet, int3
       case EMIDI_PROGRAM_CHANGE :
          if ( Track->EMIDI_ProgramChange )
             {
-            _MIDI_Funcs->ProgramChange(channel, MIDI_PatchMap[c2 & 0x7f]);
+            _MIDI_Funcs->ProgramChange(channel, c2 & 0x7f);
             }
          break;
 
@@ -761,7 +759,7 @@ static void _MIDI_ServiceRoutine
                if ( ( _MIDI_Funcs->ProgramChange ) &&
                   ( !Track->EMIDI_ProgramChange ) )
                   {
-                  _MIDI_Funcs->ProgramChange(channel, MIDI_PatchMap[c1 & 0x7f]);
+                  _MIDI_Funcs->ProgramChange(channel, c1 & 0x7f);
                   }
                break;
 
