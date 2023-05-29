@@ -101,9 +101,6 @@ static void AL_SetChannelPan( int channel, int pan );
 static void AL_SetChannelDetune( int channel, int detune );
 
 
-#define TRUE  ( 1 == 1 )
-#define FALSE ( !TRUE )
-
 /* Definition of octave information to be ORed onto F-Number */
 
 enum octaves
@@ -245,8 +242,8 @@ static CHANNEL   Channel[ NUM_CHANNELS ];
 
 static int AL_LeftPort   = 0x388;
 static int AL_RightPort  = 0x388;
-static int AL_SendStereo = FALSE;
-static int AL_OPL3       = FALSE;
+static boolean AL_SendStereo = false;
+static boolean AL_OPL3       = false;
 
 
 /*---------------------------------------------------------------------
@@ -1178,7 +1175,7 @@ void AL_Shutdown(void)
 {
 	AL_StereoOff();
 
-	AL_OPL3 = FALSE;
+	AL_OPL3 = false;
 	AL_ResetVoices();
 	AL_Reset();
 }
@@ -1195,7 +1192,7 @@ void AL_Init(int soundcard)
 	BLASTER_CONFIG Blaster;
 	int status;
 
-	AL_OPL3   = FALSE;
+	AL_OPL3 = false;
 	AL_LeftPort  = 0x388;
 	AL_RightPort = 0x388;
 
@@ -1203,7 +1200,7 @@ void AL_Init(int soundcard)
 	{
 		case ProAudioSpectrum:
 		case SoundMan16:
-			AL_OPL3 = TRUE;
+			AL_OPL3 = true;
 			AL_LeftPort  = 0x388;
 			AL_RightPort = 0x38A;
 			break;
@@ -1216,7 +1213,7 @@ void AL_Init(int soundcard)
 			if (status == BLASTER_Ok)
 				if (Blaster.Type == SBPro2 || Blaster.Type == SB16)
 				{
-					AL_OPL3 = TRUE;
+					AL_OPL3 = true;
 					AL_LeftPort  = Blaster.Address;
 					AL_RightPort = Blaster.Address + 2;
 				}
