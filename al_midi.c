@@ -32,8 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <conio.h>
 #include <dos.h>
-#include <stddef.h>
-#include <stdlib.h>
+#include "doomdef.h"
 #include "interrup.h"
 #include "sndcards.h"
 #include "blaster.h"
@@ -42,8 +41,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define STEREO_DETUNE 5
 
-#define lobyte( num )   ( ( unsigned )*( ( char * )&( num ) ) )
-#define hibyte( num )   ( ( unsigned )*( ( ( char * )&( num ) ) + 1 ) )
 
 #define AL_VoiceNotFound -1
 
@@ -1077,51 +1074,36 @@ static void AL_Reset
    Turns off a note on the specified MIDI channel.
 ---------------------------------------------------------------------*/
 
-void AL_NoteOff
-   (
-   int channel,
-   int key,
-   int velocity
-   )
+void AL_NoteOff(int channel, int key, int velocity)
+{
+	int voice;
+	int port;
+	int voc;
 
-   {
-   int voice;
-   int port;
-   int voc;
+	// We only play channels 1 through 10
+	if ( channel > AL_MaxMidiChannel )
+		return;
 
-   // We only play channels 1 through 10
-   if ( channel > AL_MaxMidiChannel )
-      {
-      return;
-      }
+	voice = AL_GetVoice( channel, key );
 
-   voice = AL_GetVoice( channel, key );
+	if ( voice == AL_VoiceNotFound )
+		return;
 
-   if ( voice == AL_VoiceNotFound )
-      {
-      return;
-      }
+	Voice[ voice ].status = NOTE_OFF;
 
-   Voice[ voice ].status = NOTE_OFF;
+	port = Voice[ voice ].port;
+	voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
 
-   port = Voice[ voice ].port;
-   voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
+	if ( AL_SendStereo )
+	{
+		AL_SendOutputToPort( AL_LeftPort,  0xB0 + voice, HIBYTE( Voice[ voice ].pitchleft ) );
+		AL_SendOutputToPort( AL_RightPort, 0xB0 + voice, HIBYTE( Voice[ voice ].pitchright ) );
+	} else
+		AL_SendOutput( port, 0xB0 + voc, HIBYTE( Voice[ voice ].pitchleft ) );
 
-   if ( AL_SendStereo )
-      {
-      AL_SendOutputToPort( AL_LeftPort, 0xB0 + voice,
-         hibyte( Voice[ voice ].pitchleft ) );
-      AL_SendOutputToPort( AL_RightPort, 0xB0 + voice,
-         hibyte( Voice[ voice ].pitchright ) );
-      }
-   else
-      {
-      AL_SendOutput( port, 0xB0 + voc, hibyte( Voice[ voice ].pitchleft ) );
-      }
-
-   LL_Remove( VOICE, &Channel[ channel ].Voices, &Voice[ voice ] );
-   LL_AddToTail( VOICE, &Voice_Pool, &Voice[ voice ] );
-   }
+	LL_Remove( VOICE, &Channel[ channel ].Voices, &Voice[ voice ] );
+	LL_AddToTail( VOICE, &Voice_Pool, &Voice[ voice ] );
+}
 
 
 /*---------------------------------------------------------------------
