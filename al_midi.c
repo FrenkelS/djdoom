@@ -1281,57 +1281,45 @@ void AL_Shutdown
    Begins use of the sound card.
 ---------------------------------------------------------------------*/
 
-int AL_Init
-   (
-   int soundcard
-   )
+int AL_Init(int soundcard)
+{
+	BLASTER_CONFIG Blaster;
+	int status;
 
-   {
-   BLASTER_CONFIG Blaster;
-   int status;
+	AL_OPL3   = FALSE;
+	AL_LeftPort  = 0x388;
+	AL_RightPort = 0x388;
 
-   AL_OPL3   = FALSE;
-   AL_LeftPort = 0x388;
-   AL_RightPort = 0x388;
+	switch (soundcard)
+	{
+		case ProAudioSpectrum:
+		case SoundMan16 :
+			AL_OPL3 = TRUE;
+			AL_LeftPort  = 0x388;
+			AL_RightPort = 0x38A;
+			break;
 
-   switch( soundcard )
-      {
-      case ProAudioSpectrum :
-      case SoundMan16 :
-         AL_OPL3 = TRUE;
-         AL_LeftPort = 0x388;
-         AL_RightPort = 0x38A;
-         break;
+		case SoundBlaster :
+			status = BLASTER_GetCardSettings(&Blaster);
+			if (status != BLASTER_Ok)
+				status = BLASTER_GetEnv(&Blaster);
 
-      case SoundBlaster :
-         status = BLASTER_GetCardSettings( &Blaster );
-         if ( status != BLASTER_Ok )
-            {
-            status = BLASTER_GetEnv( &Blaster );
-            if ( status != BLASTER_Ok )
-               {
-               break;
-               }
-            }
+			if (status == BLASTER_Ok)
+				if (Blaster.Type == SBPro2 || Blaster.Type == SB16)
+				{
+					AL_OPL3 = TRUE;
+					AL_LeftPort  = Blaster.Address;
+					AL_RightPort = Blaster.Address + 2;
+				}
+			break;
+	}
 
-         switch( Blaster.Type )
-            {
-            case SBPro2 :
-            case SB16 :
-               AL_OPL3 = TRUE;
-               AL_LeftPort  = Blaster.Address;
-               AL_RightPort = Blaster.Address + 2;
-               break;
-            }
-         break;
-      }
+	AL_CalcPitchInfo();
+	AL_Reset();
+	AL_ResetVoices();
 
-   AL_CalcPitchInfo();
-   AL_Reset();
-   AL_ResetVoices();
-
-   return( AL_Ok );
-   }
+	return AL_Ok;
+}
 
 
 /*---------------------------------------------------------------------
@@ -1340,28 +1328,7 @@ int AL_Init
    Copies user supplied timbres over the default timbre bank.
 ---------------------------------------------------------------------*/
 
-void AL_RegisterTimbreBank
-   (
-   unsigned char *timbres
-   )
-
-   {
-   int i;
-
-   for( i = 0; i < 256; i++ )
-      {
-      ADLIB_TimbreBank[ i ].SAVEK[ 0 ] = *( timbres++ );
-      ADLIB_TimbreBank[ i ].SAVEK[ 1 ] = *( timbres++ );
-      ADLIB_TimbreBank[ i ].Level[ 0 ] = *( timbres++ );
-      ADLIB_TimbreBank[ i ].Level[ 1 ] = *( timbres++ );
-      ADLIB_TimbreBank[ i ].Env1[ 0 ]  = *( timbres++ );
-      ADLIB_TimbreBank[ i ].Env1[ 1 ]  = *( timbres++ );
-      ADLIB_TimbreBank[ i ].Env2[ 0 ]  = *( timbres++ );
-      ADLIB_TimbreBank[ i ].Env2[ 1 ]  = *( timbres++ );
-      ADLIB_TimbreBank[ i ].Wave[ 0 ]  = *( timbres++ );
-      ADLIB_TimbreBank[ i ].Wave[ 1 ]  = *( timbres++ );
-      ADLIB_TimbreBank[ i ].Feedback   = *( timbres++ );
-      ADLIB_TimbreBank[ i ].Transpose  = *( signed char * )( timbres++ );
-      ADLIB_TimbreBank[ i ].Velocity   = *( signed char * )( timbres++ );
-      }
-   }
+void AL_RegisterTimbreBank(uint8_t *timbres)
+{
+	memcpy(ADLIB_TimbreBank, timbres, sizeof(ADLIB_TimbreBank)); 
+}
