@@ -932,6 +932,8 @@ void AL_NoteOff(int channel, int key, int velocity)
 	int port;
 	int voc;
 
+	UNUSED(velocity);
+
 	// We only play channels 1 through 10
 	if (channel > AL_MaxMidiChannel)
 		return;
