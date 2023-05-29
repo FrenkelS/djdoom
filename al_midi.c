@@ -65,12 +65,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FINETUNE_MAX   31
 #define FINETUNE_RANGE ( FINETUNE_MAX + 1 )
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-#define PITCHBEND_CENTER 16384
-#else
 #define PITCHBEND_CENTER 1638400
-#endif
 
 #define note_off             0x80
 #define note_on              0x90
@@ -142,10 +137,7 @@ typedef struct VOICE
    unsigned pitchleft;
    unsigned pitchright;
    int      timbre;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    int      port;
-#endif
    unsigned status;
    } VOICE;
 
@@ -167,14 +159,9 @@ typedef struct
    int       Pan;
    int       Detune;
    unsigned  RPN;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   int       Velocity;
-#else
    short     PitchBendRange;
    short     PitchBendSemiTones;
    short     PitchBendHundreds;
-#endif
    } CHANNEL;
 
 typedef struct
@@ -185,13 +172,8 @@ typedef struct
    unsigned char Env2[ 2 ];
    unsigned char Wave[ 2 ];
    unsigned char Feedback;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   unsigned char Transpose;
-#else
    signed   char Transpose;
    signed   char Velocity;
-#endif
    } TIMBRE;
 
 //extern TIMBRE ADLIB_TimbreBank[ 256 ];
