@@ -45,7 +45,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "sndcards.h"
 #include "blaster.h"
-#include "sndscape.h"
 #include "pas16.h"
 #include "guswave.h"
 #include "pitch.h"
@@ -1569,10 +1568,6 @@ static int MV_SetMixMode
       case SoundMan16 :
          MV_MixMode = PAS_SetMixMode( mode );
          break;
-
-      case SoundScape :
-         MV_MixMode = SOUNDSCAPE_SetMixMode( mode );
-         break;
       }
 
    MV_Channels = 1;
@@ -1712,21 +1707,6 @@ static int MV_StartPlayback
          MV_MixRate = PAS_GetPlaybackRate();
          MV_DMAChannel = PAS_DMAChannel;
          break;
-
-      case SoundScape :
-         status = SOUNDSCAPE_BeginBufferedPlayback( MV_MixBuffer[ 0 ],
-            TotalBufferSize, MV_NumberOfBuffers, MV_RequestedMixRate,
-            MV_MixMode, MV_ServiceVoc );
-
-         if ( status != SOUNDSCAPE_Ok )
-            {
-            MV_SetErrorCode( MV_SoundScapeError );
-            return( MV_Error );
-            }
-
-         MV_MixRate = SOUNDSCAPE_GetPlaybackRate();
-         MV_DMAChannel = SOUNDSCAPE_DMAChannel;
-         break;
       }
 
    return( MV_Ok );
@@ -1767,10 +1747,6 @@ static void MV_StopPlayback
       case ProAudioSpectrum :
       case SoundMan16 :
          PAS_StopPlayback();
-         break;
-
-      case SoundScape :
-         SOUNDSCAPE_StopPlayback();
          break;
       }
 
@@ -2236,10 +2212,6 @@ static int MV_TestPlayback
             pos = PAS_GetCurrentPos();
             break;
 
-         case SoundScape :
-            pos = SOUNDSCAPE_GetCurrentPos();
-            break;
-
          default :
             MV_SetErrorCode( MV_UnsupportedCard );
             pos = -2;
@@ -2402,14 +2374,6 @@ int MV_Init
             }
          break;
 
-      case SoundScape :
-         status = SOUNDSCAPE_Init();
-         if ( status != SOUNDSCAPE_Ok )
-            {
-            MV_SetErrorCode( MV_SoundScapeError );
-            }
-         break;
-
       default :
          MV_SetErrorCode( MV_UnsupportedCard );
          break;
@@ -2544,10 +2508,6 @@ int MV_Shutdown
       case ProAudioSpectrum :
       case SoundMan16 :
          PAS_Shutdown();
-         break;
-
-      case SoundScape :
-         SOUNDSCAPE_Shutdown();
          break;
       }
 

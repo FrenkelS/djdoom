@@ -46,7 +46,6 @@ enum MV_Errors
    MV_VoiceNotFound,
    MV_BlasterError,
    MV_PasError,
-   MV_SoundScapeError,
    MV_DPMI_Error,
    MV_InvalidVOCFile,
    MV_InvalidWAVFile,

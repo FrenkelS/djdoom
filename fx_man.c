@@ -35,7 +35,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "multivoc.h"
 #include "blaster.h"
 #include "pas16.h"
-#include "sndscape.h"
 #include "guswave.h"
 // *** VERSIONS RESTORATION ***
 #if (LIBVER_ASSREV < 19960116L)
@@ -185,7 +184,6 @@ int FX_Init
       case Awe32 :
       case ProAudioSpectrum :
       case SoundMan16 :
-      case SoundScape :
       // *** VERSIONS RESTORATION ***
 #if (LIBVER_ASSREV >= 19950821L)
       case UltraSound :
@@ -277,7 +275,6 @@ int FX_Shutdown
       case Awe32 :
       case ProAudioSpectrum :
       case SoundMan16 :
-      case SoundScape :
       // *** VERSIONS RESTORATION ***
 #if (LIBVER_ASSREV >= 19950821L)
       case UltraSound :
@@ -363,10 +360,6 @@ void FX_SetVolume
       case WaveBlaster :
          break;
 
-      case SoundScape :
-         MV_SetVolume( volume );
-         break;
-
       // *** VERSIONS RESTORATION ***
 #if (LIBVER_ASSREV < 19960116L)
       case Adlib :
@@ -439,7 +432,6 @@ int FX_SetPan
       case Awe32 :
       case ProAudioSpectrum :
       case SoundMan16 :
-      case SoundScape :
       case UltraSound :
          status = MV_SetPan( handle, vol, left, right );
          if ( status == MV_Error )
@@ -504,7 +496,6 @@ int FX_SetPitch
       case Awe32 :
       case ProAudioSpectrum :
       case SoundMan16 :
-      case SoundScape :
       case UltraSound :
          status = MV_SetPitch( handle, pitchoffset );
          if ( status == MV_Error )
@@ -556,7 +547,6 @@ int FX_PlayRaw
       case Awe32 :
       case ProAudioSpectrum :
       case SoundMan16 :
-      case SoundScape :
       case UltraSound :
          handle = MV_PlayRaw( ptr, length, rate, pitchoffset,
             vol, left, right, priority, callbackval );
@@ -623,7 +613,6 @@ int FX_SoundActive
       case ProAudioSpectrum :
       case SoundMan16 :
       case UltraSound :
-      case SoundScape :
          return( MV_VoicePlaying( handle ) );
 
       case Adlib :
@@ -656,7 +645,6 @@ int FX_StopSound
       case Awe32 :
       case ProAudioSpectrum :
       case SoundMan16 :
-      case SoundScape :
       case UltraSound :
          status = MV_Kill( handle );
          if ( status != MV_Ok )

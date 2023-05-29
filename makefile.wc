@@ -53,7 +53,6 @@ GLOBOBJS = &
  pas16.obj &
  pcfx.obj &
  pitch.obj &
- sndscape.obj &
  task_man.obj &
  i_main.obj &
  i_ibm.obj &

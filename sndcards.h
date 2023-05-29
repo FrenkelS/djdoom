@@ -44,7 +44,6 @@ typedef enum
    SoundCanvas,
    Awe32,
    WaveBlaster,
-   SoundScape,
    UltraSound,
    PC,
    NumSoundCards

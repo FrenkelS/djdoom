@@ -41,7 +41,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "gusmidi.h"
 #include "mpu401.h"
 #include "awe32.h"
-#include "sndscape.h"
 #include "ll_man.h"
 
 #define TRUE  ( 1 == 1 )
@@ -96,7 +95,6 @@ int MUSIC_Init
       case GenMidi :
       case SoundCanvas :
       case WaveBlaster :
-      case SoundScape :
          status = MUSIC_InitMidi( SoundCard, &MUSIC_MidiFunctions, Address );
          break;
 
@@ -149,7 +147,6 @@ int MUSIC_Shutdown
 
       case GenMidi :
       case SoundCanvas :
-      case SoundScape :
          MPU_Reset();
          break;
 
@@ -275,7 +272,6 @@ int MUSIC_PlaySong
       case GenMidi :
       case SoundCanvas :
       case WaveBlaster :
-      case SoundScape :
       case Awe32 :
       case UltraSound :
          MIDI_StopSong();
@@ -452,20 +448,6 @@ static int MUSIC_InitMidi
       BLASTER_SetupWaveBlaster();
       }
 #endif // LIBVER_ASSREV < 19960116L
-
-   if ( card == SoundScape )
-      {
-      Address = SOUNDSCAPE_GetMIDIPort();
-      if ( Address < SOUNDSCAPE_Ok )
-         {
-         MUSIC_SetErrorCode( MUSIC_SoundCardError );
-         return( MUSIC_Error );
-         }
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-      MIDI_PatchMap[0x50] = 0x51;
-#endif
-      }
 
    if ( MPU_Init( Address ) != MPU_Ok )
       {
