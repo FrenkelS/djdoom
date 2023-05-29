@@ -773,8 +773,8 @@ static void AL_SetVoicePitch
 
    pitch |= Voice[ voice ].status;
 
-   AL_SendOutput( port, 0xA0 + voc, pitch );
-   AL_SendOutput( port, 0xB0 + voc, pitch >> 8 );
+   AL_SendOutput( port, 0xA0 + voc, LOBYTE(pitch) );
+   AL_SendOutput( port, 0xB0 + voc, HIBYTE(pitch) );
 }
 
 
