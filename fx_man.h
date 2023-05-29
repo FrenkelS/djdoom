@@ -64,7 +64,6 @@ int   FX_Init( int SoundCard, int numvoices, int numchannels, int samplebits, un
 int   FX_Shutdown( void );
 void  FX_SetVolume( int volume );
 
-int FX_EndLooping( int handle );
 int FX_SetPan( int handle, int vol, int left, int right );
 int FX_SetPitch( int handle, int pitchoffset );
 
