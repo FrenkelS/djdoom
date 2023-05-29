@@ -36,7 +36,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "blaster.h"
 #include "pas16.h"
 #include "guswave.h"
-#include "pcfx.h"
 #include "fx_man.h"
 
 #define TRUE  ( 1 == 1 )
@@ -178,14 +177,6 @@ int FX_Init
             }
          break;
 
-      case PC :
-         if ( PCFX_Init() != PCFX_Ok )
-            {
-            FX_SetErrorCode( FX_SoundCardError );
-            status = FX_Error;
-            }
-         break;
-
       default :
          FX_SetErrorCode( FX_InvalidCard );
          status = FX_Error;
@@ -236,10 +227,6 @@ int FX_Shutdown
             FX_SetErrorCode( FX_MultiVocError );
             status = FX_Error;
             }
-         break;
-
-      case PC :
-         PCFX_Shutdown();
          break;
 
       default :
@@ -297,10 +284,6 @@ void FX_SetVolume
 
       case UltraSound :
          GUSWAVE_SetVolume( volume );
-         break;
-
-      case PC :
-         PCFX_SetTotalVolume( volume );
          break;
       }
    }
@@ -431,15 +414,6 @@ int FX_PlayRaw
             }
          break;
 
-      case PC :
-         handle = PCFX_Play( ptr, priority, callbackval );
-         if ( handle < PCFX_Ok )
-            {
-            FX_SetErrorCode( FX_SoundCardError );
-            handle = FX_Warning;
-            }
-         break;
-
       default :
          FX_SetErrorCode( FX_InvalidCard );
          handle = FX_Error;
@@ -469,9 +443,6 @@ int FX_SoundActive
       case SoundMan16 :
       case UltraSound :
          return( MV_VoicePlaying( handle ) );
-
-      case PC :
-         return( PCFX_SoundPlaying( handle ) );
       }
    return( FALSE );
    }
@@ -502,15 +473,6 @@ int FX_StopSound
          if ( status != MV_Ok )
             {
             FX_SetErrorCode( FX_MultiVocError );
-            return( FX_Warning );
-            }
-         break;
-
-      case PC :
-         status = PCFX_Stop( handle );
-         if ( status != PCFX_Ok )
-            {
-            FX_SetErrorCode( FX_SoundCardError );
             return( FX_Warning );
             }
          break;
