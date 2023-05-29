@@ -52,7 +52,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MAX_VELOCITY   0x7f
 #define MAX_OCTAVE     7
-#define MAX_NOTE       ( MAX_OCTAVE * 12 + 11 )
+#define MAX_NOTE       (MAX_OCTAVE * 12 + 11)
 #define FINETUNE_MAX   31
 #define FINETUNE_RANGE ( FINETUNE_MAX + 1 )
 
@@ -118,8 +118,8 @@ static const unsigned OctavePitch[ MAX_OCTAVE + 1 ] =
    OCTAVE_4, OCTAVE_5, OCTAVE_6, OCTAVE_7,
    };
 
-static unsigned NoteMod12[ MAX_NOTE + 1 ];
-static unsigned NoteDiv12[ MAX_NOTE + 1 ];
+static unsigned NoteMod12[MAX_NOTE + 1];
+static unsigned NoteDiv12[MAX_NOTE + 1];
 
 // Pitch table
 
@@ -659,62 +659,52 @@ static int AL_GetVoice(int channel, int key)
    Programs the pitch of the specified voice.
 ---------------------------------------------------------------------*/
 
-static void AL_SetVoicePitch
-   (
-   int voice
-   )
+static void AL_SetVoicePitch(int voice)
+{
+	int note;
+	int channel;
+	int patch;
+	int detune;
+	int ScaleNote;
+	int Octave;
+	int pitch;
+	int port;
+	int voc;
 
-   {
-   int note;
-   int channel;
-   int patch;
-   int detune;
-   int ScaleNote;
-   int Octave;
-   int pitch;
-   int port;
-   int voc;
+	port = Voice[voice].port;
+	voc  = (voice >= NUM_VOICES) ? voice - NUM_VOICES : voice;
 
-   port = Voice[ voice ].port;
-   voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
+	channel = Voice[voice].channel;
 
-   channel = Voice[ voice ].channel;
+	if (channel == 9)
+	{
+		patch = Voice[voice].key + 128;
+		note  = ADLIB_TimbreBank[patch].Transpose;
+	} else {
+		patch = Channel[channel].Timbre;
+		note  = Voice[voice].key + ADLIB_TimbreBank[patch].Transpose;
+	}
 
-   if ( channel == 9 )
-      {
-      patch = Voice[ voice ].key + 128;
-      note  = ADLIB_TimbreBank[ patch ].Transpose;
-      }
-   else
-      {
-      patch = Channel[ channel ].Timbre;
-      note  = Voice[ voice ].key + ADLIB_TimbreBank[ patch ].Transpose;
-      }
+	note += Channel[channel].KeyOffset - 12;
 
-   note += Channel[ channel ].KeyOffset - 12;
+	if (note > MAX_NOTE)
+		note = MAX_NOTE;
+	if (note < 0)
+		note = 0;
 
-   if ( note > MAX_NOTE )
-      {
-      note = MAX_NOTE;
-      }
-   if ( note < 0 )
-      {
-      note = 0;
-      }
+	detune = Channel[channel].KeyDetune;
 
-   detune = Channel[ channel ].KeyDetune;
+	ScaleNote = NoteMod12[note];
+	Octave    = NoteDiv12[note];
 
-   ScaleNote = NoteMod12[ note ];
-   Octave    = NoteDiv12[ note ];
+	pitch = OctavePitch[Octave] | NotePitch[detune][ScaleNote];
 
-   pitch = OctavePitch[ Octave ] | NotePitch[ detune ][ ScaleNote ];
+	Voice[voice].pitchleft = pitch;
 
-   Voice[ voice ].pitchleft = pitch;
+	pitch |= Voice[voice].status;
 
-   pitch |= Voice[ voice ].status;
-
-   AL_SendOutput( port, 0xA0 + voc, LOBYTE(pitch) );
-   AL_SendOutput( port, 0xB0 + voc, HIBYTE(pitch) );
+	AL_SendOutput(port, 0xA0 + voc, LOBYTE(pitch));
+	AL_SendOutput(port, 0xB0 + voc, HIBYTE(pitch));
 }
 
 
@@ -724,26 +714,24 @@ static void AL_SetVoicePitch
    Sets the volume of the specified MIDI channel.
 ---------------------------------------------------------------------*/
 
-static void AL_SetChannelVolume
-   (
-   int channel,
-   int volume
-   )
+static void AL_SetChannelVolume(int channel, int volume)
+{
+	VOICE *voice;
 
-   {
-   VOICE *voice;
+	if (volume < 0)
+		volume = 0;
+	if (volume > AL_MaxVolume)
+		volume = AL_MaxVolume;
 
-   volume = max( 0, volume );
-   volume = min( volume, AL_MaxVolume );
-   Channel[ channel ].Volume = volume;
+	Channel[channel].Volume = volume;
 
-   voice = Channel[ channel ].Voices.start;
-   while( voice != NULL )
-      {
-      AL_SetVoiceVolume( voice->num );
-      voice = voice->next;
-      }
-   }
+	voice = Channel[channel].Voices.start;
+	while (voice != NULL)
+	{
+		AL_SetVoiceVolume(voice->num);
+		voice = voice->next;
+	}
+}
 
 
 /*---------------------------------------------------------------------
@@ -752,19 +740,12 @@ static void AL_SetChannelVolume
    Sets the pan position of the specified MIDI channel.
 ---------------------------------------------------------------------*/
 
-static void AL_SetChannelPan
-   (
-   int channel,
-   int pan
-   )
-
-   {
-   // Don't pan drum sounds
-   if ( channel != 9 )
-      {
-      Channel[ channel ].Pan = pan;
-      }
-   }
+static void AL_SetChannelPan(int channel, int pan)
+{
+	// Don't pan drum sounds
+	if (channel != 9)
+		Channel[channel].Pan = pan;
+}
 
 
 /*---------------------------------------------------------------------
@@ -773,15 +754,10 @@ static void AL_SetChannelPan
    Sets the stereo voice detune of the specified MIDI channel.
 ---------------------------------------------------------------------*/
 
-static void AL_SetChannelDetune
-   (
-   int channel,
-   int detune
-   )
-
-   {
-   Channel[ channel ].Detune = detune;
-   }
+static void AL_SetChannelDetune(int channel, int detune)
+{
+	Channel[channel].Detune = detune;
+}
 
 
 /*---------------------------------------------------------------------
@@ -790,52 +766,47 @@ static void AL_SetChannelDetune
    Sets all voice info to the default state.
 ---------------------------------------------------------------------*/
 
-static void AL_ResetVoices
-   (
-   void
-   )
+static void AL_ResetVoices(void)
+{
+	int index;
+	int numvoices;
 
-   {
-   int index;
-   int numvoices;
+	Voice_Pool.start = NULL;
+	Voice_Pool.end   = NULL;
 
-   Voice_Pool.start = NULL;
-   Voice_Pool.end = NULL;
+	numvoices = NUM_VOICES;
+	if (AL_OPL3)
+		numvoices = NUM_VOICES * 2;
 
-   numvoices = NUM_VOICES;
-   if ( ( AL_OPL3 ) )
-      {
-      numvoices = NUM_VOICES * 2;
-      }
-   for( index = 0; index < numvoices; index++ )
-      {
-      Voice[ index ].num = index;
-      Voice[ index ].key = 0;
-      Voice[ index ].velocity = 0;
-      Voice[ index ].channel = -1;
-      Voice[ index ].timbre = -1;
-      Voice[ index ].port = ( index < NUM_VOICES ) ? 0 : 1;
-      Voice[ index ].status = NOTE_OFF;
-      LL_AddToTail( VOICE, &Voice_Pool, &Voice[ index ] );
-      }
+	for (index = 0; index < numvoices; index++)
+	{
+		Voice[index].num      = index;
+		Voice[index].key      = 0;
+		Voice[index].velocity = 0;
+		Voice[index].channel  = -1;
+		Voice[index].timbre   = -1;
+		Voice[index].port     = (index < NUM_VOICES) ? 0 : 1;
+		Voice[index].status   = NOTE_OFF;
+		LL_AddToTail(VOICE, &Voice_Pool, &Voice[index]);
+	}
 
-   for( index = 0; index < NUM_CHANNELS; index++ )
-      {
-      Channel[ index ].Voices.start    = NULL;
-      Channel[ index ].Voices.end      = NULL;
-      Channel[ index ].Timbre          = 0;
-      Channel[ index ].Pitchbend       = 0;
-      Channel[ index ].KeyOffset       = 0;
-      Channel[ index ].KeyDetune       = 0;
-      Channel[ index ].Volume          = AL_DefaultChannelVolume;
-      Channel[ index ].Pan             = 64;
-      Channel[ index ].RPN             = 0;
+	for (index = 0; index < NUM_CHANNELS; index++)
+	{
+		Channel[index].Voices.start = NULL;
+		Channel[index].Voices.end   = NULL;
+		Channel[index].Timbre       = 0;
+		Channel[index].Pitchbend    = 0;
+		Channel[index].KeyOffset    = 0;
+		Channel[index].KeyDetune    = 0;
+		Channel[index].Volume       = AL_DefaultChannelVolume;
+		Channel[index].Pan          = 64;
+		Channel[index].RPN          = 0;
 
-      Channel[ index ].PitchBendRange     = AL_DefaultPitchBendRange;
-      Channel[ index ].PitchBendSemiTones = AL_DefaultPitchBendRange / 100;
-      Channel[ index ].PitchBendHundreds  = AL_DefaultPitchBendRange % 100;
-      }
-   }
+		Channel[index].PitchBendRange     = AL_DefaultPitchBendRange;
+		Channel[index].PitchBendSemiTones = AL_DefaultPitchBendRange / 100;
+		Channel[index].PitchBendHundreds  = AL_DefaultPitchBendRange % 100;
+	}
+}
 
 
 /*---------------------------------------------------------------------
@@ -844,20 +815,16 @@ static void AL_ResetVoices
    Calculates the pitch table.
 ---------------------------------------------------------------------*/
 
-static void AL_CalcPitchInfo
-   (
-   void
-   )
+static void AL_CalcPitchInfo(void)
+{
+	int    note;
 
-   {
-   int    note;
-
-   for( note = 0; note <= MAX_NOTE; note++ )
-      {
-      NoteMod12[ note ] = note % 12;
-      NoteDiv12[ note ] = note / 12;
-      }
-   }
+	for (note = 0; note <= MAX_NOTE; note++)
+	{
+		NoteMod12[note] = note % 12;
+		NoteDiv12[note] = note / 12;
+	}
+}
 
 
 /*---------------------------------------------------------------------
@@ -866,38 +833,34 @@ static void AL_CalcPitchInfo
    Sets all voices to a known (quiet) state.
 ---------------------------------------------------------------------*/
 
-static void AL_FlushCard
-   (
-   int port
-   )
+static void AL_FlushCard(int port)
+{
+	int i;
+	unsigned slot1;
+	unsigned slot2;
 
-   {
-   int i;
-   unsigned slot1;
-   unsigned slot2;
+	for (i = 0 ; i < NUM_VOICES; i++)
+	{
+		slot1 = offsetSlot[slotVoice[i][0]];
+		slot2 = offsetSlot[slotVoice[i][1]];
 
-   for( i = 0 ; i < NUM_VOICES; i++ )
-      {
-      slot1 = offsetSlot[ slotVoice[ i ][ 0 ] ];
-      slot2 = offsetSlot[ slotVoice[ i ][ 1 ] ];
+		AL_SendOutputToPort(port, 0xA0 + i, 0);
+		AL_SendOutputToPort(port, 0xB0 + i, 0);
 
-      AL_SendOutputToPort( port, 0xA0 + i, 0 );
-      AL_SendOutputToPort( port, 0xB0 + i, 0 );
+		AL_SendOutputToPort(port, 0xE0 + slot1, 0);
+		AL_SendOutputToPort(port, 0xE0 + slot2, 0);
 
-      AL_SendOutputToPort( port, 0xE0 + slot1, 0 );
-      AL_SendOutputToPort( port, 0xE0 + slot2, 0 );
+		// Set the envelope to be fast and quiet
+		AL_SendOutputToPort(port, 0x60 + slot1, 0xff);
+		AL_SendOutputToPort(port, 0x60 + slot2, 0xff);
+		AL_SendOutputToPort(port, 0x80 + slot1, 0xff);
+		AL_SendOutputToPort(port, 0x80 + slot2, 0xff);
 
-      // Set the envelope to be fast and quiet
-      AL_SendOutputToPort( port, 0x60 + slot1, 0xff );
-      AL_SendOutputToPort( port, 0x60 + slot2, 0xff );
-      AL_SendOutputToPort( port, 0x80 + slot1, 0xff );
-      AL_SendOutputToPort( port, 0x80 + slot2, 0xff );
-
-      // Maximum attenuation
-      AL_SendOutputToPort( port, 0x40 + slot1, 0xff );
-      AL_SendOutputToPort( port, 0x40 + slot2, 0xff );
-      }
-   }
+		// Maximum attenuation
+		AL_SendOutputToPort(port, 0x40 + slot1, 0xff);
+		AL_SendOutputToPort(port, 0x40 + slot2, 0xff);
+	}
+}
 
 
 /*---------------------------------------------------------------------
@@ -938,30 +901,23 @@ static void AL_StereoOff(void)
    Sets the card to a known (quiet) state.
 ---------------------------------------------------------------------*/
 
-static void AL_Reset
-   (
-   void
-   )
+static void AL_Reset(void)
+{
+	AL_SendOutputToPort(ADLIB_PORT, 1, 0x20);
+	AL_SendOutputToPort(ADLIB_PORT, 0x08, 0);
 
-   {
-   AL_SendOutputToPort( ADLIB_PORT, 1, 0x20 );
-   AL_SendOutputToPort( ADLIB_PORT, 0x08, 0 );
+	// Set the values: AM Depth, VIB depth & Rhythm
+	AL_SendOutputToPort(ADLIB_PORT, 0xBD, 0);
 
-   // Set the values: AM Depth, VIB depth & Rhythm
-   AL_SendOutputToPort( ADLIB_PORT, 0xBD, 0 );
+	AL_StereoOn();
 
-   AL_StereoOn();
-
-   if ( AL_OPL3 )
-      {
-      AL_FlushCard( AL_LeftPort );
-      AL_FlushCard( AL_RightPort );
-      }
-   else
-      {
-      AL_FlushCard( ADLIB_PORT );
-      }
-   }
+	if (AL_OPL3)
+	{
+		AL_FlushCard(AL_LeftPort);
+		AL_FlushCard(AL_RightPort);
+	} else
+		AL_FlushCard(ADLIB_PORT);
+}
 
 
 /*---------------------------------------------------------------------
@@ -977,23 +933,23 @@ void AL_NoteOff(int channel, int key, int velocity)
 	int voc;
 
 	// We only play channels 1 through 10
-	if ( channel > AL_MaxMidiChannel )
+	if (channel > AL_MaxMidiChannel)
 		return;
 
-	voice = AL_GetVoice( channel, key );
+	voice = AL_GetVoice(channel, key);
 
-	if ( voice == AL_VoiceNotFound )
+	if (voice == AL_VoiceNotFound)
 		return;
 
-	Voice[ voice ].status = NOTE_OFF;
+	Voice[voice].status = NOTE_OFF;
 
-	port = Voice[ voice ].port;
-	voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
+	port = Voice[voice].port;
+	voc  = (voice >= NUM_VOICES) ? voice - NUM_VOICES : voice;
 
-	AL_SendOutput( port, 0xB0 + voc, HIBYTE( Voice[ voice ].pitchleft ) );
+	AL_SendOutput(port, 0xB0 + voc, HIBYTE(Voice[voice].pitchleft));
 
-	LL_Remove( VOICE, &Channel[ channel ].Voices, &Voice[ voice ] );
-	LL_AddToTail( VOICE, &Voice_Pool, &Voice[ voice ] );
+	LL_Remove(VOICE, &Channel[channel].Voices, &Voice[voice]);
+	LL_AddToTail(VOICE, &Voice_Pool, &Voice[voice]);
 }
 
 
