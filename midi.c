@@ -38,7 +38,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "standard.h"
 #include "task_man.h"
 #include "ll_man.h"
-#include "usrhooks.h"
 #include "music.h"
 #include "midi.h"
 
@@ -1222,6 +1221,70 @@ void MIDI_SetMidiFuncs
 
    {
    _MIDI_Funcs = funcs;
+   }
+
+
+/*---------------------------------------------------------------------
+   Error definitions
+---------------------------------------------------------------------*/
+
+enum USRHOOKS_Errors
+   {
+   USRHOOKS_Warning = -2,
+   USRHOOKS_Error   = -1,
+   USRHOOKS_Ok      = 0
+   };
+
+
+/*---------------------------------------------------------------------
+   Function: USRHOOKS_GetMem
+
+   Allocates the requested amount of memory and returns a pointer to
+   its location, or NULL if an error occurs.  NOTE: pointer is assumed
+   to be dword aligned.
+---------------------------------------------------------------------*/
+
+static int USRHOOKS_GetMem
+   (
+   void **ptr,
+   unsigned long size
+   )
+
+   {
+   void *memory;
+
+   memory = malloc( size );
+   if ( memory == NULL )
+      {
+      return( USRHOOKS_Error );
+      }
+
+   *ptr = memory;
+
+   return( USRHOOKS_Ok );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: USRHOOKS_FreeMem
+
+   Deallocates the memory associated with the specified pointer.
+---------------------------------------------------------------------*/
+
+static int USRHOOKS_FreeMem
+   (
+   void *ptr
+   )
+
+   {
+   if ( ptr == NULL )
+      {
+      return( USRHOOKS_Error );
+      }
+
+   free( ptr );
+
+   return( USRHOOKS_Ok );
    }
 
 

@@ -33,7 +33,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FALSE ( !TRUE )
 
 #define NOINTS
-#define USE_USRHOOKS
 
 #include <stdlib.h>
 #include <dos.h>
@@ -42,12 +41,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "interrup.h"
 #include "task_man.h"
 
-#ifdef USE_USRHOOKS
-#include "usrhooks.h"
 #define FreeMem( ptr )   USRHOOKS_FreeMem( ( ptr ) )
-#else
-#define FreeMem( ptr )   free( ( ptr ) )
-#endif
 
 typedef struct
    {
@@ -496,6 +490,70 @@ void TS_Shutdown
 
 
 /*---------------------------------------------------------------------
+   Error definitions
+---------------------------------------------------------------------*/
+
+enum USRHOOKS_Errors
+   {
+   USRHOOKS_Warning = -2,
+   USRHOOKS_Error   = -1,
+   USRHOOKS_Ok      = 0
+   };
+
+
+/*---------------------------------------------------------------------
+   Function: USRHOOKS_GetMem
+
+   Allocates the requested amount of memory and returns a pointer to
+   its location, or NULL if an error occurs.  NOTE: pointer is assumed
+   to be dword aligned.
+---------------------------------------------------------------------*/
+
+static int USRHOOKS_GetMem
+   (
+   void **ptr,
+   unsigned long size
+   )
+
+   {
+   void *memory;
+
+   memory = malloc( size );
+   if ( memory == NULL )
+      {
+      return( USRHOOKS_Error );
+      }
+
+   *ptr = memory;
+
+   return( USRHOOKS_Ok );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: USRHOOKS_FreeMem
+
+   Deallocates the memory associated with the specified pointer.
+---------------------------------------------------------------------*/
+
+static int USRHOOKS_FreeMem
+   (
+   void *ptr
+   )
+
+   {
+   if ( ptr == NULL )
+      {
+      return( USRHOOKS_Error );
+      }
+
+   free( ptr );
+
+   return( USRHOOKS_Ok );
+   }
+
+
+/*---------------------------------------------------------------------
    Function: TS_ScheduleTask
 
    Schedules a new task for processing.
@@ -512,17 +570,12 @@ task *TS_ScheduleTask
    {
    task *ptr;
 
-#ifdef USE_USRHOOKS
    int   status;
 
    ptr = NULL;
 
    status = USRHOOKS_GetMem((void **) &ptr, sizeof( task ) );
    if ( status == USRHOOKS_Ok )
-#else
-   ptr = malloc( sizeof( task ) );
-   if ( ptr != NULL )
-#endif
       {
       if ( !TS_Installed )
          {
