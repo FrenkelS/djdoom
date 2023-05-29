@@ -320,16 +320,10 @@ static void AL_SendOutputToPort(int port, int reg, int data)
 
 static void AL_SendOutput(int voice, int reg, int data)
 {
-	int port;
-
-	if ( AL_SendStereo )
-	{
-		AL_SendOutputToPort( AL_LeftPort, reg, data );
-		AL_SendOutputToPort( AL_RightPort, reg, data );
-	} else {
-		port = ( voice == 0 ) ? AL_RightPort : AL_LeftPort;
-		AL_SendOutputToPort( port, reg, data );
-	}
+	if (voice == 0)
+		AL_SendOutputToPort(AL_RightPort, reg, data);
+	else
+		AL_SendOutputToPort(AL_LeftPort,  reg, data);
 }
 
 
@@ -494,6 +488,7 @@ static void AL_SetVoiceVolume
       }
    else
       {
+		  exit(1);
       // Set left channel volume
       volume = t1;
       if ( Channel[ channel ].Pan < 64 )
@@ -778,42 +773,9 @@ static void AL_SetVoicePitch
 
    pitch |= Voice[ voice ].status;
 
-   if ( !AL_SendStereo )
-      {
-      AL_SendOutput( port, 0xA0 + voc, pitch );
-      AL_SendOutput( port, 0xB0 + voc, pitch >> 8 );
-      }
-   else
-      {
-      AL_SendOutputToPort( AL_LeftPort, 0xA0 + voice, pitch );
-      AL_SendOutputToPort( AL_LeftPort, 0xB0 + voice, pitch >> 8 );
-
-      if ( channel != 9 )
-         {
-         detune += STEREO_DETUNE;
-         }
-
-      if ( detune > FINETUNE_MAX )
-         {
-         detune -= FINETUNE_RANGE;
-         if ( note < MAX_NOTE )
-            {
-            note++;
-            ScaleNote = NoteMod12[ note ];
-            Octave    = NoteDiv12[ note ];
-            }
-         }
-
-      pitch = OctavePitch[ Octave ] | NotePitch[ detune ][ ScaleNote ];
-
-      Voice[ voice ].pitchright = pitch;
-
-      pitch |= Voice[ voice ].status;
-
-      AL_SendOutputToPort( AL_RightPort, 0xA0 + voice, pitch );
-      AL_SendOutputToPort( AL_RightPort, 0xB0 + voice, pitch >> 8 );
-      }
-   }
+   AL_SendOutput( port, 0xA0 + voc, pitch );
+   AL_SendOutput( port, 0xB0 + voc, pitch >> 8 );
+}
 
 
 /*---------------------------------------------------------------------
@@ -1056,7 +1018,7 @@ static void AL_Reset
 
    AL_StereoOn();
 
-   if ( ( AL_SendStereo ) || ( AL_OPL3 ) )
+   if ( AL_OPL3 )
       {
       AL_FlushCard( AL_LeftPort );
       AL_FlushCard( AL_RightPort );
@@ -1094,12 +1056,7 @@ void AL_NoteOff(int channel, int key, int velocity)
 	port = Voice[ voice ].port;
 	voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
 
-	if ( AL_SendStereo )
-	{
-		AL_SendOutputToPort( AL_LeftPort,  0xB0 + voice, HIBYTE( Voice[ voice ].pitchleft ) );
-		AL_SendOutputToPort( AL_RightPort, 0xB0 + voice, HIBYTE( Voice[ voice ].pitchright ) );
-	} else
-		AL_SendOutput( port, 0xB0 + voc, HIBYTE( Voice[ voice ].pitchleft ) );
+	AL_SendOutput( port, 0xB0 + voc, HIBYTE( Voice[ voice ].pitchleft ) );
 
 	LL_Remove( VOICE, &Channel[ channel ].Voices, &Voice[ voice ] );
 	LL_AddToTail( VOICE, &Voice_Pool, &Voice[ voice ] );
