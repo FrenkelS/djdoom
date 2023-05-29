@@ -38,6 +38,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "blaster.h"
 #include "al_midi.h"
 
+#define AL_MaxVolume             127
+#define AL_MaxMidiChannel        16
+#define AL_DefaultChannelVolume  90
+#define AL_DefaultPitchBendRange 200
+
+#define ADLIB_PORT 0x388
 
 #define AL_VoiceNotFound -1
 
@@ -241,8 +247,6 @@ static int AL_LeftPort   = 0x388;
 static int AL_RightPort  = 0x388;
 static int AL_SendStereo = FALSE;
 static int AL_OPL3       = FALSE;
-
-#define AL_MaxMidiChannel 16
 
 
 /*---------------------------------------------------------------------
@@ -1138,7 +1142,7 @@ void AL_SetPitchBend(int channel, int lsb, int msb)
    Determines if an Adlib compatible card is installed in the machine.
 ---------------------------------------------------------------------*/
 
-int AL_DetectFM(void)
+boolean AL_DetectFM(void)
 {
 	int status1;
 	int status2;
@@ -1186,7 +1190,7 @@ void AL_Shutdown(void)
    Begins use of the sound card.
 ---------------------------------------------------------------------*/
 
-int AL_Init(int soundcard)
+void AL_Init(int soundcard)
 {
 	BLASTER_CONFIG Blaster;
 	int status;
@@ -1222,8 +1226,6 @@ int AL_Init(int soundcard)
 	AL_CalcPitchInfo();
 	AL_Reset();
 	AL_ResetVoices();
-
-	return AL_Ok;
 }
 
 
