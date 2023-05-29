@@ -47,12 +47,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define AL_VoiceNotFound -1
 
-/* Number of slots for the voices on the chip */
-#define NumChipSlots 18
-
-#define NUM_VOICES      9
-#define NUM_CHANNELS    16
-
 #define NOTE_ON         0x2000  /* Used to turn note on or toggle note */
 #define NOTE_OFF        0x0000
 
@@ -170,31 +164,36 @@ static const unsigned NotePitch[ FINETUNE_MAX + 1 ][ 12 ] =
 // Slot numbers as a function of the voice and the operator.
 // ( melodic only)
 
-static const int slotVoice[ NUM_VOICES ][ 2 ] =
-   {
-      { 0, 3 },    // voice 0
-      { 1, 4 },    // 1
-      { 2, 5 },    // 2
-      { 6, 9 },    // 3
-      { 7, 10 },   // 4
-      { 8, 11 },   // 5
-      { 12, 15 },  // 6
-      { 13, 16 },  // 7
-      { 14, 17 },  // 8
-   };
+#define NUM_VOICES      9
 
-static int VoiceLevel[ NumChipSlots ][ 2 ];
-static int VoiceKsl[ NumChipSlots ][ 2 ];
+static const int slotVoice[NUM_VOICES][2] =
+{
+	{ 0, 3 },    // voice 0
+	{ 1, 4 },    // 1
+	{ 2, 5 },    // 2
+	{ 6, 9 },    // 3
+	{ 7, 10 },   // 4
+	{ 8, 11 },   // 5
+	{ 12, 15 },  // 6
+	{ 13, 16 },  // 7
+	{ 14, 17 },  // 8
+};
+
+/* Number of slots for the voices on the chip */
+#define NumChipSlots 18
+
+static int VoiceLevel[NumChipSlots][2];
+static int VoiceKsl[NumChipSlots][2];
 
 // This table gives the offset of each slot within the chip.
-// offset = fn( slot)
+// offset = fn(slot)
 
-static const char offsetSlot[ NumChipSlots ] =
-   {
-    0,  1,  2,  3,  4,  5,
-    8,  9, 10, 11, 12, 13,
-   16, 17, 18, 19, 20, 21
-   };
+static const char offsetSlot[NumChipSlots] =
+{
+	 0,  1,  2,  3,  4,  5,
+	 8,  9, 10, 11, 12, 13,
+	16, 17, 18, 19, 20, 21
+};
 
 typedef struct VOICE
    {
@@ -235,10 +234,12 @@ typedef struct
    short     PitchBendHundreds;
    } CHANNEL;
 
-static VOICE     Voice[ NUM_VOICES * 2 ];
+static VOICE     Voice[NUM_VOICES * 2];
 static VOICELIST Voice_Pool;
 
-static CHANNEL   Channel[ NUM_CHANNELS ];
+#define NUM_CHANNELS    16
+
+static CHANNEL   Channel[NUM_CHANNELS];
 
 static int AL_LeftPort   = 0x388;
 static int AL_RightPort  = 0x388;
@@ -261,7 +262,7 @@ static void AL_SendOutputToPort(int port, int reg, int data)
 	for (delay = 6; delay > 0; delay--)
 		inp(port);
 
-	outp(port + 1, data );
+	outp(port + 1, data);
 
 	for (delay = 27; delay > 0; delay--)
 		inp(port);
@@ -572,7 +573,7 @@ static int AL_GetVoice(int channel, int key)
 
 	voice = Channel[channel].Voices.start;
 
-	while(voice != NULL)
+	while (voice != NULL)
 	{
 		if (voice->key == key)
 			return voice->num;
