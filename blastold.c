@@ -1103,12 +1103,7 @@ int BLASTER_BeginBufferedPlayback
    int DmaStatus;
    int TransferLength;
 
-   // VERSIONS RESTORATION
-   // Do the check, based on version
-//JIM
-#if (LIBVER_ASSREV < 19960116L)
    if ( BLASTER_SoundPlaying || BLASTER_SoundRecording )
-#endif
       {
       BLASTER_StopPlayback();
       }
@@ -1365,15 +1360,9 @@ int BLASTER_CardHasMixer
          {
          BLASTER_MixerAddress = Blaster.Address;
          BLASTER_MixerType = 0;
-         // *** VERSIONS RESTORATION ***
-         // A bug that got fixed
-#if (LIBVER_ASSREV < 19950821L)
-         if ( ( Blaster.Type >= BLASTER_MinCardType ) ||
-            ( Blaster.Type <= BLASTER_MaxCardType ) )
-#else
+
          if ( ( Blaster.Type < BLASTER_MinCardType ) ||
             ( Blaster.Type > BLASTER_MaxCardType ) )
-#endif
             {
             BLASTER_MixerType = Blaster.Type;
             }
@@ -1680,11 +1669,6 @@ int BLASTER_SetCardSettings
 
    BLASTER_MixerAddress = Config.Address;
    BLASTER_MixerType = 0;
-  // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-if ( ( Config.Type >= BLASTER_MinCardType ) ||
-   ( Config.Type <= BLASTER_MaxCardType ) )
-#endif
    BLASTER_MixerType = Config.Type;
 
    return( BLASTER_Ok );

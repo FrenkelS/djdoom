@@ -333,14 +333,8 @@ static void __interrupt __far TS_ServiceSchedule
       if ( ptr->active )
          {
          ptr->count += TaskServiceRate;
-         // *** VERSIONS RESTORATION ***
-         // Choose line based on version
-//JIM
-#if (LIBVER_ASSREV < 19950821L)
-         if ( ptr->count >= ptr->rate )
-#else
+
          while( ptr->count >= ptr->rate )
-#endif
             {
             ptr->count -= ptr->rate;
             ptr->TaskService( ptr );

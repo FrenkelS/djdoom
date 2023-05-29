@@ -419,8 +419,6 @@ static int MUSIC_InitMidi
 
    status = MUSIC_Ok;
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
    if ( card == WaveBlaster )
       {
       if ( Address <= BLASTER_Ok )
@@ -438,15 +436,6 @@ static int MUSIC_InitMidi
       {
           BLASTER_SetupWaveBlaster(BLASTER_Ok);
       }
-#else // LIBVER_ASSREV >= 19960116L
-   if ( ( card == WaveBlaster ) || ( card == SoundCanvas ) ||
-      ( card == GenMidi ) )
-      {
-      // Setup WaveBlaster Daughterboard clone
-      // (ie. SoundCanvas DB, TurtleBeach Rio)
-      BLASTER_SetupWaveBlaster();
-      }
-#endif // LIBVER_ASSREV < 19960116L
 
    if ( MPU_Init( Address ) != MPU_Ok )
       {

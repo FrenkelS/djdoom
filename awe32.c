@@ -154,19 +154,13 @@ void AWE32_ControlChange
    unsigned temp;
    int i;
    unsigned channelmask;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   channelmask = 1 << channel;
-#endif
 
    temp = SetES();
 
    if ( number == 0x7b )
       {
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
       channelmask = 1 << channel;
-#endif
+
       for( i = 0; i < 128; i++ )
          {
          if ( NoteFlags[ i ] & channelmask )

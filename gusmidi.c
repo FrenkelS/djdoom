@@ -66,12 +66,7 @@ static int   PatchMap[ NUM_PATCHES ][ MAX_MEM_CONFIG + 1 ];
 static char  ProgramName[ NUM_PATCHES ][ BIGGEST_NAME ];
 static char  PatchLoaded[ NUM_PATCHES ];
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-static char  ConfigFileName[] = "GUSMIDI.INI";
-#else
 static char  ConfigFileName[] = "ULTRAMID.INI";
-#endif
 static char  ConfigDirectory[ 80 ] = { '\0' };
 
 // The name of the configuration directory
@@ -135,14 +130,11 @@ static int GUS_GetPatchMap
    fp = fopen( text, "r" );
    if ( fp == NULL )
       {
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
       strcpy( text, InstrumentDirectory );
       strcat( text, name );
 
       fp = fopen( text, "r" );
       if ( fp == NULL )
-#endif
          {
          GUS_SetErrorCode( GUS_MissingConfig );
          return( GUS_Error );

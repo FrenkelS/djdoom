@@ -60,19 +60,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MAX_BLOCK_LENGTH 0x8000
 
-// *** VERSIONS RESTORATION ***
-// Uncomment seemingly older values for earlier versions
-#if (LIBVER_ASSREV >= 19950821L)
 #define GF1BSIZE   896L   /* size of buffer per wav on GUS */
-#else
-#define GF1BSIZE   512L   /* size of buffer per wav on GUS */
-#endif
-
-#if (LIBVER_ASSREV < 19950821L)
-#define VOICES     8      /* maximum amount of concurrent wav files */
-#else
 #define VOICES     2      /* maximum amount of concurrent wav files */
-#endif
 #define MAX_VOICES 32     /* This should always be 32 */
 #define MAX_VOLUME 4095
 #define BUFFER     2048U  /* size of DMA buffer for patch loading */
@@ -99,10 +88,7 @@ typedef volatile struct VoiceNode
    struct VoiceNode *prev;
 
    wavedata      wavetype;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    int           bits;
-#endif
    playbackstatus ( *GetSound )( struct VoiceNode *voice );
 
    int num;

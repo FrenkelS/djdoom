@@ -30,13 +30,7 @@ enum AL_Errors
 
 #define AL_MaxVolume             127
 #define AL_DefaultChannelVolume  90
-// *** VERSIONS RESTORATION ***
-// Uncomment seemingly older value for earlier versions
-#if (LIBVER_ASSREV < 19950821L)
-#define AL_DefaultPitchBendRange 2
-#else
 #define AL_DefaultPitchBendRange 200
-#endif
 
 #define ADLIB_PORT 0x388
 
