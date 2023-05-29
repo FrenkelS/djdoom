@@ -656,23 +656,18 @@ static void LL_RemoveNode
    Retrieves a free voice from the voice pool.
 ---------------------------------------------------------------------*/
 
-static int AL_AllocVoice
-   (
-   void
-   )
+static int AL_AllocVoice(void)
+{
+	int voice;
 
-   {
-   int voice;
-
-   if ( Voice_Pool.start )
-      {
-      voice = Voice_Pool.start->num;
-      LL_Remove( VOICE, &Voice_Pool, &Voice[ voice ] );
-      return( voice );
-      }
-
-   return( AL_VoiceNotFound );
-   }
+	if (Voice_Pool.start)
+	{
+		voice = Voice_Pool.start->num;
+		LL_Remove(VOICE, &Voice_Pool, &Voice[voice]);
+		return voice;
+	} else
+		return AL_VoiceNotFound;
+}
 
 
 /*---------------------------------------------------------------------
@@ -682,28 +677,22 @@ static int AL_AllocVoice
    MIDI channel.
 ---------------------------------------------------------------------*/
 
-static int AL_GetVoice
-   (
-   int channel,
-   int key
-   )
+static int AL_GetVoice(int channel, int key)
+{
+	VOICE *voice;
 
-   {
-   VOICE *voice;
+	voice = Channel[channel].Voices.start;
 
-   voice = Channel[ channel ].Voices.start;
+	while(voice != NULL)
+	{
+		if (voice->key == key)
+			return voice->num;
 
-   while( voice != NULL )
-      {
-      if ( voice->key == key )
-         {
-         return( voice->num );
-         }
-      voice = voice->next;
-      }
+		voice = voice->next;
+	}
 
-   return( AL_VoiceNotFound );
-   }
+	return AL_VoiceNotFound;
+}
 
 
 /*---------------------------------------------------------------------
