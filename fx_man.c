@@ -44,11 +44,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static unsigned FX_MixRate;
 
 static int FX_SoundDevice = -1;
-static int FX_ErrorCode = FX_Ok;
 static int FX_Installed = FALSE;
-
-#define FX_SetErrorCode( status ) \
-   FX_ErrorCode = ( status );
 
 /*---------------------------------------------------------------------
    Function: FX_GetBlasterSettings
@@ -56,23 +52,14 @@ static int FX_Installed = FALSE;
    Returns the current BLASTER environment variable settings.
 ---------------------------------------------------------------------*/
 
-int FX_GetBlasterSettings
-   (
-   fx_blaster_config *blaster
-   )
-
-   {
+int FX_GetBlasterSettings(fx_blaster_config *blaster)
+{
    int status;
    BLASTER_CONFIG Blaster;
 
-   FX_SetErrorCode( FX_Ok );
-
    status = BLASTER_GetEnv( &Blaster );
    if ( status != BLASTER_Ok )
-      {
-      FX_SetErrorCode( FX_BlasterError );
       return( FX_Error );
-      }
 
    blaster->Type      = Blaster.Type;
    blaster->Address   = Blaster.Address;
@@ -83,7 +70,7 @@ int FX_GetBlasterSettings
    blaster->Emu       = Blaster.Emu;
 
    return( FX_Ok );
-   }
+}
 
 
 /*---------------------------------------------------------------------
@@ -92,19 +79,10 @@ int FX_GetBlasterSettings
    Handles manual setup of the Sound Blaster information.
 ---------------------------------------------------------------------*/
 
-int FX_SetupSoundBlaster
-   (
-   fx_blaster_config blaster,
-   int *MaxVoices,
-   int *MaxSampleBits,
-   int *MaxChannels
-   )
-
-   {
+int FX_SetupSoundBlaster(fx_blaster_config blaster, int *MaxVoices, int *MaxSampleBits, int *MaxChannels)
+{
    int DeviceStatus;
    BLASTER_CONFIG Blaster;
-
-   FX_SetErrorCode( FX_Ok );
 
    FX_SoundDevice = SoundBlaster;
 
@@ -120,16 +98,13 @@ int FX_SetupSoundBlaster
 
    DeviceStatus = BLASTER_Init();
    if ( DeviceStatus != BLASTER_Ok )
-      {
-      FX_SetErrorCode( FX_SoundCardError );
       return( FX_Error );
-      }
 
    *MaxVoices = 8;
    BLASTER_GetCardInfo( MaxSampleBits, MaxChannels );
 
    return( FX_Ok );
-   }
+}
 
 
 /*---------------------------------------------------------------------
@@ -138,60 +113,32 @@ int FX_SetupSoundBlaster
    Selects which sound device to use.
 ---------------------------------------------------------------------*/
 
-int FX_Init
-   (
-   int SoundCard,
-   int numvoices,
-   int numchannels,
-   int samplebits,
-   unsigned mixrate
-   )
-
-   {
+int FX_Init(int SoundCard, int numvoices, int numchannels, int samplebits, unsigned mixrate)
+{
    int status;
    int devicestatus;
 
    if ( FX_Installed )
-      {
       FX_Shutdown();
-      }
 
    FX_MixRate = mixrate;
 
    status = FX_Ok;
 
    FX_SoundDevice = SoundCard;
-   switch( SoundCard )
-      {
-      case SoundBlaster :
-      case Awe32 :
-      case ProAudioSpectrum :
-      case SoundMan16 :
-      case UltraSound :
-         devicestatus = MV_Init( SoundCard, FX_MixRate, numvoices,
-            numchannels, samplebits );
-         if ( devicestatus != MV_Ok )
-            {
-            FX_SetErrorCode( FX_MultiVocError );
-            status = FX_Error;
-            }
-         break;
-
-      default :
-         FX_SetErrorCode( FX_InvalidCard );
+   if (SoundCard == SoundBlaster || SoundCard == Awe32 || SoundCard == ProAudioSpectrum || SoundCard == SoundMan16 || SoundCard == UltraSound)
+   {
+      devicestatus = MV_Init( SoundCard, FX_MixRate, numvoices, numchannels, samplebits );
+      if ( devicestatus != MV_Ok )
          status = FX_Error;
-      }
+   } else
+      status = FX_Error;
 
-   if ( status != FX_Ok )
-      {
-      }
-   else
-      {
+   if ( status == FX_Ok )
       FX_Installed = TRUE;
-      }
 
    return( status );
-   }
+}
 
 
 /*---------------------------------------------------------------------
@@ -200,44 +147,26 @@ int FX_Init
    Terminates use of sound device.
 ---------------------------------------------------------------------*/
 
-int FX_Shutdown
-   (
-   void
-   )
-
-   {
+int FX_Shutdown(void)
+{
    int status;
 
    if ( !FX_Installed )
-      {
       return( FX_Ok );
-      }
 
    status = FX_Ok;
-   switch( FX_SoundDevice )
-      {
-      case SoundBlaster :
-      case Awe32 :
-      case ProAudioSpectrum :
-      case SoundMan16 :
-      case UltraSound :
-         status = MV_Shutdown();
-         if ( status != MV_Ok )
-            {
-            FX_SetErrorCode( FX_MultiVocError );
-            status = FX_Error;
-            }
-         break;
-
-      default :
-         FX_SetErrorCode( FX_InvalidCard );
+   if (FX_SoundDevice == SoundBlaster || FX_SoundDevice == Awe32 || FX_SoundDevice == ProAudioSpectrum || FX_SoundDevice == SoundMan16 || FX_SoundDevice == UltraSound)
+   {
+      status = MV_Shutdown();
+      if ( status != MV_Ok )
          status = FX_Error;
-      }
+   } else
+      status = FX_Error;
 
    FX_Installed = FALSE;
 
    return( status );
-   }
+}
 
 
 /*---------------------------------------------------------------------
@@ -246,47 +175,32 @@ int FX_Shutdown
    Sets the volume of the current sound device.
 ---------------------------------------------------------------------*/
 
-void FX_SetVolume
-   (
-   int volume
-   )
-
-   {
+void FX_SetVolume(int volume)
+{
    int status;
 
    switch( FX_SoundDevice )
-      {
+   {
       case SoundBlaster :
       case Awe32 :
          if ( BLASTER_CardHasMixer() )
-            {
             BLASTER_SetVoiceVolume( volume );
-            }
          else
-            {
             MV_SetVolume( volume );
-            }
          break;
 
       case ProAudioSpectrum :
       case SoundMan16 :
          status = PAS_SetPCMVolume( volume );
          if ( status != PAS_Ok )
-            {
             MV_SetVolume( volume );
-            }
-         break;
-
-      case GenMidi :
-      case SoundCanvas :
-      case WaveBlaster :
          break;
 
       case UltraSound :
          GUSWAVE_SetVolume( volume );
          break;
-      }
    }
+}
 
 
 /*---------------------------------------------------------------------
@@ -296,42 +210,20 @@ void FX_SetVolume
    with the specified handle.
 ---------------------------------------------------------------------*/
 
-int FX_SetPan
-   (
-   int handle,
-   int vol,
-   int left,
-   int right
-   )
-
-   {
+int FX_SetPan(int handle, int vol, int left, int right)
+{
    int status = FX_Ok;
 
-   switch( FX_SoundDevice )
-      {
-      case SoundBlaster :
-      case Awe32 :
-      case ProAudioSpectrum :
-      case SoundMan16 :
-      case UltraSound :
-         status = MV_SetPan( handle, vol, left, right );
-         if ( status == MV_Error )
-            {
-            FX_SetErrorCode( FX_MultiVocError );
-            status = FX_Warning;
-            }
-         break;
-
-      case PC :
-         break;
-
-      default:
-         FX_SetErrorCode( FX_InvalidCard );
-         status = FX_Error;
-      }
+   if (FX_SoundDevice == SoundBlaster || FX_SoundDevice == Awe32 || FX_SoundDevice == ProAudioSpectrum || FX_SoundDevice == SoundMan16 || FX_SoundDevice == UltraSound)
+   {
+      status = MV_SetPan( handle, vol, left, right );
+      if ( status == MV_Error )
+         status = FX_Warning;
+   } else
+      status = FX_Error;
 
    return( status );
-   }
+}
 
 
 /*---------------------------------------------------------------------
@@ -340,40 +232,20 @@ int FX_SetPan
    Sets the pitch of the voice associated with the specified handle.
 ---------------------------------------------------------------------*/
 
-int FX_SetPitch
-   (
-   int handle,
-   int pitchoffset
-   )
-
-   {
+int FX_SetPitch(int handle, int pitchoffset)
+{
    int status = FX_Ok;
 
-   switch( FX_SoundDevice )
-      {
-      case SoundBlaster :
-      case Awe32 :
-      case ProAudioSpectrum :
-      case SoundMan16 :
-      case UltraSound :
-         status = MV_SetPitch( handle, pitchoffset );
-         if ( status == MV_Error )
-            {
-            FX_SetErrorCode( FX_MultiVocError );
-            status = FX_Warning;
-            }
-         break;
-
-      case PC :
-         break;
-
-      default :
-         FX_SetErrorCode( FX_InvalidCard );
-         status = FX_Error;
-      }
+   if (FX_SoundDevice == SoundBlaster || FX_SoundDevice == Awe32 || FX_SoundDevice == ProAudioSpectrum || FX_SoundDevice == SoundMan16 || FX_SoundDevice == UltraSound)
+   {
+      status = MV_SetPitch( handle, pitchoffset );
+      if ( status == MV_Error )
+         status = FX_Warning;
+   } else
+      status = FX_Error;
 
    return( status );
-   }
+}
 
 
 /*---------------------------------------------------------------------
@@ -382,45 +254,20 @@ int FX_SetPitch
    Begin playback of raw sound data with the given volume and priority.
 ---------------------------------------------------------------------*/
 
-int FX_PlayRaw
-   (
-   void *ptr,
-   unsigned long length,
-   unsigned rate,
-   int pitchoffset,
-   int vol,
-   int left,
-   int right,
-   int priority,
-   unsigned long callbackval
-   )
-
-   {
+int FX_PlayRaw(void *ptr, unsigned long length, unsigned rate, int pitchoffset, int vol, int left, int right, int priority, unsigned long callbackval)
+{
    int handle;
 
-   switch( FX_SoundDevice )
-      {
-      case SoundBlaster :
-      case Awe32 :
-      case ProAudioSpectrum :
-      case SoundMan16 :
-      case UltraSound :
-         handle = MV_PlayRaw( ptr, length, rate, pitchoffset,
-            vol, left, right, priority, callbackval );
-         if ( handle < MV_Ok )
-            {
-            FX_SetErrorCode( FX_MultiVocError );
-            handle = FX_Warning;
-            }
-         break;
-
-      default :
-         FX_SetErrorCode( FX_InvalidCard );
-         handle = FX_Error;
-      }
+   if (FX_SoundDevice == SoundBlaster || FX_SoundDevice == Awe32 || FX_SoundDevice == ProAudioSpectrum || FX_SoundDevice == SoundMan16 || FX_SoundDevice == UltraSound)
+   {
+      handle = MV_PlayRaw( ptr, length, rate, pitchoffset, vol, left, right, priority, callbackval );
+      if ( handle < MV_Ok )
+         handle = FX_Warning;
+   } else
+      handle = FX_Error;
 
    return( handle );
-   }
+}
 
 
 /*---------------------------------------------------------------------
@@ -429,23 +276,13 @@ int FX_PlayRaw
    Tests if the specified sound is currently playing.
 ---------------------------------------------------------------------*/
 
-int FX_SoundActive
-   (
-   int handle
-   )
-
-   {
-   switch( FX_SoundDevice )
-      {
-      case SoundBlaster :
-      case Awe32 :
-      case ProAudioSpectrum :
-      case SoundMan16 :
-      case UltraSound :
-         return( MV_VoicePlaying( handle ) );
-      }
-   return( FALSE );
-   }
+int FX_SoundActive(int handle)
+{
+   if (FX_SoundDevice == SoundBlaster || FX_SoundDevice == Awe32 || FX_SoundDevice == ProAudioSpectrum || FX_SoundDevice == SoundMan16 || FX_SoundDevice == UltraSound)
+      return( MV_VoicePlaying( handle ) );
+   else 
+      return( FALSE );
+}
 
 
 /*---------------------------------------------------------------------
@@ -454,32 +291,16 @@ int FX_SoundActive
    Halts playback of a specific voice
 ---------------------------------------------------------------------*/
 
-int FX_StopSound
-   (
-   int handle
-   )
-
-   {
+int FX_StopSound(int handle)
+{
    int status;
 
-   switch( FX_SoundDevice )
-      {
-      case SoundBlaster :
-      case Awe32 :
-      case ProAudioSpectrum :
-      case SoundMan16 :
-      case UltraSound :
-         status = MV_Kill( handle );
-         if ( status != MV_Ok )
-            {
-            FX_SetErrorCode( FX_MultiVocError );
-            return( FX_Warning );
-            }
-         break;
-
-      default:
-         FX_SetErrorCode( FX_InvalidCard );
-       }
+   if (FX_SoundDevice == SoundBlaster || FX_SoundDevice == Awe32 || FX_SoundDevice == ProAudioSpectrum || FX_SoundDevice == SoundMan16 || FX_SoundDevice == UltraSound)
+   {
+      status = MV_Kill( handle );
+      if ( status != MV_Ok )
+         return( FX_Warning );
+   }
 
    return( FX_Ok );
-   }
+}

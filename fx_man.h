@@ -36,16 +36,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef struct
    {
-   int MaxVoices;
-   int MaxSampleBits;
-   int MaxChannels;
-   } fx_device;
-
-#define MonoFx   1
-#define StereoFx 2
-
-typedef struct
-   {
    unsigned long Address;
    unsigned long Type;
    unsigned long Interrupt;
@@ -59,22 +49,12 @@ enum FX_ERRORS
    {
    FX_Warning = -2,
    FX_Error = -1,
-   FX_Ok = 0,
-   FX_ASSVersion,
-   FX_BlasterError,
-   FX_SoundCardError,
-   FX_InvalidCard,
-   FX_MultiVocError,
-   FX_DPMI_Error
+   FX_Ok = 0
    };
 
 enum fx_BLASTER_Types
    {
-   fx_SB     = 1,
-   fx_SBPro  = 2,
-   fx_SB20   = 3,
-   fx_SBPro2 = 4,
-   fx_SB16   = 6
+   fx_SB     = 1
    };
 
 
@@ -88,9 +68,7 @@ int FX_EndLooping( int handle );
 int FX_SetPan( int handle, int vol, int left, int right );
 int FX_SetPitch( int handle, int pitchoffset );
 
-int FX_PlayRaw( void *ptr, unsigned long length, unsigned rate,
-       int pitchoffset, int vol, int left, int right, int priority,
-       unsigned long callbackval );
+int FX_PlayRaw( void *ptr, unsigned long length, unsigned rate, int pitchoffset, int vol, int left, int right, int priority, unsigned long callbackval );
 int FX_SoundActive( int handle );
 int FX_StopSound( int handle );
 

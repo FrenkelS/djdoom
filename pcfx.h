@@ -38,8 +38,7 @@ enum PCFX_Errors
    PCFX_Error   = -1,
    PCFX_Ok      = 0,
    PCFX_NoVoices,
-   PCFX_VoiceNotFound,
-   PCFX_DPMI_Error
+   PCFX_VoiceNotFound
    };
 
 #define PCFX_MaxVolume      255
