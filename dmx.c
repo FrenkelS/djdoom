@@ -260,11 +260,12 @@ void AL_SetCard(int port, void *data) {
     int i;
     cdata = (unsigned char *)data;
     tmb = malloc(13 * 256);
-    memset(tmb, 0, 13 * 256);
     if (!tmb)
     {
         return;
     }
+
+    memset(tmb, 0, 13 * 256);
     for (i = 0; i < 128; i++)
     {
         tmb[i * 13 + 0] = cdata[8 + i * 36 + 4 + 0];
@@ -376,7 +377,7 @@ void DMX_DeInit(void) {
 
 void WAV_PlayMode(int channels, int samplerate) {
     long device, status;
-    char tmp[300];
+
     switch (dmx_sdev) {
     case 0:
         device = NumSoundCards;
