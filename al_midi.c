@@ -271,12 +271,6 @@ static char offsetSlot[ NumChipSlots ] =
    16, 17, 18, 19, 20, 21
    };
 
-static int VoiceReserved[ NUM_VOICES * 2 ] =
-   {
-   FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-   FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE
-   };
-
 static VOICE     Voice[ NUM_VOICES * 2 ];
 static VOICELIST Voice_Pool;
 
@@ -287,7 +281,7 @@ static int AL_RightPort  = 0x388;
 static int AL_SendStereo = FALSE;
 static int AL_OPL3       = FALSE;
 
-static int AL_MaxMidiChannel = 16;
+#define AL_MaxMidiChannel 16
 
 
 /*---------------------------------------------------------------------
@@ -488,7 +482,6 @@ static void AL_SetVoiceVolume
       }
    else
       {
-		  exit(1);
       // Set left channel volume
       volume = t1;
       if ( Channel[ channel ].Pan < 64 )
@@ -869,17 +862,14 @@ static void AL_ResetVoices
       }
    for( index = 0; index < numvoices; index++ )
       {
-      if ( VoiceReserved[ index ] == FALSE )
-         {
-         Voice[ index ].num = index;
-         Voice[ index ].key = 0;
-         Voice[ index ].velocity = 0;
-         Voice[ index ].channel = -1;
-         Voice[ index ].timbre = -1;
-         Voice[ index ].port = ( index < NUM_VOICES ) ? 0 : 1;
-         Voice[ index ].status = NOTE_OFF;
-         LL_AddToTail( VOICE, &Voice_Pool, &Voice[ index ] );
-         }
+      Voice[ index ].num = index;
+      Voice[ index ].key = 0;
+      Voice[ index ].velocity = 0;
+      Voice[ index ].channel = -1;
+      Voice[ index ].timbre = -1;
+      Voice[ index ].port = ( index < NUM_VOICES ) ? 0 : 1;
+      Voice[ index ].status = NOTE_OFF;
+      LL_AddToTail( VOICE, &Voice_Pool, &Voice[ index ] );
       }
 
    for( index = 0; index < NUM_CHANNELS; index++ )
@@ -941,27 +931,24 @@ static void AL_FlushCard
 
    for( i = 0 ; i < NUM_VOICES; i++ )
       {
-      if ( VoiceReserved[ i ] == FALSE )
-         {
-         slot1 = offsetSlot[ slotVoice[ i ][ 0 ] ];
-         slot2 = offsetSlot[ slotVoice[ i ][ 1 ] ];
+      slot1 = offsetSlot[ slotVoice[ i ][ 0 ] ];
+      slot2 = offsetSlot[ slotVoice[ i ][ 1 ] ];
 
-         AL_SendOutputToPort( port, 0xA0 + i, 0 );
-         AL_SendOutputToPort( port, 0xB0 + i, 0 );
+      AL_SendOutputToPort( port, 0xA0 + i, 0 );
+      AL_SendOutputToPort( port, 0xB0 + i, 0 );
 
-         AL_SendOutputToPort( port, 0xE0 + slot1, 0 );
-         AL_SendOutputToPort( port, 0xE0 + slot2, 0 );
+      AL_SendOutputToPort( port, 0xE0 + slot1, 0 );
+      AL_SendOutputToPort( port, 0xE0 + slot2, 0 );
 
-         // Set the envelope to be fast and quiet
-         AL_SendOutputToPort( port, 0x60 + slot1, 0xff );
-         AL_SendOutputToPort( port, 0x60 + slot2, 0xff );
-         AL_SendOutputToPort( port, 0x80 + slot1, 0xff );
-         AL_SendOutputToPort( port, 0x80 + slot2, 0xff );
+      // Set the envelope to be fast and quiet
+      AL_SendOutputToPort( port, 0x60 + slot1, 0xff );
+      AL_SendOutputToPort( port, 0x60 + slot2, 0xff );
+      AL_SendOutputToPort( port, 0x80 + slot1, 0xff );
+      AL_SendOutputToPort( port, 0x80 + slot2, 0xff );
 
-         // Maximum attenuation
-         AL_SendOutputToPort( port, 0x40 + slot1, 0xff );
-         AL_SendOutputToPort( port, 0x40 + slot2, 0xff );
-         }
+      // Maximum attenuation
+      AL_SendOutputToPort( port, 0x40 + slot1, 0xff );
+      AL_SendOutputToPort( port, 0x40 + slot2, 0xff );
       }
    }
 
