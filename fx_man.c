@@ -37,7 +37,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "pas16.h"
 #include "sndscape.h"
 #include "guswave.h"
-#include "sndsrc.h"
 // *** VERSIONS RESTORATION ***
 #if (LIBVER_ASSREV < 19960116L)
 #include "adlibfx.h"
@@ -187,8 +186,6 @@ int FX_Init
       case ProAudioSpectrum :
       case SoundMan16 :
       case SoundScape :
-      case SoundSource :
-      case TandySoundSource :
       // *** VERSIONS RESTORATION ***
 #if (LIBVER_ASSREV >= 19950821L)
       case UltraSound :
@@ -281,8 +278,6 @@ int FX_Shutdown
       case ProAudioSpectrum :
       case SoundMan16 :
       case SoundScape :
-      case SoundSource :
-      case TandySoundSource :
       // *** VERSIONS RESTORATION ***
 #if (LIBVER_ASSREV >= 19950821L)
       case UltraSound :
@@ -369,11 +364,6 @@ void FX_SetVolume
          break;
 
       case SoundScape :
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
-      case SoundSource :
-      case TandySoundSource :
-#endif
          MV_SetVolume( volume );
          break;
 
@@ -388,17 +378,9 @@ void FX_SetVolume
          GUSWAVE_SetVolume( volume );
          break;
 
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
       case PC :
          PCFX_SetTotalVolume( volume );
          break;
-#else
-      case SoundSource :
-      case TandySoundSource :
-         MV_SetVolume( volume );
-         break;
-#endif
       }
    }
 
@@ -458,11 +440,7 @@ int FX_SetPan
       case ProAudioSpectrum :
       case SoundMan16 :
       case SoundScape :
-#if (LIBVER_ASSREV >= 19950821L) // VERSIONS RESTORATION
       case UltraSound :
-#endif
-      case SoundSource :
-      case TandySoundSource :
          status = MV_SetPan( handle, vol, left, right );
          if ( status == MV_Error )
             {
@@ -528,8 +506,6 @@ int FX_SetPitch
       case SoundMan16 :
       case SoundScape :
       case UltraSound :
-      case SoundSource :
-      case TandySoundSource :
          status = MV_SetPitch( handle, pitchoffset );
          if ( status == MV_Error )
             {
@@ -581,11 +557,7 @@ int FX_PlayRaw
       case ProAudioSpectrum :
       case SoundMan16 :
       case SoundScape :
-#if (LIBVER_ASSREV >= 19950821L) // VERSIONS RESTORATION
       case UltraSound :
-#endif
-      case SoundSource :
-      case TandySoundSource :
          handle = MV_PlayRaw( ptr, length, rate, pitchoffset,
             vol, left, right, priority, callbackval );
          if ( handle < MV_Ok )
@@ -652,8 +624,6 @@ int FX_SoundActive
       case SoundMan16 :
       case UltraSound :
       case SoundScape :
-      case SoundSource :
-      case TandySoundSource :
          return( MV_VoicePlaying( handle ) );
 
       case Adlib :
@@ -688,8 +658,6 @@ int FX_StopSound
       case SoundMan16 :
       case SoundScape :
       case UltraSound :
-      case SoundSource :
-      case TandySoundSource :
          status = MV_Kill( handle );
          if ( status != MV_Ok )
             {

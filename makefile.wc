@@ -54,7 +54,6 @@ GLOBOBJS = &
  pcfx.obj &
  pitch.obj &
  sndscape.obj &
- sndsrc.obj &
  task_man.obj &
  i_main.obj &
  i_ibm.obj &

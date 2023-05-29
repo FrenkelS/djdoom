@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
+Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -31,20 +32,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __SNDCARDS_H
 #define __SNDCARDS_H
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-#define ASS_VERSION_STRING "1.04"
-#elif (LIBVER_ASSREV < 19960116L)
 #define ASS_VERSION_STRING "1.09"
-#elif (LIBVER_ASSREV < 19960510L)
-#define ASS_VERSION_STRING "1.1"
-#else
-#define ASS_VERSION_STRING "1.12"
-#endif
 
 typedef enum
    {
-//   ASS_NoSound,
    SoundBlaster,
    ProAudioSpectrum,
    SoundMan16,
@@ -55,8 +46,6 @@ typedef enum
    WaveBlaster,
    SoundScape,
    UltraSound,
-   SoundSource,
-   TandySoundSource,
    PC,
    NumSoundCards
    } soundcardnames;

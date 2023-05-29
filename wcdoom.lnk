@@ -43,7 +43,6 @@ file pas16.obj
 file pcfx.obj
 file pitch.obj
 file sndscape.obj
-file sndsrc.obj
 file task_man.obj
 file i_main.obj
 file i_ibm.obj

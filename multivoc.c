@@ -46,7 +46,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "sndcards.h"
 #include "blaster.h"
 #include "sndscape.h"
-#include "sndsrc.h"
 #include "pas16.h"
 #include "guswave.h"
 #include "pitch.h"
@@ -1574,13 +1573,6 @@ static int MV_SetMixMode
       case SoundScape :
          MV_MixMode = SOUNDSCAPE_SetMixMode( mode );
          break;
-
-      #ifndef SOUNDSOURCE_OFF
-      case SoundSource :
-      case TandySoundSource :
-         MV_MixMode = SS_SetMixMode( mode );
-         break;
-      #endif
       }
 
    MV_Channels = 1;
@@ -1735,17 +1727,6 @@ static int MV_StartPlayback
          MV_MixRate = SOUNDSCAPE_GetPlaybackRate();
          MV_DMAChannel = SOUNDSCAPE_DMAChannel;
          break;
-
-      #ifndef SOUNDSOURCE_OFF
-      case SoundSource :
-      case TandySoundSource :
-         SS_BeginBufferedPlayback( MV_MixBuffer[ 0 ],
-            TotalBufferSize, MV_NumberOfBuffers,
-            MV_ServiceVoc );
-         MV_MixRate = SS_SampleRate;
-         MV_DMAChannel = -1;
-         break;
-      #endif
       }
 
    return( MV_Ok );
@@ -1791,13 +1772,6 @@ static void MV_StopPlayback
       case SoundScape :
          SOUNDSCAPE_StopPlayback();
          break;
-
-      #ifndef SOUNDSOURCE_OFF
-      case SoundSource :
-      case TandySoundSource :
-         SS_StopPlayback();
-         break;
-      #endif
       }
 
    // Make sure all callbacks are done.
@@ -2266,14 +2240,6 @@ static int MV_TestPlayback
             pos = SOUNDSCAPE_GetCurrentPos();
             break;
 
-         #ifndef SOUNDSOURCE_OFF
-         case SoundSource :
-         case TandySoundSource :
-            MV_SetErrorCode( MV_SoundSourceFailure );
-            pos = -1;
-            break;
-         #endif
-
          default :
             MV_SetErrorCode( MV_UnsupportedCard );
             pos = -2;
@@ -2444,17 +2410,6 @@ int MV_Init
             }
          break;
 
-      #ifndef SOUNDSOURCE_OFF
-      case SoundSource :
-      case TandySoundSource :
-         status = SS_Init( soundcard );
-         if ( status != SS_Ok )
-            {
-            MV_SetErrorCode( MV_SoundSourceError );
-            }
-         break;
-      #endif
-
       default :
          MV_SetErrorCode( MV_UnsupportedCard );
          break;
@@ -2594,13 +2549,6 @@ int MV_Shutdown
       case SoundScape :
          SOUNDSCAPE_Shutdown();
          break;
-
-      #ifndef SOUNDSOURCE_OFF
-      case SoundSource :
-      case TandySoundSource :
-         SS_Shutdown();
-         break;
-      #endif
       }
 
    RestoreInterrupts( flags );

@@ -108,7 +108,6 @@ int MUSIC_Init
          status = MUSIC_InitGUS( &MUSIC_MidiFunctions );
          break;
 
-      case SoundSource :
       case PC :
       default :
          MUSIC_SetErrorCode( MUSIC_InvalidCard );
@@ -288,7 +287,6 @@ int MUSIC_PlaySong
             }
          break;
 
-      case SoundSource :
       case PC :
       default :
          MUSIC_SetErrorCode( MUSIC_InvalidCard );
