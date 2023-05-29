@@ -289,95 +289,76 @@ static void AL_SendOutput(int voice, int reg, int data)
    Programs the specified voice's timbre.
 ---------------------------------------------------------------------*/
 
-static void AL_SetVoiceTimbre
-   (
-   int voice
-   )
+static void AL_SetVoiceTimbre(int voice)
+{
+	int    off;
+	int    slot;
+	int    port;
+	int    voc;
+	int    patch;
+	int    channel;
+	TIMBRE *timbre;
 
-   {
-   int    off;
-   int    slot;
-   int    port;
-   int    voc;
-   int    patch;
-   int    channel;
-   TIMBRE *timbre;
+	channel = Voice[voice].channel;
 
-   channel = Voice[ voice ].channel;
+	if (channel == 9)
+		patch = Voice[voice].key + 128;
+	else
+		patch = Channel[channel].Timbre;
 
-   if ( channel == 9 )
-      {
-      patch = Voice[ voice ].key + 128;
-      }
-   else
-      {
-      patch = Channel[ channel ].Timbre;
-      }
+	if (Voice[voice].timbre == patch)
+		return;
 
-   if ( Voice[ voice ].timbre == patch )
-      {
-      return;
-      }
+	Voice[voice].timbre = patch;
+	timbre = &ADLIB_TimbreBank[patch];
 
-   Voice[ voice ].timbre = patch;
-   timbre = &ADLIB_TimbreBank[ patch ];
+	port = Voice[voice].port;
+	voc  = (voice >= NUM_VOICES) ? voice - NUM_VOICES : voice;
+	slot = slotVoice[voc][0];
+	off  = offsetSlot[slot];
 
-   port = Voice[ voice ].port;
-   voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
-   slot = slotVoice[ voc ][ 0 ];
-   off  = offsetSlot[ slot ];
+	VoiceLevel[slot][port] = 63 - (timbre->Level[0] & 0x3f);
+	VoiceKsl[slot][port]   = timbre->Level[0] & 0xc0;
 
-   VoiceLevel[ slot ][ port ] = 63 - ( timbre->Level[ 0 ] & 0x3f );
-   VoiceKsl[ slot ][ port ]   = timbre->Level[ 0 ] & 0xc0;
+	AL_SendOutput(port, 0xA0 + voc, 0);
+	AL_SendOutput(port, 0xB0 + voc, 0);
 
-   AL_SendOutput( port, 0xA0 + voc, 0 );
-   AL_SendOutput( port, 0xB0 + voc, 0 );
+	// Let voice clear the release
+	AL_SendOutput(port, 0x80 + off, 0xff);
 
-   // Let voice clear the release
-   AL_SendOutput( port, 0x80 + off, 0xff );
+	AL_SendOutput(port, 0x60 + off, timbre->Env1[0]);
+	AL_SendOutput(port, 0x80 + off, timbre->Env2[0]);
+	AL_SendOutput(port, 0x20 + off, timbre->SAVEK[0]);
+	AL_SendOutput(port, 0xE0 + off, timbre->Wave[0]);
 
-   AL_SendOutput( port, 0x60 + off, timbre->Env1[ 0 ] );
-   AL_SendOutput( port, 0x80 + off, timbre->Env2[ 0 ] );
-   AL_SendOutput( port, 0x20 + off, timbre->SAVEK[ 0 ] );
-   AL_SendOutput( port, 0xE0 + off, timbre->Wave[ 0 ] );
+	AL_SendOutput(port, 0x40 + off, timbre->Level[0]);
+	slot = slotVoice[voc][1];
 
-   AL_SendOutput( port, 0x40 + off, timbre->Level[ 0 ] );
-   slot = slotVoice[ voc ][ 1 ];
+	if (AL_SendStereo)
+	{
+		AL_SendOutputToPort(AL_LeftPort,  0xC0 + voice, (timbre->Feedback & 0x0f) | 0x20);
+		AL_SendOutputToPort(AL_RightPort, 0xC0 + voice, (timbre->Feedback & 0x0f) | 0x10);
+	} else {
+		if (AL_OPL3)
+			AL_SendOutput(port, 0xC0 + voc, (timbre->Feedback & 0x0f) | 0x30);
+		else
+			AL_SendOutputToPort(ADLIB_PORT, 0xC0 + voice, timbre->Feedback);
+	}
 
-   if ( AL_SendStereo )
-      {
-      AL_SendOutputToPort( AL_LeftPort, 0xC0 + voice,
-         ( timbre->Feedback & 0x0f ) | 0x20 );
-      AL_SendOutputToPort( AL_RightPort, 0xC0 + voice,
-         ( timbre->Feedback & 0x0f ) | 0x10 );
-      }
-   else
-      {
-      if ( AL_OPL3 )
-         {
-         AL_SendOutput( port, 0xC0 + voc, ( timbre->Feedback & 0x0f ) |
-            0x30 );
-         }
-      else
-         {
-         AL_SendOutputToPort( ADLIB_PORT, 0xC0 + voice, timbre->Feedback );
-         }
-      }
+	off = offsetSlot[slot];
 
-   off = offsetSlot[ slot ];
+	VoiceLevel[slot][port] = 63 - (timbre->Level[1] & 0x3f);
+	VoiceKsl[slot][port]   = timbre->Level[1] & 0xc0;
+	AL_SendOutput(port, 0x40 + off, 63);
 
-   VoiceLevel[ slot ][ port ] = 63 - ( timbre->Level[ 1 ] & 0x3f );
-   VoiceKsl[ slot ][ port ]   = timbre->Level[ 1 ] & 0xc0;
-   AL_SendOutput( port, 0x40 + off, 63 );
+	// Let voice clear the release
+	AL_SendOutput(port, 0x80 + off, 0xff);
 
-   // Let voice clear the release
-   AL_SendOutput( port, 0x80 + off, 0xff );
-
-   AL_SendOutput( port, 0x60 + off, timbre->Env1[ 1 ] );
-   AL_SendOutput( port, 0x80 + off, timbre->Env2[ 1 ] );
-   AL_SendOutput( port, 0x20 + off, timbre->SAVEK[ 1 ] );
-   AL_SendOutput( port, 0xE0 + off, timbre->Wave[ 1 ] );
-   }
+	AL_SendOutput(port, 0x60 + off, timbre->Env1[1]);
+	AL_SendOutput(port, 0x80 + off, timbre->Env2[1]);
+	AL_SendOutput(port, 0x20 + off, timbre->SAVEK[1]);
+	AL_SendOutput(port, 0xE0 + off, timbre->Wave[1]);
+}
 
 
 /*---------------------------------------------------------------------
@@ -511,28 +492,8 @@ static void AL_SetVoiceVolume(int voice)
    Linked list management routines.
 ---------------------------------------------------------------------*/
 
-enum LL_Errors
-   {
-   LL_Warning = -2,
-   LL_Error   = -1,
-   LL_Ok      = 0
-   };
-
-typedef struct list
-   {
-   void *start;
-   void *end;
-   } list;
-
 #define OFFSET( structure, offset ) \
    ( *( ( char ** )&( structure )[ offset ] ) )
-
-#define LL_AddToHead( type, listhead, node )         \
-    LL_AddNode( ( char * )( node ),                  \
-                ( char ** )&( ( listhead )->start ), \
-                ( char ** )&( ( listhead )->end ),   \
-                ( int )&( ( type * ) 0 )->next,      \
-                ( int )&( ( type * ) 0 )->prev )
 
 #define LL_AddToTail( type, listhead, node )         \
     LL_AddNode( ( char * )( node ),                  \
@@ -548,65 +509,34 @@ typedef struct list
                    ( int )&( ( type * ) 0 )->next,      \
                    ( int )&( ( type * ) 0 )->prev )
 
-#define LL_NextNode( node )     ( ( node )->next )
-#define LL_PreviousNode( node ) ( ( node )->prev )
+static void LL_AddNode(char *item, char **head, char **tail, int next, int prev)
+{
+	OFFSET(item, prev) = NULL;
+	OFFSET(item, next) = *head;
 
-static void LL_AddNode
-   (
-   char *item,
-   char **head,
-   char **tail,
-   int next,
-   int prev
-   )
+	if (*head)
+		OFFSET(*head, prev) = item;
+	else
+		*tail = item;
 
-   {
-   OFFSET( item, prev ) = NULL;
-   OFFSET( item, next ) = *head;
+	*head = item;
+}
 
-   if ( *head )
-      {
-      OFFSET( *head, prev ) = item;
-      }
-   else
-      {
-      *tail = item;
-      }
+static void LL_RemoveNode(char *item, char **head, char **tail, int next, int prev)
+{
+	if (OFFSET(item, prev) == NULL)
+		*head = OFFSET(item, next);
+	else
+		OFFSET(OFFSET(item, prev), next) = OFFSET(item, next);
 
-   *head = item;
-   }
+	if (OFFSET(item, next) == NULL)
+		*tail = OFFSET(item, prev);
+	else
+		OFFSET(OFFSET(item, next), prev) = OFFSET(item, prev);
 
-static void LL_RemoveNode
-   (
-   char *item,
-   char **head,
-   char **tail,
-   int next,
-   int prev
-   )
-
-   {
-   if ( OFFSET( item, prev ) == NULL )
-      {
-      *head = OFFSET( item, next );
-      }
-   else
-      {
-      OFFSET( OFFSET( item, prev ), next ) = OFFSET( item, next );
-      }
-
-   if ( OFFSET( item, next ) == NULL )
-      {
-      *tail = OFFSET( item, prev );
-      }
-   else
-      {
-      OFFSET( OFFSET( item, next ), prev ) = OFFSET( item, prev );
-      }
-
-   OFFSET( item, next ) = NULL;
-   OFFSET( item, prev ) = NULL;
-   }
+	OFFSET(item, next) = NULL;
+	OFFSET(item, prev) = NULL;
+}
 
 
 /*---------------------------------------------------------------------
