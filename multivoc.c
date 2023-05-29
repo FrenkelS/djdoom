@@ -49,7 +49,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "guswave.h"
 #include "pitch.h"
 #include "multivoc.h"
-#include "debugio.h"
 
 
 #define TRUE  ( 1 == 1 )

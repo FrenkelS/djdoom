@@ -24,7 +24,6 @@ file adlibfx.obj
 file al_midi.obj
 file awe32.obj
 file blastold.obj
-file debugio.obj
 file dma.obj
 file fx_man.obj
 file gus.obj

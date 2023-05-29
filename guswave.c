@@ -35,7 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h>
 #include <io.h>
 #include <string.h>
-#include "debugio.h"
+#include <stdarg.h>
 #include "interrup.h"
 #include "ll_man.h"
 #include "pitch.h"
@@ -221,8 +221,6 @@ static void ( *GUSWAVE_CallBackFunc )( unsigned long ) = NULL;
 static int GUSWAVE_Volume = MAX_VOLUME;
 
 static int GUSWAVE_SwapLeftRight = FALSE;
-
-static int GUS_Debug = FALSE;
 
 extern int GUSMIDI_Installed;
 
@@ -429,123 +427,6 @@ static int LOADDS GUSWAVE_CallBack
 
 
 /*---------------------------------------------------------------------
-   Function: GUSWAVE_DebugCallBack
-
-   GF1 callback service routine with debugging info.
----------------------------------------------------------------------*/
-
-static int LOADDS GUSWAVE_DebugCallBack
-   (
-   int reason,
-   int voice,
-   unsigned char **buf,
-   unsigned long *size
-   )
-
-   {
-   VoiceNode *Voice;
-
-   // this function is called from an interrupt
-   // remember not to make any DOS or BIOS calls from here
-   // also don't call any C library functions unless you are sure that
-   // they are reentrant
-   // restore our DS register
-
-   if ( VoiceStatus[ voice ].playing == FALSE )
-      {
-//      DB_printf( "GUS Voice %d not playing.\n", voice );
-      DB_printf( "GUS Voice " );
-      DB_PrintNum( voice );
-      DB_printf( " not playing.\n" );
-      return( DIG_DONE );
-         }
-
-      if ( reason == DIG_MORE_DATA )
-         {
-         Voice = VoiceStatus[ voice ].Voice;
-
-//         DB_printf( "Voice %d : More data -- ", Voice );
-         DB_printf( "Voice " );
-         DB_PrintNum( voice );
-         DB_printf( " : More data -- " );
-         if ( Voice != NULL )
-            {
-            if ( Voice->Playing )
-               {
-               GUSWAVE_GetNextVOCBlock( Voice );
-               if ( Voice->Playing )
-                  {
-//                  DB_printf( "More data -- size = %u blocklength = %u\n",
-//                     Voice->length, Voice->BlockLength );
-                  DB_printf( "More data -- size = " );
-                  DB_PrintNum( Voice->length );
-                  DB_printf( " blocklength = " );
-                  DB_PrintNum( Voice->BlockLength );
-                  DB_printf( "\n" );
-                  *buf  = Voice->sound;
-                  *size = Voice->length;
-                  return( DIG_MORE_DATA );
-                  }
-               else
-                  {
-                  DB_printf( "Voice done.\n" );
-                  }
-               }
-            else
-               {
-               DB_printf( "Voice not active.\n" );
-               }
-            }
-         else
-            {
-            DB_printf( " NULL Voice\n" );
-            }
-
-         return( DIG_DONE );
-         }
-
-      if ( reason == DIG_DONE )
-         {
-         VoiceStatus[ voice ].playing = FALSE;
-         Voice = VoiceStatus[ voice ].Voice;
-//         DB_printf( "Voice %d : Done -- ", Voice );
-         DB_printf( "Voice " );
-         DB_PrintNum( voice );
-         DB_printf( " : Done -- " );
-
-         if ( Voice != NULL )
-            {
-            DB_printf( "Ok\n" );
-
-            Voice->Active   = FALSE;
-            Voice->Playing  = FALSE;
-
-// I'm commenting this out because a -1 could cause a crash if it
-// is sent to the GF1 code.  This shouldn't be necessary since
-// Active should be false when GF1voice is -1, but this is just
-// a precaution.  Adjust the pan on the wrong voice is a lot
-// more pleasant than a crash!
-//         Voice->GF1voice = -1;
-
-         LL_Remove( VoiceNode, &VoiceList, Voice );
-         LL_AddToTail( VoiceNode, &VoicePool, Voice );
-         }
-      else
-         {
-         DB_printf( "Null voice\n" );
-         }
-
-      if ( GUSWAVE_CallBackFunc )
-         {
-         GUSWAVE_CallBackFunc( Voice->callbackval );
-         }
-      }
-
-   return( DIG_DONE );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: GUSWAVE_GetVoice
 
    Locates the voice with the specified handle.
@@ -638,11 +519,6 @@ static int GUSWAVE_VoicesPlaying
 
    RestoreInterrupts( flags );
 
-   if ( GUS_Debug )
-      {
-      DB_printf( "Number of voices = %d.\n", NumVoices );
-      }
-
    return( NumVoices );
    }
 
@@ -670,36 +546,14 @@ static int GUSWAVE_Kill
       {
       RestoreInterrupts( flags );
       GUSWAVE_SetErrorCode( GUSWAVE_VoiceNotFound );
-
-      if ( GUS_Debug )
-         {
-         DB_printf( "Could not find voice to kill.\n" );
-         }
-
       return( GUSWAVE_Warning );
       }
 
    RestoreInterrupts( flags );
 
-   if ( !GUS_Debug )
+   if ( voice->Active )
       {
-      if ( voice->Active )
-         {
-//FIXME         gf1_stop_digital( voice->GF1voice );
-         }
-      }
-   else
-      {
-      DB_printf( "Kill - GUS Voice %d ", voice->GF1voice );
-      if ( voice->Active )
-         {
-         DB_printf( "active\n" );
-//FIXME         gf1_stop_digital( voice->GF1voice );
-         }
-      else
-         {
-         DB_printf( "inactive\n" );
-         }
+//FIXME      gf1_stop_digital( voice->GF1voice );
       }
 
    return( GUSWAVE_Ok );
@@ -724,11 +578,6 @@ int GUSWAVE_KillAllVoices
    if ( !GUSWAVE_Installed )
       {
       return( GUSWAVE_Ok );
-      }
-
-   if ( GUS_Debug )
-      {
-      DB_printf( "Kill All Voices\n" );
       }
 
    flags = DisableInterrupts();
@@ -1169,24 +1018,12 @@ static int GUSWAVE_Play
    volume = min( 255, volume );
    voice->Volume = volume;
 
-   if ( !GUS_Debug )
-      {
-      servicefunction = GUSWAVE_CallBack;
-      }
-   else
-      {
-      servicefunction = GUSWAVE_DebugCallBack;
-      }
+   servicefunction = GUSWAVE_CallBack;
 
    VoiceNumber = NO_MORE_VOICES; //FIXMEgf1_play_digital( 0, voice->sound, voice->length, voice->mem, GUSWAVE_Volume - ( 255 - volume ) * 4, pan, voice->RateScale, type, &GUS_HoldBuffer, servicefunction );
 
    if ( VoiceNumber == NO_MORE_VOICES )
       {
-      if ( GUS_Debug )
-         {
-         DB_printf( "Out of voices.\n" );
-         }
-
       flags = DisableInterrupts();
       LL_AddToTail( VoiceNode, &VoicePool, voice );
       RestoreInterrupts( flags );
@@ -1201,11 +1038,6 @@ static int GUSWAVE_Play
    LL_AddToTail( VoiceNode, &VoiceList, voice );
    VoiceStatus[ VoiceNumber ].playing = TRUE;
    VoiceStatus[ VoiceNumber ].Voice   = voice;
-
-   if ( GUS_Debug )
-      {
-      DB_printf( "GUS voice %d playing\n", VoiceNumber );
-      }
 
    RestoreInterrupts( flags );
 
@@ -1240,10 +1072,6 @@ int GUSWAVE_StartDemandFeedPlayback
    voice = GUSWAVE_AllocVoice( priority );
    if ( voice == NULL )
       {
-      if ( GUS_Debug )
-         {
-         DB_printf( "No more voices.  Skipping sound.\n" );
-         }
       GUSWAVE_SetErrorCode( GUSWAVE_NoVoices );
       return( GUSWAVE_Warning );
       }
@@ -1382,8 +1210,6 @@ int GUSWAVE_Init
       GUSWAVE_SetErrorCode( GUSWAVE_GUSError );
       return( GUSWAVE_Error );
       }
-
-   GUS_Debug = FALSE;
 
    GUSWAVE_MaxVoices = min( numvoices, VOICES );
    GUSWAVE_MaxVoices = max( GUSWAVE_MaxVoices, 0 );
