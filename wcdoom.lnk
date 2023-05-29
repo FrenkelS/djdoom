@@ -19,7 +19,6 @@ file dmx.obj
 file mus2mid.obj
 file tsmapi.obj
 # file gmtimbre.obj
-file adlibfx.obj
 file al_midi.obj
 file awe32.obj
 file blastold.obj

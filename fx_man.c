@@ -36,11 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "blaster.h"
 #include "pas16.h"
 #include "guswave.h"
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
-#include "adlibfx.h"
 #include "pcfx.h"
-#endif
 #include "fx_man.h"
 
 #define TRUE  ( 1 == 1 )
@@ -196,26 +192,6 @@ int FX_Init
             }
          break;
 
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
-#if (LIBVER_ASSREV < 19950821L)
-      case UltraSound :
-         if ( GUSWAVE_Init( numvoices ) != GUSWAVE_Ok )
-            {
-            FX_SetErrorCode( FX_SoundCardError );
-            status = FX_Error;
-            }
-         break;
-
-#endif
-      case Adlib :
-         if ( ADLIBFX_Init() != ADLIBFX_Ok )
-            {
-            FX_SetErrorCode( FX_SoundCardError );
-            status = FX_Error;
-            }
-         break;
-
       case PC :
          if ( PCFX_Init() != PCFX_Ok )
             {
@@ -224,7 +200,6 @@ int FX_Init
             }
          break;
 
-#endif // LIBVER_ASSREV
       default :
          FX_SetErrorCode( FX_InvalidCard );
          status = FX_Error;
@@ -286,23 +261,10 @@ int FX_Shutdown
             }
          break;
 
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
-#if (LIBVER_ASSREV < 19950821L)
-      case UltraSound :
-         GUSWAVE_Shutdown();
-         break;
-
-#endif
-      case Adlib :
-         ADLIBFX_Shutdown();
-         break;
-
       case PC :
          PCFX_Shutdown();
          break;
 
-#endif // LIBVER_ASSREV
       default :
          FX_SetErrorCode( FX_InvalidCard );
          status = FX_Error;
@@ -359,13 +321,6 @@ void FX_SetVolume
       case WaveBlaster :
          break;
 
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
-      case Adlib :
-         ADLIBFX_SetTotalVolume( volume );
-         break;
-
-#endif
       case UltraSound :
          GUSWAVE_SetVolume( volume );
          break;
@@ -436,15 +391,6 @@ int FX_SetPan
          if ( status == MV_Error )
             {
             FX_SetErrorCode( FX_MultiVocError );
-            status = FX_Warning;
-            }
-         break;
-
-      case Adlib :
-         status = ADLIBFX_SetVolume( handle, vol );
-         if ( status == ADLIBFX_Error )
-            {
-            FX_SetErrorCode( FX_SoundCardError );
             status = FX_Warning;
             }
          break;
@@ -556,16 +502,6 @@ int FX_PlayRaw
             }
          break;
 
-      case Adlib :
-         // FIXME (RESTORATION) - Might be a vanilla bug here (swapped args)
-         handle = ADLIBFX_Play( ptr, priority, vol, callbackval );
-         if ( handle < ADLIBFX_Ok )
-            {
-            FX_SetErrorCode( FX_SoundCardError );
-            handle = FX_Warning;
-            }
-         break;
-
       case PC :
          handle = PCFX_Play( ptr, priority, callbackval );
          if ( handle < PCFX_Ok )
@@ -614,9 +550,6 @@ int FX_SoundActive
       case UltraSound :
          return( MV_VoicePlaying( handle ) );
 
-      case Adlib :
-         return( ADLIBFX_SoundPlaying( handle ) );
-
       case PC :
          return( PCFX_SoundPlaying( handle ) );
       }
@@ -649,15 +582,6 @@ int FX_StopSound
          if ( status != MV_Ok )
             {
             FX_SetErrorCode( FX_MultiVocError );
-            return( FX_Warning );
-            }
-         break;
-
-      case Adlib :
-         status = ADLIBFX_Stop( handle );
-         if ( status != ADLIBFX_Ok )
-            {
-            FX_SetErrorCode( FX_SoundCardError );
             return( FX_Warning );
             }
          break;

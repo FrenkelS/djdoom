@@ -30,7 +30,6 @@ GLOBOBJS = &
  mus2mid.obj &
  tsmapi.obj &
 # gmtimbre.obj &
- adlibfx.obj &
  al_midi.obj &
  awe32.obj &
  blastold.obj &

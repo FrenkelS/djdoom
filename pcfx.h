@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    author: James R. Dose
    date:   April 1, 1994
 
-   Public header for ADLIBFX.C
+   Public header for PCFX.C
 
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
