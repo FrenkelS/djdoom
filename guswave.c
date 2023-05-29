@@ -37,7 +37,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include <stdarg.h>
 #include "interrup.h"
-#include "ll_man.h"
 #include "pitch.h"
 #include "multivoc.h"
 #include "newgf1.h"
@@ -228,6 +227,108 @@ static int GUSWAVE_ErrorCode = GUSWAVE_Ok;
 
 #define GUSWAVE_SetErrorCode( status ) \
    GUSWAVE_ErrorCode   = ( status );
+
+
+/*---------------------------------------------------------------------
+   Linked list management routines.
+---------------------------------------------------------------------*/
+
+enum LL_Errors
+   {
+   LL_Warning = -2,
+   LL_Error   = -1,
+   LL_Ok      = 0
+   };
+
+typedef struct list
+   {
+   void *start;
+   void *end;
+   } list;
+
+#define OFFSET( structure, offset ) \
+   ( *( ( char ** )&( structure )[ offset ] ) )
+
+#define LL_AddToHead( type, listhead, node )         \
+    LL_AddNode( ( char * )( node ),                  \
+                ( char ** )&( ( listhead )->start ), \
+                ( char ** )&( ( listhead )->end ),   \
+                ( int )&( ( type * ) 0 )->next,      \
+                ( int )&( ( type * ) 0 )->prev )
+
+#define LL_AddToTail( type, listhead, node )         \
+    LL_AddNode( ( char * )( node ),                  \
+                ( char ** )&( ( listhead )->end ),   \
+                ( char ** )&( ( listhead )->start ), \
+                ( int )&( ( type * ) 0 )->prev,      \
+                ( int )&( ( type * ) 0 )->next )
+
+#define LL_Remove( type, listhead, node )               \
+    LL_RemoveNode( ( char * )( node ),                  \
+                   ( char ** )&( ( listhead )->start ), \
+                   ( char ** )&( ( listhead )->end ),   \
+                   ( int )&( ( type * ) 0 )->next,      \
+                   ( int )&( ( type * ) 0 )->prev )
+
+#define LL_NextNode( node )     ( ( node )->next )
+#define LL_PreviousNode( node ) ( ( node )->prev )
+
+static void LL_AddNode
+   (
+   char *item,
+   char **head,
+   char **tail,
+   int next,
+   int prev
+   )
+
+   {
+   OFFSET( item, prev ) = NULL;
+   OFFSET( item, next ) = *head;
+
+   if ( *head )
+      {
+      OFFSET( *head, prev ) = item;
+      }
+   else
+      {
+      *tail = item;
+      }
+
+   *head = item;
+   }
+
+static void LL_RemoveNode
+   (
+   char *item,
+   char **head,
+   char **tail,
+   int next,
+   int prev
+   )
+
+   {
+   if ( OFFSET( item, prev ) == NULL )
+      {
+      *head = OFFSET( item, next );
+      }
+   else
+      {
+      OFFSET( OFFSET( item, prev ), next ) = OFFSET( item, next );
+      }
+
+   if ( OFFSET( item, next ) == NULL )
+      {
+      *tail = OFFSET( item, prev );
+      }
+   else
+      {
+      OFFSET( OFFSET( item, next ), prev ) = OFFSET( item, prev );
+      }
+
+   OFFSET( item, next ) = NULL;
+   OFFSET( item, prev ) = NULL;
+   }
 
 
 /*---------------------------------------------------------------------

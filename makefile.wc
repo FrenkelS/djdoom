@@ -40,7 +40,6 @@ GLOBOBJS = &
  gusmidi.obj &
  guswave.obj &
  irq.obj &
- ll_man.obj &
  midi.obj &
  mpu401.obj &
  multivoc.obj &

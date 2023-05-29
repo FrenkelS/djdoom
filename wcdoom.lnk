@@ -29,7 +29,6 @@ file gus.obj
 file gusmidi.obj
 file guswave.obj
 file irq.obj
-file ll_man.obj
 file midi.obj
 file mpu401.obj
 file multivoc.obj
