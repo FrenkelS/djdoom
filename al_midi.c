@@ -1179,42 +1179,34 @@ void AL_ProgramChange
    Sets the pitch bend amount on the specified MIDI channel.
 ---------------------------------------------------------------------*/
 
-void AL_SetPitchBend
-   (
-   int channel,
-   int lsb,
-   int msb
-   )
+void AL_SetPitchBend(int channel, int lsb, int msb)
+{
+	int            pitchbend;
+	unsigned long  TotalBend;
+	VOICE         *voice;
 
-   {
-   int            pitchbend;
-   unsigned long  TotalBend;
-   VOICE         *voice;
+	// We only play channels 1 through 10
+	if (channel > AL_MaxMidiChannel)
+		return;
 
-   // We only play channels 1 through 10
-   if ( channel > AL_MaxMidiChannel )
-      {
-      return;
-      }
+	pitchbend = lsb + (msb << 8);
+	Channel[channel].Pitchbend = pitchbend;
 
-   pitchbend = lsb + ( msb << 8 );
-   Channel[ channel ].Pitchbend = pitchbend;
+	TotalBend  = pitchbend * Channel[channel].PitchBendRange;
+	TotalBend /= (PITCHBEND_CENTER / FINETUNE_RANGE);
 
-   TotalBend  = pitchbend * Channel[ channel ].PitchBendRange;
-   TotalBend /= ( PITCHBEND_CENTER / FINETUNE_RANGE );
+	Channel[channel].KeyOffset  = (int)(TotalBend / FINETUNE_RANGE);
+	Channel[channel].KeyOffset -= Channel[channel].PitchBendSemiTones;
 
-   Channel[ channel ].KeyOffset  = ( int )( TotalBend / FINETUNE_RANGE );
-   Channel[ channel ].KeyOffset -= Channel[ channel ].PitchBendSemiTones;
+	Channel[channel].KeyDetune = (unsigned)(TotalBend % FINETUNE_RANGE);
 
-   Channel[ channel ].KeyDetune = ( unsigned )( TotalBend % FINETUNE_RANGE );
-
-   voice = Channel[ channel ].Voices.start;
-   while( voice != NULL )
-      {
-      AL_SetVoicePitch( voice->num );
-      voice = voice->next;
-      }
-   }
+	voice = Channel[channel].Voices.start;
+	while (voice != NULL)
+	{
+		AL_SetVoicePitch(voice->num);
+		voice = voice->next;
+	}
+}
 
 
 /*---------------------------------------------------------------------
@@ -1223,36 +1215,30 @@ void AL_SetPitchBend
    Determines if an Adlib compatible card is installed in the machine.
 ---------------------------------------------------------------------*/
 
-int AL_DetectFM
-   (
-   void
-   )
+int AL_DetectFM(void)
+{
+	int status1;
+	int status2;
+	int i;
 
-   {
-   int status1;
-   int status2;
-   int i;
+	AL_SendOutputToPort(ADLIB_PORT, 4, 0x60);   // Reset T1 & T2
+	AL_SendOutputToPort(ADLIB_PORT, 4, 0x80);   // Reset IRQ
 
-   AL_SendOutputToPort( ADLIB_PORT, 4, 0x60 );   // Reset T1 & T2
-   AL_SendOutputToPort( ADLIB_PORT, 4, 0x80 );   // Reset IRQ
+	status1 = inp(ADLIB_PORT);
 
-   status1 = inp( ADLIB_PORT );
+	AL_SendOutputToPort(ADLIB_PORT, 2, 0xff);   // Set timer 1
+	AL_SendOutputToPort(ADLIB_PORT, 4, 0x21);   // Start timer 1
 
-   AL_SendOutputToPort( ADLIB_PORT, 2, 0xff );   // Set timer 1
-   AL_SendOutputToPort( ADLIB_PORT, 4, 0x21 );   // Start timer 1
+	for (i = 100; i > 0; i--)
+		inp(ADLIB_PORT);
 
-   for( i = 100; i > 0; i-- )
-      {
-      inp( ADLIB_PORT );
-      }
+	status2 = inp(ADLIB_PORT);
 
-   status2 = inp( ADLIB_PORT );
+	AL_SendOutputToPort(ADLIB_PORT, 4, 0x60);
+	AL_SendOutputToPort(ADLIB_PORT, 4, 0x80);
 
-   AL_SendOutputToPort( ADLIB_PORT, 4, 0x60 );
-   AL_SendOutputToPort( ADLIB_PORT, 4, 0x80 );
-
-   return( ( ( status1 & 0xe0 ) == 0x00 ) && ( ( status2 & 0xe0 ) == 0xc0 ) );
-   }
+	return ((status1 & 0xe0) == 0x00) && ((status2 & 0xe0) == 0xc0);
+}
 
 
 /*---------------------------------------------------------------------
@@ -1261,18 +1247,14 @@ int AL_DetectFM
    Ends use of the sound card and resets it to a quiet state.
 ---------------------------------------------------------------------*/
 
-void AL_Shutdown
-   (
-   void
-   )
+void AL_Shutdown(void)
+{
+	AL_StereoOff();
 
-   {
-   AL_StereoOff();
-
-   AL_OPL3 = FALSE;
-   AL_ResetVoices();
-   AL_Reset();
-   }
+	AL_OPL3 = FALSE;
+	AL_ResetVoices();
+	AL_Reset();
+}
 
 
 /*---------------------------------------------------------------------
@@ -1293,13 +1275,13 @@ int AL_Init(int soundcard)
 	switch (soundcard)
 	{
 		case ProAudioSpectrum:
-		case SoundMan16 :
+		case SoundMan16:
 			AL_OPL3 = TRUE;
 			AL_LeftPort  = 0x388;
 			AL_RightPort = 0x38A;
 			break;
 
-		case SoundBlaster :
+		case SoundBlaster:
 			status = BLASTER_GetCardSettings(&Blaster);
 			if (status != BLASTER_Ok)
 				status = BLASTER_GetEnv(&Blaster);
