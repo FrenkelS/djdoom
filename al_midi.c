@@ -1003,54 +1003,44 @@ void AL_NoteOff(int channel, int key, int velocity)
    Plays a note on the specified MIDI channel.
 ---------------------------------------------------------------------*/
 
-void AL_NoteOn
-   (
-   int channel,
-   int key,
-   int velocity
-   )
+void AL_NoteOn(int channel, int key, int velocity)
+{
+	int voice;
 
-   {
-   int voice;
+	// We only play channels 1 through 10
+	if (channel > AL_MaxMidiChannel)
+		return;
 
-   // We only play channels 1 through 10
-   if ( channel > AL_MaxMidiChannel )
-      {
-      return;
-      }
+	if (velocity == 0)
+	{
+		AL_NoteOff(channel, key, 0);
+		return;
+	}
 
-   if ( velocity == 0 )
-      {
-      AL_NoteOff( channel, key, velocity );
-      return;
-      }
+	voice = AL_AllocVoice();
 
-   voice = AL_AllocVoice();
+	if (voice == AL_VoiceNotFound)
+	{
+		if (Channel[9].Voices.start)
+		{
+			AL_NoteOff(9, Channel[9].Voices.start->key, 0);
+			voice = AL_AllocVoice();
+		}
+		if (voice == AL_VoiceNotFound)
+			return;
+	}
 
-   if ( voice == AL_VoiceNotFound )
-      {
-      if ( Channel[ 9 ].Voices.start )
-         {
-         AL_NoteOff( 9, Channel[ 9 ].Voices.start->key, 0 );
-         voice = AL_AllocVoice();
-         }
-      if ( voice == AL_VoiceNotFound )
-         {
-         return;
-         }
-      }
+	Voice[voice].key      = key;
+	Voice[voice].channel  = channel;
+	Voice[voice].velocity = velocity;
+	Voice[voice].status   = NOTE_ON;
 
-   Voice[ voice ].key      = key;
-   Voice[ voice ].channel  = channel;
-   Voice[ voice ].velocity = velocity;
-   Voice[ voice ].status   = NOTE_ON;
+	LL_AddToTail(VOICE, &Channel[channel].Voices, &Voice[voice]);
 
-   LL_AddToTail( VOICE, &Channel[ channel ].Voices, &Voice[ voice ] );
-
-   AL_SetVoiceTimbre( voice );
-   AL_SetVoiceVolume( voice );
-   AL_SetVoicePitch( voice );
-   }
+	AL_SetVoiceTimbre(voice);
+	AL_SetVoiceVolume(voice);
+	AL_SetVoicePitch(voice);
+}
 
 
 /*---------------------------------------------------------------------
@@ -1059,17 +1049,11 @@ void AL_NoteOn
    Turns off all currently playing voices.
 ---------------------------------------------------------------------*/
 
-static void AL_AllNotesOff
-   (
-   int channel
-   )
-
-   {
-   while( Channel[ channel ].Voices.start != NULL )
-      {
-      AL_NoteOff( channel, Channel[ channel ].Voices.start->key, 0 );
-      }
-   }
+static void AL_AllNotesOff(int channel)
+{
+	while(Channel[channel].Voices.start != NULL)
+		AL_NoteOff(channel, Channel[channel].Voices.start->key, 0);
+}
 
 
 /*---------------------------------------------------------------------
@@ -1078,76 +1062,64 @@ static void AL_AllNotesOff
    Sets the value of a controller on the specified MIDI channel.
 ---------------------------------------------------------------------*/
 
-void AL_ControlChange
-   (
-   int channel,
-   int type,
-   int data
-   )
+void AL_ControlChange(int channel, int type, int data)
+{
+	// We only play channels 1 through 10
+	if (channel > AL_MaxMidiChannel)
+		return;
 
-   {
-   // We only play channels 1 through 10
-   if ( channel > AL_MaxMidiChannel )
-      {
-      return;
-      }
+	switch (type)
+	{
+		case MIDI_VOLUME:
+			AL_SetChannelVolume(channel, data);
+			break;
 
-   switch( type )
-      {
-      case MIDI_VOLUME :
-         AL_SetChannelVolume( channel, data );
-         break;
+		case MIDI_PAN:
+			AL_SetChannelPan(channel, data);
+			break;
 
-      case MIDI_PAN :
-         AL_SetChannelPan( channel, data );
-         break;
+		case MIDI_DETUNE:
+			AL_SetChannelDetune(channel, data);
+			break;
 
-      case MIDI_DETUNE :
-         AL_SetChannelDetune( channel, data );
-         break;
+		case MIDI_ALL_NOTES_OFF:
+			AL_AllNotesOff(channel);
+			break;
 
-      case MIDI_ALL_NOTES_OFF :
-         AL_AllNotesOff( channel );
-         break;
+		case MIDI_RESET_ALL_CONTROLLERS:
+			AL_ResetVoices();
+			AL_SetChannelVolume(channel, AL_DefaultChannelVolume);
+			AL_SetChannelPan(channel, 64);
+			AL_SetChannelDetune(channel, 0);
+			break;
 
-      case MIDI_RESET_ALL_CONTROLLERS :
-         AL_ResetVoices();
-         AL_SetChannelVolume( channel, AL_DefaultChannelVolume );
-         AL_SetChannelPan( channel, 64 );
-         AL_SetChannelDetune( channel, 0 );
-         break;
+		case MIDI_RPN_MSB:
+			Channel[channel].RPN &= 0x00FF;
+			Channel[channel].RPN |= (data & 0xFF) << 8;
+			break;
 
-      case MIDI_RPN_MSB :
-         Channel[ channel ].RPN &= 0x00FF;
-         Channel[ channel ].RPN |= ( data & 0xFF ) << 8;
-         break;
+		case MIDI_RPN_LSB:
+			Channel[channel].RPN &= 0xFF00;
+			Channel[channel].RPN |= data & 0xFF;
+			break;
 
-      case MIDI_RPN_LSB :
-         Channel[ channel ].RPN &= 0xFF00;
-         Channel[ channel ].RPN |= data & 0xFF;
-         break;
-
-      case MIDI_DATAENTRY_MSB :
-         if ( Channel[ channel ].RPN == MIDI_PITCHBEND_RPN )
-            {
-            Channel[ channel ].PitchBendSemiTones = data;
-            Channel[ channel ].PitchBendRange     =
-               Channel[ channel ].PitchBendSemiTones * 100 +
-               Channel[ channel ].PitchBendHundreds;
+		case MIDI_DATAENTRY_MSB:
+			if (Channel[channel].RPN == MIDI_PITCHBEND_RPN)
+			{
+				Channel[channel].PitchBendSemiTones = data;
+				Channel[channel].PitchBendRange     = Channel[channel].PitchBendSemiTones * 100 + Channel[channel].PitchBendHundreds;
             }
          break;
 
-      case MIDI_DATAENTRY_LSB :
-         if ( Channel[ channel ].RPN == MIDI_PITCHBEND_RPN )
-            {
-            Channel[ channel ].PitchBendHundreds = data;
-            Channel[ channel ].PitchBendRange    =
-               Channel[ channel ].PitchBendSemiTones * 100 +
-               Channel[ channel ].PitchBendHundreds;
-            }
-         break;
-      }
-   }
+		case MIDI_DATAENTRY_LSB:
+			if (Channel[channel].RPN == MIDI_PITCHBEND_RPN)
+			{
+				Channel[channel].PitchBendHundreds = data;
+				Channel[channel].PitchBendRange    = Channel[channel].PitchBendSemiTones * 100 + Channel[channel].PitchBendHundreds;
+			}
+			break;
+	}
+}
 
 
 /*---------------------------------------------------------------------
@@ -1156,21 +1128,14 @@ void AL_ControlChange
    Selects the instrument to use on the specified MIDI channel.
 ---------------------------------------------------------------------*/
 
-void AL_ProgramChange
-   (
-   int channel,
-   int patch
-   )
+void AL_ProgramChange(int channel, int patch)
+{
+	// We only play channels 1 through 10
+	if (channel > AL_MaxMidiChannel)
+		return;
 
-   {
-   // We only play channels 1 through 10
-   if ( channel > AL_MaxMidiChannel )
-      {
-      return;
-      }
-
-   Channel[ channel ].Timbre  = patch;
-   }
+	Channel[channel].Timbre = patch;
+}
 
 
 /*---------------------------------------------------------------------
