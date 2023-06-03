@@ -621,7 +621,7 @@ static void AL_SetVoicePitch(int voice)
 
 	if (note > MAX_NOTE)
 		note = MAX_NOTE;
-	if (note < 0)
+	else if (note < 0)
 		note = 0;
 
 	detune = Channel[channel].KeyDetune;
@@ -652,7 +652,7 @@ static void AL_SetChannelVolume(int channel, int volume)
 
 	if (volume < 0)
 		volume = 0;
-	if (volume > AL_MaxVolume)
+	else if (volume > AL_MaxVolume)
 		volume = AL_MaxVolume;
 
 	Channel[channel].Volume = volume;
