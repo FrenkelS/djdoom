@@ -107,11 +107,11 @@ int32_t MUS_RegisterSong(uint8_t *data)
 		mus_data = mid_data;
 		remove("temp.mid");
 		remove("temp.mus");
-		return 0;
 	} else {
 		mus_data = data;
-		return 0;
 	}
+
+	return 0;
 }
 
 void MUS_UnregisterSong(int32_t handle) {UNUSED(handle);}
