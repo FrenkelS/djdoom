@@ -44,23 +44,18 @@ enum MIDI_Errors
 	MIDI_NoMemory
 };
 
-
-#define MIDI_DONT_PLAY    0
-
-#define MIDI_MaxVolume 255
-
 typedef struct
-   {
-   void (*NoteOff)(int32_t channel, int32_t key, int32_t velocity);
-   void (*NoteOn)(int32_t channel, int32_t key, int32_t velocity);
-   void (*PolyAftertouch)(int32_t channel, int32_t key, int32_t pressure);
-   void (*ControlChange)(int32_t channel, int32_t number, int32_t value);
-   void (*ProgramChange)(int32_t channel, int32_t program);
-   void (*ChannelAftertouch)(int32_t channel, int32_t pressure);
-   void (*PitchBend)(int32_t channel, int32_t lsb, int32_t msb);
-   void (*SetVolume)(int32_t volume);
-   int32_t (*GetVolume)(void);
-   } midifuncs;
+{
+	void (*NoteOff)(int32_t channel, int32_t key, int32_t velocity);
+	void (*NoteOn)(int32_t channel, int32_t key, int32_t velocity);
+	void (*PolyAftertouch)(int32_t channel, int32_t key, int32_t pressure);
+	void (*ControlChange)(int32_t channel, int32_t number, int32_t value);
+	void (*ProgramChange)(int32_t channel, int32_t program);
+	void (*ChannelAftertouch)(int32_t channel, int32_t pressure);
+	void (*PitchBend)(int32_t channel, int32_t lsb, int32_t msb);
+	void (*SetVolume)(int32_t volume);
+	int32_t (*GetVolume)(void);
+} midifuncs;
 
 int32_t MIDI_SetVolume(int32_t volume);
 void    MIDI_SetMidiFuncs(midifuncs *funcs);

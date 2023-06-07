@@ -56,6 +56,9 @@ extern int MUSIC_SoundDevice;
 #define MIDI_HEADER_SIGNATURE 0x6468544d    // "MThd"
 #define MIDI_TRACK_SIGNATURE  0x6b72544d    // "MTrk"
 
+
+#define MIDI_DONT_PLAY    0
+
 #define MIDI_VOLUME                7
 #define MIDI_RPN_MSB               100
 #define MIDI_RPN_LSB               101
@@ -208,6 +211,8 @@ static unsigned long _MIDI_PositionInTicks;
 static int  _MIDI_Context;
 
 static int _MIDI_ActiveTracks;
+
+#define MIDI_MaxVolume 255
 static int _MIDI_TotalVolume = MIDI_MaxVolume;
 
 static int _MIDI_ChannelVolume[ NUM_MIDI_CHANNELS ];
