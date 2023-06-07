@@ -80,16 +80,16 @@ static const char snd_prefixen[] = { 'P', 'P', 'A', 'S', 'S', 'S', 'M',
 
 typedef enum
 {
-  snd_none,
-  snd_PC,
-  snd_Adlib,
-  snd_SB,
-  snd_PAS,
-  snd_GUS,
-  snd_MPU,
-  snd_MPU2,
-  snd_MPU3,
-  snd_AWE,
+  snd_none,		// NO MUSIC / NO SOUND FX
+  snd_PC,		// PC Speaker
+  snd_Adlib,	// Adlib
+  snd_SB,		// Sound Blaster
+  snd_PAS,		// Pro Audio Spectrum
+  snd_GUS,		// Gravis UltraSound
+  snd_MPU,		// WaveBlaster
+  snd_MPU2,		// Sound Canvas
+  snd_MPU3,		// General MIDI
+  snd_AWE,		// Sound Blaster AWE32
 #if (APPVER_DOOMREV >= AV_DR_DM18)
   snd_ENS,
   snd_CODEC,
