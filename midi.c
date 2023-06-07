@@ -114,7 +114,6 @@ extern int MUSIC_SoundDevice;
 #define EMIDI_ProAudio          5
 #define EMIDI_SoundMan16        6
 #define EMIDI_Adlib             7
-#define EMIDI_Soundscape        8
 #define EMIDI_Ultrasound        9
 
 #define EMIDI_AffectsCurrentCard( c, type ) \
@@ -1323,10 +1322,6 @@ static void _MIDI_InitEMIDI
 
       case WaveBlaster :
          type = EMIDI_WaveBlaster;
-         break;
-
-      case SoundScape :
-         type = EMIDI_Soundscape;
          break;
 
       case UltraSound :

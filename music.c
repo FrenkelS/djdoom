@@ -77,7 +77,6 @@ int32_t MUSIC_Init(int32_t SoundCard, int32_t Address)
 		case GenMidi:
 		case SoundCanvas:
 		case WaveBlaster:
-		case SoundScape:
 			status = MUSIC_InitMidi(SoundCard, &MUSIC_MidiFunctions, Address);
 			break;
 
@@ -89,7 +88,6 @@ int32_t MUSIC_Init(int32_t SoundCard, int32_t Address)
 			status = MUSIC_InitGUS(&MUSIC_MidiFunctions);
 			break;
 
-		case SoundSource :
 		case PC :
 		default :
 			status = MUSIC_Error;
@@ -123,7 +121,6 @@ void MUSIC_Shutdown(void)
 */
 		case GenMidi:
 		case SoundCanvas:
-		case SoundScape:
 			MPU_Reset();
 			break;
 /*
@@ -225,7 +222,6 @@ int32_t MUSIC_PlaySong(uint8_t *song, int32_t loopflag)
 		case GenMidi:
 		case SoundCanvas:
 		case WaveBlaster:
-		case SoundScape:
 		case Awe32:
 		case UltraSound:
 			MIDI_StopSong();
@@ -234,7 +230,6 @@ int32_t MUSIC_PlaySong(uint8_t *song, int32_t loopflag)
 				return MUSIC_Warning;
 			break;
 
-		case SoundSource:
 		case PC:
 		default:
 			return MUSIC_Warning;
@@ -355,15 +350,6 @@ static int32_t MUSIC_InitMidi(int32_t card, midifuncs *Funcs, int32_t Address)
 	}
 	else if ((card == SoundCanvas) || (card == GenMidi))
 		BLASTER_SetupWaveBlaster(BLASTER_Ok);
-
-/*
-	if (card == SoundScape)
-	{
-		Address = SOUNDSCAPE_GetMIDIPort();
-		if (Address < SOUNDSCAPE_Ok)
-			return MUSIC_Error;
-	}
-*/
 
 	if (MPU_Init(Address) != MPU_Ok)
 		return MUSIC_Error;
