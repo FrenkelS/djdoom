@@ -34,7 +34,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 enum MIDI_Errors
 {
-	MIDI_Warning = -2,
 	MIDI_Error   = -1,
 	MIDI_Ok      = 0,
 	MIDI_NullMidiModule,
@@ -42,12 +41,10 @@ enum MIDI_Errors
 	MIDI_UnknownMidiFormat,
 	MIDI_NoTracks,
 	MIDI_InvalidTrack,
-	MIDI_NoMemory,
-	MIDI_DPMI_Error
+	MIDI_NoMemory
 };
 
 
-#define MIDI_PASS_THROUGH 1
 #define MIDI_DONT_PLAY    0
 
 #define MIDI_MaxVolume 255

@@ -35,6 +35,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "doomdef.h"
 #include "mpu401.h"
 
+#define MPU_NotFound       -1
+#define MPU_UARTFailed     -2
+
+#define MPU_ReadyToWrite   0x40
+#define MPU_ReadyToRead    0x80
+#define MPU_CmdEnterUART   0x3f
+#define MPU_CmdReset       0xff
+#define MPU_CmdAcknowledge 0xfe
+
 #define MIDI_NOTE_OFF         0x80
 #define MIDI_NOTE_ON          0x90
 #define MIDI_POLY_AFTER_TCH   0xA0
@@ -42,15 +51,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIDI_PROGRAM_CHANGE   0xC0
 #define MIDI_AFTER_TOUCH      0xD0
 #define MIDI_PITCH_BEND       0xE0
-#define MIDI_META_EVENT       0xFF
-#define MIDI_END_OF_TRACK     0x2F
-#define MIDI_TEMPO_CHANGE     0x51
-#define MIDI_MONO_MODE_ON     0x7E
-#define MIDI_ALL_NOTES_OFF    0x7B
 
+#define MPU_DefaultAddress 0x330
 static int32_t MPU_BaseAddr = MPU_DefaultAddress;
 
-static uint32_t MPU_Delay = 0x5000;
+#define MPU_Delay 0x5000;
 
 
 /*---------------------------------------------------------------------
