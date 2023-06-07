@@ -17,19 +17,16 @@
 // mus2mid.c - Ben Ryves 2006 - http://benryves.com - benryves@benryves.com
 // Use to convert a MUS file into a single track, type 0 MIDI file.
 
+#include <stdint.h>
 #include <stdio.h>
-
-//#include "mus2mid.h"
 
 #define NUM_CHANNELS 16
 
 #define MIDI_PERCUSSION_CHAN 9
 #define MUS_PERCUSSION_CHAN 15
 
-typedef unsigned char byte;
-#ifndef __cplusplus
+typedef uint8_t byte;
 typedef enum {false, true} bool;
-#endif
 
 // MUS event codes
 typedef enum
@@ -47,10 +44,8 @@ typedef enum
 {
     midi_releasekey = 0x80,
     midi_presskey = 0x90,
-    midi_aftertouchkey = 0xA0,
     midi_changecontroller = 0xB0,
     midi_changepatch = 0xC0,
-    midi_aftertouchchannel = 0xD0,
     midi_pitchwheel = 0xE0
 } midievent;
 
@@ -58,11 +53,11 @@ typedef enum
 typedef struct
 {
     byte id[4];
-    unsigned short scorelength;
-    unsigned short scorestart;
-    unsigned short primarychannels;
-    unsigned short secondarychannels;
-    unsigned short instrumentcount;
+    uint16_t scorelength;
+    uint16_t scorestart;
+    uint16_t primarychannels;
+    uint16_t secondarychannels;
+    uint16_t instrumentcount;
 } musheader;
 
 // Standard MIDI type 0 header + track header
@@ -86,11 +81,11 @@ static byte channelvelocities[] =
 
 // Timestamps between sequences of MUS events
 
-static unsigned int queuedtime = 0;
+static uint32_t queuedtime = 0;
 
 // Counter for the length of the track
 
-static unsigned int tracksize;
+static uint32_t tracksize;
 
 static const byte controller_map[] =
 {
@@ -98,13 +93,13 @@ static const byte controller_map[] =
     0x40, 0x43, 0x78, 0x7B, 0x7E, 0x7F, 0x79
 };
 
-static int channel_map[NUM_CHANNELS];
+static int32_t channel_map[NUM_CHANNELS];
 
 // Write timestamp to a MIDI file.
 
-static bool WriteTime(unsigned int time, FILE *midioutput)
+static bool WriteTime(uint32_t time, FILE *midioutput)
 {
-    unsigned int buffer = time & 0x7F;
+    uint32_t buffer = time & 0x7F;
     byte writeval;
 
     while ((time >>= 7) != 0)
@@ -227,7 +222,7 @@ static bool WriteReleaseKey(byte channel, byte key,
 }
 
 // Write a pitch wheel/bend event
-static bool WritePitchWheel(byte channel, short wheel,
+static bool WritePitchWheel(byte channel, int16_t wheel,
                             FILE *midioutput)
 {
     byte working = midi_pitchwheel | channel;
@@ -348,11 +343,11 @@ static bool WriteChangeController_Valueless(byte channel,
 
 // Allocate a free MIDI channel.
 
-static int AllocateMIDIChannel(void)
+static int32_t AllocateMIDIChannel(void)
 {
-    int result;
-    int max;
-    int i;
+    int32_t result;
+    int32_t max;
+    int32_t i;
 
     // Find the current highest-allocated channel.
 
@@ -385,7 +380,7 @@ static int AllocateMIDIChannel(void)
 // Given a MUS channel number, get the MIDI channel number to use
 // in the outputted file.
 
-static int GetMIDIChannel(int mus_channel, FILE *midioutput)
+static int32_t GetMIDIChannel(int32_t mus_channel, FILE *midioutput)
 {
     // Find the MIDI channel to use for this MUS channel.
     // MUS channel 15 is the percusssion channel.
@@ -405,7 +400,7 @@ static int GetMIDIChannel(int mus_channel, FILE *midioutput)
 
             // First time using the channel, send an "all notes off"
             // event. This fixes "The D_DDTBLU disease" described here:
-            // http://www.doomworld.com/vb/source-ports/66802-the
+            // https://www.doomworld.com/vb/source-ports/66802-the
             WriteChangeController_Valueless(channel_map[mus_channel], 0x7b,
                                             midioutput);
         }
@@ -425,15 +420,6 @@ static bool ReadMusHeader(FILE *file, musheader *header)
           && fread(&header->secondarychannels, sizeof(short), 1, file) == 1
           && fread(&header->instrumentcount, sizeof(short), 1, file) == 1;
 
-    /*if (result)
-    {
-        header->scorelength = SHORT(header->scorelength);
-        header->scorestart = SHORT(header->scorestart);
-        header->primarychannels = SHORT(header->primarychannels);
-        header->secondarychannels = SHORT(header->secondarychannels);
-        header->instrumentcount = SHORT(header->instrumentcount);
-    }*/
-
     return result;
 }
 
@@ -443,14 +429,14 @@ static bool ReadMusHeader(FILE *file, musheader *header)
 //
 // Returns 0 on success or 1 on failure.
 
-bool mus2mid(FILE *musinput, FILE *midioutput, int rate, int adlibhack)
+bool mus2mid(FILE *musinput, FILE *midioutput, int32_t rate, int32_t adlibhack)
 {
     // Header for the MUS file
     musheader musfileheader;
 
     // Descriptor for the current MUS event
     byte eventdescriptor;
-    int channel; // Channel number
+    int32_t channel; // Channel number
     musevent event;
 
 
@@ -463,12 +449,12 @@ bool mus2mid(FILE *musinput, FILE *midioutput, int rate, int adlibhack)
     byte tracksizebuffer[4];
 
     // Flag for when the score end marker is hit.
-    int hitscoreend = 0;
+    int32_t hitscoreend = 0;
 
     // Temp working byte
     byte working;
     // Used in building up time delays
-    unsigned int timedelay;
+    uint32_t timedelay;
 
     // Initialise channel map to mark all channels as unused.
 
@@ -484,19 +470,8 @@ bool mus2mid(FILE *musinput, FILE *midioutput, int rate, int adlibhack)
         return true;
     }
 
-#ifdef CHECK_MUS_HEADER
-    // Check MUS header
-    if (musfileheader.id[0] != 'M'
-     || musfileheader.id[1] != 'U'
-     || musfileheader.id[2] != 'S'
-     || musfileheader.id[3] != 0x1A)
-    {
-        return true;
-    }
-#endif
-
     // Seek to where the data is held
-    if (fseek(musinput, (long)musfileheader.scorestart,
+    if (fseek(musinput, (int32_t)musfileheader.scorestart,
               SEEK_SET) != 0)
     {
         return true;
@@ -570,7 +545,7 @@ bool mus2mid(FILE *musinput, FILE *midioutput, int rate, int adlibhack)
                     {
                         break;
                     }
-                    if (WritePitchWheel(channel, (short)(key * 64), midioutput))
+                    if (WritePitchWheel(channel, (int16_t)(key * 64), midioutput))
                     {
                         return true;
                     }
@@ -597,7 +572,7 @@ bool mus2mid(FILE *musinput, FILE *midioutput, int rate, int adlibhack)
                             return true;
                         }
                         // Reset pitch
-                        if (WritePitchWheel(channel, (short)(128 * 64), midioutput))
+                        if (WritePitchWheel(channel, (int16_t)(128 * 64), midioutput))
                         {
                             return true;
                         }
