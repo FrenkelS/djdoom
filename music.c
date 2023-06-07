@@ -258,8 +258,6 @@ static int32_t MUSIC_InitAWE32(midifuncs *Funcs)
 	Funcs->ProgramChange     = AWE32_ProgramChange;
 	Funcs->ChannelAftertouch = AWE32_ChannelAftertouch;
 	Funcs->PitchBend         = AWE32_PitchBend;
-	Funcs->ReleasePatches    = NULL;
-	Funcs->LoadPatch         = NULL;
 	Funcs->SetVolume         = NULL;
 	Funcs->GetVolume         = NULL;
 
@@ -296,8 +294,6 @@ static int32_t MUSIC_InitFM(int32_t card, midifuncs *Funcs)
 	Funcs->ProgramChange     = AL_ProgramChange;
 	Funcs->ChannelAftertouch = NULL;
 	Funcs->PitchBend         = AL_SetPitchBend;
-	Funcs->ReleasePatches    = NULL;
-	Funcs->LoadPatch         = NULL;
 	Funcs->SetVolume         = NULL;
 	Funcs->GetVolume         = NULL;
 
@@ -379,8 +375,6 @@ static int32_t MUSIC_InitMidi(int32_t card, midifuncs *Funcs, int32_t Address)
 	Funcs->ProgramChange     = MPU_ProgramChange;
 	Funcs->ChannelAftertouch = MPU_ChannelAftertouch;
 	Funcs->PitchBend         = MPU_PitchBend;
-	Funcs->ReleasePatches    = NULL;
-	Funcs->LoadPatch         = NULL;
 	Funcs->SetVolume         = NULL;
 	Funcs->GetVolume         = NULL;
 
@@ -414,8 +408,6 @@ static int32_t MUSIC_InitGUS(midifuncs *Funcs)
 	Funcs->ProgramChange     = GUSMIDI_ProgramChange;
 	Funcs->ChannelAftertouch = NULL;
 	Funcs->PitchBend         = GUSMIDI_PitchBend;
-	Funcs->ReleasePatches    = NULL;
-	Funcs->LoadPatch         = NULL;
 	Funcs->SetVolume         = GUSMIDI_SetVolume;
 	Funcs->GetVolume         = GUSMIDI_GetVolume;
 

@@ -58,8 +58,6 @@ typedef struct
    void (*ProgramChange)(int32_t channel, int32_t program);
    void (*ChannelAftertouch)(int32_t channel, int32_t pressure);
    void (*PitchBend)(int32_t channel, int32_t lsb, int32_t msb);
-   void (*ReleasePatches)(void);
-   void (*LoadPatch)(int32_t number);
    void (*SetVolume)(int32_t volume);
    int32_t (*GetVolume)(void);
    } midifuncs;
