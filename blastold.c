@@ -261,7 +261,7 @@ int BLASTER_ErrorCode = BLASTER_Ok;
    number.  A -1 returns a pointer the current error.
 ---------------------------------------------------------------------*/
 
-char *BLASTER_ErrorString
+static char *BLASTER_ErrorString
    (
    int ErrorNumber
    )
@@ -382,7 +382,7 @@ char *BLASTER_ErrorString
    Enables the triggering of the sound card interrupt.
 ---------------------------------------------------------------------*/
 
-void BLASTER_EnableInterrupt
+static void BLASTER_EnableInterrupt
    (
    void
    )
@@ -416,7 +416,7 @@ void BLASTER_EnableInterrupt
    Disables the triggering of the sound card interrupt.
 ---------------------------------------------------------------------*/
 
-void BLASTER_DisableInterrupt
+static void BLASTER_DisableInterrupt
    (
    void
    )
@@ -453,7 +453,7 @@ void BLASTER_DisableInterrupt
    transfer.  Calls the user supplied callback function.
 ---------------------------------------------------------------------*/
 
-void __interrupt __far BLASTER_ServiceInterrupt
+static void __interrupt __far BLASTER_ServiceInterrupt
    (
    void
    )
@@ -552,7 +552,7 @@ void __interrupt __far BLASTER_ServiceInterrupt
    Writes a byte of data to the sound card's DSP.
 ---------------------------------------------------------------------*/
 
-int BLASTER_WriteDSP
+static int BLASTER_WriteDSP
    (
    unsigned data
    )
@@ -596,7 +596,7 @@ int BLASTER_WriteDSP
    Reads a byte of data from the sound card's DSP.
 ---------------------------------------------------------------------*/
 
-int BLASTER_ReadDSP
+static int BLASTER_ReadDSP
    (
    void
    )
@@ -640,7 +640,7 @@ int BLASTER_ReadDSP
    (DSP), causing it to perform an initialization.
 ---------------------------------------------------------------------*/
 
-int BLASTER_ResetDSP
+static int BLASTER_ResetDSP
    (
    void
    )
@@ -704,7 +704,7 @@ int BLASTER_ResetDSP
    Returns the version number of the sound card's DSP.
 ---------------------------------------------------------------------*/
 
-int BLASTER_GetDSPVersion
+static int BLASTER_GetDSPVersion
    (
    void
    )
@@ -738,7 +738,7 @@ int BLASTER_GetDSPVersion
    Enables output from the DAC.
 ---------------------------------------------------------------------*/
 
-void BLASTER_SpeakerOn
+static void BLASTER_SpeakerOn
    (
    void
    )
@@ -754,7 +754,7 @@ void BLASTER_SpeakerOn
    Disables output from the DAC.
 ---------------------------------------------------------------------*/
 
-void BLASTER_SpeakerOff
+static void BLASTER_SpeakerOff
    (
    void
    )
@@ -771,7 +771,7 @@ void BLASTER_SpeakerOff
    hertz.
 ---------------------------------------------------------------------*/
 
-void BLASTER_SetPlaybackRate
+static void BLASTER_SetPlaybackRate
    (
    unsigned rate
    )
@@ -851,7 +851,7 @@ void BLASTER_SetPlaybackRate
    hertz.
 ---------------------------------------------------------------------*/
 
-unsigned BLASTER_GetPlaybackRate
+static unsigned BLASTER_GetPlaybackRate
    (
    void
    )
@@ -867,7 +867,7 @@ unsigned BLASTER_GetPlaybackRate
    Sets the sound card to play samples in mono or stereo.
 ---------------------------------------------------------------------*/
 
-int BLASTER_SetMixMode
+static int BLASTER_SetMixMode
    (
    int mode
    )
@@ -933,7 +933,7 @@ int BLASTER_SetMixMode
    Ends the DMA transfer of digitized sound to the sound card.
 ---------------------------------------------------------------------*/
 
-void BLASTER_StopPlayback
+static void BLASTER_StopPlayback
    (
    void
    )
@@ -980,7 +980,7 @@ void BLASTER_StopPlayback
    Programs the DMAC for sound transfer.
 ---------------------------------------------------------------------*/
 
-int BLASTER_SetupDMABuffer
+static int BLASTER_SetupDMABuffer
    (
    char *BufferPtr,
    int   BufferSize,
@@ -1033,7 +1033,7 @@ int BLASTER_SetupDMABuffer
    Returns the offset within the current sound being played.
 ---------------------------------------------------------------------*/
 
-int BLASTER_GetCurrentPos
+static int BLASTER_GetCurrentPos
    (
    void
    )
@@ -1090,7 +1090,7 @@ int BLASTER_GetCurrentPos
    version 1.xx.
 ---------------------------------------------------------------------*/
 
-int BLASTER_DSP1xx_BeginPlayback
+static int BLASTER_DSP1xx_BeginPlayback
    (
    int length
    )
@@ -1124,7 +1124,7 @@ int BLASTER_DSP1xx_BeginPlayback
    version 2.xx.
 ---------------------------------------------------------------------*/
 
-int BLASTER_DSP2xx_BeginPlayback
+static int BLASTER_DSP2xx_BeginPlayback
    (
    int length
    )
@@ -1167,7 +1167,7 @@ int BLASTER_DSP2xx_BeginPlayback
    version 4.xx, such as the Sound Blaster 16.
 ---------------------------------------------------------------------*/
 
-int BLASTER_DSP4xx_BeginPlayback
+static int BLASTER_DSP4xx_BeginPlayback
    (
    int length
    )
@@ -1229,7 +1229,7 @@ int BLASTER_DSP4xx_BeginPlayback
    Begins multibuffered playback of digitized sound on the sound card.
 ---------------------------------------------------------------------*/
 
-int BLASTER_BeginBufferedPlayback
+static int BLASTER_BeginBufferedPlayback
    (
    char    *BufferStart,
    int      BufferSize,
@@ -1298,7 +1298,7 @@ int BLASTER_BeginBufferedPlayback
    version 4.xx, such as the Sound Blaster 16.
 ---------------------------------------------------------------------*/
 
-int BLASTER_DSP4xx_BeginRecord
+static int BLASTER_DSP4xx_BeginRecord
    (
    int length
    )
@@ -1338,7 +1338,7 @@ int BLASTER_DSP4xx_BeginRecord
    version 2.xx.
 ---------------------------------------------------------------------*/
 
-int BLASTER_DSP2xx_BeginRecord
+static int BLASTER_DSP2xx_BeginRecord
    (
    int length
    )
@@ -1381,7 +1381,7 @@ int BLASTER_DSP2xx_BeginRecord
    version 1.xx.
 ---------------------------------------------------------------------*/
 
-int BLASTER_DSP1xx_BeginRecord
+static int BLASTER_DSP1xx_BeginRecord
    (
    int length
    )
@@ -1414,7 +1414,7 @@ int BLASTER_DSP1xx_BeginRecord
    Begins multibuffered recording of digitized sound on the sound card.
 ---------------------------------------------------------------------*/
 
-int BLASTER_BeginBufferedRecord
+static int BLASTER_BeginBufferedRecord
    (
    char    *BufferStart,
    int      BufferSize,
@@ -1482,7 +1482,7 @@ int BLASTER_BeginBufferedRecord
    Writes a byte of data to the Sound Blaster's mixer chip.
 ---------------------------------------------------------------------*/
 
-void BLASTER_WriteMixer
+static void BLASTER_WriteMixer
    (
    int reg,
    int data
@@ -1500,7 +1500,7 @@ void BLASTER_WriteMixer
    Reads a byte of data from the Sound Blaster's mixer chip.
 ---------------------------------------------------------------------*/
 
-int BLASTER_ReadMixer
+static int BLASTER_ReadMixer
    (
    int reg
    )
@@ -1521,7 +1521,7 @@ int BLASTER_ReadMixer
    Sound Blaster's mixer chip.
 ---------------------------------------------------------------------*/
 
-int BLASTER_GetVoiceVolume
+static int BLASTER_GetVoiceVolume
    (
    void
    )
@@ -1563,7 +1563,7 @@ int BLASTER_GetVoiceVolume
    Blaster's mixer chip.
 ---------------------------------------------------------------------*/
 
-int BLASTER_SetVoiceVolume
+static int BLASTER_SetVoiceVolume
    (
    int volume
    )
@@ -1733,7 +1733,7 @@ int BLASTER_CardHasMixer
    Saves the user's voice mixer settings.
 ---------------------------------------------------------------------*/
 
-void BLASTER_SaveVoiceVolume
+static void BLASTER_SaveVoiceVolume
    (
    void
    )
@@ -1766,7 +1766,7 @@ void BLASTER_SaveVoiceVolume
    Restores the user's voice mixer settings.
 ---------------------------------------------------------------------*/
 
-void BLASTER_RestoreVoiceVolume
+static void BLASTER_RestoreVoiceVolume
    (
    void
    )
@@ -1866,7 +1866,7 @@ void BLASTER_RestoreMidiVolume
    the caller.
 ---------------------------------------------------------------------*/
 
-int BLASTER_GetEnv
+static int BLASTER_GetEnv
    (
    BLASTER_CONFIG *Config
    )
@@ -2002,7 +2002,7 @@ int BLASTER_GetEnv
    Sets up the sound card's parameters.
 ---------------------------------------------------------------------*/
 
-int BLASTER_SetCardSettings
+static int BLASTER_SetCardSettings
    (
    BLASTER_CONFIG Config
    )
@@ -2048,7 +2048,7 @@ if ( ( Config.Type >= BLASTER_MinCardType ) ||
    Sets up the sound card's parameters.
 ---------------------------------------------------------------------*/
 
-int BLASTER_GetCardSettings
+static int BLASTER_GetCardSettings
    (
    BLASTER_CONFIG *Config
    )
@@ -2080,7 +2080,7 @@ int BLASTER_GetCardSettings
    (8 or 16) and the number of channels (1 for mono, 2 for stereo).
 ---------------------------------------------------------------------*/
 
-int BLASTER_GetCardInfo
+static int BLASTER_GetCardInfo
    (
    int *MaxSampleBits,
    int *MaxChannels
@@ -2125,7 +2125,7 @@ int BLASTER_GetCardInfo
    Specifies the user function to call at the end of a sound transfer.
 ---------------------------------------------------------------------*/
 
-void BLASTER_SetCallBack
+static void BLASTER_SetCallBack
    (
    void ( *func )( void )
    )
@@ -2156,7 +2156,7 @@ static void BLASTER_LockEnd
    Unlocks all neccessary data.
 ---------------------------------------------------------------------*/
 
-void BLASTER_UnlockMemory
+static void BLASTER_UnlockMemory
    (
    void
    )
@@ -2200,7 +2200,7 @@ void BLASTER_UnlockMemory
    Locks all neccessary data.
 ---------------------------------------------------------------------*/
 
-int BLASTER_LockMemory
+static int BLASTER_LockMemory
    (
    void
    )
@@ -2397,7 +2397,7 @@ void BLASTER_ShutdownWaveBlaster
    digitized sounds.
 ---------------------------------------------------------------------*/
 
-int BLASTER_Init
+static int BLASTER_Init
    (
    void
    )
@@ -2519,7 +2519,7 @@ int BLASTER_Init
    system resources used by the card.
 ---------------------------------------------------------------------*/
 
-void BLASTER_Shutdown
+static void BLASTER_Shutdown
    (
    void
    )
