@@ -162,7 +162,7 @@ void MUSIC_SetVolume(int32_t volume)
 {
 	if (volume < 0)
 		volume = 0;
-	if (volume > 255)
+	else if (volume > 255)
 		volume = 255;
 
 	if (MUSIC_SoundDevice != -1)
