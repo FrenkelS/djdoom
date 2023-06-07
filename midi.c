@@ -1292,22 +1292,6 @@ static void _MIDI_InitEMIDI
    type = EMIDI_GeneralMIDI;
    switch( MUSIC_SoundDevice )
       {
-      case SoundBlaster :
-         type = EMIDI_SoundBlaster;
-         break;
-
-      case ProAudioSpectrum :
-         type = EMIDI_ProAudio;
-         break;
-
-      case SoundMan16 :
-         type = EMIDI_SoundMan16;
-         break;
-
-      case Adlib :
-         type = EMIDI_Adlib;
-         break;
-
       case GenMidi :
          type = EMIDI_GeneralMIDI;
          break;
@@ -1316,16 +1300,8 @@ static void _MIDI_InitEMIDI
          type = EMIDI_SoundCanvas;
          break;
 
-      case Awe32 :
-         type = EMIDI_AWE32;
-         break;
-
       case WaveBlaster :
          type = EMIDI_WaveBlaster;
-         break;
-
-      case UltraSound :
-         type = EMIDI_Ultrasound;
          break;
       }
 

@@ -139,18 +139,15 @@ int   BLASTER_BeginBufferedRecord( char *BufferStart, int BufferSize,
 int   BLASTER_BeginBufferedPlayback( char *BufferStart,
          int BufferSize, int NumDivisions, unsigned SampleRate,
          int MixMode, void ( *CallBackFunc )( void ) );
-void  BLASTER_WriteMixer( int reg, int data );
-int   BLASTER_ReadMixer( int reg );
 int   BLASTER_GetVoiceVolume( void );
 int   BLASTER_SetVoiceVolume( int volume );
 int   BLASTER_GetMidiVolume( void );
-int   BLASTER_SetMidiVolume( int volume );
+void  BLASTER_SetMidiVolume( int volume );
 int   BLASTER_CardHasMixer( void );
 void  BLASTER_SaveVoiceVolume( void );
 void  BLASTER_RestoreVoiceVolume( void );
 void  BLASTER_SaveMidiVolume( void );
 void  BLASTER_RestoreMidiVolume( void );
-int   BLASTER_GetEnv( BLASTER_CONFIG *Config );
 int   BLASTER_SetCardSettings( BLASTER_CONFIG Config );
 int   BLASTER_GetCardSettings( BLASTER_CONFIG *Config );
 int   BLASTER_GetCardInfo( int *MaxSampleBits, int *MaxChannels );

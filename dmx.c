@@ -81,7 +81,8 @@ int32_t MUS_RegisterSong(uint8_t *data)
 			fclose(mus);
 			return 0;
 		}
-		if (mus2mid(mus, mid, mus_rate, dmx_mdev == Adlib || dmx_mdev == SoundBlaster))
+		//if (mus2mid(mus, mid, mus_rate, dmx_mdev == Adlib || dmx_mdev == SoundBlaster))
+		if (mus2mid(mus, mid, mus_rate, 0))
 		{
 			fclose(mid);
 			fclose(mus);

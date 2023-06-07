@@ -36,22 +36,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "sndcards.h"
 #include "music.h"
 #include "midi.h"
-//#include "al_midi.h"
-//#include "pas16.h"
-//#include "blaster.h"
-//#include "gusmidi.h"
+#include "blaster.h"
 #include "mpu401.h"
-//#include "awe32.h"
-//#include "sndscape.h"
 
 int32_t MUSIC_SoundDevice = -1;
 
 static midifuncs MUSIC_MidiFunctions;
 
-static int32_t MUSIC_InitAWE32(midifuncs *Funcs);
-static int32_t MUSIC_InitFM(int32_t card, midifuncs *Funcs);
 static int32_t MUSIC_InitMidi(int32_t card, midifuncs *Funcs, int32_t Address);
-static int32_t MUSIC_InitGUS(midifuncs *Funcs);
 
 /*---------------------------------------------------------------------
    Function: MUSIC_Init
@@ -67,28 +59,12 @@ int32_t MUSIC_Init(int32_t SoundCard, int32_t Address)
 
 	switch (SoundCard)
 	{
-		case SoundBlaster:
-		case Adlib:
-		case ProAudioSpectrum:
-		case SoundMan16:
-			status = MUSIC_InitFM(SoundCard, &MUSIC_MidiFunctions);
-			break;
-
 		case GenMidi:
 		case SoundCanvas:
 		case WaveBlaster:
 			status = MUSIC_InitMidi(SoundCard, &MUSIC_MidiFunctions, Address);
 			break;
 
-		case Awe32 :
-			status = MUSIC_InitAWE32(&MUSIC_MidiFunctions);
-			break;
-
-		case UltraSound :
-			status = MUSIC_InitGUS(&MUSIC_MidiFunctions);
-			break;
-
-		case PC :
 		default :
 			status = MUSIC_Error;
 	}
@@ -109,42 +85,16 @@ void MUSIC_Shutdown(void)
 
 	switch (MUSIC_SoundDevice)
 	{
-/*
-		case Adlib:
-			AL_Shutdown();
-			break;
-
-		case SoundBlaster:
-			AL_Shutdown();
-			BLASTER_RestoreMidiVolume();
-			break;
-*/
 		case GenMidi:
 		case SoundCanvas:
 			MPU_Reset();
 			break;
-/*
+
 		case WaveBlaster:
 			BLASTER_ShutdownWaveBlaster();
 			MPU_Reset();
 			BLASTER_RestoreMidiVolume();
 			break;
-
-		case Awe32:
-			AWE32_Shutdown();
-			BLASTER_RestoreMidiVolume();
-			break;
-
-		case ProAudioSpectrum:
-		case SoundMan16:
-			AL_Shutdown();
-			PAS_RestoreMusicVolume();
-			break;
-
-		case UltraSound:
-			GUSMIDI_Shutdown();
-			break;
-*/
 	}
 }
 
@@ -215,22 +165,15 @@ int32_t MUSIC_PlaySong(uint8_t *song, int32_t loopflag)
 
 	switch (MUSIC_SoundDevice)
 	{
-		case SoundBlaster:
-		case Adlib:
-		case ProAudioSpectrum:
-		case SoundMan16:
 		case GenMidi:
 		case SoundCanvas:
 		case WaveBlaster:
-		case Awe32:
-		case UltraSound:
 			MIDI_StopSong();
 			status = MIDI_PlaySong(song, loopflag);
 			if (status != MIDI_Ok)
 				return MUSIC_Warning;
 			break;
 
-		case PC:
 		default:
 			return MUSIC_Warning;
 	}
@@ -239,106 +182,10 @@ int32_t MUSIC_PlaySong(uint8_t *song, int32_t loopflag)
 }
 
 
-static int32_t MUSIC_InitAWE32(midifuncs *Funcs)
-{
-/*
-	int32_t status = AWE32_Init();
-	if (status != AWE32_Ok)
-		return MUSIC_Error;
-
-	Funcs->NoteOff           = AWE32_NoteOff;
-	Funcs->NoteOn            = AWE32_NoteOn;
-	Funcs->PolyAftertouch    = AWE32_PolyAftertouch;
-	Funcs->ControlChange     = AWE32_ControlChange;
-	Funcs->ProgramChange     = AWE32_ProgramChange;
-	Funcs->ChannelAftertouch = AWE32_ChannelAftertouch;
-	Funcs->PitchBend         = AWE32_PitchBend;
-	Funcs->SetVolume         = NULL;
-	Funcs->GetVolume         = NULL;
-
-	if (BLASTER_CardHasMixer())
-	{
-		BLASTER_SaveMidiVolume();
-		Funcs->SetVolume = BLASTER_SetMidiVolume;
-		Funcs->GetVolume = BLASTER_GetMidiVolume;
-	}
-
-	MIDI_SetMidiFuncs(Funcs);
-
-	return MUSIC_Ok;
-*/
-	return MUSIC_Error;
-}
-
-
-static int32_t MUSIC_InitFM(int32_t card, midifuncs *Funcs)
-{
-/*
-	int32_t passtatus;
-
-	if (!AL_DetectFM())
-		return MUSIC_Error;
-
-	// Init the fm routines
-	AL_Init(card);
-
-	Funcs->NoteOff           = AL_NoteOff;
-	Funcs->NoteOn            = AL_NoteOn;
-	Funcs->PolyAftertouch    = NULL;
-	Funcs->ControlChange     = AL_ControlChange;
-	Funcs->ProgramChange     = AL_ProgramChange;
-	Funcs->ChannelAftertouch = NULL;
-	Funcs->PitchBend         = AL_SetPitchBend;
-	Funcs->SetVolume         = NULL;
-	Funcs->GetVolume         = NULL;
-
-	switch (card)
-	{
-		case SoundBlaster:
-			if (BLASTER_CardHasMixer())
-			{
-				BLASTER_SaveMidiVolume();
-				Funcs->SetVolume = BLASTER_SetMidiVolume;
-				Funcs->GetVolume = BLASTER_GetMidiVolume;
-			} else {
-				Funcs->SetVolume = NULL;
-				Funcs->GetVolume = NULL;
-			}
-			break;
-
-		case Adlib:
-			Funcs->SetVolume = NULL;
-			Funcs->GetVolume = NULL;
-			break;
-
-		case ProAudioSpectrum:
-		case SoundMan16:
-			Funcs->SetVolume = NULL;
-			Funcs->GetVolume = NULL;
-
-			passtatus = PAS_SaveMusicVolume();
-			if (passtatus == PAS_Ok)
-			{
-				Funcs->SetVolume = PAS_SetFMVolume;
-				Funcs->GetVolume = PAS_GetFMVolume;
-			}
-			break;
-	}
-
-	MIDI_SetMidiFuncs(Funcs);
-
-	return MIDI_Ok;
-*/
-	return MUSIC_Error;
-}
-
-static void BLASTER_SetupWaveBlaster(int32_t unk) {UNUSED(unk);}
-#define BLASTER_Ok 0
 static int32_t MUSIC_InitMidi(int32_t card, midifuncs *Funcs, int32_t Address)
 {
 	if (card == WaveBlaster)
 	{
-/*
 		if (Address <= BLASTER_Ok)
 			Address = BLASTER_Error;
 
@@ -346,7 +193,6 @@ static int32_t MUSIC_InitMidi(int32_t card, midifuncs *Funcs, int32_t Address)
 
 		if (Address < BLASTER_Ok)
 			return MUSIC_Error;
-*/
 	}
 	else if ((card == SoundCanvas) || (card == GenMidi))
 		BLASTER_SetupWaveBlaster(BLASTER_Ok);
@@ -364,7 +210,6 @@ static int32_t MUSIC_InitMidi(int32_t card, midifuncs *Funcs, int32_t Address)
 	Funcs->SetVolume         = NULL;
 	Funcs->GetVolume         = NULL;
 
-/*
 	if (card == WaveBlaster)
 	{
 		if (BLASTER_CardHasMixer())
@@ -374,32 +219,8 @@ static int32_t MUSIC_InitMidi(int32_t card, midifuncs *Funcs, int32_t Address)
 			Funcs->GetVolume = BLASTER_GetMidiVolume;
 		}
 	}
-*/
 
 	MIDI_SetMidiFuncs(Funcs);
 
 	return MUSIC_Ok;
-}
-
-static int32_t MUSIC_InitGUS(midifuncs *Funcs)
-{
-/*
-	if (GUSMIDI_Init() != GUS_Ok)
-		return MUSIC_Error;
-
-	Funcs->NoteOff           = GUSMIDI_NoteOff;
-	Funcs->NoteOn            = GUSMIDI_NoteOn;
-	Funcs->PolyAftertouch    = NULL;
-	Funcs->ControlChange     = GUSMIDI_ControlChange;
-	Funcs->ProgramChange     = GUSMIDI_ProgramChange;
-	Funcs->ChannelAftertouch = NULL;
-	Funcs->PitchBend         = GUSMIDI_PitchBend;
-	Funcs->SetVolume         = GUSMIDI_SetVolume;
-	Funcs->GetVolume         = GUSMIDI_GetVolume;
-
-	MIDI_SetMidiFuncs(Funcs);
-
-	return MUSIC_Ok;
-*/
-	return MUSIC_Error;
 }

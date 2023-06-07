@@ -33,21 +33,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __MUSIC_H
 
 #include <stdint.h>
-#include "sndcards.h"
 
 enum MUSIC_ERRORS
 {
 	MUSIC_Warning = -2,
 	MUSIC_Error   = -1,
-	MUSIC_Ok      = 0,
-	MUSIC_ASSVersion,
-	MUSIC_SoundCardError,
-	MUSIC_MPU401Error,
-	MUSIC_InvalidCard,
-	MUSIC_MidiError,
-	MUSIC_TaskManError,
-	MUSIC_FMNotDetected,
-	MUSIC_DPMI_Error
+	MUSIC_Ok      = 0
 };
 
 typedef struct
