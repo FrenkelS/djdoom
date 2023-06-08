@@ -98,7 +98,7 @@ typedef enum
 } cardenum_t;
 
 int32_t snd_DesiredMusicDevice, snd_DesiredSfxDevice;
-int32_t snd_MusicDevice;    // current music card # (index to dmxCodes)
+static int32_t snd_MusicDevice;    // current music card # (index to dmxCodes)
 static int32_t snd_SfxDevice;      // current sfx card # (index to dmxCodes)
 static int32_t snd_MusicVolume;    // maximum volume for music
 static int32_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
@@ -231,7 +231,7 @@ static void I_sndArbitrateCards(void)
 #else
   boolean codec, ensoniq, gus, adlib, sb, midi;
 #endif
-  int32_t i, wait, dmxlump;
+  int32_t cardType, wait, dmxlump;
 
   snd_MusicDevice = snd_DesiredMusicDevice;
   snd_SfxDevice = snd_DesiredSfxDevice;
@@ -242,7 +242,7 @@ static void I_sndArbitrateCards(void)
   if (M_CheckParm("-nosfx")) snd_SfxDevice = snd_none;
   if (M_CheckParm("-nomusic")) snd_MusicDevice = snd_none;
 
-  if (snd_MusicDevice > snd_MPU && snd_MusicDevice <= snd_MPU3)
+  if (snd_MPU < snd_MusicDevice && snd_MusicDevice <= snd_MPU3)
 	snd_MusicDevice = snd_MPU;
   if (snd_MusicDevice == snd_SB)
 	snd_MusicDevice = snd_Adlib;
@@ -333,11 +333,16 @@ static void I_sndArbitrateCards(void)
 	if (devparm)
 	  printf("cfg p=0x%x\n", snd_Mport);
 
-	if (MPU_Detect(&snd_Mport, &i))
+	if (MPU_Detect(&snd_Mport, &cardType))
 	  printf("The MPU-401 isn't reponding @ p=0x%x.\n", snd_Mport);
 	else MPU_SetCard(snd_Mport);
   }
 
+}
+
+boolean I_IsAdlib(void)
+{
+	return snd_MusicDevice == snd_Adlib;
 }
 
 // inits all sound stuff

@@ -21,14 +21,14 @@
 
 #include "tsmapi.h"
 
-int32_t MUS_PauseSong(int32_t handle);
-int32_t MUS_ResumeSong(int32_t handle);
+void MUS_PauseSong(int32_t handle);
+void MUS_ResumeSong(int32_t handle);
 void MUS_SetMasterVolume(int32_t volume);
 int32_t MUS_RegisterSong(uint8_t *data);
-int32_t MUS_UnregisterSong(int32_t handle);
-int32_t MUS_StopSong(int32_t handle);
-int32_t MUS_ChainSong(int32_t handle, int32_t to);
-int32_t MUS_PlaySong(int32_t handle, int32_t volume);
+void MUS_UnregisterSong(int32_t handle);
+void MUS_StopSong(int32_t handle);
+void MUS_ChainSong(int32_t handle, int32_t to);
+void MUS_PlaySong(int32_t handle, int32_t volume);
 
 int32_t SFX_PlayPatch(void *data, int32_t pitch, int32_t sep, int32_t volume, int32_t flags, int32_t priority);
 void SFX_StopPatch(int32_t handle);

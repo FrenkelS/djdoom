@@ -1,5 +1,6 @@
 //
-//
+// Copyright (C) 2005-2014 Simon Howard
+// Copyright (C) 2015-2017 Alexey Khokholov (Nuke.YKT)
 // Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
@@ -18,16 +19,130 @@
 
 #include "doomdef.h"
 #include "dmx.h"
+#include "music.h"
 #include "pcfx.h"
+#include "sndcards.h"
 
-int32_t MUS_PauseSong(int32_t handle) {UNUSED(handle); return 0;}
-int32_t MUS_ResumeSong(int32_t handle) {UNUSED(handle); return 0;}
-void MUS_SetMasterVolume(int32_t volume) {UNUSED(volume);}
-int32_t MUS_RegisterSong(uint8_t *data) {UNUSED(data); return 0;}
-int32_t MUS_UnregisterSong(int32_t handle) {UNUSED(handle); return 0;}
-int32_t MUS_StopSong(int32_t handle) {UNUSED(handle); return 0;}
-int32_t MUS_ChainSong(int32_t handle, int32_t to) {UNUSED(handle); UNUSED(to); return 0;}
-int32_t MUS_PlaySong(int32_t handle, int32_t volume) {UNUSED(handle); UNUSED(volume); return 0;}
+static void		*mus_data = NULL;
+static uint8_t	*mid_data = NULL;
+
+static int32_t mus_loop = 0;
+static int32_t dmx_mus_port = 0;
+static int32_t dmx_mdev = 0;
+static int32_t mus_rate = 140;
+static int32_t mus_mastervolume = 127;
+
+void MUS_PauseSong(int32_t handle)
+{
+	UNUSED(handle);
+	MUSIC_Pause();
+}
+
+void MUS_ResumeSong(int32_t handle)
+{
+	UNUSED(handle);
+	MUSIC_Continue();
+}
+
+void MUS_SetMasterVolume(int32_t volume)
+{
+	mus_mastervolume = volume;
+	MUSIC_SetVolume(volume * 2);
+}
+
+int32_t MUS_RegisterSong(uint8_t *data)
+{
+	FILE *mus;
+	FILE *mid;
+	uint32_t midlen;
+	uint16_t len = ((uint16_t*)data)[2] + ((uint16_t*)data)[3];
+	extern boolean mus2mid(FILE *musinput, FILE *midioutput, int32_t rate, boolean adlibhack);
+
+	mus_data = NULL;
+
+	if (mid_data)
+		free(mid_data);
+
+	if (memcmp(data, "MThd", 4))
+	{
+		mus = fopen("temp.mus", "wb");
+		if (!mus)
+			return 0;
+
+		fwrite(data, 1, len, mus);
+		fclose(mus);
+		mus = fopen("temp.mus", "rb");
+		if (!mus)
+			return 0;
+
+		mid = fopen("temp.mid", "wb");
+		if (!mid)
+		{
+			fclose(mus);
+			return 0;
+		}
+		//if (mus2mid(mus, mid, mus_rate, dmx_mdev == Adlib || dmx_mdev == SoundBlaster))
+		if (mus2mid(mus, mid, mus_rate, 0))
+		{
+			fclose(mid);
+			fclose(mus);
+			return 0;
+		}
+		fclose(mid);
+		fclose(mus);
+		mid = fopen("temp.mid", "rb");
+		if (!mid)
+			return 0;
+
+		fseek(mid, 0, SEEK_END);
+		midlen = ftell(mid);
+		rewind(mid);
+		mid_data = malloc(midlen);
+		if (!mid_data)
+		{
+			fclose(mid);
+			return 0;
+		}
+		fread(mid_data, 1, midlen, mid);
+		fclose(mid);
+		mus_data = mid_data;
+		remove("temp.mid");
+		remove("temp.mus");
+	} else {
+		mus_data = data;
+	}
+
+	return 0;
+}
+
+void MUS_UnregisterSong(int32_t handle) {UNUSED(handle);}
+
+void MUS_StopSong(int32_t handle)
+{
+	UNUSED(handle);
+	MUSIC_StopSong();
+}
+
+void MUS_ChainSong(int32_t handle, int32_t to)
+{
+	mus_loop = (to == handle);
+}
+
+void MUS_PlaySong(int32_t handle, int32_t volume)
+{
+	int32_t status;
+
+	UNUSED(handle);
+	UNUSED(volume);
+
+	if (mus_data == NULL)
+		return;
+
+	status = MUSIC_PlaySong((uint8_t*)mus_data, mus_loop);
+	if (status == MUSIC_Ok)
+		MUSIC_SetVolume(mus_mastervolume * 2);
+}
+
 
 int32_t SFX_PlayPatch(void *vdata, int32_t pitch, int32_t sep, int32_t volume, int32_t flags, int32_t priority)
 {
@@ -73,24 +188,51 @@ int32_t SB_Detect(int32_t *sbPort, int32_t *sbIrq, int32_t *sbDma, uint16_t *ver
 void SB_SetCard(int32_t iBaseAddr, int32_t iIrq, int32_t iDma) {UNUSED(iBaseAddr); UNUSED(iIrq); UNUSED(iDma);}
 int32_t AL_Detect(int32_t *wait, int32_t *type) {UNUSED(wait); UNUSED(type); return -1;}
 void AL_SetCard(int32_t wait, void *genmidi) {UNUSED(wait); UNUSED(genmidi);}
-int32_t MPU_Detect(int32_t *mPort, int32_t *type) {UNUSED(mPort); UNUSED(type); return -1;}
-void MPU_SetCard(int32_t mPort) {UNUSED(mPort);}
+
+int32_t MPU_Detect(int32_t *mPort, int32_t *type)
+{
+	UNUSED(type);
+
+	if (mPort == NULL)
+		return -1;
+	else {
+		extern int32_t MPU_Init(int32_t addr);
+		return MPU_Init(*mPort);
+	}
+}
+
+void MPU_SetCard(int32_t mPort)
+{
+	dmx_mus_port = mPort;
+}
 
 
 int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32_t sfxDevice)
 {
-	UNUSED(maxsongs);
-	UNUSED(musicDevice);
+	int32_t status;
 
-	if (sfxDevice & AHW_PC_SPEAKER)
+	UNUSED(maxsongs);
+
+	mus_rate = ticrate;
+
+	dmx_mdev = musicDevice == AHW_MPU_401 ? GenMidi : NumSoundCards;
+
+	status = MUSIC_Init(dmx_mdev, dmx_mus_port);
+	if (status == MUSIC_Ok)
+		MUSIC_SetVolume(0);
+
+	if (sfxDevice == AHW_PC_SPEAKER)
 		PCFX_Init(ticrate);
 
-	return sfxDevice;
+	return musicDevice | sfxDevice;
 }
 
 void DMX_DeInit(void)
 {
+	MUSIC_Shutdown();
 	PCFX_Shutdown();
+	if (mid_data)
+		free(mid_data);
 }
 
 

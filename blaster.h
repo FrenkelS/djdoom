@@ -19,37 +19,66 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 /**********************************************************************
-   module: TASK_MAN.C
+   module: BLASTER.H
 
    author: James R. Dose
-   date:   July 25, 1994
+   date:   February 4, 1994
 
-   Public header for TASK_MAN.C, a low level timer task scheduler.
+   Public header for BLASTER.C
 
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#ifndef __TASK_MAN_H
-#define __TASK_MAN_H
+#ifndef __BLASTER_H
+#define __BLASTER_H
 
-#include "doomdef.h"
+typedef struct
+   {
+   unsigned Address;
+   unsigned Type;
+   unsigned Interrupt;
+   unsigned Dma8;
+   unsigned Dma16;
+   unsigned Midi;
+   unsigned Emu;
+   } BLASTER_CONFIG;
 
-typedef struct task
-{
-	struct task			*next;
-	struct task			*prev;
-	void				(*TaskService)(struct task *);
-	int32_t				taskId;
-	int32_t				rate;
-	volatile int32_t	count;
-	int32_t				priority;
-	boolean				active;
-} task;
+#define UNDEFINED -1
 
-void TS_Shutdown(void);
-task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority, int32_t taskId);
-void TS_Terminate(task *ptr);
-void TS_Dispatch(void);
-void TS_SetTaskRate(task *Task, int32_t rate);
+enum BLASTER_ERRORS
+   {
+   BLASTER_Error = -1,
+   BLASTER_Ok = 0,
+   BLASTER_EnvNotFound,
+   BLASTER_AddrNotSet,
+   BLASTER_IntNotSet,
+   BLASTER_DMANotSet,
+   BLASTER_DMA16NotSet,
+   BLASTER_MIDINotSet,
+   BLASTER_CardTypeNotSet,
+   BLASTER_InvalidParameter,
+   BLASTER_UnsupportedCardType
+   };
+
+enum BLASTER_Types
+   {
+   SB     = 1,
+   SBPro  = 2,
+   SB20   = 3,
+   SBPro2 = 4,
+   SB16   = 6
+   };
+
+#define BLASTER_MinCardType    SB
+#define BLASTER_MaxCardType    SB16
+
+#define STEREO      1
+#define SIXTEEN_BIT 2
+
+#define MONO_8BIT    0
+#define STEREO_8BIT  ( STEREO )
+#define STEREO_16BIT ( STEREO | SIXTEEN_BIT )
+
+void  BLASTER_SetupWaveBlaster( void );
 
 #endif
