@@ -1295,14 +1295,6 @@ static void _MIDI_InitEMIDI
       case GenMidi :
          type = EMIDI_GeneralMIDI;
          break;
-
-      case SoundCanvas :
-         type = EMIDI_SoundCanvas;
-         break;
-
-      case WaveBlaster :
-         type = EMIDI_WaveBlaster;
-         break;
       }
 
    _MIDI_ResetTracks();

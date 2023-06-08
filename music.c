@@ -60,8 +60,6 @@ int32_t MUSIC_Init(int32_t SoundCard, int32_t Address)
 	switch (SoundCard)
 	{
 		case GenMidi:
-		case SoundCanvas:
-		case WaveBlaster:
 			status = MUSIC_InitMidi(SoundCard, &MUSIC_MidiFunctions, Address);
 			break;
 
@@ -86,14 +84,7 @@ void MUSIC_Shutdown(void)
 	switch (MUSIC_SoundDevice)
 	{
 		case GenMidi:
-		case SoundCanvas:
 			MPU_Reset();
-			break;
-
-		case WaveBlaster:
-			BLASTER_ShutdownWaveBlaster();
-			MPU_Reset();
-			BLASTER_RestoreMidiVolume();
 			break;
 	}
 }
@@ -166,8 +157,6 @@ int32_t MUSIC_PlaySong(uint8_t *song, int32_t loopflag)
 	switch (MUSIC_SoundDevice)
 	{
 		case GenMidi:
-		case SoundCanvas:
-		case WaveBlaster:
 			MIDI_StopSong();
 			status = MIDI_PlaySong(song, loopflag);
 			if (status != MIDI_Ok)
@@ -184,18 +173,8 @@ int32_t MUSIC_PlaySong(uint8_t *song, int32_t loopflag)
 
 static int32_t MUSIC_InitMidi(int32_t card, midifuncs *Funcs, int32_t Address)
 {
-	if (card == WaveBlaster)
-	{
-		if (Address <= BLASTER_Ok)
-			Address = BLASTER_Error;
-
-		Address = BLASTER_SetupWaveBlaster(Address);
-
-		if (Address < BLASTER_Ok)
-			return MUSIC_Error;
-	}
-	else if ((card == SoundCanvas) || (card == GenMidi))
-		BLASTER_SetupWaveBlaster(BLASTER_Ok);
+	if (card == GenMidi)
+		BLASTER_SetupWaveBlaster();
 
 	if (MPU_Init(Address) != MPU_Ok)
 		return MUSIC_Error;
@@ -209,16 +188,6 @@ static int32_t MUSIC_InitMidi(int32_t card, midifuncs *Funcs, int32_t Address)
 	Funcs->PitchBend         = MPU_PitchBend;
 	Funcs->SetVolume         = NULL;
 	Funcs->GetVolume         = NULL;
-
-	if (card == WaveBlaster)
-	{
-		if (BLASTER_CardHasMixer())
-		{
-			BLASTER_SaveMidiVolume();
-			Funcs->SetVolume = BLASTER_SetMidiVolume;
-			Funcs->GetVolume = BLASTER_GetMidiVolume;
-		}
-	}
 
 	MIDI_SetMidiFuncs(Funcs);
 
