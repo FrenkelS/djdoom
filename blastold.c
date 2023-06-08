@@ -142,7 +142,7 @@ static int BLASTER_ReadMixer
    Sound Blaster's mixer chip.
 ---------------------------------------------------------------------*/
 
-int BLASTER_GetMidiVolume
+int32_t BLASTER_GetMidiVolume
    (
    void
    )
@@ -185,14 +185,16 @@ int BLASTER_GetMidiVolume
 
 void BLASTER_SetMidiVolume
    (
-   int volume
+   int32_t volume
    )
 
    {
    int data;
 
-   volume = min( 255, volume );
-   volume = max( 0, volume );
+   if (volume > 255)
+      volume = 255;
+   else if (volume < 0)
+      volume = 0;
 
    switch( BLASTER_MixerType )
       {

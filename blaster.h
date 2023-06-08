@@ -32,6 +32,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __BLASTER_H
 #define __BLASTER_H
 
+#include <stdint.h>
+
 typedef struct
    {
    unsigned Address;
@@ -79,8 +81,8 @@ enum BLASTER_Types
 #define STEREO_8BIT  ( STEREO )
 #define STEREO_16BIT ( STEREO | SIXTEEN_BIT )
 
-int   BLASTER_GetMidiVolume( void );
-void  BLASTER_SetMidiVolume( int volume );
+int32_t   BLASTER_GetMidiVolume( void );
+void  BLASTER_SetMidiVolume( int32_t volume );
 int   BLASTER_CardHasMixer( void );
 void  BLASTER_SaveMidiVolume( void );
 void  BLASTER_RestoreMidiVolume( void );
