@@ -36,9 +36,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-//#include "dpmi.h"
-//#include "dma.h"
-//#include "irq.h"
 #include "blaster.h"
 
 #define VALID   ( 1 == 1 )
@@ -139,10 +136,6 @@ typedef struct
    int MinSamplingRate;
    int MaxSamplingRate;
    } CARD_CAPABILITY;
-
-#if (LIBVER_ASSREV < 20021225L) // *** VERSIONS RESTORATION ***
-//#include "memcheck.h"
-#endif
 
 #define USESTACK
 
@@ -362,15 +355,8 @@ int BLASTER_CardHasMixer
          {
          BLASTER_MixerAddress = Blaster.Address;
          BLASTER_MixerType = 0;
-         // *** VERSIONS RESTORATION ***
-         // A bug that got fixed
-#if (LIBVER_ASSREV < 19950821L)
-         if ( ( Blaster.Type >= BLASTER_MinCardType ) ||
-            ( Blaster.Type <= BLASTER_MaxCardType ) )
-#else
          if ( ( Blaster.Type < BLASTER_MinCardType ) ||
             ( Blaster.Type > BLASTER_MaxCardType ) )
-#endif
             {
             BLASTER_MixerType = Blaster.Type;
             }
@@ -544,15 +530,12 @@ static int BLASTER_GetEnv
       {
       errorcode = BLASTER_CardTypeNotSet;
       }
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    else if ( ( Config->Type < BLASTER_MinCardType ) ||
       ( Config->Type > BLASTER_MaxCardType ) ||
       ( !BLASTER_CardConfig[ Config->Type ].IsSupported ) )
       {
       errorcode = BLASTER_UnsupportedCardType;
       }
-#endif
 
    if ( Config->Dma8 == UNDEFINED )
       {
@@ -569,16 +552,6 @@ static int BLASTER_GetEnv
       errorcode = BLASTER_AddrNotSet;
       }
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   if ( ( Config->Type < BLASTER_MinCardType ) ||
-      ( Config->Type > BLASTER_MaxCardType ) ||
-      ( !BLASTER_CardConfig[ Config->Type ].IsSupported ) )
-      {
-      errorcode = BLASTER_UnsupportedCardType;
-      }
-
-#endif
    if ( errorcode != BLASTER_Ok )
       {
       status = BLASTER_Error;
