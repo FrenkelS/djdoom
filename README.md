@@ -21,9 +21,11 @@ and it took inspiration from
 [Quake 2](https://github.com/id-Software/Quake-2).
 
 There is some assembly in the code that requires [NASM](https://www.nasm.us).
-To build Doom only using C code, use the macro `C_ONLY`.
+To build Doom using only C code, use the macro `C_ONLY`.
 
-There's no sound, no joystick and no Logitech Cyberman support.
+Sound effects are supported through the PC speaker.
+And music is supported via General MIDI, Wave Blaster and Sound Canvas.
+There's no support for joystick and Logitech Cyberman.
 
 ## How to add other compilers
 The differences between compilers specific to the Doom source code are in `compiler.h`, `d_main.c`, `i_ibm.c`, `interrup.h`, `planar.asm` and `task_man.c`.
