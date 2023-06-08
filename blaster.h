@@ -79,6 +79,6 @@ enum BLASTER_Types
 #define STEREO_8BIT  ( STEREO )
 #define STEREO_16BIT ( STEREO | SIXTEEN_BIT )
 
-void   BLASTER_SetupWaveBlaster( void );
+void  BLASTER_SetupWaveBlaster( void );
 
 #endif
