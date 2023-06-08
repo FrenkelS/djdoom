@@ -32,11 +32,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <dos.h>
 #include <conio.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <ctype.h>
 #include "blaster.h"
+#include "doomdef.h"
 
 #define VALID   ( 1 == 1 )
 #define INVALID ( !VALID )
@@ -47,72 +45,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define YES ( 1 == 1 )
 #define NO  ( !YES )
 
-#define lobyte( num )   ( ( int )*( ( char * )&( num ) ) )
-#define hibyte( num )   ( ( int )*( ( ( char * )&( num ) ) + 1 ) )
-
 #define BLASTER_MixerAddressPort  0x04
 #define BLASTER_MixerDataPort     0x05
-#define BLASTER_ResetPort         0x06
-#define BLASTER_ReadPort          0x0A
-#define BLASTER_WritePort         0x0C
-#define BLASTER_DataAvailablePort 0x0E
-#define BLASTER_Ready             0xAA
-#define BLASTER_16BitDMAAck       0x0F
 
-#define MIXER_DSP4xxISR_Ack       0x82
 #define MIXER_DSP4xxISR_Enable    0x83
-#define MIXER_MPU401_INT          0x4
-#define MIXER_16BITDMA_INT        0x2
-#define MIXER_8BITDMA_INT         0x1
 #define MIXER_DisableMPU401Interrupts 0xB
-#define MIXER_SBProOutputSetting  0x0E
-#define MIXER_SBProStereoFlag     0x02
-#define MIXER_SBProVoice          0x04
 #define MIXER_SBProMidi           0x26
-#define MIXER_SB16VoiceLeft       0x32
-#define MIXER_SB16VoiceRight      0x33
 #define MIXER_SB16MidiLeft        0x34
 #define MIXER_SB16MidiRight       0x35
-
-#define DSP_Version1xx            0x0100
-#define DSP_Version2xx            0x0200
-#define DSP_Version201            0x0201
-#define DSP_Version3xx            0x0300
-#define DSP_Version4xx            0x0400
-#define DSP_SB16Version           DSP_Version4xx
-
-#define DSP_MaxNormalRate         22000
-#define DSP_MaxHighSpeedRate      44000
-
-#define DSP_8BitAutoInitRecord        0x2c
-#define DSP_8BitHighSpeedAutoInitRecord 0x98
-#define DSP_Old8BitADC                0x24
-#define DSP_8BitAutoInitMode          0x1c
-#define DSP_8BitHighSpeedAutoInitMode 0x90
-#define DSP_SetBlockLength            0x48
-#define DSP_Old8BitDAC                0x14
-#define DSP_16BitDAC                  0xB6
-#define DSP_8BitDAC                   0xC6
-#define DSP_8BitADC                   0xCe
-#define DSP_SetTimeConstant           0x40
-#define DSP_Set_DA_Rate               0x41
-#define DSP_Set_AD_Rate               0x42
-#define DSP_Halt8bitTransfer          0xd0
-#define DSP_Continue8bitTransfer      0xd4
-#define DSP_Halt16bitTransfer         0xd5
-#define DSP_Continue16bitTransfer     0xd6
-#define DSP_SpeakerOn                 0xd1
-#define DSP_SpeakerOff                0xd3
-#define DSP_GetVersion                0xE1
-#define DSP_Reset                     0xFFFF
-
-#define DSP_SignedBit                 0x10
-#define DSP_StereoBit                 0x20
-
-#define DSP_UnsignedMonoData      0x00
-#define DSP_SignedMonoData        ( DSP_SignedBit )
-#define DSP_UnsignedStereoData    ( DSP_StereoBit )
-#define DSP_SignedStereoData      ( DSP_SignedBit | DSP_StereoBit )
 
 #define BlasterEnv_Address    'A'
 #define BlasterEnv_Interrupt  'I'
@@ -121,12 +61,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define BlasterEnv_Type       'T'
 #define BlasterEnv_Midi       'P'
 #define BlasterEnv_EmuAddress 'E'
-
-#define CalcTimeConstant( rate, samplesize ) \
-   ( ( 65536L - ( 256000000L / ( ( samplesize ) * ( rate ) ) ) ) >> 8 )
-
-#define CalcSamplingRate( tc ) \
-   ( 256000000L / ( 65536L - ( tc << 8 ) ) )
 
 typedef struct
    {
@@ -137,23 +71,7 @@ typedef struct
    int MaxSamplingRate;
    } CARD_CAPABILITY;
 
-#define USESTACK
-
-const int BLASTER_Interrupts[ BLASTER_MaxIrq + 1 ]  =
-   {
-   INVALID, INVALID,     0xa,     0xb,
-   INVALID,     0xd, INVALID,     0xf,
-   INVALID, INVALID,    0x72,    0x73,
-      0x74, INVALID, INVALID,    0x77
-   };
-
-const int BLASTER_SampleSize[ BLASTER_MaxMixMode + 1 ] =
-   {
-   MONO_8BIT_SAMPLE_SIZE,  STEREO_8BIT_SAMPLE_SIZE,
-   MONO_16BIT_SAMPLE_SIZE, STEREO_16BIT_SAMPLE_SIZE
-   };
-
-const CARD_CAPABILITY BLASTER_CardConfig[ BLASTER_MaxCardType + 1 ] =
+static const CARD_CAPABILITY BLASTER_CardConfig[ BLASTER_MaxCardType + 1 ] =
    {
       { FALSE, INVALID,      INVALID, INVALID, INVALID }, // Unsupported
       {  TRUE,      NO,    MONO_8BIT,    4000,   23000 }, // SB 1.0
@@ -164,15 +82,10 @@ const CARD_CAPABILITY BLASTER_CardConfig[ BLASTER_MaxCardType + 1 ] =
       {  TRUE,     YES, STEREO_16BIT,    5000,   44100 }, // SB16
    };
 
-BLASTER_CONFIG BLASTER_Config =
+static BLASTER_CONFIG BLASTER_Config =
    {
    UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED
    };
-
-volatile int   BLASTER_SoundPlaying;
-volatile int   BLASTER_SoundRecording;
-
-void ( *BLASTER_CallBack )( void );
 
 static int BLASTER_MixerAddress = UNDEFINED;
 static int BLASTER_MixerType    = 0;
@@ -182,39 +95,7 @@ static int BLASTER_OriginalMidiVolumeRight  = 255;
 static int BLASTER_WaveBlasterPort  = UNDEFINED;
 static int BLASTER_WaveBlasterState = 0x0F;
 
-// adequate stack size
-#define kStackSize 2048
-
-// These declarations are necessary to use the inline assembly pragmas.
-
-extern void GetStack(unsigned short *selptr,unsigned long *stackptr);
-extern void SetStack(unsigned short selector,unsigned long stackptr);
-
-// This function will get the current stack selector and pointer and save
-// them off.
-#pragma aux GetStack =  \
-   "mov  [edi],esp"     \
-   "mov  ax,ss"         \
-   "mov  [esi],ax"      \
-   parm [esi] [edi]     \
-   modify [eax esi edi];
-
-// This function will set the stack selector and pointer to the specified
-// values.
-#pragma aux SetStack =  \
-   "mov  ss,ax"         \
-   "mov  esp,edx"       \
-   parm [ax] [edx]      \
-   modify [eax edx];
-
-int BLASTER_DMAChannel;
-
-int BLASTER_ErrorCode = BLASTER_Ok;
-
-#define BLASTER_SetErrorCode( status ) \
-   BLASTER_ErrorCode   = ( status );
-
-static int   BLASTER_GetEnv( BLASTER_CONFIG *Config );
+static int BLASTER_GetEnv( BLASTER_CONFIG *Config );
 
 /*---------------------------------------------------------------------
    Function: BLASTER_WriteMixer
@@ -288,7 +169,6 @@ int BLASTER_GetMidiVolume
          break;
 
       default :
-         BLASTER_SetErrorCode( BLASTER_NoMixer );
          volume = BLASTER_Error;
       }
 
@@ -326,9 +206,6 @@ void BLASTER_SetMidiVolume
          BLASTER_WriteMixer( MIXER_SB16MidiLeft, volume & 0xf8 );
          BLASTER_WriteMixer( MIXER_SB16MidiRight, volume & 0xf8 );
          break;
-
-      default :
-         BLASTER_SetErrorCode( BLASTER_NoMixer );
       }
 
    }
@@ -467,7 +344,6 @@ static int BLASTER_GetEnv
    Blaster = getenv( "BLASTER" );
    if ( Blaster == NULL )
       {
-      BLASTER_SetErrorCode( BLASTER_EnvNotFound );
       return( BLASTER_Error );
       }
 
@@ -484,7 +360,6 @@ static int BLASTER_GetEnv
 
       if ( !isxdigit( *Blaster ) )
          {
-         BLASTER_SetErrorCode( BLASTER_InvalidParameter );
          return( BLASTER_Error );
          }
 
@@ -555,7 +430,6 @@ static int BLASTER_GetEnv
    if ( errorcode != BLASTER_Ok )
       {
       status = BLASTER_Error;
-      BLASTER_SetErrorCode( errorcode );
       }
 
    return( status );
@@ -591,7 +465,6 @@ int BLASTER_SetupWaveBlaster
             {
             if ( Blaster.Midi == UNDEFINED )
                {
-               BLASTER_SetErrorCode( BLASTER_MIDINotSet );
                return( BLASTER_Error );
                }
             BLASTER_WaveBlasterPort = Blaster.Midi;
