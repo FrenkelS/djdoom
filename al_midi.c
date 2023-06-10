@@ -34,6 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <dos.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include "doomdef.h"
 #include "interrup.h"
 #include "sndcards.h"
 #include "blaster.h"
@@ -580,7 +581,8 @@ static void AL_SetVoiceVolume
    timbre = &ADLIB_TimbreBank[ Voice[ voice ].timbre ];
 
    velocity = Voice[ voice ].velocity + timbre->Velocity;
-   velocity = min( velocity, MAX_VELOCITY );
+   if (velocity > MAX_VELOCITY)
+      velocity = MAX_VELOCITY;
 
    voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
    slot = slotVoice[ voc ][ 1 ];
@@ -781,7 +783,7 @@ static void AL_SetVoicePitch
       {
       note = MAX_NOTE;
       }
-   if ( note < 0 )
+   else if ( note < 0 )
       {
       note = 0;
       }
@@ -850,8 +852,11 @@ static void AL_SetChannelVolume
    {
    VOICE *voice;
 
-   volume = max( 0, volume );
-   volume = min( volume, AL_MaxVolume );
+   if (volume < 0)
+      volume = 0;
+   else if (volume > AL_MaxVolume)
+      volume = AL_MaxVolume;
+
    Channel[ channel ].Volume = volume;
 
    voice = Channel[ channel ].Voices.start;
@@ -1206,9 +1211,9 @@ int AL_ReleaseVoice
 
 void AL_NoteOff
    (
-   int channel,
-   int key,
-   int velocity
+   int32_t channel,
+   int32_t key,
+   int32_t velocity
    )
 
    {
@@ -1259,9 +1264,9 @@ void AL_NoteOff
 
 void AL_NoteOn
    (
-   int channel,
-   int key,
-   int velocity
+   int32_t channel,
+   int32_t key,
+   int32_t velocity
    )
 
    {
@@ -1334,9 +1339,9 @@ void AL_AllNotesOff
 
 void AL_ControlChange
    (
-   int channel,
-   int type,
-   int data
+   int32_t channel,
+   int32_t type,
+   int32_t data
    )
 
    {
@@ -1412,8 +1417,8 @@ void AL_ControlChange
 
 void AL_ProgramChange
    (
-   int channel,
-   int patch
+   int32_t channel,
+   int32_t patch
    )
 
    {
@@ -1435,9 +1440,9 @@ void AL_ProgramChange
 
 void AL_SetPitchBend
    (
-   int channel,
-   int lsb,
-   int msb
+   int32_t channel,
+   int32_t lsb,
+   int32_t msb
    )
 
    {
