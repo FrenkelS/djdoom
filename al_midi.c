@@ -208,7 +208,7 @@ typedef struct
    signed   char Velocity;
    } TIMBRE;
 
-extern TIMBRE ADLIB_TimbreBank[ 256 ];
+static TIMBRE ADLIB_TimbreBank[ 256 ];
 
 static void AL_ResetVoices( void );
 static void AL_CalcPitchInfo( void );
@@ -235,10 +235,65 @@ typedef struct list
    void *end;
    } list;
 
-void LL_AddNode( char *node, char **head, char **tail, int next, int prev );
-void LL_RemoveNode( char *node, char **head, char **tail, int next, int prev );
-void LL_UnlockMemory( void );
-int  LL_LockMemory( void );
+#define OFFSET( structure, offset ) \
+   ( *( ( char ** )&( structure )[ offset ] ) )
+
+static void LL_AddNode
+   (
+   char *item,
+   char **head,
+   char **tail,
+   int next,
+   int prev
+   )
+
+   {
+   OFFSET( item, prev ) = NULL;
+   OFFSET( item, next ) = *head;
+
+   if ( *head )
+      {
+      OFFSET( *head, prev ) = item;
+      }
+   else
+      {
+      *tail = item;
+      }
+
+   *head = item;
+   }
+
+static void LL_RemoveNode
+   (
+   char *item,
+   char **head,
+   char **tail,
+   int next,
+   int prev
+   )
+
+   {
+   if ( OFFSET( item, prev ) == NULL )
+      {
+      *head = OFFSET( item, next );
+      }
+   else
+      {
+      OFFSET( OFFSET( item, prev ), next ) = OFFSET( item, next );
+      }
+
+   if ( OFFSET( item, next ) == NULL )
+      {
+      *tail = OFFSET( item, prev );
+      }
+   else
+      {
+      OFFSET( OFFSET( item, next ), prev ) = OFFSET( item, prev );
+      }
+
+   OFFSET( item, next ) = NULL;
+   OFFSET( item, prev ) = NULL;
+   }
 
 #define LL_AddToHead( type, listhead, node )         \
     LL_AddNode( ( char * )( node ),                  \
@@ -1534,45 +1589,10 @@ int AL_Init
    )
 
    {
-   BLASTER_CONFIG Blaster;
-   int status;
-
    AL_Stereo = FALSE;
    AL_OPL3   = FALSE;
    AL_LeftPort = 0x388;
    AL_RightPort = 0x388;
-
-   switch( soundcard )
-      {
-      case ProAudioSpectrum :
-      case SoundMan16 :
-         AL_OPL3 = TRUE;
-         AL_LeftPort = 0x388;
-         AL_RightPort = 0x38A;
-         break;
-
-      case SoundBlaster :
-         status = BLASTER_GetCardSettings( &Blaster );
-         if ( status != BLASTER_Ok )
-            {
-            status = BLASTER_GetEnv( &Blaster );
-            if ( status != BLASTER_Ok )
-               {
-               break;
-               }
-            }
-
-         switch( Blaster.Type )
-            {
-            case SBPro2 :
-            case SB16 :
-               AL_OPL3 = TRUE;
-               AL_LeftPort  = Blaster.Address;
-               AL_RightPort = Blaster.Address + 2;
-               break;
-            }
-         break;
-      }
 
    AL_CalcPitchInfo();
    AL_Reset();
