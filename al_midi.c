@@ -37,7 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "interrup.h"
 #include "sndcards.h"
 #include "blaster.h"
-//#include "user.h"
+
 
 enum AL_Errors
    {
@@ -71,8 +71,6 @@ void AL_SetPitchBend( int channel, int lsb, int msb );
 int  AL_DetectFM( void );
 void AL_RegisterTimbreBank( unsigned char *timbres );
 
-
-#define NO_ADLIB_DETECTION    "NOAL"
 
 #define STEREO_DETUNE 5
 
@@ -1465,11 +1463,6 @@ int AL_DetectFM
    int status1;
    int status2;
    int i;
-
-   if ( USER_CheckParameter( NO_ADLIB_DETECTION ) )
-      {
-      return( FALSE );
-      }
 
    AL_SendOutputToPort( ADLIB_PORT, 4, 0x60 );   // Reset T1 & T2
    AL_SendOutputToPort( ADLIB_PORT, 4, 0x80 );   // Reset IRQ
