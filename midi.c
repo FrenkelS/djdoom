@@ -57,8 +57,6 @@ extern int MUSIC_SoundDevice;
 #define MIDI_TRACK_SIGNATURE  0x6b72544d    // "MTrk"
 
 
-#define MIDI_DONT_PLAY    0
-
 #define MIDI_VOLUME                7
 #define MIDI_RPN_MSB               100
 #define MIDI_RPN_LSB               101
@@ -173,14 +171,6 @@ static const int _MIDI_CommandLengths[ NUM_MIDI_CHANNELS ] =
    0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 1, 1, 2, 0
    };
 
-static const int ( *_MIDI_RerouteFunctions[ NUM_MIDI_CHANNELS ] )
-   (
-   int event,
-   int c1,
-   int c2
-   ) = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-
 static track *_MIDI_TrackPtr = NULL;
 static int    _MIDI_TrackMemSize;
 static int    _MIDI_NumTracks;
@@ -215,11 +205,6 @@ static int _MIDI_ActiveTracks;
 static int _MIDI_TotalVolume = MIDI_MaxVolume;
 
 static int _MIDI_ChannelVolume[ NUM_MIDI_CHANNELS ];
-static const int _MIDI_UserChannelVolume[ NUM_MIDI_CHANNELS ] =
-   {
-   256, 256, 256, 256, 256, 256, 256, 256,
-   256, 256, 256, 256, 256, 256, 256, 256
-   };
 
 static midifuncs *_MIDI_Funcs = NULL;
 
@@ -650,7 +635,6 @@ static void _MIDI_ServiceRoutine
    int   command;
    track *Track;
    int   tracknum;
-   int   status;
    int   c1;
    int   c2;
    boolean   TimeSet = false;
@@ -712,17 +696,6 @@ static void _MIDI_ServiceRoutine
             if ( _MIDI_CommandLengths[ command ] > 1 )
                {
                GET_NEXT_EVENT( Track, c2 );
-               }
-            }
-
-         if ( _MIDI_RerouteFunctions[ channel ] != NULL )
-            {
-            status = _MIDI_RerouteFunctions[ channel ]( event, c1, c2 );
-
-            if ( status == MIDI_DONT_PLAY )
-               {
-               Track->delay = _MIDI_ReadDelta( Track );
-               continue;
                }
             }
 
@@ -820,18 +793,6 @@ static int _MIDI_SendControlChange
    )
 
    {
-   int status;
-
-   if ( _MIDI_RerouteFunctions[ channel ] != NULL )
-      {
-      status = _MIDI_RerouteFunctions[ channel ]( 0xB0 + channel,
-         c1, c2 );
-      if ( status == MIDI_DONT_PLAY )
-         {
-         return( MIDI_Ok );
-         }
-      }
-
    if ( _MIDI_Funcs == NULL )
       {
       return( MIDI_Error );
@@ -886,25 +847,7 @@ static void _MIDI_SetChannelVolume
    )
 
    {
-   int status;
-   int remotevolume;
-
    _MIDI_ChannelVolume[ channel ] = volume;
-
-   if ( _MIDI_RerouteFunctions[ channel ] != NULL )
-      {
-      remotevolume = volume * _MIDI_TotalVolume;
-      remotevolume *= _MIDI_UserChannelVolume[ channel ];
-      remotevolume /= MIDI_MaxVolume;
-      remotevolume >>= 8;
-
-      status = _MIDI_RerouteFunctions[ channel ]( 0xB0 + channel,
-         MIDI_VOLUME, remotevolume );
-      if ( status == MIDI_DONT_PLAY )
-         {
-         return;
-         }
-      }
 
    if ( _MIDI_Funcs == NULL )
       {
@@ -917,7 +860,7 @@ static void _MIDI_SetChannelVolume
       }
 
    // For user volume
-   volume *= _MIDI_UserChannelVolume[ channel ];
+   volume *= 256;
 
    if ( _MIDI_Funcs->SetVolume == NULL )
       {
@@ -1006,8 +949,6 @@ static int MIDI_Reset
 int32_t MIDI_SetVolume(int32_t volume)
 
    {
-   int i;
-
    if ( _MIDI_Funcs == NULL )
       {
       return( MIDI_NullMidiModule );
@@ -1023,14 +964,6 @@ int32_t MIDI_SetVolume(int32_t volume)
    if ( _MIDI_Funcs->SetVolume )
       {
       _MIDI_Funcs->SetVolume( volume );
-
-      for( i = 0; i < NUM_MIDI_CHANNELS; i++ )
-         {
-         if ( _MIDI_RerouteFunctions[ i ] != NULL )
-            {
-            _MIDI_SetChannelVolume( i, _MIDI_ChannelVolume[ i ] );
-            }
-         }
       }
    else
       {
@@ -1280,7 +1213,6 @@ static void _MIDI_InitEMIDI
    {
    int    event;
    int    command;
-   int    channel;
    int    length;
    boolean IncludeFound;
    track *Track;
@@ -1377,7 +1309,6 @@ static void _MIDI_InitEMIDI
             Track->pos--;
             }
 
-         channel = GET_MIDI_CHANNEL( event );
          command = GET_MIDI_COMMAND( event );
          length = _MIDI_CommandLengths[ command ];
 
