@@ -81,8 +81,7 @@ int32_t MUS_RegisterSong(uint8_t *data)
 			fclose(mus);
 			return 0;
 		}
-		//if (mus2mid(mus, mid, mus_rate, dmx_mdev == Adlib || dmx_mdev == SoundBlaster))
-		if (mus2mid(mus, mid, mus_rate, 0))
+		if (mus2mid(mus, mid, mus_rate, dmx_mdev == Adlib))
 		{
 			fclose(mid);
 			fclose(mus);
@@ -186,8 +185,69 @@ int32_t GF1_Detect(void) {return -1;}
 void GF1_SetMap(char *dmxlump, int32_t size) {UNUSED(dmxlump); UNUSED(size);}
 int32_t SB_Detect(int32_t *sbPort, int32_t *sbIrq, int32_t *sbDma, uint16_t *version) {UNUSED(sbPort); UNUSED(sbIrq); UNUSED(sbDma); UNUSED(version); return -1;}
 void SB_SetCard(int32_t iBaseAddr, int32_t iIrq, int32_t iDma) {UNUSED(iBaseAddr); UNUSED(iIrq); UNUSED(iDma);}
-int32_t AL_Detect(int32_t *wait, int32_t *type) {UNUSED(wait); UNUSED(type); return -1;}
-void AL_SetCard(int32_t wait, void *genmidi) {UNUSED(wait); UNUSED(genmidi);}
+
+
+int32_t AL_Detect(int32_t *wait, int32_t *type)
+{
+	UNUSED(wait);
+	UNUSED(type);
+	return !AL_DetectFM();
+}
+
+void AL_SetCard(int32_t wait, void *data)
+{
+    unsigned char *cdata;
+    unsigned char *tmb;
+    int i;
+
+	UNUSED(wait);
+
+	cdata = (unsigned char *)data;
+    tmb = malloc(13 * 256);
+    memset(tmb, 0, 13 * 256);
+    if (!tmb)
+    {
+        return;
+    }
+    for (i = 0; i < 128; i++)
+    {
+        tmb[i * 13 + 0] = cdata[8 + i * 36 + 4 + 0];
+        tmb[i * 13 + 1] = cdata[8 + i * 36 + 4 + 7];
+        tmb[i * 13 + 2] = cdata[8 + i * 36 + 4 + 4]
+                        | cdata[8 + i * 36 + 4 + 5];
+        tmb[i * 13 + 3] = cdata[8 + i * 36 + 4 + 11] & 192;
+        tmb[i * 13 + 4] = cdata[8 + i * 36 + 4 + 1];
+        tmb[i * 13 + 5] = cdata[8 + i * 36 + 4 + 8];
+        tmb[i * 13 + 6] = cdata[8 + i * 36 + 4 + 2];
+        tmb[i * 13 + 7] = cdata[8 + i * 36 + 4 + 9];
+        tmb[i * 13 + 8] = cdata[8 + i * 36 + 4 + 3];
+        tmb[i * 13 + 9] = cdata[8 + i * 36 + 4 + 10];
+        tmb[i * 13 + 10] = cdata[8 + i * 36 + 4 + 6];
+        tmb[i * 13 + 11] = cdata[8 + i * 36 + 4 + 14] + 12;
+        tmb[i * 13 + 12] = 0;
+    }
+    for (i = 128; i < 175; i++)
+    {
+        tmb[(i + 35) * 13 + 0] = cdata[8 + i * 36 + 4 + 0];
+        tmb[(i + 35) * 13 + 1] = cdata[8 + i * 36 + 4 + 7];
+        tmb[(i + 35) * 13 + 2] = cdata[8 + i * 36 + 4 + 4]
+                               | cdata[8 + i * 36 + 4 + 5];
+        tmb[(i + 35) * 13 + 3] = cdata[8 + i * 36 + 4 + 11] & 192;
+        tmb[(i + 35) * 13 + 4] = cdata[8 + i * 36 + 4 + 1];
+        tmb[(i + 35) * 13 + 5] = cdata[8 + i * 36 + 4 + 8];
+        tmb[(i + 35) * 13 + 6] = cdata[8 + i * 36 + 4 + 2];
+        tmb[(i + 35) * 13 + 7] = cdata[8 + i * 36 + 4 + 9];
+        tmb[(i + 35) * 13 + 8] = cdata[8 + i * 36 + 4 + 3];
+        tmb[(i + 35) * 13 + 9] = cdata[8 + i * 36 + 4 + 10];
+        tmb[(i + 35) * 13 + 10] = cdata[8 + i * 36 + 4 + 6];
+        tmb[(i + 35) * 13 + 11] = cdata[8 + i * 36 + 3]
+                                + cdata[8 + i * 36 + 4 + 14] + 12;
+        tmb[(i + 35) * 13 + 12] = 0;
+    }
+    AL_RegisterTimbreBank(tmb);
+    free(tmb);
+}
+
 
 int32_t MPU_Detect(int32_t *mPort, int32_t *type)
 {
@@ -215,7 +275,18 @@ int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32
 
 	mus_rate = ticrate;
 
-	dmx_mdev = musicDevice == AHW_MPU_401 ? GenMidi : NumSoundCards;
+	switch (musicDevice)
+	{
+		case AHW_ADLIB:
+			dmx_mdev = Adlib;
+			break;
+		case AHW_MPU_401:
+			dmx_mdev = GenMidi;
+			break;
+		default:
+			dmx_mdev = NumSoundCards;
+			break;
+	}
 
 	status = MUSIC_Init(dmx_mdev, dmx_mus_port);
 	if (status == MUSIC_Ok)

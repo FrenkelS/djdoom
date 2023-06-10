@@ -36,6 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "sndcards.h"
 #include "music.h"
 #include "midi.h"
+#include "al_midi.h"
 #include "blaster.h"
 #include "mpu401.h"
 
@@ -43,6 +44,7 @@ int32_t MUSIC_SoundDevice = -1;
 
 static midifuncs MUSIC_MidiFunctions;
 
+static int32_t MUSIC_InitFM( int32_t card, midifuncs *Funcs );
 static int32_t MUSIC_InitMidi(int32_t card, midifuncs *Funcs, int32_t Address);
 
 /*---------------------------------------------------------------------
@@ -59,6 +61,10 @@ int32_t MUSIC_Init(int32_t SoundCard, int32_t Address)
 
 	switch (SoundCard)
 	{
+		case Adlib:
+			status = MUSIC_InitFM(SoundCard, &MUSIC_MidiFunctions);
+			break;
+
 		case GenMidi:
 			status = MUSIC_InitMidi(SoundCard, &MUSIC_MidiFunctions, Address);
 			break;
@@ -83,6 +89,10 @@ void MUSIC_Shutdown(void)
 
 	switch (MUSIC_SoundDevice)
 	{
+		case Adlib :
+			AL_Shutdown();
+			break;
+
 		case GenMidi:
 			MPU_Reset();
 			break;
@@ -156,6 +166,7 @@ int32_t MUSIC_PlaySong(uint8_t *song, int32_t loopflag)
 
 	switch (MUSIC_SoundDevice)
 	{
+		case Adlib:
 		case GenMidi:
 			MIDI_StopSong();
 			status = MIDI_PlaySong(song, loopflag);
@@ -169,6 +180,45 @@ int32_t MUSIC_PlaySong(uint8_t *song, int32_t loopflag)
 
 	return MUSIC_Ok;
 }
+
+
+static int32_t MUSIC_InitFM
+   (
+   int32_t card,
+   midifuncs *Funcs
+   )
+
+   {
+   if ( !AL_DetectFM() )
+      {
+      return( MUSIC_Error );
+      }
+
+   // Init the fm routines
+   AL_Init( card );
+
+   Funcs->NoteOff           = AL_NoteOff;
+   Funcs->NoteOn            = AL_NoteOn;
+   Funcs->PolyAftertouch    = NULL;
+   Funcs->ControlChange     = AL_ControlChange;
+   Funcs->ProgramChange     = AL_ProgramChange;
+   Funcs->ChannelAftertouch = NULL;
+   Funcs->PitchBend         = AL_SetPitchBend;
+   Funcs->SetVolume         = NULL;
+   Funcs->GetVolume         = NULL;
+
+   switch( card )
+      {
+      case Adlib :
+         Funcs->SetVolume = NULL;
+         Funcs->GetVolume = NULL;
+         break;
+      }
+
+   MIDI_SetMidiFuncs( Funcs );
+
+   return MIDI_Ok;
+   }
 
 
 static int32_t MUSIC_InitMidi(int32_t card, midifuncs *Funcs, int32_t Address)
