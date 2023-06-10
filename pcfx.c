@@ -170,6 +170,8 @@ typedef struct {
 	uint16_t	data[0x10000];
 } pcspkmuse_t;
 
+static pcspkmuse_t pcspkmuse;
+
 typedef struct {
 	uint16_t	id;
 	uint16_t	length;
@@ -181,7 +183,6 @@ int32_t PCFX_Play(void *vdata)
 	dmxpcs_t *dmxpcs = (dmxpcs_t *)vdata;
 	uint_fast16_t i;
 
-	pcspkmuse_t pcspkmuse;
 	pcspkmuse.length = dmxpcs->length;
 	for (i = 0; i < dmxpcs->length; i++)
 		pcspkmuse.data[i] = divisors[dmxpcs->data[i]];
