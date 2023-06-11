@@ -50,13 +50,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define STEREO_DETUNE 5
 
-#define lobyte( num )   ( ( unsigned )*( ( char * )&( num ) ) )
-#define hibyte( num )   ( ( unsigned )*( ( ( char * )&( num ) ) + 1 ) )
-
 #define AL_VoiceNotFound -1
-
-#define  alFreqH     0xb0
-#define  alEffects   0xbd
 
 /* Number of slots for the voices on the chip */
 #define NumChipSlots 18
@@ -75,14 +69,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define PITCHBEND_CENTER 1638400
 
-#define note_off             0x80
-#define note_on              0x90
-#define poly_aftertouch      0xa0
-#define control_change       0xb0
-#define program_chng         0xc0
-#define channel_aftertouch   0xd0
-#define pitch_wheel          0xe0
-
 #define MIDI_VOLUME          7
 #define MIDI_PAN             10
 #define MIDI_DETUNE          94
@@ -93,31 +79,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIDI_DATAENTRY_MSB         6
 #define MIDI_DATAENTRY_LSB         38
 #define MIDI_PITCHBEND_RPN         0
-
-enum cromatic_scale
-   {
-   C       = 0x157,
-   C_SHARP = 0x16B,
-   D_FLAT  = 0x16B,
-   D       = 0x181,
-   D_SHARP = 0x198,
-   E_FLAT  = 0x198,
-   E       = 0x1B0,
-   F_FLAT  = 0x1B0,
-   E_SHARP = 0x1CA,
-   F       = 0x1CA,
-   F_SHARP = 0x1E5,
-   G_FLAT  = 0x1E5,
-   G       = 0x202,
-   G_SHARP = 0x220,
-   A_FLAT  = 0x220,
-   A       = 0x241,
-   A_SHARP = 0x263,
-   B_FLAT  = 0x263,
-   B       = 0x287,
-   C_FLAT  = 0x287,
-   B_SHARP = 0x2AE,
-   };
 
 /* Definition of octave information to be ORed onto F-Number */
 
@@ -198,19 +159,6 @@ static void AL_SetChannelPan( int channel, int pan );
 static void AL_SetChannelDetune( int channel, int detune );
 
 
-enum LL_Errors
-   {
-   LL_Warning = -2,
-   LL_Error   = -1,
-   LL_Ok      = 0
-   };
-
-typedef struct list
-   {
-   void *start;
-   void *end;
-   } list;
-
 #define OFFSET( structure, offset ) \
    ( *( ( char ** )&( structure )[ offset ] ) )
 
@@ -271,13 +219,6 @@ static void LL_RemoveNode
    OFFSET( item, prev ) = NULL;
    }
 
-#define LL_AddToHead( type, listhead, node )         \
-    LL_AddNode( ( char * )( node ),                  \
-                ( char ** )&( ( listhead )->start ), \
-                ( char ** )&( ( listhead )->end ),   \
-                ( int )&( ( type * ) 0 )->next,      \
-                ( int )&( ( type * ) 0 )->prev )
-
 #define LL_AddToTail( type, listhead, node )         \
     LL_AddNode( ( char * )( node ),                  \
                 ( char ** )&( ( listhead )->end ),   \
@@ -292,14 +233,10 @@ static void LL_RemoveNode
                    ( int )&( ( type * ) 0 )->next,      \
                    ( int )&( ( type * ) 0 )->prev )
 
-#define LL_NextNode( node )     ( ( node )->next )
-#define LL_PreviousNode( node ) ( ( node )->prev )
-
-
 #define TRUE  ( 1 == 1 )
 #define FALSE ( !TRUE )
 
-static unsigned OctavePitch[ MAX_OCTAVE + 1 ] =
+static const unsigned OctavePitch[ MAX_OCTAVE + 1 ] =
    {
    OCTAVE_0, OCTAVE_1, OCTAVE_2, OCTAVE_3,
    OCTAVE_4, OCTAVE_5, OCTAVE_6, OCTAVE_7,
@@ -315,7 +252,7 @@ static unsigned NoteDiv12[ MAX_NOTE + 1 ];
 //      { C, C_SHARP, D, D_SHARP, E, F, F_SHARP, G, G_SHARP, A, A_SHARP, B },
 //   };
 
-static unsigned NotePitch[ FINETUNE_MAX + 1 ][ 12 ] =
+static const unsigned NotePitch[ FINETUNE_MAX + 1 ][ 12 ] =
    {
       { 0x157, 0x16b, 0x181, 0x198, 0x1b0, 0x1ca, 0x1e5, 0x202, 0x220, 0x241, 0x263, 0x287 },
       { 0x157, 0x16b, 0x181, 0x198, 0x1b0, 0x1ca, 0x1e5, 0x202, 0x220, 0x242, 0x264, 0x288 },
@@ -354,7 +291,7 @@ static unsigned NotePitch[ FINETUNE_MAX + 1 ][ 12 ] =
 // Slot numbers as a function of the voice and the operator.
 // ( melodic only)
 
-static int slotVoice[ NUM_VOICES ][ 2 ] =
+static const int slotVoice[ NUM_VOICES ][ 2 ] =
    {
       { 0, 3 },    // voice 0
       { 1, 4 },    // 1
@@ -373,17 +310,11 @@ static int VoiceKsl[ NumChipSlots ][ 2 ];
 // This table gives the offset of each slot within the chip.
 // offset = fn( slot)
 
-static char offsetSlot[ NumChipSlots ] =
+static const char offsetSlot[ NumChipSlots ] =
    {
     0,  1,  2,  3,  4,  5,
     8,  9, 10, 11, 12, 13,
    16, 17, 18, 19, 20, 21
-   };
-
-static int VoiceReserved[ NUM_VOICES * 2 ] =
-   {
-   FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-   FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE
    };
 
 static VOICE     Voice[ NUM_VOICES * 2 ];
@@ -391,11 +322,11 @@ static VOICELIST Voice_Pool;
 
 static CHANNEL   Channel[ NUM_CHANNELS ];
 
-static int AL_LeftPort   = 0x388;
-static int AL_RightPort  = 0x388;
-static int AL_Stereo     = FALSE;
+#define AL_LeftPort   0x388
+#define AL_RightPort  AL_LeftPort
+#define AL_Stereo     FALSE
 static int AL_SendStereo = FALSE;
-static int AL_OPL3       = FALSE;
+#define AL_OPL3       FALSE
 
 #define AL_MaxMidiChannel 16
 
@@ -938,8 +869,6 @@ static void AL_ResetVoices
       }
    for( index = 0; index < numvoices; index++ )
       {
-      if ( VoiceReserved[ index ] == FALSE )
-         {
          Voice[ index ].num = index;
          Voice[ index ].key = 0;
          Voice[ index ].velocity = 0;
@@ -948,7 +877,6 @@ static void AL_ResetVoices
          Voice[ index ].port = ( index < NUM_VOICES ) ? 0 : 1;
          Voice[ index ].status = NOTE_OFF;
          LL_AddToTail( VOICE, &Voice_Pool, &Voice[ index ] );
-         }
       }
 
    for( index = 0; index < NUM_CHANNELS; index++ )
@@ -982,23 +910,12 @@ static void AL_CalcPitchInfo
 
    {
    int    note;
-//   int    finetune;
-//   double detune;
 
    for( note = 0; note <= MAX_NOTE; note++ )
       {
       NoteMod12[ note ] = note % 12;
       NoteDiv12[ note ] = note / 12;
       }
-
-//   for( finetune = 1; finetune <= FINETUNE_MAX; finetune++ )
-//      {
-//      detune = pow( 2, ( double )finetune / ( 12.0 * FINETUNE_RANGE ) );
-//      for( note = 0; note < 12; note++ )
-//         {
-//         NotePitch[ finetune ][ note ] = ( ( double )NotePitch[ 0 ][ note ] * detune );
-//         }
-//      }
    }
 
 
@@ -1020,8 +937,6 @@ static void AL_FlushCard
 
    for( i = 0 ; i < NUM_VOICES; i++ )
       {
-      if ( VoiceReserved[ i ] == FALSE )
-         {
          slot1 = offsetSlot[ slotVoice[ i ][ 0 ] ];
          slot2 = offsetSlot[ slotVoice[ i ][ 1 ] ];
 
@@ -1040,7 +955,6 @@ static void AL_FlushCard
          // Maximum attenuation
          AL_SendOutputToPort( port, 0x40 + slot1, 0xff );
          AL_SendOutputToPort( port, 0x40 + slot2, 0xff );
-         }
       }
    }
 
@@ -1176,13 +1090,13 @@ void AL_NoteOff
    if ( AL_SendStereo )
       {
       AL_SendOutputToPort( AL_LeftPort, 0xB0 + voice,
-         hibyte( Voice[ voice ].pitchleft ) );
+         HIBYTE( Voice[ voice ].pitchleft ) );
       AL_SendOutputToPort( AL_RightPort, 0xB0 + voice,
-         hibyte( Voice[ voice ].pitchright ) );
+         HIBYTE( Voice[ voice ].pitchright ) );
       }
    else
       {
-      AL_SendOutput( port, 0xB0 + voc, hibyte( Voice[ voice ].pitchleft ) );
+      AL_SendOutput( port, 0xB0 + voc, HIBYTE( Voice[ voice ].pitchleft ) );
       }
 
    LL_Remove( VOICE, &Channel[ channel ].Voices, &Voice[ voice ] );
@@ -1462,7 +1376,6 @@ void AL_Shutdown
    {
    AL_StereoOff();
 
-   AL_OPL3 = FALSE;
    AL_ResetVoices();
    AL_Reset();
    }
@@ -1480,11 +1393,6 @@ void AL_Init
    )
 
    {
-   AL_Stereo = FALSE;
-   AL_OPL3   = FALSE;
-   AL_LeftPort = 0x388;
-   AL_RightPort = 0x388;
-
    AL_CalcPitchInfo();
    AL_Reset();
    AL_ResetVoices();
