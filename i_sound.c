@@ -242,17 +242,15 @@ static void I_sndArbitrateCards(void)
   if (M_CheckParm("-nosfx")) snd_SfxDevice = snd_none;
   if (M_CheckParm("-nomusic")) snd_MusicDevice = snd_none;
 
-  if (snd_MPU < snd_MusicDevice && snd_MusicDevice <= snd_MPU3)
+  if (snd_MusicDevice == snd_MPU2 || snd_MusicDevice == snd_MPU3)
 	snd_MusicDevice = snd_MPU;
-  if (snd_MusicDevice == snd_SB)
-	snd_MusicDevice = snd_Adlib;
-  if (snd_MusicDevice == snd_PAS)
+  else if (snd_MusicDevice == snd_SB || snd_MusicDevice == snd_PAS)
 	snd_MusicDevice = snd_Adlib;
 
   // figure out what i've got to initialize
   //
   gus = snd_MusicDevice == snd_GUS || snd_SfxDevice == snd_GUS;
-  sb = snd_SfxDevice == snd_SB || snd_MusicDevice == snd_SB;
+  sb = snd_SfxDevice == snd_SB;
 #if (APPVER_DOOMREV >= AV_DR_DM18)
   ensoniq = snd_SfxDevice == snd_ENS ;
   codec = snd_SfxDevice == snd_CODEC ;
