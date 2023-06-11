@@ -322,9 +322,8 @@ static VOICELIST Voice_Pool;
 
 static CHANNEL   Channel[ NUM_CHANNELS ];
 
-#define AL_LeftPort   0x388
-#define AL_RightPort  AL_LeftPort
-#define AL_Stereo     FALSE
+#define AL_LeftPort   ADLIB_PORT
+#define AL_RightPort  ADLIB_PORT
 static int AL_SendStereo = FALSE;
 
 #define AL_MaxMidiChannel 16
@@ -945,44 +944,6 @@ static void AL_FlushCard
 
 
 /*---------------------------------------------------------------------
-   Function: AL_StereoOn
-
-   Sets the card send info in stereo.
----------------------------------------------------------------------*/
-
-static void AL_StereoOn
-   (
-   void
-   )
-
-   {
-   if ( ( AL_Stereo ) && ( !AL_SendStereo ) )
-      {
-      AL_SendStereo = TRUE;
-      }
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: AL_StereoOff
-
-   Sets the card send info in mono.
----------------------------------------------------------------------*/
-
-static void AL_StereoOff
-   (
-   void
-   )
-
-   {
-   if ( ( AL_Stereo ) && ( AL_SendStereo ) )
-      {
-      AL_SendStereo = FALSE;
-      }
-   }
-
-
-/*---------------------------------------------------------------------
    Function: AL_Reset
 
    Sets the card to a known (quiet) state.
@@ -999,8 +960,6 @@ static void AL_Reset
 
    // Set the values: AM Depth, VIB depth & Rhythm
    AL_SendOutputToPort( ADLIB_PORT, 0xBD, 0 );
-
-   AL_StereoOn();
 
    if (AL_SendStereo)
       {
@@ -1339,8 +1298,6 @@ void AL_Shutdown
    )
 
    {
-   AL_StereoOff();
-
    AL_ResetVoices();
    AL_Reset();
    }
