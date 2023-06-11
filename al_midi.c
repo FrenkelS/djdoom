@@ -322,9 +322,6 @@ static VOICELIST Voice_Pool;
 
 static CHANNEL   Channel[ NUM_CHANNELS ];
 
-#define AL_LeftPort   ADLIB_PORT
-#define AL_RightPort  ADLIB_PORT
-
 #define AL_MaxMidiChannel 16
 
 
@@ -371,16 +368,12 @@ static void AL_SendOutputToPort
 
 static void AL_SendOutput
    (
-   int  voice,
    int  reg,
    int  data
    )
 
    {
-   int port;
-
-   port = ( voice == 0 ) ? AL_RightPort : AL_LeftPort;
-   AL_SendOutputToPort( port, reg, data );
+   AL_SendOutputToPort( ADLIB_PORT, reg, data );
    }
 
 
@@ -431,18 +424,18 @@ static void AL_SetVoiceTimbre
    VoiceLevel[ slot ][ port ] = 63 - ( timbre->Level[ 0 ] & 0x3f );
    VoiceKsl[ slot ][ port ]   = timbre->Level[ 0 ] & 0xc0;
 
-   AL_SendOutput( port, 0xA0 + voc, 0 );
-   AL_SendOutput( port, 0xB0 + voc, 0 );
+   AL_SendOutput( 0xA0 + voc, 0 );
+   AL_SendOutput( 0xB0 + voc, 0 );
 
    // Let voice clear the release
-   AL_SendOutput( port, 0x80 + off, 0xff );
+   AL_SendOutput( 0x80 + off, 0xff );
 
-   AL_SendOutput( port, 0x60 + off, timbre->Env1[ 0 ] );
-   AL_SendOutput( port, 0x80 + off, timbre->Env2[ 0 ] );
-   AL_SendOutput( port, 0x20 + off, timbre->SAVEK[ 0 ] );
-   AL_SendOutput( port, 0xE0 + off, timbre->Wave[ 0 ] );
+   AL_SendOutput( 0x60 + off, timbre->Env1[ 0 ] );
+   AL_SendOutput( 0x80 + off, timbre->Env2[ 0 ] );
+   AL_SendOutput( 0x20 + off, timbre->SAVEK[ 0 ] );
+   AL_SendOutput( 0xE0 + off, timbre->Wave[ 0 ] );
 
-   AL_SendOutput( port, 0x40 + off, timbre->Level[ 0 ] );
+   AL_SendOutput( 0x40 + off, timbre->Level[ 0 ] );
    slot = slotVoice[ voc ][ 1 ];
 
    AL_SendOutputToPort( ADLIB_PORT, 0xC0 + voice, timbre->Feedback );
@@ -451,15 +444,15 @@ static void AL_SetVoiceTimbre
 
    VoiceLevel[ slot ][ port ] = 63 - ( timbre->Level[ 1 ] & 0x3f );
    VoiceKsl[ slot ][ port ]   = timbre->Level[ 1 ] & 0xc0;
-   AL_SendOutput( port, 0x40 + off, 63 );
+   AL_SendOutput( 0x40 + off, 63 );
 
    // Let voice clear the release
-   AL_SendOutput( port, 0x80 + off, 0xff );
+   AL_SendOutput( 0x80 + off, 0xff );
 
-   AL_SendOutput( port, 0x60 + off, timbre->Env1[ 1 ] );
-   AL_SendOutput( port, 0x80 + off, timbre->Env2[ 1 ] );
-   AL_SendOutput( port, 0x20 + off, timbre->SAVEK[ 1 ] );
-   AL_SendOutput( port, 0xE0 + off, timbre->Wave[ 1 ] );
+   AL_SendOutput( 0x60 + off, timbre->Env1[ 1 ] );
+   AL_SendOutput( 0x80 + off, timbre->Env2[ 1 ] );
+   AL_SendOutput( 0x20 + off, timbre->SAVEK[ 1 ] );
+   AL_SendOutput( 0xE0 + off, timbre->Wave[ 1 ] );
    }
 
 
@@ -505,7 +498,7 @@ static void AL_SetVoiceVolume
    volume  = t1 ^ 63;
    volume |= ( unsigned )VoiceKsl[ slot ][ port ];
 
-   AL_SendOutput( port, 0x40 + offsetSlot[ slot ], volume );
+   AL_SendOutput( 0x40 + offsetSlot[ slot ], volume );
 
    // Check if this timbre is Additive
    if ( timbre->Feedback & 0x01 )
@@ -520,7 +513,7 @@ static void AL_SetVoiceVolume
       volume  = t2 ^ 63;
       volume |= ( unsigned )VoiceKsl[ slot ][ port ];
 
-      AL_SendOutput( port, 0x40 + offsetSlot[ slot ], volume );
+      AL_SendOutput( 0x40 + offsetSlot[ slot ], volume );
       }
    }
 
@@ -600,10 +593,8 @@ static void AL_SetVoicePitch
    int ScaleNote;
    int Octave;
    int pitch;
-   int port;
    int voc;
 
-   port = Voice[ voice ].port;
    voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
    channel = Voice[ voice ].channel;
 
@@ -640,8 +631,8 @@ static void AL_SetVoicePitch
 
    pitch |= Voice[ voice ].status;
 
-   AL_SendOutput( port, 0xA0 + voc, pitch );
-   AL_SendOutput( port, 0xB0 + voc, pitch >> 8 );
+   AL_SendOutput( 0xA0 + voc, pitch );
+   AL_SendOutput( 0xB0 + voc, pitch >> 8 );
    }
 
 
@@ -860,7 +851,6 @@ void AL_NoteOff
 
    {
    int voice;
-   int port;
    int voc;
 
    UNUSED(velocity);
@@ -880,10 +870,9 @@ void AL_NoteOff
 
    Voice[ voice ].status = NOTE_OFF;
 
-   port = Voice[ voice ].port;
    voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
 
-   AL_SendOutput( port, 0xB0 + voc, HIBYTE( Voice[ voice ].pitchleft ) );
+   AL_SendOutput( 0xB0 + voc, HIBYTE( Voice[ voice ].pitchleft ) );
 
    LL_Remove( VOICE, &Channel[ channel ].Voices, &Voice[ voice ] );
    LL_AddToTail( VOICE, &Voice_Pool, &Voice[ voice ] );
