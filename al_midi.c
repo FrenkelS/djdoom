@@ -326,41 +326,6 @@ static CHANNEL   Channel[ NUM_CHANNELS ];
 
 
 /*---------------------------------------------------------------------
-   Function: AL_SendOutputToPort
-
-   Sends data to the Adlib using a specified port.
----------------------------------------------------------------------*/
-
-static void AL_SendOutputToPort
-   (
-   int  port,
-   int  reg,
-   int  data
-   )
-
-   {
-   int delay;
-
-   outp( port, reg );
-
-   for( delay = 6; delay > 0 ; delay-- )
-//   for( delay = 2; delay > 0 ; delay-- )
-      {
-      inp( port );
-      }
-
-   outp( port + 1, data );
-
-//   for( delay = 35; delay > 0 ; delay-- )
-   for( delay = 27; delay > 0 ; delay-- )
-//   for( delay = 2; delay > 0 ; delay-- )
-      {
-      inp( port );
-      }
-   }
-
-
-/*---------------------------------------------------------------------
    Function: AL_SendOutput
 
    Sends data to the Adlib.
@@ -373,7 +338,24 @@ static void AL_SendOutput
    )
 
    {
-   AL_SendOutputToPort( ADLIB_PORT, reg, data );
+   int delay;
+
+   outp( ADLIB_PORT, reg );
+
+   for( delay = 6; delay > 0 ; delay-- )
+//   for( delay = 2; delay > 0 ; delay-- )
+      {
+      inp( ADLIB_PORT );
+      }
+
+   outp( ADLIB_PORT + 1, data );
+
+//   for( delay = 35; delay > 0 ; delay-- )
+   for( delay = 27; delay > 0 ; delay-- )
+//   for( delay = 2; delay > 0 ; delay-- )
+      {
+      inp( ADLIB_PORT );
+      }
    }
 
 
@@ -438,7 +420,7 @@ static void AL_SetVoiceTimbre
    AL_SendOutput( 0x40 + off, timbre->Level[ 0 ] );
    slot = slotVoice[ voc ][ 1 ];
 
-   AL_SendOutputToPort( ADLIB_PORT, 0xC0 + voice, timbre->Feedback );
+   AL_SendOutput( 0xC0 + voice, timbre->Feedback );
 
    off = offsetSlot[ slot ];
 
@@ -782,7 +764,7 @@ static void AL_CalcPitchInfo
 
 static void AL_FlushCard
    (
-   int port
+   void
    )
 
    {
@@ -795,21 +777,21 @@ static void AL_FlushCard
          slot1 = offsetSlot[ slotVoice[ i ][ 0 ] ];
          slot2 = offsetSlot[ slotVoice[ i ][ 1 ] ];
 
-         AL_SendOutputToPort( port, 0xA0 + i, 0 );
-         AL_SendOutputToPort( port, 0xB0 + i, 0 );
+         AL_SendOutput( 0xA0 + i, 0 );
+         AL_SendOutput( 0xB0 + i, 0 );
 
-         AL_SendOutputToPort( port, 0xE0 + slot1, 0 );
-         AL_SendOutputToPort( port, 0xE0 + slot2, 0 );
+         AL_SendOutput( 0xE0 + slot1, 0 );
+         AL_SendOutput( 0xE0 + slot2, 0 );
 
          // Set the envelope to be fast and quiet
-         AL_SendOutputToPort( port, 0x60 + slot1, 0xff );
-         AL_SendOutputToPort( port, 0x60 + slot2, 0xff );
-         AL_SendOutputToPort( port, 0x80 + slot1, 0xff );
-         AL_SendOutputToPort( port, 0x80 + slot2, 0xff );
+         AL_SendOutput( 0x60 + slot1, 0xff );
+         AL_SendOutput( 0x60 + slot2, 0xff );
+         AL_SendOutput( 0x80 + slot1, 0xff );
+         AL_SendOutput( 0x80 + slot2, 0xff );
 
          // Maximum attenuation
-         AL_SendOutputToPort( port, 0x40 + slot1, 0xff );
-         AL_SendOutputToPort( port, 0x40 + slot2, 0xff );
+         AL_SendOutput( 0x40 + slot1, 0xff );
+         AL_SendOutput( 0x40 + slot2, 0xff );
       }
    }
 
@@ -826,13 +808,13 @@ static void AL_Reset
    )
 
    {
-   AL_SendOutputToPort( ADLIB_PORT, 1, 0x20 );
-   AL_SendOutputToPort( ADLIB_PORT, 0x08, 0 );
+   AL_SendOutput( 1, 0x20 );
+   AL_SendOutput( 0x08, 0 );
 
    // Set the values: AM Depth, VIB depth & Rhythm
-   AL_SendOutputToPort( ADLIB_PORT, 0xBD, 0 );
+   AL_SendOutput( 0xBD, 0 );
 
-   AL_FlushCard( ADLIB_PORT );
+   AL_FlushCard();
    }
 
 
@@ -1115,13 +1097,13 @@ int32_t AL_DetectFM
    int status2;
    int i;
 
-   AL_SendOutputToPort( ADLIB_PORT, 4, 0x60 );   // Reset T1 & T2
-   AL_SendOutputToPort( ADLIB_PORT, 4, 0x80 );   // Reset IRQ
+   AL_SendOutput( 4, 0x60 );   // Reset T1 & T2
+   AL_SendOutput( 4, 0x80 );   // Reset IRQ
 
    status1 = inp( ADLIB_PORT );
 
-   AL_SendOutputToPort( ADLIB_PORT, 2, 0xff );   // Set timer 1
-   AL_SendOutputToPort( ADLIB_PORT, 4, 0x21 );   // Start timer 1
+   AL_SendOutput( 2, 0xff );   // Set timer 1
+   AL_SendOutput( 4, 0x21 );   // Start timer 1
 
    for( i = 100; i > 0; i-- )
       {
@@ -1130,8 +1112,8 @@ int32_t AL_DetectFM
 
    status2 = inp( ADLIB_PORT );
 
-   AL_SendOutputToPort( ADLIB_PORT, 4, 0x60 );
-   AL_SendOutputToPort( ADLIB_PORT, 4, 0x80 );
+   AL_SendOutput( 4, 0x60 );
+   AL_SendOutput( 4, 0x80 );
 
    return( ( ( status1 & 0xe0 ) == 0x00 ) && ( ( status2 & 0xe0 ) == 0xc0 ) );
    }
