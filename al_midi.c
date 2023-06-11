@@ -106,7 +106,6 @@ typedef struct VOICE
    unsigned pitchleft;
    unsigned pitchright;
    int      timbre;
-   int      port;
    unsigned status;
    } VOICE;
 
@@ -304,8 +303,8 @@ static const int slotVoice[ NUM_VOICES ][ 2 ] =
       { 14, 17 },  // 8
    };
 
-static int VoiceLevel[ NumChipSlots ][ 2 ];
-static int VoiceKsl[ NumChipSlots ][ 2 ];
+static int VoiceLevel[ NumChipSlots ];
+static int VoiceKsl[ NumChipSlots ];
 
 // This table gives the offset of each slot within the chip.
 // offset = fn( slot)
@@ -343,16 +342,13 @@ static void AL_SendOutput
    outp( ADLIB_PORT, reg );
 
    for( delay = 6; delay > 0 ; delay-- )
-//   for( delay = 2; delay > 0 ; delay-- )
       {
       inp( ADLIB_PORT );
       }
 
    outp( ADLIB_PORT + 1, data );
 
-//   for( delay = 35; delay > 0 ; delay-- )
    for( delay = 27; delay > 0 ; delay-- )
-//   for( delay = 2; delay > 0 ; delay-- )
       {
       inp( ADLIB_PORT );
       }
@@ -373,7 +369,6 @@ static void AL_SetVoiceTimbre
    {
    int    off;
    int    slot;
-   int    port;
    int    voc;
    int    patch;
    int    channel;
@@ -398,13 +393,12 @@ static void AL_SetVoiceTimbre
    Voice[ voice ].timbre = patch;
    timbre = &ADLIB_TimbreBank[ patch ];
 
-   port = Voice[ voice ].port;
    voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
    slot = slotVoice[ voc ][ 0 ];
    off  = offsetSlot[ slot ];
 
-   VoiceLevel[ slot ][ port ] = 63 - ( timbre->Level[ 0 ] & 0x3f );
-   VoiceKsl[ slot ][ port ]   = timbre->Level[ 0 ] & 0xc0;
+   VoiceLevel[ slot ] = 63 - ( timbre->Level[ 0 ] & 0x3f );
+   VoiceKsl[ slot ]   = timbre->Level[ 0 ] & 0xc0;
 
    AL_SendOutput( 0xA0 + voc, 0 );
    AL_SendOutput( 0xB0 + voc, 0 );
@@ -424,8 +418,8 @@ static void AL_SetVoiceTimbre
 
    off = offsetSlot[ slot ];
 
-   VoiceLevel[ slot ][ port ] = 63 - ( timbre->Level[ 1 ] & 0x3f );
-   VoiceKsl[ slot ][ port ]   = timbre->Level[ 1 ] & 0xc0;
+   VoiceLevel[ slot ] = 63 - ( timbre->Level[ 1 ] & 0x3f );
+   VoiceKsl[ slot ]   = timbre->Level[ 1 ] & 0xc0;
    AL_SendOutput( 0x40 + off, 63 );
 
    // Let voice clear the release
@@ -453,7 +447,6 @@ static void AL_SetVoiceVolume
    int channel;
    int velocity;
    int slot;
-   int port;
    int voc;
    unsigned long t1;
    unsigned long t2;
@@ -470,15 +463,14 @@ static void AL_SetVoiceVolume
 
    voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
    slot = slotVoice[ voc ][ 1 ];
-   port = Voice[ voice ].port;
 
    // amplitude
-   t1  = ( unsigned )VoiceLevel[ slot ][ port ];
+   t1  = ( unsigned )VoiceLevel[ slot ];
    t1 *= ( velocity + 0x80 );
    t1  = ( Channel[ channel ].Volume * t1 ) >> 15;
 
    volume  = t1 ^ 63;
-   volume |= ( unsigned )VoiceKsl[ slot ][ port ];
+   volume |= ( unsigned )VoiceKsl[ slot ];
 
    AL_SendOutput( 0x40 + offsetSlot[ slot ], volume );
 
@@ -488,12 +480,12 @@ static void AL_SetVoiceVolume
       slot = slotVoice[ voc ][ 0 ];
 
       // amplitude
-      t2  = ( unsigned )VoiceLevel[ slot ][ port ];
+      t2  = ( unsigned )VoiceLevel[ slot ];
       t2 *= ( velocity + 0x80 );
       t2  = ( Channel[ channel ].Volume * t1 ) >> 15;
 
       volume  = t2 ^ 63;
-      volume |= ( unsigned )VoiceKsl[ slot ][ port ];
+      volume |= ( unsigned )VoiceKsl[ slot ];
 
       AL_SendOutput( 0x40 + offsetSlot[ slot ], volume );
       }
@@ -711,7 +703,6 @@ static void AL_ResetVoices
          Voice[ index ].velocity = 0;
          Voice[ index ].channel = -1;
          Voice[ index ].timbre = -1;
-         Voice[ index ].port = 0;
          Voice[ index ].status = NOTE_OFF;
          LL_AddToTail( VOICE, &Voice_Pool, &Voice[ index ] );
       }
