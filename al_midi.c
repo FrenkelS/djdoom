@@ -326,7 +326,6 @@ static CHANNEL   Channel[ NUM_CHANNELS ];
 #define AL_RightPort  AL_LeftPort
 #define AL_Stereo     FALSE
 static int AL_SendStereo = FALSE;
-#define AL_OPL3       FALSE
 
 #define AL_MaxMidiChannel 16
 
@@ -465,15 +464,7 @@ static void AL_SetVoiceTimbre
       }
    else
       {
-      if ( AL_OPL3 )
-         {
-         AL_SendOutput( port, 0xC0 + voc, ( timbre->Feedback & 0x0f ) |
-            0x30 );
-         }
-      else
-         {
          AL_SendOutputToPort( ADLIB_PORT, 0xC0 + voice, timbre->Feedback );
-         }
       }
 
    off = offsetSlot[ slot ];
@@ -857,24 +848,18 @@ static void AL_ResetVoices
 
    {
    int index;
-   int numvoices;
 
    Voice_Pool.start = NULL;
    Voice_Pool.end = NULL;
 
-   numvoices = NUM_VOICES;
-   if ( ( AL_OPL3 ) && ( !AL_Stereo ) )
-      {
-      numvoices = NUM_VOICES * 2;
-      }
-   for( index = 0; index < numvoices; index++ )
+   for( index = 0; index < NUM_VOICES; index++ )
       {
          Voice[ index ].num = index;
          Voice[ index ].key = 0;
          Voice[ index ].velocity = 0;
          Voice[ index ].channel = -1;
          Voice[ index ].timbre = -1;
-         Voice[ index ].port = ( index < NUM_VOICES ) ? 0 : 1;
+         Voice[ index ].port = 0;
          Voice[ index ].status = NOTE_OFF;
          LL_AddToTail( VOICE, &Voice_Pool, &Voice[ index ] );
       }
@@ -974,16 +959,6 @@ static void AL_StereoOn
    if ( ( AL_Stereo ) && ( !AL_SendStereo ) )
       {
       AL_SendStereo = TRUE;
-      if ( AL_OPL3 )
-         {
-         // Set card to OPL3 operation
-         AL_SendOutputToPort( AL_RightPort, 0x5, 1 );
-         }
-      }
-   else if ( AL_OPL3 )
-      {
-      // Set card to OPL3 operation
-      AL_SendOutputToPort( AL_RightPort, 0x5, 1 );
       }
    }
 
@@ -1003,16 +978,6 @@ static void AL_StereoOff
    if ( ( AL_Stereo ) && ( AL_SendStereo ) )
       {
       AL_SendStereo = FALSE;
-      if ( AL_OPL3 )
-         {
-         // Set card back to OPL2 operation
-         AL_SendOutputToPort( AL_RightPort, 0x5, 0 );
-         }
-      }
-   else if ( AL_OPL3 )
-      {
-      // Set card back to OPL2 operation
-      AL_SendOutputToPort( AL_RightPort, 0x5, 0 );
       }
    }
 
@@ -1037,7 +1002,7 @@ static void AL_Reset
 
    AL_StereoOn();
 
-   if ( ( AL_SendStereo ) || ( AL_OPL3 ) )
+   if (AL_SendStereo)
       {
       AL_FlushCard( AL_LeftPort );
       AL_FlushCard( AL_RightPort );
