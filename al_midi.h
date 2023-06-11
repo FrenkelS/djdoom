@@ -36,21 +36,13 @@ enum AL_Errors
 
 #define ADLIB_PORT 0x388
 
-void AL_SendOutputToPort( int port, int reg, int data );
-void AL_SendOutput( int  voice, int reg, int data );
-void AL_StereoOn( void );
-void AL_StereoOff( void );
 int  AL_ReserveVoice( int voice );
 int  AL_ReleaseVoice( int voice );
 void AL_Shutdown( void );
-int  AL_Init( int soundcard );
+int  AL_Init( void );
 void AL_SetMaxMidiChannel( int channel );
-void AL_Reset( void );
 void AL_NoteOff( int32_t channel, int32_t key, int32_t velocity );
 void AL_NoteOn( int32_t channel, int32_t key, int32_t vel );
-//Turned off to test if it works with Watcom 10a
-//   #pragma aux AL_NoteOn frame;
-void AL_AllNotesOff( int channel );
 void AL_ControlChange( int32_t channel, int32_t type, int32_t data );
 void AL_ProgramChange( int32_t channel, int32_t patch );
 void AL_SetPitchBend( int32_t channel, int32_t lsb, int32_t msb );

@@ -1224,6 +1224,9 @@ static void _MIDI_InitEMIDI
    type = EMIDI_GeneralMIDI;
    switch( MUSIC_SoundDevice )
       {
+      case Adlib :
+         type = EMIDI_Adlib;
+         break;
       case GenMidi :
          type = EMIDI_GeneralMIDI;
          break;

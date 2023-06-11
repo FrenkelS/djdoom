@@ -390,7 +390,7 @@ static int AL_Stereo     = FALSE;
 static int AL_SendStereo = FALSE;
 static int AL_OPL3       = FALSE;
 
-static int AL_MaxMidiChannel = 16;
+#define AL_MaxMidiChannel 16
 
 
 /*---------------------------------------------------------------------
@@ -399,7 +399,7 @@ static int AL_MaxMidiChannel = 16;
    Sends data to the Adlib using a specified port.
 ---------------------------------------------------------------------*/
 
-void AL_SendOutputToPort
+static void AL_SendOutputToPort
    (
    int  port,
    int  reg,
@@ -434,7 +434,7 @@ void AL_SendOutputToPort
    Sends data to the Adlib.
 ---------------------------------------------------------------------*/
 
-void AL_SendOutput
+static void AL_SendOutput
    (
    int  voice,
    int  reg,
@@ -1001,7 +1001,7 @@ static void AL_CalcPitchInfo
    Sets all voices to a known (quiet) state.
 ---------------------------------------------------------------------*/
 
-void AL_FlushCard
+static void AL_FlushCard
    (
    int port
    )
@@ -1044,7 +1044,7 @@ void AL_FlushCard
    Sets the card send info in stereo.
 ---------------------------------------------------------------------*/
 
-void AL_StereoOn
+static void AL_StereoOn
    (
    void
    )
@@ -1073,7 +1073,7 @@ void AL_StereoOn
    Sets the card send info in mono.
 ---------------------------------------------------------------------*/
 
-void AL_StereoOff
+static void AL_StereoOff
    (
    void
    )
@@ -1102,7 +1102,7 @@ void AL_StereoOff
    Sets the card to a known (quiet) state.
 ---------------------------------------------------------------------*/
 
-void AL_Reset
+static void AL_Reset
    (
    void
    )
@@ -1129,81 +1129,6 @@ void AL_Reset
 
 
 /*---------------------------------------------------------------------
-   Function: AL_ReserveVoice
-
-   Marks a voice as being not available for use.  This allows the
-   driver to use the rest of the card while another driver uses the
-   reserved voice.
----------------------------------------------------------------------*/
-
-int AL_ReserveVoice
-   (
-   int voice
-   )
-
-   {
-   unsigned flags;
-
-   if ( ( voice < 0 ) || ( voice >= NUM_VOICES ) )
-      {
-      return( AL_Error );
-      }
-
-   if ( VoiceReserved[ voice ] )
-      {
-      return( AL_Warning );
-      }
-
-   flags = DisableInterrupts();
-
-   if ( Voice[ voice ].status == NOTE_ON )
-      {
-      AL_NoteOff( Voice[ voice ].channel, Voice[ voice ].key, 0 );
-      }
-
-   VoiceReserved[ voice ] = TRUE;
-   LL_Remove( VOICE, &Voice_Pool, &Voice[ voice ] );
-
-   RestoreInterrupts( flags );
-   return( AL_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: AL_ReleaseVoice
-
-   Marks a previously reserved voice as being free to use.
----------------------------------------------------------------------*/
-
-int AL_ReleaseVoice
-   (
-   int voice
-   )
-
-   {
-   unsigned flags;
-
-   if ( ( voice < 0 ) || ( voice >= NUM_VOICES ) )
-      {
-      return( AL_Error );
-      }
-
-   if ( !VoiceReserved[ voice ] )
-      {
-      return( AL_Warning );
-      }
-
-   flags = DisableInterrupts();
-
-   VoiceReserved[ voice ] = FALSE;
-   LL_AddToTail( VOICE, &Voice_Pool, &Voice[ voice ] );
-
-   RestoreInterrupts( flags );
-   return( AL_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: AL_NoteOff
 
    Turns off a note on the specified MIDI channel.
@@ -1220,6 +1145,8 @@ void AL_NoteOff
    int voice;
    int port;
    int voc;
+
+   UNUSED(velocity);
 
    // We only play channels 1 through 10
    if ( channel > AL_MaxMidiChannel )
@@ -1318,7 +1245,7 @@ void AL_NoteOn
    Turns off all currently playing voices.
 ---------------------------------------------------------------------*/
 
-void AL_AllNotesOff
+static void AL_AllNotesOff
    (
    int channel
    )
@@ -1535,22 +1462,6 @@ void AL_Shutdown
 
 
 /*---------------------------------------------------------------------
-   Function: AL_SetMaxMidiChannel
-
-   Sets the maximum MIDI channel that FM cards respond to.
----------------------------------------------------------------------*/
-
-void AL_SetMaxMidiChannel
-   (
-   int channel
-   )
-
-   {
-   AL_MaxMidiChannel = channel - 1;
-   }
-
-
-/*---------------------------------------------------------------------
    Function: AL_Init
 
    Begins use of the sound card.
@@ -1558,7 +1469,7 @@ void AL_SetMaxMidiChannel
 
 int AL_Init
    (
-   int soundcard
+   void
    )
 
    {

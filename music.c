@@ -44,8 +44,8 @@ int32_t MUSIC_SoundDevice = -1;
 
 static midifuncs MUSIC_MidiFunctions;
 
-static int32_t MUSIC_InitFM( int32_t card, midifuncs *Funcs );
-static int32_t MUSIC_InitMidi(int32_t card, midifuncs *Funcs, int32_t Address);
+static int32_t MUSIC_InitFM(midifuncs *Funcs);
+static int32_t MUSIC_InitMidi(midifuncs *Funcs, int32_t Address);
 
 /*---------------------------------------------------------------------
    Function: MUSIC_Init
@@ -55,18 +55,18 @@ static int32_t MUSIC_InitMidi(int32_t card, midifuncs *Funcs, int32_t Address);
 
 int32_t MUSIC_Init(int32_t SoundCard, int32_t Address)
 {
-	int32_t status = MUSIC_Ok;
+	int32_t status;
 
 	MUSIC_SoundDevice = SoundCard;
 
 	switch (SoundCard)
 	{
 		case Adlib:
-			status = MUSIC_InitFM(SoundCard, &MUSIC_MidiFunctions);
+			status = MUSIC_InitFM(&MUSIC_MidiFunctions);
 			break;
 
 		case GenMidi:
-			status = MUSIC_InitMidi(SoundCard, &MUSIC_MidiFunctions, Address);
+			status = MUSIC_InitMidi(&MUSIC_MidiFunctions, Address);
 			break;
 
 		default :
@@ -184,7 +184,6 @@ int32_t MUSIC_PlaySong(uint8_t *song, int32_t loopflag)
 
 static int32_t MUSIC_InitFM
    (
-   int32_t card,
    midifuncs *Funcs
    )
 
@@ -195,7 +194,7 @@ static int32_t MUSIC_InitFM
       }
 
    // Init the fm routines
-   AL_Init( card );
+   AL_Init();
 
    Funcs->NoteOff           = AL_NoteOff;
    Funcs->NoteOn            = AL_NoteOn;
@@ -207,24 +206,15 @@ static int32_t MUSIC_InitFM
    Funcs->SetVolume         = NULL;
    Funcs->GetVolume         = NULL;
 
-   switch( card )
-      {
-      case Adlib :
-         Funcs->SetVolume = NULL;
-         Funcs->GetVolume = NULL;
-         break;
-      }
-
    MIDI_SetMidiFuncs( Funcs );
 
    return MIDI_Ok;
    }
 
 
-static int32_t MUSIC_InitMidi(int32_t card, midifuncs *Funcs, int32_t Address)
+static int32_t MUSIC_InitMidi(midifuncs *Funcs, int32_t Address)
 {
-	if (card == GenMidi)
-		BLASTER_SetupWaveBlaster();
+	BLASTER_SetupWaveBlaster();
 
 	if (MPU_Init(Address) != MPU_Ok)
 		return MUSIC_Error;
