@@ -41,6 +41,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "al_midi.h"
 
 
+#define AL_MaxVolume             127
+#define AL_DefaultChannelVolume  90
+#define AL_DefaultPitchBendRange 200
+
+#define ADLIB_PORT 0x388
+
+
 #define STEREO_DETUNE 5
 
 #define lobyte( num )   ( ( unsigned )*( ( char * )&( num ) ) )
@@ -1409,7 +1416,7 @@ void AL_SetPitchBend
    Determines if an Adlib compatible card is installed in the machine.
 ---------------------------------------------------------------------*/
 
-int AL_DetectFM
+int32_t AL_DetectFM
    (
    void
    )
@@ -1467,7 +1474,7 @@ void AL_Shutdown
    Begins use of the sound card.
 ---------------------------------------------------------------------*/
 
-int AL_Init
+void AL_Init
    (
    void
    )
@@ -1481,8 +1488,6 @@ int AL_Init
    AL_CalcPitchInfo();
    AL_Reset();
    AL_ResetVoices();
-
-   return( AL_Ok );
    }
 
 
@@ -1494,7 +1499,7 @@ int AL_Init
 
 void AL_RegisterTimbreBank
    (
-   unsigned char *timbres
+   uint8_t *timbres
    )
 
    {
