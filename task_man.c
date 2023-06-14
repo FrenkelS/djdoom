@@ -58,8 +58,8 @@ static uint32_t OldInt8offset;
 static void (_interrupt _far *OldInt8)(void);
 #endif
 
-static volatile long TaskServiceRate  = 0x10000L;
-static volatile long TaskServiceCount = 0;
+static volatile int32_t TaskServiceRate  = 0x10000L;
+static volatile int32_t TaskServiceCount = 0;
 
 static boolean TS_Installed = false;
 

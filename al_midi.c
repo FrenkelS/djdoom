@@ -319,7 +319,7 @@ static const char offsetSlot[ NumChipSlots ] =
 static VOICE     Voice[ NUM_VOICES * 2 ];
 static VOICELIST Voice_Pool;
 
-static CHANNEL   Channel[ NUM_CHANNELS ];
+static volatile CHANNEL   Channel[ NUM_CHANNELS ];
 
 #define AL_MaxMidiChannel 16
 
