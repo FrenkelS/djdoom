@@ -449,7 +449,6 @@ static void AL_SetVoiceVolume
    int slot;
    int voc;
    unsigned long t1;
-   unsigned long t2;
    unsigned long volume;
    TIMBRE *timbre;
 
@@ -480,11 +479,11 @@ static void AL_SetVoiceVolume
       slot = slotVoice[ voc ][ 0 ];
 
       // amplitude
-      t2  = ( unsigned )VoiceLevel[ slot ];
-      t2 *= ( velocity + 0x80 );
-      t2  = ( Channel[ channel ].Volume * t1 ) >> 15;
+      t1  = ( unsigned )VoiceLevel[ slot ];
+      t1 *= ( velocity + 0x80 );
+      t1  = ( Channel[ channel ].Volume * t1 ) >> 15;
 
-      volume  = t2 ^ 63;
+      volume  = t1 ^ 63;
       volume |= ( unsigned )VoiceKsl[ slot ];
 
       AL_SendOutput( 0x40 + offsetSlot[ slot ], volume );
