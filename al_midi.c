@@ -969,22 +969,5 @@ void AL_Init(void)
 
 void AL_RegisterTimbreBank(uint8_t *timbres)
 {
-	int i;
-
-	for (i = 0; i < 256; i++)
-	{
-		ADLIB_TimbreBank[i].SAVEK[0]  = *(timbres++);
-		ADLIB_TimbreBank[i].SAVEK[1]  = *(timbres++);
-		ADLIB_TimbreBank[i].Level[0]  = *(timbres++);
-		ADLIB_TimbreBank[i].Level[1]  = *(timbres++);
-		ADLIB_TimbreBank[i].Env1[0]   = *(timbres++);
-		ADLIB_TimbreBank[i].Env1[1]   = *(timbres++);
-		ADLIB_TimbreBank[i].Env2[0]   = *(timbres++);
-		ADLIB_TimbreBank[i].Env2[1]   = *(timbres++);
-		ADLIB_TimbreBank[i].Wave[0]   = *(timbres++);
-		ADLIB_TimbreBank[i].Wave[1]   = *(timbres++);
-		ADLIB_TimbreBank[i].Feedback  = *(timbres++);
-		ADLIB_TimbreBank[i].Transpose = *(signed char *)(timbres++);
-		ADLIB_TimbreBank[i].Velocity  = *(signed char *)(timbres++);
-	}
+	memcpy(ADLIB_TimbreBank, timbres, sizeof(ADLIB_TimbreBank));
 }

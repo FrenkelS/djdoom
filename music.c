@@ -55,25 +55,19 @@ static int32_t MUSIC_InitMidi(midifuncs *Funcs, int32_t Address);
 
 int32_t MUSIC_Init(int32_t SoundCard, int32_t Address)
 {
-	int32_t status;
-
 	MUSIC_SoundDevice = SoundCard;
 
 	switch (SoundCard)
 	{
 		case Adlib:
-			status = MUSIC_InitFM(&MUSIC_MidiFunctions);
-			break;
+			return MUSIC_InitFM(&MUSIC_MidiFunctions);
 
 		case GenMidi:
-			status = MUSIC_InitMidi(&MUSIC_MidiFunctions, Address);
-			break;
+			return MUSIC_InitMidi(&MUSIC_MidiFunctions, Address);
 
 		default :
-			status = MUSIC_Error;
+			return MUSIC_Error;
 	}
-
-	return status;
 }
 
 
@@ -182,34 +176,28 @@ int32_t MUSIC_PlaySong(uint8_t *song, int32_t loopflag)
 }
 
 
-static int32_t MUSIC_InitFM
-   (
-   midifuncs *Funcs
-   )
+static int32_t MUSIC_InitFM(midifuncs *Funcs)
+{
+	if (!AL_DetectFM())
+		return MUSIC_Error;
 
-   {
-   if ( !AL_DetectFM() )
-      {
-      return( MUSIC_Error );
-      }
+	// Init the fm routines
+	AL_Init();
 
-   // Init the fm routines
-   AL_Init();
+	Funcs->NoteOff           = AL_NoteOff;
+	Funcs->NoteOn            = AL_NoteOn;
+	Funcs->PolyAftertouch    = NULL;
+	Funcs->ControlChange     = AL_ControlChange;
+	Funcs->ProgramChange     = AL_ProgramChange;
+	Funcs->ChannelAftertouch = NULL;
+	Funcs->PitchBend         = AL_SetPitchBend;
+	Funcs->SetVolume         = NULL;
+	Funcs->GetVolume         = NULL;
 
-   Funcs->NoteOff           = AL_NoteOff;
-   Funcs->NoteOn            = AL_NoteOn;
-   Funcs->PolyAftertouch    = NULL;
-   Funcs->ControlChange     = AL_ControlChange;
-   Funcs->ProgramChange     = AL_ProgramChange;
-   Funcs->ChannelAftertouch = NULL;
-   Funcs->PitchBend         = AL_SetPitchBend;
-   Funcs->SetVolume         = NULL;
-   Funcs->GetVolume         = NULL;
+	MIDI_SetMidiFuncs(Funcs);
 
-   MIDI_SetMidiFuncs( Funcs );
-
-   return MIDI_Ok;
-   }
+	return MUSIC_Ok;
+}
 
 
 static int32_t MUSIC_InitMidi(midifuncs *Funcs, int32_t Address)
