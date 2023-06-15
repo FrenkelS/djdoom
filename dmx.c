@@ -17,8 +17,10 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
+#include "al_midi.h"
 #include "doomdef.h"
 #include "dmx.h"
+#include "mpu401.h"
 #include "music.h"
 #include "pcfx.h"
 #include "sndcards.h"
@@ -254,10 +256,8 @@ int32_t MPU_Detect(int32_t *mPort, int32_t *type)
 
 	if (mPort == NULL)
 		return -1;
-	else {
-		extern int32_t MPU_Init(int32_t addr);
+	else
 		return MPU_Init(*mPort);
-	}
 }
 
 void MPU_SetCard(int32_t mPort)
