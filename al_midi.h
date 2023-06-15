@@ -18,26 +18,19 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-/**********************************************************************
-   module: SNDCARDS.H
+#ifndef __AL_MIDI_H
+#define __AL_MIDI_H
 
-   author: James R. Dose
-   date:   March 31, 1994
+#include <stdint.h>
 
-   Contains enumerated type definitions for sound cards.
-
-   (c) Copyright 1994 James R. Dose.  All Rights Reserved.
-**********************************************************************/
-
-#ifndef __SNDCARDS_H
-#define __SNDCARDS_H
-
-typedef enum
-{
-	Adlib,
-	GenMidi,
-	PC,
-	NumSoundCards
-} soundcardnames;
+void AL_Shutdown(void);
+void AL_Init(void);
+void AL_NoteOff(int32_t channel, int32_t key, int32_t velocity);
+void AL_NoteOn(int32_t channel, int32_t key, int32_t velocity);
+void AL_ControlChange(int32_t channel, int32_t type, int32_t data);
+void AL_ProgramChange(int32_t channel, int32_t patch);
+void AL_SetPitchBend(int32_t channel, int32_t lsb, int32_t msb);
+int32_t AL_DetectFM(void);
+void AL_RegisterTimbreBank(uint8_t *timbres);
 
 #endif
