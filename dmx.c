@@ -196,56 +196,55 @@ int32_t AL_Detect(int32_t *wait, int32_t *type)
 
 void AL_SetCard(int32_t wait, void *data)
 {
-    unsigned char *cdata;
-    unsigned char *tmb;
-    int i;
+	unsigned char *cdata;
+	unsigned char *tmb;
+	int i;
 
 	UNUSED(wait);
 
 	cdata = (unsigned char *)data;
-    tmb = malloc(13 * 256);
-    if (!tmb)
-    {
-        return;
-    }
-    memset(tmb, 0, 13 * 256);
-    for (i = 0; i < 128; i++)
-    {
-        tmb[i * 13 + 0] = cdata[8 + i * 36 + 4 + 0];
-        tmb[i * 13 + 1] = cdata[8 + i * 36 + 4 + 7];
-        tmb[i * 13 + 2] = cdata[8 + i * 36 + 4 + 4]
-                        | cdata[8 + i * 36 + 4 + 5];
-        tmb[i * 13 + 3] = cdata[8 + i * 36 + 4 + 11] & 192;
-        tmb[i * 13 + 4] = cdata[8 + i * 36 + 4 + 1];
-        tmb[i * 13 + 5] = cdata[8 + i * 36 + 4 + 8];
-        tmb[i * 13 + 6] = cdata[8 + i * 36 + 4 + 2];
-        tmb[i * 13 + 7] = cdata[8 + i * 36 + 4 + 9];
-        tmb[i * 13 + 8] = cdata[8 + i * 36 + 4 + 3];
-        tmb[i * 13 + 9] = cdata[8 + i * 36 + 4 + 10];
-        tmb[i * 13 + 10] = cdata[8 + i * 36 + 4 + 6];
-        tmb[i * 13 + 11] = cdata[8 + i * 36 + 4 + 14] + 12;
-        tmb[i * 13 + 12] = 0;
-    }
-    for (i = 128; i < 175; i++)
-    {
-        tmb[(i + 35) * 13 + 0] = cdata[8 + i * 36 + 4 + 0];
-        tmb[(i + 35) * 13 + 1] = cdata[8 + i * 36 + 4 + 7];
-        tmb[(i + 35) * 13 + 2] = cdata[8 + i * 36 + 4 + 4]
-                               | cdata[8 + i * 36 + 4 + 5];
-        tmb[(i + 35) * 13 + 3] = cdata[8 + i * 36 + 4 + 11] & 192;
-        tmb[(i + 35) * 13 + 4] = cdata[8 + i * 36 + 4 + 1];
-        tmb[(i + 35) * 13 + 5] = cdata[8 + i * 36 + 4 + 8];
-        tmb[(i + 35) * 13 + 6] = cdata[8 + i * 36 + 4 + 2];
-        tmb[(i + 35) * 13 + 7] = cdata[8 + i * 36 + 4 + 9];
-        tmb[(i + 35) * 13 + 8] = cdata[8 + i * 36 + 4 + 3];
-        tmb[(i + 35) * 13 + 9] = cdata[8 + i * 36 + 4 + 10];
-        tmb[(i + 35) * 13 + 10] = cdata[8 + i * 36 + 4 + 6];
-        tmb[(i + 35) * 13 + 11] = cdata[8 + i * 36 + 3]
-                                + cdata[8 + i * 36 + 4 + 14] + 12;
-        tmb[(i + 35) * 13 + 12] = 0;
-    }
-    AL_RegisterTimbreBank(tmb);
-    free(tmb);
+	tmb = malloc(13 * 256);
+	if (!tmb)
+		return;
+
+	memset(tmb, 0, 13 * 256);
+	for (i = 0; i < 128; i++)
+	{
+		tmb[i * 13 + 0] = cdata[8 + i * 36 + 4 + 0];
+		tmb[i * 13 + 1] = cdata[8 + i * 36 + 4 + 7];
+		tmb[i * 13 + 2] = cdata[8 + i * 36 + 4 + 4]
+		                | cdata[8 + i * 36 + 4 + 5];
+		tmb[i * 13 + 3] = cdata[8 + i * 36 + 4 + 11] & 192;
+		tmb[i * 13 + 4] = cdata[8 + i * 36 + 4 + 1];
+		tmb[i * 13 + 5] = cdata[8 + i * 36 + 4 + 8];
+		tmb[i * 13 + 6] = cdata[8 + i * 36 + 4 + 2];
+		tmb[i * 13 + 7] = cdata[8 + i * 36 + 4 + 9];
+		tmb[i * 13 + 8] = cdata[8 + i * 36 + 4 + 3];
+		tmb[i * 13 + 9] = cdata[8 + i * 36 + 4 + 10];
+		tmb[i * 13 + 10] = cdata[8 + i * 36 + 4 + 6];
+		tmb[i * 13 + 11] = cdata[8 + i * 36 + 4 + 14] + 12;
+		tmb[i * 13 + 12] = 0;
+	}
+	for (i = 128; i < 175; i++)
+	{
+		tmb[(i + 35) * 13 + 0] = cdata[8 + i * 36 + 4 + 0];
+		tmb[(i + 35) * 13 + 1] = cdata[8 + i * 36 + 4 + 7];
+		tmb[(i + 35) * 13 + 2] = cdata[8 + i * 36 + 4 + 4]
+		                       | cdata[8 + i * 36 + 4 + 5];
+		tmb[(i + 35) * 13 + 3] = cdata[8 + i * 36 + 4 + 11] & 192;
+		tmb[(i + 35) * 13 + 4] = cdata[8 + i * 36 + 4 + 1];
+		tmb[(i + 35) * 13 + 5] = cdata[8 + i * 36 + 4 + 8];
+		tmb[(i + 35) * 13 + 6] = cdata[8 + i * 36 + 4 + 2];
+		tmb[(i + 35) * 13 + 7] = cdata[8 + i * 36 + 4 + 9];
+		tmb[(i + 35) * 13 + 8] = cdata[8 + i * 36 + 4 + 3];
+		tmb[(i + 35) * 13 + 9] = cdata[8 + i * 36 + 4 + 10];
+		tmb[(i + 35) * 13 + 10] = cdata[8 + i * 36 + 4 + 6];
+		tmb[(i + 35) * 13 + 11] = cdata[8 + i * 36 + 3]
+		                        + cdata[8 + i * 36 + 4 + 14] + 12;
+		tmb[(i + 35) * 13 + 12] = 0;
+	}
+	AL_RegisterTimbreBank(tmb);
+	free(tmb);
 }
 
 
