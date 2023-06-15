@@ -147,8 +147,8 @@ static task *TaskList = &HeadTask;
 
 static void ( __interrupt __far *OldInt8 )( void );
 
-static volatile long TaskServiceRate  = 0x10000L;
-static volatile long TaskServiceCount = 0;
+static volatile int32_t TaskServiceRate  = 0x10000L;
+static volatile int32_t TaskServiceCount = 0;
 
 #ifndef NOINTS
 static volatile int  TS_TimesInInterrupt;
