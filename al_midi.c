@@ -48,8 +48,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ADLIB_PORT 0x388
 
 
-#define STEREO_DETUNE 5
-
 #define AL_VoiceNotFound -1
 
 /* Number of slots for the voices on the chip */
@@ -80,19 +78,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIDI_DATAENTRY_LSB         38
 #define MIDI_PITCHBEND_RPN         0
 
-/* Definition of octave information to be ORed onto F-Number */
-
-enum octaves
-{
-	OCTAVE_0 = 0x0000,
-	OCTAVE_1 = 0x0400,
-	OCTAVE_2 = 0x0800,
-	OCTAVE_3 = 0x0C00,
-	OCTAVE_4 = 0x1000,
-	OCTAVE_5 = 0x1400,
-	OCTAVE_6 = 0x1800,
-	OCTAVE_7 = 0x1C00
-};
 
 typedef struct VOICE
 {
@@ -103,8 +88,7 @@ typedef struct VOICE
 	unsigned key;
 	unsigned velocity;
 	unsigned channel;
-	unsigned pitchleft;
-	unsigned pitchright;
+	unsigned pitch;
 	int      timbre;
 	unsigned status;
 } VOICE;
@@ -123,7 +107,6 @@ typedef struct
 	int       KeyOffset;
 	unsigned  KeyDetune;
 	unsigned  Volume;
-	unsigned  EffectiveVolume;
 	int       Pan;
 	int       Detune;
 	unsigned  RPN;
@@ -134,17 +117,17 @@ typedef struct
 
 typedef struct
 {
-	unsigned char SAVEK[ 2 ];
-	unsigned char Level[ 2 ];
-	unsigned char Env1[ 2 ];
-	unsigned char Env2[ 2 ];
-	unsigned char Wave[ 2 ];
+	unsigned char SAVEK[2];
+	unsigned char Level[2];
+	unsigned char Env1[2];
+	unsigned char Env2[2];
+	unsigned char Wave[2];
 	unsigned char Feedback;
 	signed   char Transpose;
 	signed   char Velocity;
 } TIMBRE;
 
-static TIMBRE ADLIB_TimbreBank[ 256 ];
+static TIMBRE ADLIB_TimbreBank[256];
 
 
 #define OFFSET(structure, offset) \
@@ -163,6 +146,14 @@ static void LL_AddNode(char *item, char **head, char **tail, int next, int prev)
 	*head = item;
 }
 
+#define LL_AddToTail(type, listhead, node)    \
+    LL_AddNode((char *)(node),                \
+               (char **)&((listhead)->end),   \
+               (char **)&((listhead)->start), \
+               (int)&((type *)0)->prev,       \
+               (int)&((type *)0)->next)
+
+
 static void LL_RemoveNode(char *item, char **head, char **tail, int next, int prev)
 {
 	if (OFFSET(item, prev) == NULL )
@@ -179,13 +170,6 @@ static void LL_RemoveNode(char *item, char **head, char **tail, int next, int pr
 	OFFSET(item, prev) = NULL;
 }
 
-#define LL_AddToTail(type, listhead, node)    \
-    LL_AddNode((char *)(node),                \
-               (char **)&((listhead)->end),   \
-               (char **)&((listhead)->start), \
-               (int)&((type *)0)->prev,       \
-               (int)&((type *)0)->next)
-
 #define LL_Remove(type, listhead, node)          \
     LL_RemoveNode((char *)(node),                \
                   (char **)&((listhead)->start), \
@@ -193,8 +177,20 @@ static void LL_RemoveNode(char *item, char **head, char **tail, int next, int pr
                   (int)&((type *)0)->next,       \
                   (int)&((type *)0)->prev)
 
-#define TRUE  ( 1 == 1 )
-#define FALSE ( !TRUE )
+
+/* Definition of octave information to be ORed onto F-Number */
+
+enum octaves
+{
+	OCTAVE_0 = 0x0000,
+	OCTAVE_1 = 0x0400,
+	OCTAVE_2 = 0x0800,
+	OCTAVE_3 = 0x0C00,
+	OCTAVE_4 = 0x1000,
+	OCTAVE_5 = 0x1400,
+	OCTAVE_6 = 0x1800,
+	OCTAVE_7 = 0x1C00
+};
 
 static const unsigned OctavePitch[MAX_OCTAVE + 1] =
 {
@@ -517,7 +513,7 @@ static void AL_SetVoicePitch(int voice)
 
 	pitch = OctavePitch[Octave] | NotePitch[detune][ScaleNote];
 
-	Voice[voice].pitchleft = pitch;
+	Voice[voice].pitch = pitch;
 
 	pitch |= Voice[voice].status;
 
@@ -718,7 +714,7 @@ void AL_NoteOff(int32_t channel, int32_t key, int32_t velocity)
 
 	voc = (voice >= NUM_VOICES) ? voice - NUM_VOICES : voice;
 
-	AL_SendOutput(0xB0 + voc, HIBYTE(Voice[voice].pitchleft));
+	AL_SendOutput(0xB0 + voc, HIBYTE(Voice[voice].pitch));
 
 	LL_Remove(VOICE, &Channel[channel].Voices, &Voice[voice]);
 	LL_AddToTail(VOICE, &Voice_Pool, &Voice[voice]);
