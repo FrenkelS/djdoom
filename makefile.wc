@@ -23,18 +23,32 @@
 #
 # --------------------------------------------------------------------------
 
-CCOPTS = -dAPPVER_EXEDEF=DM19 -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc -wx
+CCOPTS = -dAPPVER_EXEDEF=DM19 -dLIBVER_ASSREV=19960108 -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc -wx
 
 GLOBOBJS = &
  dmx.obj &
+ mus2mid.obj &
+ tsmapi.obj &
+# gmtimbre.obj &
  al_midi.obj &
+ awe32.obj &
  blastold.obj &
+ dma.obj &
+ fx_man.obj &
+ gus.obj &
+ gusmidi.obj &
+ guswave.obj &
+ irq.obj &
  midi.obj &
  mpu401.obj &
- mus2mid.obj &
+ multivoc.obj &
+ mv_mix.obj &
+ mv_mix16.obj &
+ mvreverb.obj &
  music.obj &
+ pas16.obj &
  pcfx.obj &
- tsmapi.obj &
+ pitch.obj &
  task_man.obj &
  i_main.obj &
  i_ibm.obj &

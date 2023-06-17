@@ -1,6 +1,5 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
-Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -29,68 +28,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#include <stdint.h>
+#ifndef __INTERRUPT_H
+#define __INTERRUPT_H
 
-static uint32_t DisableInterrupts(void);
-static void RestoreInterrupts(uint32_t flags);
+unsigned long DisableInterrupts( void );
+void          RestoreInterrupts( unsigned long flags );
 
+#pragma aux DisableInterrupts = \
+   "pushfd",                    \
+   "pop    eax",                \
+   "cli"                        \
+   modify [ eax ];
 
-#if defined __DMC__ || defined __CCDL__
-static uint32_t DisableInterrupts(void)
-{
-	asm
-	{
-		pushfd
-		pop eax
-		cli
-	}
-	return _EAX;
-}
+#pragma aux RestoreInterrupts = \
+   "push   eax",                \
+   "popfd"                      \
+   parm [ eax ];
 
-static void RestoreInterrupts(uint32_t flags)
-{
-	asm
-	{
-		mov eax, [flags]
-		push eax
-		popfd
-	}
-}
-
-#elif defined __DJGPP__
-static uint32_t DisableInterrupts(void)
-{
-	uint32_t a;
-	asm
-	(
-		"pushfl \n"
-		"popl %0 \n"
-		"cli"
-		: "=r" (a)
-	);
-	return a;
-}
-
-static void RestoreInterrupts(uint32_t flags)
-{
-	asm
-	(
-		"pushl %0 \n"
-		"popfl"
-		:
-		: "r" (flags)
-	);
-}
-
-#elif defined __WATCOMC__
-#pragma aux DisableInterrupts =	\
-	"pushfd",					\
-	"pop eax",					\
-	"cli"						\
-	value [eax];
-
-#pragma aux RestoreInterrupts =	\
-	"push eax",					\
-	"popfd"						\
-	parm [eax];
 #endif

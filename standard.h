@@ -1,6 +1,5 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
-Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,45 +18,55 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 /**********************************************************************
-   module: PCFX.H
+   module: STANDARD.H
 
    author: James R. Dose
-   date:   April 1, 1994
+   date:   May 25, 1994
 
-   Public header for PCFX.C
+   Header containing standard definitions.
 
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#ifndef __PCFX_H
-#define __PCFX_H
+#ifndef __STANDARD_H
+#define __STANDARD_H
 
-enum PCFX_Errors
+typedef int boolean;
+typedef int errorcode;
+
+#ifndef TRUE
+   #define TRUE ( 1 == 1 )
+   #define FALSE ( !TRUE )
+#endif
+
+enum STANDARD_ERRORS
    {
-   PCFX_Warning = -2,
-   PCFX_Error   = -1,
-   PCFX_Ok      = 0,
-   PCFX_NoVoices,
-   PCFX_VoiceNotFound
+   Warning = -2,
+   FatalError = -1,
+   Success = 0
    };
 
-#define PCFX_MaxVolume      255
-#define PCFX_MinVoiceHandle 1
+#define BITSET( data, bit ) \
+   ( ( ( data ) & ( bit ) ) == ( bit ) )
 
-typedef	struct
-   {
-   unsigned long  length;
-   short int      priority;
-   char           data[];
-   } PCSound;
+#define ARRAY_LENGTH( array ) \
+   ( sizeof( array ) / sizeof( ( array )[ 0 ] ) )
 
-int   PCFX_Stop( int handle );
-void  PCFX_UseLookup( int use, unsigned value );
-int   PCFX_Play( PCSound *sound, int priority, unsigned long callbackval );
-int   PCFX_SoundPlaying( int handle );
-int   PCFX_SetTotalVolume( int volume );
-int   PCFX_Init( void );
-int   PCFX_Shutdown( void );
-   #pragma aux PCFX_Shutdown frame;
+#define WITHIN_BOUNDS( array, index ) \
+   ( ( 0 <= ( index ) ) && ( ( index ) < ARRAY_LENGTH( array ) ) )
+
+#define FOREVER    for( ; ; )
+
+#ifdef NDEBUG
+   #define DEBUGGING 0
+#else
+   #define DEBUGGING 1
+#endif
+
+#define DEBUG_CODE \
+   if ( DEBUGGING == 0 ) \
+      { \
+      } \
+   else
 
 #endif

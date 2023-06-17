@@ -19,45 +19,43 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 /**********************************************************************
-   module: PCFX.H
+   module: GUSWAVE.H
 
    author: James R. Dose
-   date:   April 1, 1994
+   date:   March 23, 1994
 
-   Public header for PCFX.C
+   Public header for for GUSWAVE.C
 
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#ifndef __PCFX_H
-#define __PCFX_H
+#ifndef __GUSWAVE_H
+#define __GUSWAVE_H
 
-enum PCFX_Errors
+#define GUSWAVE_MinVoiceHandle 1
+
+enum GUSWAVE_Errors
    {
-   PCFX_Warning = -2,
-   PCFX_Error   = -1,
-   PCFX_Ok      = 0,
-   PCFX_NoVoices,
-   PCFX_VoiceNotFound
+   GUSWAVE_Warning  = -2,
+   GUSWAVE_Error    = -1,
+   GUSWAVE_Ok       = 0,
+   GUSWAVE_GUSError,
+   GUSWAVE_NotInstalled,
+   GUSWAVE_NoVoices,
+   GUSWAVE_UltraNoMem,
+   GUSWAVE_UltraNoMemMIDI,
+   GUSWAVE_VoiceNotFound,
+   GUSWAVE_InvalidVOCFile,
+   GUSWAVE_InvalidWAVFile
    };
 
-#define PCFX_MaxVolume      255
-#define PCFX_MinVoiceHandle 1
-
-typedef	struct
-   {
-   unsigned long  length;
-   short int      priority;
-   char           data[];
-   } PCSound;
-
-int   PCFX_Stop( int handle );
-void  PCFX_UseLookup( int use, unsigned value );
-int   PCFX_Play( PCSound *sound, int priority, unsigned long callbackval );
-int   PCFX_SoundPlaying( int handle );
-int   PCFX_SetTotalVolume( int volume );
-int   PCFX_Init( void );
-int   PCFX_Shutdown( void );
-   #pragma aux PCFX_Shutdown frame;
+int   GUSWAVE_KillAllVoices( void );
+void  GUSWAVE_SetVolume( int volume );
+int   GUSWAVE_StartDemandFeedPlayback( void ( *function )( char **ptr, unsigned long *length ),
+         int channels, int bits, int rate, int pitchoffset, int angle,
+         int volume, int priority, unsigned long callbackval );
+int   GUSWAVE_Init( int numvoices );
+void  GUSWAVE_Shutdown( void );
+#pragma aux GUSWAVE_Shutdown frame;
 
 #endif

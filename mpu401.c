@@ -32,17 +32,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <conio.h>
 #include <dos.h>
-#include "doomdef.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include "mpu401.h"
-
-#define MPU_NotFound       -1
-#define MPU_UARTFailed     -2
-
-#define MPU_ReadyToWrite   0x40
-#define MPU_ReadyToRead    0x80
-#define MPU_CmdEnterUART   0x3f
-#define MPU_CmdReset       0xff
-#define MPU_CmdAcknowledge 0xfe
 
 #define MIDI_NOTE_OFF         0x80
 #define MIDI_NOTE_ON          0x90
@@ -51,11 +43,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIDI_PROGRAM_CHANGE   0xC0
 #define MIDI_AFTER_TOUCH      0xD0
 #define MIDI_PITCH_BEND       0xE0
+#define MIDI_META_EVENT       0xFF
+#define MIDI_END_OF_TRACK     0x2F
+#define MIDI_TEMPO_CHANGE     0x51
+#define MIDI_MONO_MODE_ON     0x7E
+#define MIDI_ALL_NOTES_OFF    0x7B
 
-#define MPU_DefaultAddress 0x330
-static int32_t MPU_BaseAddr = MPU_DefaultAddress;
+static int MPU_BaseAddr = MPU_DefaultAddress;
 
-#define MPU_Delay 0x5000;
+static unsigned MPU_Delay = 0x5000;
 
 
 /*---------------------------------------------------------------------
@@ -64,25 +60,32 @@ static int32_t MPU_BaseAddr = MPU_DefaultAddress;
    Sends a byte of MIDI data to the music device.
 ---------------------------------------------------------------------*/
 
-static void MPU_SendMidi(int32_t data)
-{
-	int32_t  port  = MPU_BaseAddr + 1;
-	uint32_t count = MPU_Delay;
+static void MPU_SendMidi
+   (
+   int data
+   )
 
-	while (count > 0)
-	{
-		// check if status port says we're ready for write
-		if (!(inp(port) & MPU_ReadyToWrite))
-			break;
+   {
+   int      port = MPU_BaseAddr + 1;
+   unsigned count;
 
-		count--;
-	}
+   count = MPU_Delay;
+   while( count > 0 )
+      {
+      // check if status port says we're ready for write
+      if ( !( inp( port ) & MPU_ReadyToWrite ) )
+         {
+         break;
+         }
 
-	port--;
+      count--;
+      }
 
-	// Send the midi data
-	outp(port, data);
-}
+   port--;
+
+   // Send the midi data
+   outp( port, data );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -91,12 +94,18 @@ static void MPU_SendMidi(int32_t data)
    Sends a full MIDI note off event out to the music device.
 ---------------------------------------------------------------------*/
 
-void MPU_NoteOff(int32_t channel, int32_t key, int32_t velocity)
-{
-	MPU_SendMidi(MIDI_NOTE_OFF | channel);
-	MPU_SendMidi(key);
-	MPU_SendMidi(velocity);
-}
+void MPU_NoteOff
+   (
+   int channel,
+   int key,
+   int velocity
+   )
+
+   {
+   MPU_SendMidi( MIDI_NOTE_OFF | channel );
+   MPU_SendMidi( key );
+   MPU_SendMidi( velocity );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -105,12 +114,18 @@ void MPU_NoteOff(int32_t channel, int32_t key, int32_t velocity)
    Sends a full MIDI note on event out to the music device.
 ---------------------------------------------------------------------*/
 
-void MPU_NoteOn(int32_t channel, int32_t key, int32_t velocity)
-{
-	MPU_SendMidi(MIDI_NOTE_ON | channel);
-	MPU_SendMidi(key);
-	MPU_SendMidi(velocity);
-}
+void MPU_NoteOn
+   (
+   int channel,
+   int key,
+   int velocity
+   )
+
+   {
+   MPU_SendMidi( MIDI_NOTE_ON | channel );
+   MPU_SendMidi( key );
+   MPU_SendMidi( velocity );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -119,12 +134,18 @@ void MPU_NoteOn(int32_t channel, int32_t key, int32_t velocity)
    Sends a full MIDI polyphonic aftertouch event out to the music device.
 ---------------------------------------------------------------------*/
 
-void MPU_PolyAftertouch(int32_t channel, int32_t key, int32_t pressure)
-{
-	MPU_SendMidi(MIDI_POLY_AFTER_TCH | channel);
-	MPU_SendMidi(key);
-	MPU_SendMidi(pressure);
-}
+void MPU_PolyAftertouch
+   (
+   int channel,
+   int key,
+   int pressure
+   )
+
+   {
+   MPU_SendMidi( MIDI_POLY_AFTER_TCH | channel );
+   MPU_SendMidi( key );
+   MPU_SendMidi( pressure );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -133,12 +154,18 @@ void MPU_PolyAftertouch(int32_t channel, int32_t key, int32_t pressure)
    Sends a full MIDI control change event out to the music device.
 ---------------------------------------------------------------------*/
 
-void MPU_ControlChange(int32_t channel, int32_t number, int32_t value)
-{
-	MPU_SendMidi(MIDI_CONTROL_CHANGE | channel);
-	MPU_SendMidi(number);
-	MPU_SendMidi(value);
-}
+void MPU_ControlChange
+   (
+   int channel,
+   int number,
+   int value
+   )
+
+   {
+   MPU_SendMidi( MIDI_CONTROL_CHANGE | channel );
+   MPU_SendMidi( number );
+   MPU_SendMidi( value );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -147,11 +174,16 @@ void MPU_ControlChange(int32_t channel, int32_t number, int32_t value)
    Sends a full MIDI program change event out to the music device.
 ---------------------------------------------------------------------*/
 
-void MPU_ProgramChange(int32_t channel, int32_t program)
-{
-	MPU_SendMidi(MIDI_PROGRAM_CHANGE | channel);
-	MPU_SendMidi(program);
-}
+void MPU_ProgramChange
+   (
+   int channel,
+   int program
+   )
+
+   {
+   MPU_SendMidi( MIDI_PROGRAM_CHANGE | channel );
+   MPU_SendMidi( program );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -160,11 +192,16 @@ void MPU_ProgramChange(int32_t channel, int32_t program)
    Sends a full MIDI channel aftertouch event out to the music device.
 ---------------------------------------------------------------------*/
 
-void MPU_ChannelAftertouch(int32_t channel, int32_t pressure)
-{
-	MPU_SendMidi(MIDI_AFTER_TOUCH | channel);
-	MPU_SendMidi(pressure);
-}
+void MPU_ChannelAftertouch
+   (
+   int channel,
+   int pressure
+   )
+
+   {
+   MPU_SendMidi( MIDI_AFTER_TOUCH | channel );
+   MPU_SendMidi( pressure );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -173,12 +210,18 @@ void MPU_ChannelAftertouch(int32_t channel, int32_t pressure)
    Sends a full MIDI pitch bend event out to the music device.
 ---------------------------------------------------------------------*/
 
-void MPU_PitchBend(int32_t channel, int32_t lsb, int32_t msb)
-{
-	MPU_SendMidi(MIDI_PITCH_BEND | channel);
-	MPU_SendMidi(lsb);
-	MPU_SendMidi(msb);
-}
+void MPU_PitchBend
+   (
+   int channel,
+   int lsb,
+   int msb
+   )
+
+   {
+   MPU_SendMidi( MIDI_PITCH_BEND | channel );
+   MPU_SendMidi( lsb );
+   MPU_SendMidi( msb );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -187,22 +230,28 @@ void MPU_PitchBend(int32_t channel, int32_t lsb, int32_t msb)
    Sends a command to the MPU401 card.
 ---------------------------------------------------------------------*/
 
-static void MPU_SendCommand(int32_t data)
-{
-	int32_t  port = MPU_BaseAddr + 1;
-	uint32_t count = 0xffff;
+static void MPU_SendCommand
+   (
+   int data
+   )
 
-	while (count > 0)
-	{
-		// check if status port says we're ready for write
-		if (!(inp(port) & MPU_ReadyToWrite))
-			break;
+   {
+   int      port = MPU_BaseAddr + 1;
+   unsigned count;
 
-		count--;
-	}
+   count = 0xffff;
+   while( count > 0 )
+      {
+      // check if status port says we're ready for write
+      if ( !( inp( port ) & MPU_ReadyToWrite ) )
+         {
+         break;
+         }
+      count--;
+      }
 
-	outp(port, data);
-}
+   outp( port, data );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -211,33 +260,40 @@ static void MPU_SendCommand(int32_t data)
    Resets the MPU401 card.
 ---------------------------------------------------------------------*/
 
-int32_t MPU_Reset(void)
-{
-	int32_t  port = MPU_BaseAddr + 1;
-	uint32_t count = 0xffff;
+int MPU_Reset
+   (
+   void
+   )
 
-	// Output "Reset" command via Command port
-	MPU_SendCommand(MPU_CmdReset);
+   {
+   int      port = MPU_BaseAddr + 1;
+   unsigned count;
 
-	// Wait for status port to be ready for read   
-	while (count > 0)
-	{
-		if (!(inp(port) & MPU_ReadyToRead))
-		{
-			port--;
+   // Output "Reset" command via Command port
+   MPU_SendCommand( MPU_CmdReset );
 
-			// Check for a successful reset
-			if (inp(port) == MPU_CmdAcknowledge)
-				return MPU_Ok;
+   // Wait for status port to be ready for read
+   count = 0xffff;
+   while( count > 0 )
+      {
+      if ( !( inp( port ) & MPU_ReadyToRead ) )
+         {
+         port--;
 
-			port++;
-		}
-		count--;
-	}
+         // Check for a successful reset
+         if ( inp( port ) == MPU_CmdAcknowledge )
+            {
+            return( MPU_Ok );
+            }
 
-	// Failed to reset : MPU-401 not detected
-   return MPU_NotFound;
-}
+         port++;
+         }
+      count--;
+      }
+
+   // Failed to reset : MPU-401 not detected
+   return( MPU_NotFound );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -246,33 +302,40 @@ int32_t MPU_Reset(void)
    Sets the MPU401 card to operate in UART mode.
 ---------------------------------------------------------------------*/
 
-static int32_t MPU_EnterUART(void)
-{
-	int32_t  port = MPU_BaseAddr + 1;
-	uint32_t count = 0xffff;
+static int MPU_EnterUART
+   (
+   void
+   )
 
-	// Output "Enter UART" command via Command port
-	MPU_SendCommand(MPU_CmdEnterUART);
+   {
+   int      port = MPU_BaseAddr + 1;
+   unsigned count;
 
-	// Wait for status port to be ready for read
-	while (count > 0)
-	{
-		if (!(inp(port) & MPU_ReadyToRead))
-		{
-			port--;
+   // Output "Enter UART" command via Command port
+   MPU_SendCommand( MPU_CmdEnterUART );
 
-			// Check for a successful reset
-			if (inp(port) == MPU_CmdAcknowledge)
-				return MPU_Ok;
+   // Wait for status port to be ready for read
+   count = 0xffff;
+   while( count > 0 )
+      {
+      if ( !( inp( port ) & MPU_ReadyToRead ) )
+         {
+         port--;
 
-			port++;
-		}
-		count--;
-	}
+         // Check for a successful reset
+         if ( inp( port ) == MPU_CmdAcknowledge )
+            {
+            return( MPU_Ok );
+            }
 
-	// Failed to reset : MPU-401 not detected
-	return MPU_UARTFailed;
-}
+         port++;
+         }
+      count--;
+      }
+
+   // Failed to reset : MPU-401 not detected
+   return( MPU_UARTFailed );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -281,21 +344,27 @@ static int32_t MPU_EnterUART(void)
    Detects and initializes the MPU401 card.
 ---------------------------------------------------------------------*/
 
-int32_t MPU_Init(int32_t addr)
-{
-	int32_t status;
-	int32_t count = 4;
+int MPU_Init
+   (
+   int addr
+   )
 
-	MPU_BaseAddr = addr;
+   {
+   int status;
+   int count;
 
-	while (count > 0)
-	{
-		status = MPU_Reset();
-		if (status == MPU_Ok)
-			return MPU_EnterUART();
+   MPU_BaseAddr = addr;
 
-		count--;
-	}
+   count = 4;
+   while( count > 0 )
+      {
+      status = MPU_Reset();
+      if ( status == MPU_Ok )
+         {
+         return( MPU_EnterUART() );
+         }
+      count--;
+      }
 
-	return status;
-}
+   return( status );
+   }

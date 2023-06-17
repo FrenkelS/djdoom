@@ -32,30 +32,38 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __MUSIC_H
 #define __MUSIC_H
 
-#include <stdint.h>
+#include "sndcards.h"
 
 enum MUSIC_ERRORS
-{
-	MUSIC_Warning = -2,
-	MUSIC_Error   = -1,
-	MUSIC_Ok      = 0
-};
+   {
+   MUSIC_Warning = -2,
+   MUSIC_Error   = -1,
+   MUSIC_Ok      = 0,
+   MUSIC_ASSVersion,
+   MUSIC_SoundCardError,
+   MUSIC_MPU401Error,
+   MUSIC_InvalidCard,
+   MUSIC_MidiError,
+   MUSIC_TaskManError,
+   MUSIC_FMNotDetected,
+   MUSIC_DPMI_Error
+   };
 
 typedef struct
-{
-	uint32_t tickposition;
-	uint32_t milliseconds;
-	uint32_t measure;
-	uint32_t beat;
-	uint32_t tick;
-} songposition;
+   {
+   unsigned long tickposition;
+   unsigned long milliseconds;
+   unsigned int  measure;
+   unsigned int  beat;
+   unsigned int  tick;
+   } songposition;
 
-int32_t MUSIC_Init(int32_t SoundCard, int32_t Address);
-void    MUSIC_Shutdown(void);
-void    MUSIC_SetVolume(int32_t volume);
-void    MUSIC_Continue(void);
-void    MUSIC_Pause(void);
-void    MUSIC_StopSong(void);
-int32_t MUSIC_PlaySong(uint8_t *song, int32_t loopflag);
+int   MUSIC_Init( int SoundCard, int Address );
+int   MUSIC_Shutdown( void );
+void  MUSIC_SetVolume( int volume );
+void  MUSIC_Continue( void );
+void  MUSIC_Pause( void );
+int   MUSIC_StopSong( void );
+int   MUSIC_PlaySong( unsigned char *song, int loopflag );
 
 #endif

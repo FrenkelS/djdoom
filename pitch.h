@@ -1,6 +1,5 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
-Copyright (C) 2023 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,45 +18,28 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 /**********************************************************************
-   module: PCFX.H
+   module: PITCH.H
 
    author: James R. Dose
-   date:   April 1, 1994
+   date:   June 14, 1994
 
-   Public header for PCFX.C
+   Public header for PITCH.C
 
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#ifndef __PCFX_H
-#define __PCFX_H
+#ifndef __PITCH_H
+#define __PITCH_H
 
-enum PCFX_Errors
+enum PITCH_ERRORS
    {
-   PCFX_Warning = -2,
-   PCFX_Error   = -1,
-   PCFX_Ok      = 0,
-   PCFX_NoVoices,
-   PCFX_VoiceNotFound
+   PITCH_Warning = -2,
+   PITCH_Error = -1,
+   PITCH_Ok = 0,
    };
 
-#define PCFX_MaxVolume      255
-#define PCFX_MinVoiceHandle 1
-
-typedef	struct
-   {
-   unsigned long  length;
-   short int      priority;
-   char           data[];
-   } PCSound;
-
-int   PCFX_Stop( int handle );
-void  PCFX_UseLookup( int use, unsigned value );
-int   PCFX_Play( PCSound *sound, int priority, unsigned long callbackval );
-int   PCFX_SoundPlaying( int handle );
-int   PCFX_SetTotalVolume( int volume );
-int   PCFX_Init( void );
-int   PCFX_Shutdown( void );
-   #pragma aux PCFX_Shutdown frame;
-
+//void          PITCH_Init( void );
+unsigned long PITCH_GetScale( int pitchoffset );
+void          PITCH_UnlockMemory( void );
+int           PITCH_LockMemory( void );
 #endif

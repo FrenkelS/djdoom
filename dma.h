@@ -19,45 +19,56 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 /**********************************************************************
-   module: PCFX.H
+   file:   DMA.H
 
    author: James R. Dose
-   date:   April 1, 1994
+   date:   February 4, 1994
 
-   Public header for PCFX.C
+   Public header file for DMA.C
 
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#ifndef __PCFX_H
-#define __PCFX_H
+#ifndef __DMA_H
+#define __DMA_H
 
-enum PCFX_Errors
+enum DMA_ERRORS
    {
-   PCFX_Warning = -2,
-   PCFX_Error   = -1,
-   PCFX_Ok      = 0,
-   PCFX_NoVoices,
-   PCFX_VoiceNotFound
+   DMA_Error = -1,
+   DMA_Ok    = 0,
+   DMA_ChannelOutOfRange,
+   DMA_InvalidChannel
    };
 
-#define PCFX_MaxVolume      255
-#define PCFX_MinVoiceHandle 1
-
-typedef	struct
+enum DMA_Modes
    {
-   unsigned long  length;
-   short int      priority;
-   char           data[];
-   } PCSound;
+   DMA_SingleShotRead,
+   DMA_SingleShotWrite,
+   DMA_AutoInitRead,
+   DMA_AutoInitWrite
+   };
 
-int   PCFX_Stop( int handle );
-void  PCFX_UseLookup( int use, unsigned value );
-int   PCFX_Play( PCSound *sound, int priority, unsigned long callbackval );
-int   PCFX_SoundPlaying( int handle );
-int   PCFX_SetTotalVolume( int volume );
-int   PCFX_Init( void );
-int   PCFX_Shutdown( void );
-   #pragma aux PCFX_Shutdown frame;
+int DMA_VerifyChannel
+   (
+   int channel
+   );
+
+int DMA_SetupTransfer
+   (
+   int  channel,
+   char *address,
+   int  length,
+   int  mode
+   );
+
+int DMA_EndTransfer
+   (
+   int channel
+   );
+
+char *DMA_GetCurrentPos
+   (
+   int channel
+   );
 
 #endif

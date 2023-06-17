@@ -19,45 +19,36 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 /**********************************************************************
-   module: PCFX.H
+   module: IRQ.H
 
    author: James R. Dose
-   date:   April 1, 1994
+   date:   August 8, 1994
 
-   Public header for PCFX.C
+   Public header for IRQ.C
 
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#ifndef __PCFX_H
-#define __PCFX_H
+#ifndef __IRQ_H
+#define __IRQ_H
 
-enum PCFX_Errors
+enum IRQ_ERRORS
    {
-   PCFX_Warning = -2,
-   PCFX_Error   = -1,
-   PCFX_Ok      = 0,
-   PCFX_NoVoices,
-   PCFX_VoiceNotFound
+   IRQ_Error = -1,
+   IRQ_Ok = 0,
    };
 
-#define PCFX_MaxVolume      255
-#define PCFX_MinVoiceHandle 1
+#define VALID_IRQ( irq )  ( ( ( irq ) >= 0 ) && ( ( irq ) <= 15 ) )
 
-typedef	struct
-   {
-   unsigned long  length;
-   short int      priority;
-   char           data[];
-   } PCSound;
+int IRQ_SetVector
+   (
+   int vector,
+   void ( __interrupt *function )( void )
+   );
+int IRQ_RestoreVector
+   (
+   int vector
+   );
 
-int   PCFX_Stop( int handle );
-void  PCFX_UseLookup( int use, unsigned value );
-int   PCFX_Play( PCSound *sound, int priority, unsigned long callbackval );
-int   PCFX_SoundPlaying( int handle );
-int   PCFX_SetTotalVolume( int volume );
-int   PCFX_Init( void );
-int   PCFX_Shutdown( void );
-   #pragma aux PCFX_Shutdown frame;
 
 #endif

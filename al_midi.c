@@ -32,29 +32,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <conio.h>
 #include <dos.h>
-#include <stddef.h>
-#include <stdlib.h>
 #include "doomdef.h"
 #include "interrup.h"
 #include "sndcards.h"
 #include "blaster.h"
 #include "al_midi.h"
 
-
 #define AL_MaxVolume             127
+#define AL_MaxMidiChannel        16
 #define AL_DefaultChannelVolume  90
 #define AL_DefaultPitchBendRange 200
 
 #define ADLIB_PORT 0x388
 
-
 #define AL_VoiceNotFound -1
-
-/* Number of slots for the voices on the chip */
-#define NumChipSlots 18
-
-#define NUM_VOICES      9
-#define NUM_CHANNELS    16
 
 #define NOTE_ON         0x2000  /* Used to turn note on or toggle note */
 #define NOTE_OFF        0x0000
@@ -63,7 +54,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MAX_OCTAVE     7
 #define MAX_NOTE       (MAX_OCTAVE * 12 + 11)
 #define FINETUNE_MAX   31
-#define FINETUNE_RANGE (FINETUNE_MAX + 1)
+#define FINETUNE_RANGE ( FINETUNE_MAX + 1 )
 
 #define PITCHBEND_CENTER 1638400
 
@@ -78,125 +69,51 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIDI_DATAENTRY_LSB         38
 #define MIDI_PITCHBEND_RPN         0
 
-
-typedef struct VOICE
-{
-	struct VOICE *next;
-	struct VOICE *prev;
-
-	unsigned num;
-	unsigned key;
-	unsigned velocity;
-	unsigned channel;
-	unsigned pitch;
-	int      timbre;
-	unsigned status;
-} VOICE;
-
 typedef struct
-{
-	VOICE *start;
-	VOICE *end;
-} VOICELIST;
-
-typedef struct
-{
-	VOICELIST Voices;
-	int       Timbre;
-	int       Pitchbend;
-	int       KeyOffset;
-	unsigned  KeyDetune;
-	unsigned  Volume;
-	int       Pan;
-	int       Detune;
-	unsigned  RPN;
-	short     PitchBendRange;
-	short     PitchBendSemiTones;
-	short     PitchBendHundreds;
-} CHANNEL;
-
-typedef struct
-{
-	unsigned char SAVEK[2];
-	unsigned char Level[2];
-	unsigned char Env1[2];
-	unsigned char Env2[2];
-	unsigned char Wave[2];
-	unsigned char Feedback;
-	signed   char Transpose;
-	signed   char Velocity;
-} TIMBRE;
+   {
+   unsigned char SAVEK[ 2 ];
+   unsigned char Level[ 2 ];
+   unsigned char Env1[ 2 ];
+   unsigned char Env2[ 2 ];
+   unsigned char Wave[ 2 ];
+   unsigned char Feedback;
+   signed   char Transpose;
+   signed   char Velocity;
+   } TIMBRE;
 
 static TIMBRE ADLIB_TimbreBank[256];
 
-
-#define OFFSET(structure, offset) \
-   (*((char **)&(structure)[offset]))
-
-static void LL_AddNode(char *item, char **head, char **tail, int next, int prev)
-{
-	OFFSET(item, prev) = NULL;
-	OFFSET(item, next) = *head;
-
-	if (*head)
-		OFFSET(*head, prev) = item;
-	else    
-		*tail = item;
-
-	*head = item;
-}
-
-#define LL_AddToTail(type, listhead, node)    \
-    LL_AddNode((char *)(node),                \
-               (char **)&((listhead)->end),   \
-               (char **)&((listhead)->start), \
-               (int)&((type *)0)->prev,       \
-               (int)&((type *)0)->next)
-
-
-static void LL_RemoveNode(char *item, char **head, char **tail, int next, int prev)
-{
-	if (OFFSET(item, prev) == NULL )
-		*head = OFFSET(item, next);
-	else
-		OFFSET(OFFSET(item, prev), next) = OFFSET(item, next);
-
-	if (OFFSET(item, next) == NULL)
-		*tail = OFFSET(item, prev);
-	else
-		OFFSET(OFFSET(item, next), prev) = OFFSET(item, prev);
-
-	OFFSET(item, next) = NULL;
-	OFFSET(item, prev) = NULL;
-}
-
-#define LL_Remove(type, listhead, node)          \
-    LL_RemoveNode((char *)(node),                \
-                  (char **)&((listhead)->start), \
-                  (char **)&((listhead)->end),   \
-                  (int)&((type *)0)->next,       \
-                  (int)&((type *)0)->prev)
+static void AL_ResetVoices( void );
+static void AL_CalcPitchInfo( void );
+static void AL_SetVoiceTimbre( int voice );
+static void AL_SetVoiceVolume( int voice );
+static int  AL_AllocVoice( void );
+static int  AL_GetVoice( int channel, int key );
+static void AL_SetVoicePitch( int voice );
+static void AL_SetChannelVolume( int channel, int volume );
+static void AL_SetChannelPan( int channel, int pan );
+static void AL_SetChannelDetune( int channel, int detune );
 
 
 /* Definition of octave information to be ORed onto F-Number */
 
 enum octaves
-{
-	OCTAVE_0 = 0x0000,
-	OCTAVE_1 = 0x0400,
-	OCTAVE_2 = 0x0800,
-	OCTAVE_3 = 0x0C00,
-	OCTAVE_4 = 0x1000,
-	OCTAVE_5 = 0x1400,
-	OCTAVE_6 = 0x1800,
-	OCTAVE_7 = 0x1C00
-};
+   {
+   OCTAVE_0 = 0x0000,
+   OCTAVE_1 = 0x0400,
+   OCTAVE_2 = 0x0800,
+   OCTAVE_3 = 0x0C00,
+   OCTAVE_4 = 0x1000,
+   OCTAVE_5 = 0x1400,
+   OCTAVE_6 = 0x1800,
+   OCTAVE_7 = 0x1C00
+   };
 
-static const unsigned OctavePitch[MAX_OCTAVE + 1] =
-{
-	OCTAVE_0, OCTAVE_1, OCTAVE_2, OCTAVE_3,
-	OCTAVE_4, OCTAVE_5, OCTAVE_6, OCTAVE_7,
-};
+static const unsigned OctavePitch[ MAX_OCTAVE + 1 ] =
+   {
+   OCTAVE_0, OCTAVE_1, OCTAVE_2, OCTAVE_3,
+   OCTAVE_4, OCTAVE_5, OCTAVE_6, OCTAVE_7,
+   };
 
 static unsigned NoteMod12[MAX_NOTE + 1];
 static unsigned NoteDiv12[MAX_NOTE + 1];
@@ -208,63 +125,68 @@ static unsigned NoteDiv12[MAX_NOTE + 1];
 //      { C, C_SHARP, D, D_SHARP, E, F, F_SHARP, G, G_SHARP, A, A_SHARP, B },
 //   };
 
-static const unsigned NotePitch[FINETUNE_MAX + 1][12] =
-{
-	{0x157, 0x16b, 0x181, 0x198, 0x1b0, 0x1ca, 0x1e5, 0x202, 0x220, 0x241, 0x263, 0x287},
-	{0x157, 0x16b, 0x181, 0x198, 0x1b0, 0x1ca, 0x1e5, 0x202, 0x220, 0x242, 0x264, 0x288},
-	{0x158, 0x16c, 0x182, 0x199, 0x1b1, 0x1cb, 0x1e6, 0x203, 0x221, 0x243, 0x265, 0x289},
-	{0x158, 0x16c, 0x183, 0x19a, 0x1b2, 0x1cc, 0x1e7, 0x204, 0x222, 0x244, 0x266, 0x28a},
-	{0x159, 0x16d, 0x183, 0x19a, 0x1b3, 0x1cd, 0x1e8, 0x205, 0x223, 0x245, 0x267, 0x28b},
-	{0x15a, 0x16e, 0x184, 0x19b, 0x1b3, 0x1ce, 0x1e9, 0x206, 0x224, 0x246, 0x268, 0x28c},
-	{0x15a, 0x16e, 0x185, 0x19c, 0x1b4, 0x1ce, 0x1ea, 0x207, 0x225, 0x247, 0x269, 0x28e},
-	{0x15b, 0x16f, 0x185, 0x19d, 0x1b5, 0x1cf, 0x1eb, 0x208, 0x226, 0x248, 0x26a, 0x28f},
-	{0x15b, 0x170, 0x186, 0x19d, 0x1b6, 0x1d0, 0x1ec, 0x209, 0x227, 0x249, 0x26b, 0x290},
-	{0x15c, 0x170, 0x187, 0x19e, 0x1b7, 0x1d1, 0x1ec, 0x20a, 0x228, 0x24a, 0x26d, 0x291},
-	{0x15d, 0x171, 0x188, 0x19f, 0x1b7, 0x1d2, 0x1ed, 0x20b, 0x229, 0x24b, 0x26e, 0x292},
-	{0x15d, 0x172, 0x188, 0x1a0, 0x1b8, 0x1d3, 0x1ee, 0x20c, 0x22a, 0x24c, 0x26f, 0x293},
-	{0x15e, 0x172, 0x189, 0x1a0, 0x1b9, 0x1d4, 0x1ef, 0x20d, 0x22b, 0x24d, 0x270, 0x295},
-	{0x15f, 0x173, 0x18a, 0x1a1, 0x1ba, 0x1d4, 0x1f0, 0x20e, 0x22c, 0x24e, 0x271, 0x296},
-	{0x15f, 0x174, 0x18a, 0x1a2, 0x1bb, 0x1d5, 0x1f1, 0x20f, 0x22d, 0x24f, 0x272, 0x297},
-	{0x160, 0x174, 0x18b, 0x1a3, 0x1bb, 0x1d6, 0x1f2, 0x210, 0x22e, 0x250, 0x273, 0x298},
-	{0x161, 0x175, 0x18c, 0x1a3, 0x1bc, 0x1d7, 0x1f3, 0x211, 0x22f, 0x251, 0x274, 0x299},
-	{0x161, 0x176, 0x18c, 0x1a4, 0x1bd, 0x1d8, 0x1f4, 0x212, 0x230, 0x252, 0x276, 0x29b},
-	{0x162, 0x176, 0x18d, 0x1a5, 0x1be, 0x1d9, 0x1f5, 0x212, 0x231, 0x254, 0x277, 0x29c},
-	{0x162, 0x177, 0x18e, 0x1a6, 0x1bf, 0x1d9, 0x1f5, 0x213, 0x232, 0x255, 0x278, 0x29d},
-	{0x163, 0x178, 0x18f, 0x1a6, 0x1bf, 0x1da, 0x1f6, 0x214, 0x233, 0x256, 0x279, 0x29e},
-	{0x164, 0x179, 0x18f, 0x1a7, 0x1c0, 0x1db, 0x1f7, 0x215, 0x235, 0x257, 0x27a, 0x29f},
-	{0x164, 0x179, 0x190, 0x1a8, 0x1c1, 0x1dc, 0x1f8, 0x216, 0x236, 0x258, 0x27b, 0x2a1},
-	{0x165, 0x17a, 0x191, 0x1a9, 0x1c2, 0x1dd, 0x1f9, 0x217, 0x237, 0x259, 0x27c, 0x2a2},
-	{0x166, 0x17b, 0x192, 0x1aa, 0x1c3, 0x1de, 0x1fa, 0x218, 0x238, 0x25a, 0x27e, 0x2a3},
-	{0x166, 0x17b, 0x192, 0x1aa, 0x1c3, 0x1df, 0x1fb, 0x219, 0x239, 0x25b, 0x27f, 0x2a4},
-	{0x167, 0x17c, 0x193, 0x1ab, 0x1c4, 0x1e0, 0x1fc, 0x21a, 0x23a, 0x25c, 0x280, 0x2a6},
-	{0x168, 0x17d, 0x194, 0x1ac, 0x1c5, 0x1e0, 0x1fd, 0x21b, 0x23b, 0x25d, 0x281, 0x2a7},
-	{0x168, 0x17d, 0x194, 0x1ad, 0x1c6, 0x1e1, 0x1fe, 0x21c, 0x23c, 0x25e, 0x282, 0x2a8},
-	{0x169, 0x17e, 0x195, 0x1ad, 0x1c7, 0x1e2, 0x1ff, 0x21d, 0x23d, 0x260, 0x283, 0x2a9},
-	{0x16a, 0x17f, 0x196, 0x1ae, 0x1c8, 0x1e3, 0x1ff, 0x21e, 0x23e, 0x261, 0x284, 0x2ab},
-	{0x16a, 0x17f, 0x197, 0x1af, 0x1c8, 0x1e4, 0x200, 0x21f, 0x23f, 0x262, 0x286, 0x2ac}
-};
+static const unsigned NotePitch[ FINETUNE_MAX + 1 ][ 12 ] =
+   {
+      { 0x157, 0x16b, 0x181, 0x198, 0x1b0, 0x1ca, 0x1e5, 0x202, 0x220, 0x241, 0x263, 0x287 },
+      { 0x157, 0x16b, 0x181, 0x198, 0x1b0, 0x1ca, 0x1e5, 0x202, 0x220, 0x242, 0x264, 0x288 },
+      { 0x158, 0x16c, 0x182, 0x199, 0x1b1, 0x1cb, 0x1e6, 0x203, 0x221, 0x243, 0x265, 0x289 },
+      { 0x158, 0x16c, 0x183, 0x19a, 0x1b2, 0x1cc, 0x1e7, 0x204, 0x222, 0x244, 0x266, 0x28a },
+      { 0x159, 0x16d, 0x183, 0x19a, 0x1b3, 0x1cd, 0x1e8, 0x205, 0x223, 0x245, 0x267, 0x28b },
+      { 0x15a, 0x16e, 0x184, 0x19b, 0x1b3, 0x1ce, 0x1e9, 0x206, 0x224, 0x246, 0x268, 0x28c },
+      { 0x15a, 0x16e, 0x185, 0x19c, 0x1b4, 0x1ce, 0x1ea, 0x207, 0x225, 0x247, 0x269, 0x28e },
+      { 0x15b, 0x16f, 0x185, 0x19d, 0x1b5, 0x1cf, 0x1eb, 0x208, 0x226, 0x248, 0x26a, 0x28f },
+      { 0x15b, 0x170, 0x186, 0x19d, 0x1b6, 0x1d0, 0x1ec, 0x209, 0x227, 0x249, 0x26b, 0x290 },
+      { 0x15c, 0x170, 0x187, 0x19e, 0x1b7, 0x1d1, 0x1ec, 0x20a, 0x228, 0x24a, 0x26d, 0x291 },
+      { 0x15d, 0x171, 0x188, 0x19f, 0x1b7, 0x1d2, 0x1ed, 0x20b, 0x229, 0x24b, 0x26e, 0x292 },
+      { 0x15d, 0x172, 0x188, 0x1a0, 0x1b8, 0x1d3, 0x1ee, 0x20c, 0x22a, 0x24c, 0x26f, 0x293 },
+      { 0x15e, 0x172, 0x189, 0x1a0, 0x1b9, 0x1d4, 0x1ef, 0x20d, 0x22b, 0x24d, 0x270, 0x295 },
+      { 0x15f, 0x173, 0x18a, 0x1a1, 0x1ba, 0x1d4, 0x1f0, 0x20e, 0x22c, 0x24e, 0x271, 0x296 },
+      { 0x15f, 0x174, 0x18a, 0x1a2, 0x1bb, 0x1d5, 0x1f1, 0x20f, 0x22d, 0x24f, 0x272, 0x297 },
+      { 0x160, 0x174, 0x18b, 0x1a3, 0x1bb, 0x1d6, 0x1f2, 0x210, 0x22e, 0x250, 0x273, 0x298 },
+      { 0x161, 0x175, 0x18c, 0x1a3, 0x1bc, 0x1d7, 0x1f3, 0x211, 0x22f, 0x251, 0x274, 0x299 },
+      { 0x161, 0x176, 0x18c, 0x1a4, 0x1bd, 0x1d8, 0x1f4, 0x212, 0x230, 0x252, 0x276, 0x29b },
+      { 0x162, 0x176, 0x18d, 0x1a5, 0x1be, 0x1d9, 0x1f5, 0x212, 0x231, 0x254, 0x277, 0x29c },
+      { 0x162, 0x177, 0x18e, 0x1a6, 0x1bf, 0x1d9, 0x1f5, 0x213, 0x232, 0x255, 0x278, 0x29d },
+      { 0x163, 0x178, 0x18f, 0x1a6, 0x1bf, 0x1da, 0x1f6, 0x214, 0x233, 0x256, 0x279, 0x29e },
+      { 0x164, 0x179, 0x18f, 0x1a7, 0x1c0, 0x1db, 0x1f7, 0x215, 0x235, 0x257, 0x27a, 0x29f },
+      { 0x164, 0x179, 0x190, 0x1a8, 0x1c1, 0x1dc, 0x1f8, 0x216, 0x236, 0x258, 0x27b, 0x2a1 },
+      { 0x165, 0x17a, 0x191, 0x1a9, 0x1c2, 0x1dd, 0x1f9, 0x217, 0x237, 0x259, 0x27c, 0x2a2 },
+      { 0x166, 0x17b, 0x192, 0x1aa, 0x1c3, 0x1de, 0x1fa, 0x218, 0x238, 0x25a, 0x27e, 0x2a3 },
+      { 0x166, 0x17b, 0x192, 0x1aa, 0x1c3, 0x1df, 0x1fb, 0x219, 0x239, 0x25b, 0x27f, 0x2a4 },
+      { 0x167, 0x17c, 0x193, 0x1ab, 0x1c4, 0x1e0, 0x1fc, 0x21a, 0x23a, 0x25c, 0x280, 0x2a6 },
+      { 0x168, 0x17d, 0x194, 0x1ac, 0x1c5, 0x1e0, 0x1fd, 0x21b, 0x23b, 0x25d, 0x281, 0x2a7 },
+      { 0x168, 0x17d, 0x194, 0x1ad, 0x1c6, 0x1e1, 0x1fe, 0x21c, 0x23c, 0x25e, 0x282, 0x2a8 },
+      { 0x169, 0x17e, 0x195, 0x1ad, 0x1c7, 0x1e2, 0x1ff, 0x21d, 0x23d, 0x260, 0x283, 0x2a9 },
+      { 0x16a, 0x17f, 0x196, 0x1ae, 0x1c8, 0x1e3, 0x1ff, 0x21e, 0x23e, 0x261, 0x284, 0x2ab },
+      { 0x16a, 0x17f, 0x197, 0x1af, 0x1c8, 0x1e4, 0x200, 0x21f, 0x23f, 0x262, 0x286, 0x2ac }
+   };
 
 // Slot numbers as a function of the voice and the operator.
 // ( melodic only)
 
+#define NUM_VOICES      9
+
 static const int slotVoice[NUM_VOICES][2] =
 {
-	{ 0,  3},  // voice 0
-	{ 1,  4},  // 1
-	{ 2,  5},  // 2
-	{ 6,  9},  // 3
-	{ 7, 10},  // 4
-	{ 8, 11},  // 5
-	{12, 15},  // 6
-	{13, 16},  // 7
-	{14, 17},  // 8
+	{ 0, 3 },    // voice 0
+	{ 1, 4 },    // 1
+	{ 2, 5 },    // 2
+	{ 6, 9 },    // 3
+	{ 7, 10 },   // 4
+	{ 8, 11 },   // 5
+	{ 12, 15 },  // 6
+	{ 13, 16 },  // 7
+	{ 14, 17 },  // 8
 };
 
-static int VoiceLevel[NumChipSlots];
-static int VoiceKsl[NumChipSlots];
+/* Number of slots for the voices on the chip */
+#define NumChipSlots 18
+
+static int VoiceLevel[NumChipSlots][2];
+static int VoiceKsl[NumChipSlots][2];
 
 // This table gives the offset of each slot within the chip.
-// offset = fn( slot)
+// offset = fn(slot)
 
 static const char offsetSlot[NumChipSlots] =
 {
@@ -273,12 +195,78 @@ static const char offsetSlot[NumChipSlots] =
 	16, 17, 18, 19, 20, 21
 };
 
+typedef struct VOICE
+   {
+   struct VOICE *next;
+   struct VOICE *prev;
+
+   unsigned num;
+   unsigned key;
+   unsigned velocity;
+   unsigned channel;
+   unsigned pitchleft;
+   unsigned pitchright;
+   int      timbre;
+   int      port;
+   unsigned status;
+   } VOICE;
+
+typedef struct
+   {
+   VOICE *start;
+   VOICE *end;
+   } VOICELIST;
+
+typedef struct
+   {
+   VOICELIST Voices;
+   int       Timbre;
+   int       Pitchbend;
+   int       KeyOffset;
+   unsigned  KeyDetune;
+   unsigned  Volume;
+   unsigned  EffectiveVolume;
+   int       Pan;
+   int       Detune;
+   unsigned  RPN;
+   short     PitchBendRange;
+   short     PitchBendSemiTones;
+   short     PitchBendHundreds;
+   } CHANNEL;
+
 static VOICE     Voice[NUM_VOICES * 2];
 static VOICELIST Voice_Pool;
 
-static volatile CHANNEL   Channel[NUM_CHANNELS];
+#define NUM_CHANNELS    16
 
-#define AL_MaxMidiChannel 16
+static CHANNEL   Channel[NUM_CHANNELS];
+
+static int AL_LeftPort   = 0x388;
+static int AL_RightPort  = 0x388;
+static boolean AL_SendStereo = false;
+static boolean AL_OPL3       = false;
+
+
+/*---------------------------------------------------------------------
+   Function: AL_SendOutputToPort
+
+   Sends data to the Adlib using a specified port.
+---------------------------------------------------------------------*/
+
+static void AL_SendOutputToPort(int port, int reg, int data)
+{
+	int delay;
+
+	outp(port, reg);
+
+	for (delay = 6; delay > 0; delay--)
+		inp(port);
+
+	outp(port + 1, data);
+
+	for (delay = 27; delay > 0; delay--)
+		inp(port);
+}
 
 
 /*---------------------------------------------------------------------
@@ -287,19 +275,12 @@ static volatile CHANNEL   Channel[NUM_CHANNELS];
    Sends data to the Adlib.
 ---------------------------------------------------------------------*/
 
-static void AL_SendOutput(int reg, int data)
+static void AL_SendOutput(int voice, int reg, int data)
 {
-	int delay;
-
-	outp(ADLIB_PORT, reg);
-
-	for (delay = 6; delay > 0; delay--)
-		inp(ADLIB_PORT);
-
-	outp(ADLIB_PORT + 1, data);
-
-	for (delay = 27; delay > 0; delay--)
-		inp(ADLIB_PORT);
+	if (voice == 0)
+		AL_SendOutputToPort(AL_RightPort, reg, data);
+	else
+		AL_SendOutputToPort(AL_LeftPort,  reg, data);
 }
 
 
@@ -313,6 +294,7 @@ static void AL_SetVoiceTimbre(int voice)
 {
 	int    off;
 	int    slot;
+	int    port;
 	int    voc;
 	int    patch;
 	int    channel;
@@ -331,42 +313,52 @@ static void AL_SetVoiceTimbre(int voice)
 	Voice[voice].timbre = patch;
 	timbre = &ADLIB_TimbreBank[patch];
 
+	port = Voice[voice].port;
 	voc  = (voice >= NUM_VOICES) ? voice - NUM_VOICES : voice;
 	slot = slotVoice[voc][0];
 	off  = offsetSlot[slot];
 
-	VoiceLevel[slot] = 63 - (timbre->Level[0] & 0x3f);
-	VoiceKsl[slot]   = timbre->Level[0] & 0xc0;
+	VoiceLevel[slot][port] = 63 - (timbre->Level[0] & 0x3f);
+	VoiceKsl[slot][port]   = timbre->Level[0] & 0xc0;
 
-	AL_SendOutput(0xA0 + voc, 0);
-	AL_SendOutput(0xB0 + voc, 0);
+	AL_SendOutput(port, 0xA0 + voc, 0);
+	AL_SendOutput(port, 0xB0 + voc, 0);
 
 	// Let voice clear the release
-	AL_SendOutput(0x80 + off, 0xff);
+	AL_SendOutput(port, 0x80 + off, 0xff);
 
-	AL_SendOutput(0x60 + off, timbre->Env1[0]);
-	AL_SendOutput(0x80 + off, timbre->Env2[0]);
-	AL_SendOutput(0x20 + off, timbre->SAVEK[0]);
-	AL_SendOutput(0xE0 + off, timbre->Wave[0]);
+	AL_SendOutput(port, 0x60 + off, timbre->Env1[0]);
+	AL_SendOutput(port, 0x80 + off, timbre->Env2[0]);
+	AL_SendOutput(port, 0x20 + off, timbre->SAVEK[0]);
+	AL_SendOutput(port, 0xE0 + off, timbre->Wave[0]);
 
-	AL_SendOutput(0x40 + off, timbre->Level[0]);
+	AL_SendOutput(port, 0x40 + off, timbre->Level[0]);
 	slot = slotVoice[voc][1];
 
-	AL_SendOutput(0xC0 + voice, timbre->Feedback);
+	if (AL_SendStereo)
+	{
+		AL_SendOutputToPort(AL_LeftPort,  0xC0 + voice, (timbre->Feedback & 0x0f) | 0x20);
+		AL_SendOutputToPort(AL_RightPort, 0xC0 + voice, (timbre->Feedback & 0x0f) | 0x10);
+	} else {
+		if (AL_OPL3)
+			AL_SendOutput(port, 0xC0 + voc, (timbre->Feedback & 0x0f) | 0x30);
+		else
+			AL_SendOutputToPort(ADLIB_PORT, 0xC0 + voice, timbre->Feedback);
+	}
 
 	off = offsetSlot[slot];
 
-	VoiceLevel[slot] = 63 - (timbre->Level[1] & 0x3f);
-	VoiceKsl[slot]   = timbre->Level[1] & 0xc0;
-	AL_SendOutput(0x40 + off, 63);
+	VoiceLevel[slot][port] = 63 - (timbre->Level[1] & 0x3f);
+	VoiceKsl[slot][port]   = timbre->Level[1] & 0xc0;
+	AL_SendOutput(port, 0x40 + off, 63);
 
 	// Let voice clear the release
-	AL_SendOutput(0x80 + off, 0xff);
+	AL_SendOutput(port, 0x80 + off, 0xff);
 
-	AL_SendOutput(0x60 + off, timbre->Env1[1]);
-	AL_SendOutput(0x80 + off, timbre->Env2[1]);
-	AL_SendOutput(0x20 + off, timbre->SAVEK[1]);
-	AL_SendOutput(0xE0 + off, timbre->Wave[1]);
+	AL_SendOutput(port, 0x60 + off, timbre->Env1[1]);
+	AL_SendOutput(port, 0x80 + off, timbre->Env2[1]);
+	AL_SendOutput(port, 0x20 + off, timbre->SAVEK[1]);
+	AL_SendOutput(port, 0xE0 + off, timbre->Wave[1]);
 }
 
 
@@ -378,50 +370,173 @@ static void AL_SetVoiceTimbre(int voice)
 
 static void AL_SetVoiceVolume(int voice)
 {
-	int channel;
-	int velocity;
-	int slot;
-	int voc;
-	unsigned long t1;
-	unsigned long volume;
-	TIMBRE *timbre;
+   int channel;
+   int velocity;
+   int slot;
+   int port;
+   int voc;
+   unsigned long t1;
+   unsigned long t2;
+   unsigned long volume;
+   TIMBRE *timbre;
 
-	channel = Voice[voice].channel;
+   channel = Voice[ voice ].channel;
 
-	timbre = &ADLIB_TimbreBank[Voice[voice].timbre];
+   timbre = &ADLIB_TimbreBank[ Voice[ voice ].timbre ];
 
-	velocity = Voice[voice].velocity + timbre->Velocity;
-	if (velocity > MAX_VELOCITY)
-		velocity = MAX_VELOCITY;
+   velocity = Voice[ voice ].velocity + timbre->Velocity;
+   if (velocity > MAX_VELOCITY)
+	   velocity = MAX_VELOCITY;
 
-	voc  = (voice >= NUM_VOICES) ? voice - NUM_VOICES : voice;
-	slot = slotVoice[voc][1];
+   voc  = ( voice >= NUM_VOICES ) ? voice - NUM_VOICES : voice;
 
-	// amplitude
-	t1  = (unsigned)VoiceLevel[slot];
-	t1 *= (velocity + 0x80);
-	t1  = (Channel[channel].Volume * t1) >> 15;
+   slot = slotVoice[ voc ][ 1 ];
+   port = Voice[ voice ].port;
 
-	volume  = t1 ^ 63;
-	volume |= (unsigned)VoiceKsl[slot];
+   // amplitude
+   t1  = ( unsigned )VoiceLevel[ slot ][ port ];
+   t1 *= ( velocity + 0x80 );
+   t1  = ( Channel[ channel ].Volume * t1 ) >> 15;
 
-	AL_SendOutput(0x40 + offsetSlot[slot], volume);
+   if ( !AL_SendStereo )
+      {
+      volume  = t1 ^ 63;
+      volume |= ( unsigned )VoiceKsl[ slot ][ port ];
 
-	// Check if this timbre is Additive
-	if (timbre->Feedback & 0x01)
-	{
-		slot = slotVoice[voc][0];
+      AL_SendOutput( port, 0x40 + offsetSlot[ slot ], volume );
 
-		// amplitude
-		t1  = (unsigned)VoiceLevel[slot];
-		t1 *= (velocity + 0x80);
-		t1  = (Channel[channel].Volume * t1) >> 15;
+      // Check if this timbre is Additive
+      if ( timbre->Feedback & 0x01 )
+         {
+         slot = slotVoice[ voc ][ 0 ];
 
-		volume  = t1 ^ 63;
-		volume |= (unsigned)VoiceKsl[slot];
+         // amplitude
+         t2  = ( unsigned )VoiceLevel[ slot ][ port ];
+         t2 *= ( velocity + 0x80 );
+         t2  = ( Channel[ channel ].Volume * t1 ) >> 15;
 
-		AL_SendOutput(0x40 + offsetSlot[slot], volume);
-	}
+         volume  = t2 ^ 63;
+         volume |= ( unsigned )VoiceKsl[ slot ][ port ];
+
+         AL_SendOutput( port, 0x40 + offsetSlot[ slot ], volume );
+         }
+      }
+   else
+      {
+      // Set left channel volume
+      volume = t1;
+      if ( Channel[ channel ].Pan < 64 )
+         {
+         volume *= Channel[ channel ].Pan;
+         volume >>= 6;
+         }
+
+      volume ^= 63;
+      volume |= ( unsigned )VoiceKsl[ slot ][ port ];
+
+      AL_SendOutputToPort( AL_LeftPort, 0x40 + offsetSlot[ slot ], volume );
+
+      // Set right channel volume
+      volume = t1;
+      if ( Channel[ channel ].Pan > 64 )
+         {
+         volume *= 127 - Channel[ channel ].Pan;
+         volume >>= 6;
+         }
+
+      volume ^= 63;
+      volume |= ( unsigned )VoiceKsl[ slot ][ port ];
+
+      AL_SendOutputToPort( AL_RightPort, 0x40 + offsetSlot[ slot ], volume );
+
+      // Check if this timbre is Additive
+      if ( timbre->Feedback & 0x01 )
+         {
+         // amplitude
+         t2  = ( unsigned )VoiceLevel[ slot ][ port ];
+         t2 *= ( velocity + 0x80 );
+         t2  = ( Channel[ channel ].Volume * t1 ) >> 15;
+
+         slot = slotVoice[ voc ][ 0 ];
+
+         // Set left channel volume
+         volume = t2;
+         if ( Channel[ channel ].Pan < 64 )
+            {
+            volume *= Channel[ channel ].Pan;
+            volume >>= 6;
+            }
+
+         volume ^= 63;
+         volume |= ( unsigned )VoiceKsl[ slot ][ port ];
+
+         AL_SendOutputToPort( AL_LeftPort, 0x40 + offsetSlot[ slot ], volume );
+
+         // Set right channel volume
+         volume = t2;
+         if ( Channel[ channel ].Pan > 64 )
+            {
+            volume *= 127 - Channel[ channel ].Pan;
+            volume >>= 6;
+            }
+
+         volume ^= 63;
+         volume |= ( unsigned )VoiceKsl[ slot ][ port ];
+
+         AL_SendOutputToPort( AL_RightPort, 0x40 + offsetSlot[ slot ], volume );
+         }
+      }
+   }
+
+
+/*---------------------------------------------------------------------
+   Linked list management routines.
+---------------------------------------------------------------------*/
+
+#define OFFSET( structure, offset ) \
+   ( *( ( char ** )&( structure )[ offset ] ) )
+
+#define LL_AddToTail( type, listhead, node )         \
+    LL_AddNode( ( char * )( node ),                  \
+                ( char ** )&( ( listhead )->end ),   \
+                ( char ** )&( ( listhead )->start ), \
+                ( int )&( ( type * ) 0 )->prev,      \
+                ( int )&( ( type * ) 0 )->next )
+
+#define LL_Remove( type, listhead, node )               \
+    LL_RemoveNode( ( char * )( node ),                  \
+                   ( char ** )&( ( listhead )->start ), \
+                   ( char ** )&( ( listhead )->end ),   \
+                   ( int )&( ( type * ) 0 )->next,      \
+                   ( int )&( ( type * ) 0 )->prev )
+
+static void LL_AddNode(char *item, char **head, char **tail, int next, int prev)
+{
+	OFFSET(item, prev) = NULL;
+	OFFSET(item, next) = *head;
+
+	if (*head)
+		OFFSET(*head, prev) = item;
+	else
+		*tail = item;
+
+	*head = item;
+}
+
+static void LL_RemoveNode(char *item, char **head, char **tail, int next, int prev)
+{
+	if (OFFSET(item, prev) == NULL)
+		*head = OFFSET(item, next);
+	else
+		OFFSET(OFFSET(item, prev), next) = OFFSET(item, next);
+
+	if (OFFSET(item, next) == NULL)
+		*tail = OFFSET(item, prev);
+	else
+		OFFSET(OFFSET(item, next), prev) = OFFSET(item, prev);
+
+	OFFSET(item, next) = NULL;
+	OFFSET(item, prev) = NULL;
 }
 
 
@@ -485,9 +600,12 @@ static void AL_SetVoicePitch(int voice)
 	int ScaleNote;
 	int Octave;
 	int pitch;
+	int port;
 	int voc;
 
+	port = Voice[voice].port;
 	voc  = (voice >= NUM_VOICES) ? voice - NUM_VOICES : voice;
+
 	channel = Voice[voice].channel;
 
 	if (channel == 9)
@@ -513,12 +631,12 @@ static void AL_SetVoicePitch(int voice)
 
 	pitch = OctavePitch[Octave] | NotePitch[detune][ScaleNote];
 
-	Voice[voice].pitch = pitch;
+	Voice[voice].pitchleft = pitch;
 
 	pitch |= Voice[voice].status;
 
-	AL_SendOutput(0xA0 + voc, pitch);
-	AL_SendOutput(0xB0 + voc, pitch >> 8);
+	AL_SendOutput(port, 0xA0 + voc, LOBYTE(pitch));
+	AL_SendOutput(port, 0xB0 + voc, HIBYTE(pitch));
 }
 
 
@@ -583,32 +701,39 @@ static void AL_SetChannelDetune(int channel, int detune)
 static void AL_ResetVoices(void)
 {
 	int index;
+	int numvoices;
 
 	Voice_Pool.start = NULL;
-	Voice_Pool.end = NULL;
+	Voice_Pool.end   = NULL;
 
-	for (index = 0; index < NUM_VOICES; index++)
+	numvoices = NUM_VOICES;
+	if (AL_OPL3)
+		numvoices = NUM_VOICES * 2;
+
+	for (index = 0; index < numvoices; index++)
 	{
-		Voice[index].num = index;
-		Voice[index].key = 0;
+		Voice[index].num      = index;
+		Voice[index].key      = 0;
 		Voice[index].velocity = 0;
-		Voice[index].channel = -1;
-		Voice[index].timbre = -1;
-		Voice[index].status = NOTE_OFF;
+		Voice[index].channel  = -1;
+		Voice[index].timbre   = -1;
+		Voice[index].port     = (index < NUM_VOICES) ? 0 : 1;
+		Voice[index].status   = NOTE_OFF;
 		LL_AddToTail(VOICE, &Voice_Pool, &Voice[index]);
 	}
 
 	for (index = 0; index < NUM_CHANNELS; index++)
 	{
-		Channel[index].Voices.start    = NULL;
-		Channel[index].Voices.end      = NULL;
-		Channel[index].Timbre          = 0;
-		Channel[index].Pitchbend       = 0;
-		Channel[index].KeyOffset       = 0;
-		Channel[index].KeyDetune       = 0;
-		Channel[index].Volume          = AL_DefaultChannelVolume;
-		Channel[index].Pan             = 64;
-		Channel[index].RPN             = 0;
+		Channel[index].Voices.start = NULL;
+		Channel[index].Voices.end   = NULL;
+		Channel[index].Timbre       = 0;
+		Channel[index].Pitchbend    = 0;
+		Channel[index].KeyOffset    = 0;
+		Channel[index].KeyDetune    = 0;
+		Channel[index].Volume       = AL_DefaultChannelVolume;
+		Channel[index].Pan          = 64;
+		Channel[index].RPN          = 0;
+
 		Channel[index].PitchBendRange     = AL_DefaultPitchBendRange;
 		Channel[index].PitchBendSemiTones = AL_DefaultPitchBendRange / 100;
 		Channel[index].PitchBendHundreds  = AL_DefaultPitchBendRange % 100;
@@ -640,32 +765,64 @@ static void AL_CalcPitchInfo(void)
    Sets all voices to a known (quiet) state.
 ---------------------------------------------------------------------*/
 
-static void AL_FlushCard(void)
+static void AL_FlushCard(int port)
 {
 	int i;
 	unsigned slot1;
 	unsigned slot2;
 
-	for (i = 0; i < NUM_VOICES; i++)
+	for (i = 0 ; i < NUM_VOICES; i++)
 	{
 		slot1 = offsetSlot[slotVoice[i][0]];
 		slot2 = offsetSlot[slotVoice[i][1]];
 
-		AL_SendOutput(0xA0 + i, 0);
-		AL_SendOutput(0xB0 + i, 0);
+		AL_SendOutputToPort(port, 0xA0 + i, 0);
+		AL_SendOutputToPort(port, 0xB0 + i, 0);
 
-		AL_SendOutput(0xE0 + slot1, 0);
-		AL_SendOutput(0xE0 + slot2, 0);
+		AL_SendOutputToPort(port, 0xE0 + slot1, 0);
+		AL_SendOutputToPort(port, 0xE0 + slot2, 0);
 
 		// Set the envelope to be fast and quiet
-		AL_SendOutput(0x60 + slot1, 0xff);
-		AL_SendOutput(0x60 + slot2, 0xff);
-		AL_SendOutput(0x80 + slot1, 0xff);
-		AL_SendOutput(0x80 + slot2, 0xff);
+		AL_SendOutputToPort(port, 0x60 + slot1, 0xff);
+		AL_SendOutputToPort(port, 0x60 + slot2, 0xff);
+		AL_SendOutputToPort(port, 0x80 + slot1, 0xff);
+		AL_SendOutputToPort(port, 0x80 + slot2, 0xff);
 
 		// Maximum attenuation
-		AL_SendOutput(0x40 + slot1, 0xff);
-		AL_SendOutput(0x40 + slot2, 0xff);
+		AL_SendOutputToPort(port, 0x40 + slot1, 0xff);
+		AL_SendOutputToPort(port, 0x40 + slot2, 0xff);
+	}
+}
+
+
+/*---------------------------------------------------------------------
+   Function: AL_StereoOn
+
+   Sets the card send info in stereo.
+---------------------------------------------------------------------*/
+
+static void AL_StereoOn(void)
+{
+	if (AL_OPL3)
+	{
+		// Set card to OPL3 operation
+		AL_SendOutputToPort(AL_RightPort, 0x5, 1);
+	}
+}
+
+
+/*---------------------------------------------------------------------
+   Function: AL_StereoOff
+
+   Sets the card send info in mono.
+---------------------------------------------------------------------*/
+
+static void AL_StereoOff(void)
+{
+	if (AL_OPL3)
+	{
+		// Set card back to OPL2 operation
+		AL_SendOutputToPort(AL_RightPort, 0x5, 0);
 	}
 }
 
@@ -678,13 +835,20 @@ static void AL_FlushCard(void)
 
 static void AL_Reset(void)
 {
-	AL_SendOutput(1, 0x20);
-	AL_SendOutput(0x08, 0);
+	AL_SendOutputToPort(ADLIB_PORT, 1, 0x20);
+	AL_SendOutputToPort(ADLIB_PORT, 0x08, 0);
 
 	// Set the values: AM Depth, VIB depth & Rhythm
-	AL_SendOutput(0xBD, 0);
+	AL_SendOutputToPort(ADLIB_PORT, 0xBD, 0);
 
-	AL_FlushCard();
+	AL_StereoOn();
+
+	if (AL_OPL3)
+	{
+		AL_FlushCard(AL_LeftPort);
+		AL_FlushCard(AL_RightPort);
+	} else
+		AL_FlushCard(ADLIB_PORT);
 }
 
 
@@ -694,9 +858,10 @@ static void AL_Reset(void)
    Turns off a note on the specified MIDI channel.
 ---------------------------------------------------------------------*/
 
-void AL_NoteOff(int32_t channel, int32_t key, int32_t velocity)
+void AL_NoteOff(int channel, int key, int velocity)
 {
 	int voice;
+	int port;
 	int voc;
 
 	UNUSED(velocity);
@@ -712,9 +877,10 @@ void AL_NoteOff(int32_t channel, int32_t key, int32_t velocity)
 
 	Voice[voice].status = NOTE_OFF;
 
-	voc = (voice >= NUM_VOICES) ? voice - NUM_VOICES : voice;
+	port = Voice[voice].port;
+	voc  = (voice >= NUM_VOICES) ? voice - NUM_VOICES : voice;
 
-	AL_SendOutput(0xB0 + voc, HIBYTE(Voice[voice].pitch));
+	AL_SendOutput(port, 0xB0 + voc, HIBYTE(Voice[voice].pitchleft));
 
 	LL_Remove(VOICE, &Channel[channel].Voices, &Voice[voice]);
 	LL_AddToTail(VOICE, &Voice_Pool, &Voice[voice]);
@@ -727,7 +893,7 @@ void AL_NoteOff(int32_t channel, int32_t key, int32_t velocity)
    Plays a note on the specified MIDI channel.
 ---------------------------------------------------------------------*/
 
-void AL_NoteOn(int32_t channel, int32_t key, int32_t velocity)
+void AL_NoteOn(int channel, int key, int velocity)
 {
 	int voice;
 
@@ -737,7 +903,7 @@ void AL_NoteOn(int32_t channel, int32_t key, int32_t velocity)
 
 	if (velocity == 0)
 	{
-		AL_NoteOff(channel, key, velocity);
+		AL_NoteOff(channel, key, 0);
 		return;
 	}
 
@@ -775,7 +941,7 @@ void AL_NoteOn(int32_t channel, int32_t key, int32_t velocity)
 
 static void AL_AllNotesOff(int channel)
 {
-	while (Channel[channel].Voices.start != NULL)
+	while(Channel[channel].Voices.start != NULL)
 		AL_NoteOff(channel, Channel[channel].Voices.start->key, 0);
 }
 
@@ -786,7 +952,7 @@ static void AL_AllNotesOff(int channel)
    Sets the value of a controller on the specified MIDI channel.
 ---------------------------------------------------------------------*/
 
-void AL_ControlChange(int32_t channel, int32_t type, int32_t data)
+void AL_ControlChange(int channel, int type, int data)
 {
 	// We only play channels 1 through 10
 	if (channel > AL_MaxMidiChannel)
@@ -831,19 +997,15 @@ void AL_ControlChange(int32_t channel, int32_t type, int32_t data)
 			if (Channel[channel].RPN == MIDI_PITCHBEND_RPN)
 			{
 				Channel[channel].PitchBendSemiTones = data;
-				Channel[channel].PitchBendRange     =
-					Channel[channel].PitchBendSemiTones * 100 +
-					Channel[channel].PitchBendHundreds;
-			}
-			break;
+				Channel[channel].PitchBendRange     = Channel[channel].PitchBendSemiTones * 100 + Channel[channel].PitchBendHundreds;
+            }
+         break;
 
 		case MIDI_DATAENTRY_LSB:
-			if ( Channel[ channel ].RPN == MIDI_PITCHBEND_RPN )
+			if (Channel[channel].RPN == MIDI_PITCHBEND_RPN)
 			{
-				Channel[ channel ].PitchBendHundreds = data;
-				Channel[ channel ].PitchBendRange    =
-					Channel[ channel ].PitchBendSemiTones * 100 +
-					Channel[ channel ].PitchBendHundreds;
+				Channel[channel].PitchBendHundreds = data;
+				Channel[channel].PitchBendRange    = Channel[channel].PitchBendSemiTones * 100 + Channel[channel].PitchBendHundreds;
 			}
 			break;
 	}
@@ -856,13 +1018,13 @@ void AL_ControlChange(int32_t channel, int32_t type, int32_t data)
    Selects the instrument to use on the specified MIDI channel.
 ---------------------------------------------------------------------*/
 
-void AL_ProgramChange(int32_t channel, int32_t patch)
+void AL_ProgramChange(int channel, int patch)
 {
 	// We only play channels 1 through 10
 	if (channel > AL_MaxMidiChannel)
 		return;
 
-	Channel[channel].Timbre  = patch;
+	Channel[channel].Timbre = patch;
 }
 
 
@@ -872,7 +1034,7 @@ void AL_ProgramChange(int32_t channel, int32_t patch)
    Sets the pitch bend amount on the specified MIDI channel.
 ---------------------------------------------------------------------*/
 
-void AL_SetPitchBend(int32_t channel, int32_t lsb, int32_t msb)
+void AL_SetPitchBend(int channel, int lsb, int msb)
 {
 	int            pitchbend;
 	unsigned long  TotalBend;
@@ -908,27 +1070,27 @@ void AL_SetPitchBend(int32_t channel, int32_t lsb, int32_t msb)
    Determines if an Adlib compatible card is installed in the machine.
 ---------------------------------------------------------------------*/
 
-int32_t AL_DetectFM(void)
+boolean AL_DetectFM(void)
 {
 	int status1;
 	int status2;
 	int i;
 
-	AL_SendOutput(4, 0x60);   // Reset T1 & T2
-	AL_SendOutput(4, 0x80);   // Reset IRQ
+	AL_SendOutputToPort(ADLIB_PORT, 4, 0x60);   // Reset T1 & T2
+	AL_SendOutputToPort(ADLIB_PORT, 4, 0x80);   // Reset IRQ
 
 	status1 = inp(ADLIB_PORT);
 
-	AL_SendOutput(2, 0xff);   // Set timer 1
-	AL_SendOutput(4, 0x21);   // Start timer 1
+	AL_SendOutputToPort(ADLIB_PORT, 2, 0xff);   // Set timer 1
+	AL_SendOutputToPort(ADLIB_PORT, 4, 0x21);   // Start timer 1
 
 	for (i = 100; i > 0; i--)
 		inp(ADLIB_PORT);
 
 	status2 = inp(ADLIB_PORT);
 
-	AL_SendOutput(4, 0x60);
-	AL_SendOutput(4, 0x80);
+	AL_SendOutputToPort(ADLIB_PORT, 4, 0x60);
+	AL_SendOutputToPort(ADLIB_PORT, 4, 0x80);
 
 	return ((status1 & 0xe0) == 0x00) && ((status2 & 0xe0) == 0xc0);
 }
@@ -942,6 +1104,9 @@ int32_t AL_DetectFM(void)
 
 void AL_Shutdown(void)
 {
+	AL_StereoOff();
+
+	AL_OPL3 = false;
 	AL_ResetVoices();
 	AL_Reset();
 }
@@ -953,8 +1118,39 @@ void AL_Shutdown(void)
    Begins use of the sound card.
 ---------------------------------------------------------------------*/
 
-void AL_Init(void)
+void AL_Init(int soundcard)
 {
+	BLASTER_CONFIG Blaster;
+	int status;
+
+	AL_OPL3 = false;
+	AL_LeftPort  = 0x388;
+	AL_RightPort = 0x388;
+
+	switch (soundcard)
+	{
+		case ProAudioSpectrum:
+		case SoundMan16:
+			AL_OPL3 = true;
+			AL_LeftPort  = 0x388;
+			AL_RightPort = 0x38A;
+			break;
+
+		case SoundBlaster:
+			status = BLASTER_GetCardSettings(&Blaster);
+			if (status != BLASTER_Ok)
+				status = BLASTER_GetEnv(&Blaster);
+
+			if (status == BLASTER_Ok)
+				if (Blaster.Type == SBPro2 || Blaster.Type == SB16)
+				{
+					AL_OPL3 = true;
+					AL_LeftPort  = Blaster.Address;
+					AL_RightPort = Blaster.Address + 2;
+				}
+			break;
+	}
+
 	AL_CalcPitchInfo();
 	AL_Reset();
 	AL_ResetVoices();
@@ -969,5 +1165,5 @@ void AL_Init(void)
 
 void AL_RegisterTimbreBank(uint8_t *timbres)
 {
-	memcpy(ADLIB_TimbreBank, timbres, sizeof(ADLIB_TimbreBank));
+	memcpy(ADLIB_TimbreBank, timbres, sizeof(ADLIB_TimbreBank)); 
 }

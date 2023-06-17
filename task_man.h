@@ -32,24 +32,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __TASK_MAN_H
 #define __TASK_MAN_H
 
-#include "doomdef.h"
+enum TASK_ERRORS
+   {
+   TASK_Warning = -2,
+   TASK_Error = -1,
+   TASK_Ok = 0
+   };
 
 typedef struct task
 {
-	struct task			*next;
-	struct task			*prev;
-	void				(*TaskService)(struct task *);
-	int32_t				taskId;
-	int32_t				rate;
-	volatile int32_t	count;
-	int32_t				priority;
-	boolean				active;
+    struct   task *next;
+    struct   task *prev;
+    void          ( *TaskService )( struct task * );
+    int           taskId;
+    long          rate;
+    volatile long count;
+    int           priority;
+    int           active;
 } task;
 
-void TS_Shutdown(void);
-task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority, int32_t taskId);
-void TS_Terminate(task *ptr);
-void TS_Dispatch(void);
-void TS_SetTaskRate(task *Task, int32_t rate);
+void    TS_Shutdown( void );
+task    *TS_ScheduleTask( void ( *Function )( task * ), int rate,
+                          int priority, void *data );
+int     TS_Terminate( task *ptr );
+void    TS_Dispatch( void );
+void    TS_SetTaskRate( task *Task, int rate );
 
 #endif

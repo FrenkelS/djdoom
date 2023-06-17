@@ -21,16 +21,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __AL_MIDI_H
 #define __AL_MIDI_H
 
-#include <stdint.h>
+#include "doomdef.h"
 
 void AL_Shutdown(void);
-void AL_Init(void);
+void AL_Init(int32_t soundcard);
 void AL_NoteOff(int32_t channel, int32_t key, int32_t velocity);
 void AL_NoteOn(int32_t channel, int32_t key, int32_t velocity);
 void AL_ControlChange(int32_t channel, int32_t type, int32_t data);
 void AL_ProgramChange(int32_t channel, int32_t patch);
 void AL_SetPitchBend(int32_t channel, int32_t lsb, int32_t msb);
-int32_t AL_DetectFM(void);
+boolean AL_DetectFM(void);
 void AL_RegisterTimbreBank(uint8_t *timbres);
 
 #endif

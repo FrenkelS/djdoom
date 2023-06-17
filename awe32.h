@@ -19,45 +19,40 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 /**********************************************************************
-   module: PCFX.H
+   module: AWE32.H
 
    author: James R. Dose
-   date:   April 1, 1994
+   date:   August 23, 1994
 
-   Public header for PCFX.C
+   Public header for AWE32.C  Cover functions for calling the
+   AWE32 low-level library.
 
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#ifndef __PCFX_H
-#define __PCFX_H
+#ifndef __AWE32_H
+#define __AWE32_H
 
-enum PCFX_Errors
+enum AWE32_ERRORS
    {
-   PCFX_Warning = -2,
-   PCFX_Error   = -1,
-   PCFX_Ok      = 0,
-   PCFX_NoVoices,
-   PCFX_VoiceNotFound
+   AWE32_Warning = -2,
+   AWE32_Error = -1,
+   AWE32_Ok = 0,
+   AWE32_SoundBlasterError,
+   AWE32_NotDetected,
+   AWE32_UnableToInitialize,
+   AWE32_MPU401Error,
+   AWE32_DPMI_Error
    };
 
-#define PCFX_MaxVolume      255
-#define PCFX_MinVoiceHandle 1
-
-typedef	struct
-   {
-   unsigned long  length;
-   short int      priority;
-   char           data[];
-   } PCSound;
-
-int   PCFX_Stop( int handle );
-void  PCFX_UseLookup( int use, unsigned value );
-int   PCFX_Play( PCSound *sound, int priority, unsigned long callbackval );
-int   PCFX_SoundPlaying( int handle );
-int   PCFX_SetTotalVolume( int volume );
-int   PCFX_Init( void );
-int   PCFX_Shutdown( void );
-   #pragma aux PCFX_Shutdown frame;
+int  AWE32_Init( void );
+void AWE32_Shutdown( void );
+void AWE32_NoteOff( int channel, int key, int velocity );
+void AWE32_NoteOn( int channel, int key, int velocity );
+void AWE32_PolyAftertouch( int channel, int key, int pressure );
+void AWE32_ChannelAftertouch( int channel, int pressure );
+void AWE32_ControlChange( int channel, int number, int value );
+void AWE32_ProgramChange( int channel, int program );
+void AWE32_PitchBend( int channel, int lsb, int msb );
 
 #endif

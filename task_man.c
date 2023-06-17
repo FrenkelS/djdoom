@@ -29,17 +29,113 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#include <conio.h>
+#define TRUE  ( 1 == 1 )
+#define FALSE ( !TRUE )
+
+#define NOINTS
+
+#include <stdlib.h>
 #include <dos.h>
-#include "doomdef.h"
+#include <conio.h>
+#include <string.h>
+#include "interrup.h"
 #include "task_man.h"
 
+#define FreeMem( ptr )   USRHOOKS_FreeMem( ( ptr ) )
 
 typedef struct
-{
-	task *start;
-	task *end;
-} tasklist;
+   {
+   task *start;
+   task *end;
+   } tasklist;
+
+
+#define NewNode(type)  ((type*)SafeMalloc(sizeof(type)))
+
+
+#define LL_CreateNewLinkedList(rootnode,type,next,prev) 			\
+   { 																				\
+   (rootnode) = NewNode(type);                            		\
+   (rootnode)->prev = (rootnode);                         		\
+   (rootnode)->next = (rootnode);                         		\
+   }
+
+
+
+#define LL_AddNode(rootnode, newnode, next, prev) 			\
+   {                                              			\
+   (newnode)->next = (rootnode);                  			\
+   (newnode)->prev = (rootnode)->prev;                	\
+   (rootnode)->prev->next = (newnode);                	\
+   (rootnode)->prev = (newnode);                      	\
+   }
+
+#define LL_TransferList(oldroot,newroot,next,prev)  \
+   {                                                \
+   if ((oldroot)->prev != (oldroot))                    \
+      {                                             \
+      (oldroot)->prev->next = (newroot);                \
+      (oldroot)->next->prev = (newroot)->prev;          \
+      (newroot)->prev->next = (oldroot)->next;          \
+      (newroot)->prev = (oldroot)->prev;                \
+      (oldroot)->next = (oldroot);                      \
+      (oldroot)->prev = (oldroot);                      \
+      }                                             \
+   }
+
+#define LL_ReverseList(root,type,next,prev)              \
+   {                                                     \
+   type *newend,*trav,*tprev;                            \
+                                                         \
+   newend = (root)->next;                                  \
+   for(trav = (root)->prev; trav != newend; trav = tprev)  \
+      {                                                  \
+      tprev = trav->prev;                                \
+      LL_MoveNode(trav,newend,next,prev);                \
+      }                                                  \
+   }
+
+
+#define LL_RemoveNode(node,next,prev) \
+   {                                  \
+   (node)->prev->next = (node)->next;     \
+   (node)->next->prev = (node)->prev;     \
+   (node)->next = (node);                 \
+   (node)->prev = (node);                 \
+   }
+
+
+#define LL_SortedInsertion(rootnode,insertnode,next,prev,type,sortparm) \
+   {                                                                    \
+   type *hoya;                                                          \
+                                                                        \
+   hoya = (rootnode)->next;                                               \
+   while((hoya != (rootnode)) && ((insertnode)->sortparm > hoya->sortparm)) \
+      {                                                                 \
+      hoya = hoya->next;                                                \
+      }                                                                 \
+   LL_AddNode(hoya,(insertnode),next,prev);                               \
+   }
+
+#define LL_MoveNode(node,newroot,next,prev) \
+   {                                        \
+   LL_RemoveNode((node),next,prev);           \
+   LL_AddNode((newroot),(node),next,prev);      \
+   }
+
+#define LL_ListEmpty(list,next,prev) \
+   (                                 \
+   ((list)->next == (list)) &&       \
+   ((list)->prev == (list))          \
+   )
+
+#define LL_Free(list)   SafeFree(list)
+#define LL_Reset(list,next,prev)    (list)->next = (list)->prev = (list)
+#define LL_New      LL_CreateNewLinkedList
+#define LL_Remove   LL_RemoveNode
+#define LL_Add      LL_AddNode
+#define LL_Empty    LL_ListEmpty
+#define LL_Move     LL_MoveNode
 
 
 /*---------------------------------------------------------------------
@@ -49,22 +145,32 @@ typedef struct
 static task HeadTask;
 static task *TaskList = &HeadTask;
 
-#if defined __DJGPP__
-static _go32_dpmi_seginfo OldInt8, NewInt8;
-#elif defined __CCDL__
-static uint16_t OldInt8selector;
-static uint32_t OldInt8offset;
-#elif defined __WATCOMC__
-static void (_interrupt _far *OldInt8)(void);
-#endif
+static void ( __interrupt __far *OldInt8 )( void );
 
 static volatile int32_t TaskServiceRate  = 0x10000L;
 static volatile int32_t TaskServiceCount = 0;
 
-static boolean TS_Installed = false;
+#ifndef NOINTS
+static volatile int  TS_TimesInInterrupt;
+#endif
 
+static char TS_Installed = FALSE;
 
-#include "interrup.h"
+static volatile int TS_InInterrupt = FALSE;
+
+/*---------------------------------------------------------------------
+   Function prototypes
+---------------------------------------------------------------------*/
+
+static void TS_FreeTaskList( void );
+static void TS_SetClockSpeed( long speed );
+static long TS_SetTimer( long TickBase );
+static void TS_SetTimerToMaxTaskRate( void );
+static void __interrupt __far TS_ServiceSchedule( void );
+static void __interrupt __far TS_ServiceScheduleIntEnabled( void );
+static void TS_AddTask( task *ptr );
+static int  TS_Startup( void );
+static void RestoreRealTimeClock( void );
 
 
 /*---------------------------------------------------------------------
@@ -74,26 +180,31 @@ static boolean TS_Installed = false;
    structures.
 ---------------------------------------------------------------------*/
 
-static void TS_FreeTaskList(void)
-{
-	task *node;
-	task *next;
+static void TS_FreeTaskList
+   (
+   void
+   )
 
-	uint32_t flags = DisableInterrupts();
+   {
+   task *node;
+   task *next;
+   unsigned flags;
 
-	node = TaskList->next;
-	while (node != TaskList)
-	{
-		next = node->next;
-		free(node);
-		node = next;
-	}
+   flags = DisableInterrupts();
 
-	TaskList->next = TaskList;
-	TaskList->prev = TaskList;
+   node = TaskList->next;
+   while( node != TaskList )
+      {
+      next = node->next;
+      FreeMem( node );
+      node = next;
+      }
 
-	RestoreInterrupts(flags);
-}
+   TaskList->next = TaskList;
+   TaskList->prev = TaskList;
+
+   RestoreInterrupts( flags );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -102,21 +213,31 @@ static void TS_FreeTaskList(void)
    Sets the rate of the 8253 timer.
 ---------------------------------------------------------------------*/
 
-static void TS_SetClockSpeed(int32_t speed)
-{
-	uint32_t flags = DisableInterrupts();
+static void TS_SetClockSpeed
+   (
+   long speed
+   )
 
-	if ((0 < speed) && (speed < 0x10000L))
-		TaskServiceRate = speed;
-	else
-		TaskServiceRate = 0x10000L;
+   {
+   unsigned flags;
 
-	outp(0x43, 0x36);
-	outp(0x40, LOBYTE(TaskServiceRate));
-	outp(0x40, HIBYTE(TaskServiceRate));
+   flags = DisableInterrupts();
 
-	RestoreInterrupts(flags);
-}
+   if ( ( speed > 0 ) && ( speed < 0x10000L ) )
+      {
+      TaskServiceRate = speed;
+      }
+   else
+      {
+      TaskServiceRate = 0x10000L;
+      }
+
+   outp( 0x43, 0x36 );
+   outp( 0x40, TaskServiceRate );
+   outp( 0x40, TaskServiceRate >> 8 );
+
+   RestoreInterrupts( flags );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -126,14 +247,22 @@ static void TS_SetClockSpeed(int32_t speed)
    speed if necessary.
 ---------------------------------------------------------------------*/
 
-static int32_t TS_SetTimer(int32_t TickBase)
-{
-	int32_t speed = 1193182L / TickBase;
-	if (speed < TaskServiceRate)
-		TS_SetClockSpeed(speed);
+static long TS_SetTimer
+   (
+   long TickBase
+   )
 
-	return speed;
-}
+   {
+   long speed;
+
+   speed = 1192030L / TickBase;
+   if ( speed < TaskServiceRate )
+      {
+      TS_SetClockSpeed( speed );
+      }
+
+   return( speed );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -143,94 +272,150 @@ static int32_t TS_SetTimer(int32_t TickBase)
    that speed.
 ---------------------------------------------------------------------*/
 
-static void TS_SetTimerToMaxTaskRate(void)
-{
-	task     *ptr;
-	int32_t  MaxServiceRate;
+static void TS_SetTimerToMaxTaskRate
+   (
+   void
+   )
 
-	uint32_t flags = DisableInterrupts();
+   {
+   task     *ptr;
+   long      MaxServiceRate;
+   unsigned  flags;
 
-	MaxServiceRate = 0x10000L;
+   flags = DisableInterrupts();
 
-	ptr = TaskList->next;
-	while (ptr != TaskList)
-	{
-		if (ptr->rate < MaxServiceRate)
-			MaxServiceRate = ptr->rate;
+   MaxServiceRate = 0x10000L;
 
-		ptr = ptr->next;
-	}
+   ptr = TaskList->next;
+   while( ptr != TaskList )
+      {
+      if ( ptr->rate < MaxServiceRate )
+         {
+         MaxServiceRate = ptr->rate;
+         }
 
-	if (TaskServiceRate != MaxServiceRate)
-		TS_SetClockSpeed(MaxServiceRate);
+      ptr = ptr->next;
+      }
 
-	RestoreInterrupts(flags);
-}
+   if ( TaskServiceRate != MaxServiceRate )
+      {
+      TS_SetClockSpeed( MaxServiceRate );
+      }
+
+   RestoreInterrupts( flags );
+   }
 
 
+#ifdef NOINTS
 /*---------------------------------------------------------------------
    Function: TS_ServiceSchedule
 
    Interrupt service routine
 ---------------------------------------------------------------------*/
 
-#if defined __DJGPP__
-static void TS_ServiceSchedule (void)
-#elif defined __CCDL__ || defined __WATCOMC__
-static void _interrupt _far TS_ServiceSchedule (void)
-#elif defined __DMC__
-static int TS_ServiceSchedule (struct INT_DATA *pd)
+static void __interrupt __far TS_ServiceSchedule
+   (
+   void
+   )
+
+   {
+   task *ptr;
+   task *next;
+
+
+   TS_InInterrupt = TRUE;
+
+   ptr = TaskList->next;
+   while( ptr != TaskList )
+      {
+      next = ptr->next;
+
+      if ( ptr->active )
+         {
+         ptr->count += TaskServiceRate;
+
+         while( ptr->count >= ptr->rate )
+            {
+            ptr->count -= ptr->rate;
+            ptr->TaskService( ptr );
+            }
+         }
+      ptr = next;
+      }
+
+   TaskServiceCount += TaskServiceRate;
+   if ( TaskServiceCount > 0xffffL )
+      {
+      TaskServiceCount &= 0xffff;
+      _chain_intr( OldInt8 );
+      }
+
+   outp( 0x20,0x20 );
+
+   TS_InInterrupt = FALSE;
+   }
+
+#else
+
+/*---------------------------------------------------------------------
+   Function: TS_ServiceScheduleIntEnabled
+
+   Interrupt service routine with interrupts enabled.
+---------------------------------------------------------------------*/
+
+static void __interrupt __far TS_ServiceScheduleIntEnabled
+   (
+   void
+   )
+
+   {
+   task *ptr;
+   task *next;
+
+   TS_TimesInInterrupt++;
+   TaskServiceCount += TaskServiceRate;
+   if ( TaskServiceCount > 0xffffL )
+      {
+      TaskServiceCount &= 0xffff;
+      _chain_intr( OldInt8 );
+      }
+
+   outp( 0x20,0x20 );
+
+   if ( TS_InInterrupt )
+      {
+      return;
+      }
+
+   TS_InInterrupt = TRUE;
+   _enable();
+
+   while( TS_TimesInInterrupt )
+      {
+      ptr = TaskList->next ;
+      while( ptr != TaskList )
+         {
+         next = ptr->next;
+
+         if ( ptr->active )
+            {
+            ptr->count += TaskServiceRate;
+            if ( ptr->count >= ptr->rate )
+               {
+               ptr->count -= ptr->rate;
+               ptr->TaskService( ptr );
+               }
+            }
+         ptr = next;
+         }
+      TS_TimesInInterrupt--;
+      }
+
+   _disable();
+
+   TS_InInterrupt = FALSE;
+   }
 #endif
-{
-	task *ptr;
-	task *next;
-
-	ptr = TaskList->next;
-	while (ptr != TaskList)
-	{
-		next = ptr->next;
-
-		if (ptr->active)
-		{
-			ptr->count += TaskServiceRate;
-
-			while (ptr->count >= ptr->rate)
-			{
-				ptr->count -= ptr->rate;
-				ptr->TaskService(ptr);
-			}
-		}
-		ptr = next;
-	}
-
-	TaskServiceCount += TaskServiceRate;
-	if (TaskServiceCount > 0xffffL)
-	{
-		TaskServiceCount &= 0xffff;
-#if defined __DJGPP__
-		asm
-		(
-			"cli \n"
-			"pushfl \n"
-			"lcall *%0"
-			:
-			: "m" (OldInt8.pm_offset)
-		);
-#elif defined __WATCOMC__
-		_chain_intr(OldInt8);
-#elif defined __CCDL__
-		//TODO call OldInt8() instead of acknowledging the interrupt
-		outp(0x20, 0x20);
-#elif defined __DMC__
-		return 0;
-#endif
-	} else {
-		outp(0x20, 0x20);
-#if defined __DMC__
-		return 1;
-#endif
-	}
-}
 
 
 /*---------------------------------------------------------------------
@@ -239,43 +424,38 @@ static int TS_ServiceSchedule (struct INT_DATA *pd)
    Sets up the task service routine.
 ---------------------------------------------------------------------*/
 
-#define TIMERINT 8
+static int TS_Startup
+   (
+   void
+   )
 
-static void TS_Startup(void)
-{
-	if (!TS_Installed)
-	{
-		TaskList->next = TaskList;
-		TaskList->prev = TaskList;
+   {
+   if ( !TS_Installed )
+      {
 
-		TaskServiceRate  = 0x10000L;
-		TaskServiceCount = 0;
+//static const task *TaskList = &HeadTask;
+      TaskList->next = TaskList;
+      TaskList->prev = TaskList;
 
-#if defined __DJGPP__
-		_go32_dpmi_get_protected_mode_interrupt_vector(TIMERINT, &OldInt8);
+      TaskServiceRate  = 0x10000L;
+      TaskServiceCount = 0;
 
-		NewInt8.pm_selector = _go32_my_cs(); 
-		NewInt8.pm_offset = (int32_t)TS_ServiceSchedule;
-		_go32_dpmi_allocate_iret_wrapper(&NewInt8);
-		_go32_dpmi_set_protected_mode_interrupt_vector(TIMERINT, &NewInt8);
-#elif defined __DMC__
-		int_intercept(TIMERINT, TS_ServiceSchedule, 0);
-#elif defined __CCDL__
-		{
-			struct SREGS	segregs;
-
-			_segread(&segregs);
-			dpmi_get_protected_interrupt(&OldInt8selector, &OldInt8offset, TIMERINT);
-			dpmi_set_protected_interrupt(TIMERINT, segregs.cs, (uint32_t)TS_ServiceSchedule);
-		}
-#elif defined __WATCOMC__
-		OldInt8 = _dos_getvect(TIMERINT);
-		_dos_setvect(TIMERINT, TS_ServiceSchedule);
+#ifndef NOINTS
+      TS_TimesInInterrupt = 0;
 #endif
 
-		TS_Installed = true;
-	}
-}
+      OldInt8 = _dos_getvect( 0x08 );
+      #ifdef NOINTS
+         _dos_setvect( 0x08, TS_ServiceSchedule );
+      #else
+         _dos_setvect( 0x08, TS_ServiceScheduleIntEnabled );
+      #endif
+
+      TS_Installed = TRUE;
+      }
+
+   return( TASK_Ok );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -284,49 +464,87 @@ static void TS_Startup(void)
    Ends processing of all tasks.
 ---------------------------------------------------------------------*/
 
-void TS_Shutdown(void)
-{
-	if (TS_Installed)
-	{
-		TS_FreeTaskList();
+void TS_Shutdown
+   (
+   void
+   )
 
-		TS_SetClockSpeed(0);
+   {
+   if ( TS_Installed )
+      {
+      TS_FreeTaskList();
 
-#if defined __DJGPP__
-		_go32_dpmi_set_protected_mode_interrupt_vector(TIMERINT, &OldInt8);
-		_go32_dpmi_free_iret_wrapper(&NewInt8);
-#elif defined __DMC__
-		int_restore(TIMERINT);
-#elif defined __CCDL__
-		dpmi_set_protected_interrupt(TIMERINT, OldInt8selector, OldInt8offset);
-#elif defined __WATCOMC__
-		_dos_setvect(TIMERINT, OldInt8);
-#endif
+      TS_SetClockSpeed( 0 );
 
-		TS_Installed = false;
-	}
-}
+      _dos_setvect( 0x08, OldInt8 );
+
+      TS_Installed = FALSE;
+      }
+   }
 
 
 /*---------------------------------------------------------------------
-   Function: TS_AddTask
-
-   Adds a new task to our list of tasks.
+   Error definitions
 ---------------------------------------------------------------------*/
 
-static void TS_AddTask(task *node)
-{
-	task *ptr;
+enum USRHOOKS_Errors
+   {
+   USRHOOKS_Warning = -2,
+   USRHOOKS_Error   = -1,
+   USRHOOKS_Ok      = 0
+   };
 
-	ptr = TaskList->next;
-	while ((ptr != TaskList) && (node->priority > ptr->priority))
-		ptr = ptr->next;
 
-	node->next = ptr;
-	node->prev = ptr->prev;
-	ptr->prev->next = node;
-	ptr->prev = node;
-}
+/*---------------------------------------------------------------------
+   Function: USRHOOKS_GetMem
+
+   Allocates the requested amount of memory and returns a pointer to
+   its location, or NULL if an error occurs.  NOTE: pointer is assumed
+   to be dword aligned.
+---------------------------------------------------------------------*/
+
+static int USRHOOKS_GetMem
+   (
+   void **ptr,
+   unsigned long size
+   )
+
+   {
+   void *memory;
+
+   memory = malloc( size );
+   if ( memory == NULL )
+      {
+      return( USRHOOKS_Error );
+      }
+
+   *ptr = memory;
+
+   return( USRHOOKS_Ok );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: USRHOOKS_FreeMem
+
+   Deallocates the memory associated with the specified pointer.
+---------------------------------------------------------------------*/
+
+static int USRHOOKS_FreeMem
+   (
+   void *ptr
+   )
+
+   {
+   if ( ptr == NULL )
+      {
+      return( USRHOOKS_Error );
+      }
+
+   free( ptr );
+
+   return( USRHOOKS_Ok );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -335,28 +553,62 @@ static void TS_AddTask(task *node)
    Schedules a new task for processing.
 ---------------------------------------------------------------------*/
 
-task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority, int32_t taskId)
-{
-	task *ptr;
+task *TS_ScheduleTask
+   (
+   void  ( *Function )( task * ),
+   int   rate,
+   int   priority,
+   void *data
+   )
 
-	ptr = malloc(sizeof(task));
-	if (ptr != NULL)
-	{
-		if (!TS_Installed)
-			TS_Startup();
+   {
+   task *ptr;
 
-		ptr->TaskService = Function;
-		ptr->taskId = taskId;
-		ptr->rate = TS_SetTimer(rate);
-		ptr->count = 0;
-		ptr->priority = priority;
-		ptr->active = false;
+   int   status;
 
-		TS_AddTask(ptr);
-	}
+   ptr = NULL;
 
-	return ptr;
-}
+   status = USRHOOKS_GetMem((void **) &ptr, sizeof( task ) );
+   if ( status == USRHOOKS_Ok )
+      {
+      if ( !TS_Installed )
+         {
+         status = TS_Startup();
+         if ( status != TASK_Ok )
+            {
+            FreeMem( ptr );
+            return( NULL );
+            }
+         }
+
+      ptr->TaskService = Function;
+      ptr->taskId = data;
+      ptr->rate = TS_SetTimer( rate );
+      ptr->count = 0;
+      ptr->priority = priority;
+      ptr->active = FALSE;
+
+      TS_AddTask( ptr );
+      }
+
+   return( ptr );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: TS_AddTask
+
+   Adds a new task to our list of tasks.
+---------------------------------------------------------------------*/
+
+static void TS_AddTask
+   (
+   task *node
+   )
+
+   {
+   LL_SortedInsertion( TaskList, node, next, prev, task, priority );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -365,36 +617,44 @@ task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority, 
    Ends processing of a specific task.
 ---------------------------------------------------------------------*/
 
-void TS_Terminate(task *NodeToRemove)
-{
-	task *ptr;
-	task *next;
-   
-	uint32_t flags = DisableInterrupts();
+int TS_Terminate
+   (
+   task *NodeToRemove
+   )
 
-	ptr = TaskList->next;
-	while (ptr != TaskList)
-	{
-		next = ptr->next;
+   {
+   task *ptr;
+   task *next;
+   unsigned flags;
 
-		if (ptr == NodeToRemove)
-		{
-			NodeToRemove->prev->next = NodeToRemove->next;
-			NodeToRemove->next->prev = NodeToRemove->prev;
-			NodeToRemove->next = NULL;
-			NodeToRemove->prev = NULL;
-			free(NodeToRemove);
+   flags = DisableInterrupts();
 
-			TS_SetTimerToMaxTaskRate();
+   ptr = TaskList->next;
+   while( ptr != TaskList )
+      {
+      next = ptr->next;
 
-			break;
-		}
+      if ( ptr == NodeToRemove )
+         {
+         LL_RemoveNode( NodeToRemove, next, prev );
+         NodeToRemove->next = NULL;
+         NodeToRemove->prev = NULL;
+         FreeMem( NodeToRemove );
 
-		ptr = next;
-	}
+         TS_SetTimerToMaxTaskRate();
 
-	RestoreInterrupts(flags);
-}
+         RestoreInterrupts( flags );
+
+         return( TASK_Ok );
+         }
+
+      ptr = next;
+      }
+
+   RestoreInterrupts( flags );
+
+   return( TASK_Warning );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -403,21 +663,26 @@ void TS_Terminate(task *NodeToRemove)
    Begins processing of all inactive tasks.
 ---------------------------------------------------------------------*/
 
-void TS_Dispatch(void)
-{
-	task *ptr;
-   
-	uint32_t flags = DisableInterrupts();
+void TS_Dispatch
+   (
+   void
+   )
 
-	ptr = TaskList->next;
-	while (ptr != TaskList)
-	{
-		ptr->active = true;
-		ptr = ptr->next;
-	}
+   {
+   task *ptr;
+   unsigned flags;
 
-	RestoreInterrupts(flags);
-}
+   flags = DisableInterrupts();
+
+   ptr = TaskList->next;
+   while( ptr != TaskList )
+      {
+      ptr->active = TRUE;
+      ptr = ptr->next;
+      }
+
+   RestoreInterrupts( flags );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -426,12 +691,19 @@ void TS_Dispatch(void)
    Sets the rate at which the specified task is serviced.
 ---------------------------------------------------------------------*/
 
-void TS_SetTaskRate(task *Task, int32_t rate)
-{
-	uint32_t flags = DisableInterrupts();
+void TS_SetTaskRate
+   (
+   task *Task,
+   int rate
+   )
 
-	Task->rate = TS_SetTimer(rate);
-	TS_SetTimerToMaxTaskRate();
+   {
+   unsigned flags;
 
-	RestoreInterrupts(flags);
-}
+   flags = DisableInterrupts();
+
+   Task->rate = TS_SetTimer( rate );
+   TS_SetTimerToMaxTaskRate();
+
+   RestoreInterrupts( flags );
+   }

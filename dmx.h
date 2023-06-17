@@ -1,5 +1,5 @@
 //
-//
+// Copyright (C) 2015 Alexey Khokholov (Nuke.YKT)
 // Copyright (C) 2023 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
@@ -12,39 +12,43 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
-//
 
 #ifndef _DMX_H_
 #define _DMX_H_
 
 #include "tsmapi.h"
 
-void MUS_PauseSong(int32_t handle);
-void MUS_ResumeSong(int32_t handle);
-void MUS_SetMasterVolume(int32_t volume);
-int32_t MUS_RegisterSong(uint8_t *data);
-void MUS_UnregisterSong(int32_t handle);
-void MUS_StopSong(int32_t handle);
-void MUS_ChainSong(int32_t handle, int32_t to);
-void MUS_PlaySong(int32_t handle, int32_t volume);
+int AL_DetectFM(void);
+int MPU_Init(int addr);
+int GUS_Init(void);
+void GUS_Shutdown(void);
 
-int32_t SFX_PlayPatch(void *data, int32_t pitch, int32_t sep, int32_t volume, int32_t flags, int32_t priority);
-void SFX_StopPatch(int32_t handle);
-int32_t SFX_Playing(int32_t handle);
-void SFX_SetOrigin(int32_t handle, int32_t pitch, int32_t sep, int32_t volume);
+void MUS_PauseSong(int handle);
+void MUS_ResumeSong(int handle);
+void MUS_SetMasterVolume(int volume);
+int MUS_RegisterSong(void *data);
+int MUS_UnregisterSong(int handle);
+int MUS_StopSong(int handle);
+int MUS_ChainSong(int handle, int next);
+int MUS_PlaySong(int handle, int volume);
+int SFX_PlayPatch(void *vdata, int pitch, int sep, int vol, int unk1, int unk2);
+void SFX_StopPatch(int handle);
+int SFX_Playing(int handle);
+void SFX_SetOrigin(int handle, int  pitch, int sep, int vol);
+int GF1_Detect(void);
+void GF1_SetMap(void *data, int len);
+int SB_Detect(int *port, int *irq, int *dma, int *unk);
+void SB_SetCard(int port, int irq, int dma);
+int AL_Detect(int *port, int *unk);
+void AL_SetCard(int port, void *data);
+int MPU_Detect(int *port, int *unk);
+void MPU_SetCard(int port);
+int DMX_Init(int rate, int maxsng, int mdev, int sdev);
+void DMX_DeInit(void);
+void WAV_PlayMode(int channels, int samplerate);
+int CODEC_Detect(int *a, int *b);
+int ENS_Detect(void);
 
-int32_t ENS_Detect(void);
-int32_t CODEC_Detect(int32_t *sbPort, int32_t *sbDma);
-int32_t GF1_Detect(void);
-void GF1_SetMap(char *dmxlump, int32_t size);
-int32_t SB_Detect(int32_t *sbPort, int32_t *sbIrq, int32_t *sbDma, uint16_t *version);
-void SB_SetCard(int32_t iBaseAddr, int32_t iIrq, int32_t iDma);
-int32_t AL_Detect(int32_t *wait, int32_t *type);
-void AL_SetCard(int32_t wait, void *genmidi);
-int32_t MPU_Detect(int32_t *mPort, int32_t *type);
-void MPU_SetCard(int32_t mPort);
 
 #define AHW_PC_SPEAKER		0x0001L
 #define AHW_ADLIB			0x0002L
@@ -55,10 +59,6 @@ void MPU_SetCard(int32_t mPort);
 #define AHW_MEDIA_VISION	0x0040L
 
 #define AHW_ENSONIQ 		0x0100L
-#define AHW_CODEC           0x0200L
+#define AHW_CODEC			0x0200L
 
-int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32_t sfxDevice);
-void DMX_DeInit(void);
-
-void WAV_PlayMode(int32_t channels, uint16_t sampleRate);
 #endif

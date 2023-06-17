@@ -43,21 +43,45 @@ typedef struct
    unsigned Emu;
    } BLASTER_CONFIG;
 
+extern BLASTER_CONFIG BLASTER_Config;
+extern int BLASTER_DMAChannel;
+
 #define UNDEFINED -1
 
 enum BLASTER_ERRORS
    {
+   BLASTER_Warning = -2,
    BLASTER_Error = -1,
    BLASTER_Ok = 0,
    BLASTER_EnvNotFound,
    BLASTER_AddrNotSet,
+   // *** VERSIONS RESTORATION ***
+#if (LIBVER_ASSREV < 19960116L)
    BLASTER_IntNotSet,
+#endif
    BLASTER_DMANotSet,
    BLASTER_DMA16NotSet,
+   // *** VERSIONS RESTORATION ***
+#if (LIBVER_ASSREV < 19960116L)
    BLASTER_MIDINotSet,
    BLASTER_CardTypeNotSet,
+#if (LIBVER_ASSREV < 19950821L)
+   BLASTER_UnsupportedSBCardType,
+#endif
+#endif
    BLASTER_InvalidParameter,
-   BLASTER_UnsupportedCardType
+   // *** VERSIONS RESTORATION ***
+#if (LIBVER_ASSREV < 19960116L)
+   BLASTER_UnsupportedCardType,
+#endif
+   BLASTER_CardNotReady,
+   BLASTER_NoSoundPlaying,
+   BLASTER_InvalidIrq,
+   BLASTER_UnableToSetIrq,
+   BLASTER_DmaError,
+   BLASTER_NoMixer,
+   BLASTER_DPMI_Error,
+   BLASTER_OutOfMemory
    };
 
 enum BLASTER_Types
@@ -77,8 +101,45 @@ enum BLASTER_Types
 
 #define MONO_8BIT    0
 #define STEREO_8BIT  ( STEREO )
+#define MONO_16BIT   ( SIXTEEN_BIT )
 #define STEREO_16BIT ( STEREO | SIXTEEN_BIT )
 
+#define BLASTER_MaxMixMode        STEREO_16BIT
+
+#define MONO_8BIT_SAMPLE_SIZE    1
+#define MONO_16BIT_SAMPLE_SIZE   2
+#define STEREO_8BIT_SAMPLE_SIZE  ( 2 * MONO_8BIT_SAMPLE_SIZE )
+#define STEREO_16BIT_SAMPLE_SIZE ( 2 * MONO_16BIT_SAMPLE_SIZE )
+
+#define BLASTER_DefaultSampleRate 11000
+#define BLASTER_DefaultMixMode    MONO_8BIT
+#define BLASTER_MaxIrq            15
+
+unsigned BLASTER_GetPlaybackRate( void );
+int   BLASTER_SetMixMode( int mode );
+void  BLASTER_StopPlayback( void );
+int   BLASTER_GetCurrentPos( void );
+int   BLASTER_BeginBufferedPlayback( char *BufferStart,
+         int BufferSize, int NumDivisions, unsigned SampleRate,
+         int MixMode, void ( *CallBackFunc )( void ) );
+int   BLASTER_SetVoiceVolume( int volume );
+int   BLASTER_GetMidiVolume( void );
+void   BLASTER_SetMidiVolume( int volume );
+int   BLASTER_CardHasMixer( void );
+void  BLASTER_SaveMidiVolume( void );
+void  BLASTER_RestoreMidiVolume( void );
+int   BLASTER_GetEnv( BLASTER_CONFIG *Config );
+int   BLASTER_SetCardSettings( BLASTER_CONFIG Config );
+int   BLASTER_GetCardSettings( BLASTER_CONFIG *Config );
+int   BLASTER_GetCardInfo( int *MaxSampleBits, int *MaxChannels );
+// *** VERSIONS RESTORATION ***
+#if (LIBVER_ASSREV < 19960116L)
+int   BLASTER_SetupWaveBlaster( int Address );
+#else
 void  BLASTER_SetupWaveBlaster( void );
+#endif
+void  BLASTER_ShutdownWaveBlaster( void );
+int   BLASTER_Init( void );
+void  BLASTER_Shutdown( void );
 
 #endif
