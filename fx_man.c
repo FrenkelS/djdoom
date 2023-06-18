@@ -37,7 +37,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#include "pas16.h"
 //#include "sndscape.h"
 //#include "guswave.h"
-//#include "ll_man.h"
 #include "fx_man.h"
 //#include "memcheck.h"
 
@@ -150,12 +149,6 @@ int FX_Init
       FX_Shutdown();
       }
 
-   status = LL_LockMemory();
-   if ( status != LL_Ok )
-      {
-      return( FX_Error );
-      }
-
    FX_MixRate = mixrate;
 
    status = FX_Ok;
@@ -181,11 +174,7 @@ int FX_Init
          status = FX_Error;
       }
 
-   if ( status != FX_Ok )
-      {
-      LL_UnlockMemory();
-      }
-   else
+   if ( status == FX_Ok )
       {
       FX_Installed = TRUE;
       }
@@ -234,8 +223,6 @@ int FX_Shutdown
       }
 
    FX_Installed = FALSE;
-
-   LL_UnlockMemory();
 
    return( status );
    }
