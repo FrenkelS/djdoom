@@ -37,7 +37,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#include "pas16.h"
 //#include "sndscape.h"
 //#include "guswave.h"
-//#include "sndsrc.h"
 //#include "ll_man.h"
 //#include "user.h"
 #include "fx_man.h"
@@ -212,8 +211,6 @@ int FX_Init
       case ProAudioSpectrum :
       case SoundMan16 :
       case SoundScape :
-      case SoundSource :
-      case TandySoundSource :
       // *** VERSIONS RESTORATION ***
 #if (LIBVER_ASSREV >= 19950821L)
       case UltraSound :
@@ -291,8 +288,6 @@ int FX_Shutdown
       case ProAudioSpectrum :
       case SoundMan16 :
       case SoundScape :
-      case SoundSource :
-      case TandySoundSource :
       // *** VERSIONS RESTORATION ***
 #if (LIBVER_ASSREV >= 19950821L)
       case UltraSound :
@@ -372,11 +367,6 @@ void FX_SetVolume
          break;
 
       case SoundScape :
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
-      case SoundSource :
-      case TandySoundSource :
-#endif
          MV_SetVolume( volume );
          break;
 
@@ -417,8 +407,6 @@ int FX_SetPan
 #if (LIBVER_ASSREV >= 19950821L) // VERSIONS RESTORATION
       case UltraSound :
 #endif
-      case SoundSource :
-      case TandySoundSource :
          status = MV_SetPan( handle, vol, left, right );
          if ( status == MV_Error )
             {
@@ -478,8 +466,6 @@ int FX_SetPitch
 #if (LIBVER_ASSREV >= 19950821L) // VERSIONS RESTORATION
       case UltraSound :
 #endif
-      case SoundSource :
-      case TandySoundSource :
          status = MV_SetPitch( handle, pitchoffset );
          if ( status == MV_Error )
             {
@@ -553,8 +539,6 @@ int FX_PlayRaw
 #if (LIBVER_ASSREV >= 19950821L) // VERSIONS RESTORATION
       case UltraSound :
 #endif
-      case SoundSource :
-      case TandySoundSource :
          handle = MV_PlayRaw( ptr, length, rate, pitchoffset,
             vol, left, right, priority, callbackval );
          if ( handle < MV_Ok )
@@ -606,8 +590,6 @@ int FX_SoundActive
       case UltraSound :
 #endif
       case SoundScape :
-      case SoundSource :
-      case TandySoundSource :
          return( MV_VoicePlaying( handle ) );
 
 #if (LIBVER_ASSREV < 19950821L) // VERSIONS RESTORATION
@@ -649,8 +631,6 @@ int FX_StopSound
 #if (LIBVER_ASSREV >= 19950821L) // VERSIONS RESTORATION
       case UltraSound :
 #endif
-      case SoundSource :
-      case TandySoundSource :
          status = MV_Kill( handle );
          if ( status != MV_Ok )
             {
