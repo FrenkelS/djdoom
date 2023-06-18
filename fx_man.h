@@ -78,17 +78,17 @@ enum fx_BLASTER_Types
    };
 
 
-int   FX_GetBlasterSettings( fx_blaster_config *blaster );
-int   FX_SetupSoundBlaster( fx_blaster_config blaster, int *MaxVoices, int *MaxSampleBits, int *MaxChannels );
-int   FX_Init( int SoundCard, int numvoices, int numchannels, int samplebits, unsigned mixrate );
-int   FX_Shutdown( void );
-void  FX_SetVolume( int volume );
+int  FX_GetBlasterSettings( fx_blaster_config *blaster );
+void FX_SetupSoundBlaster( fx_blaster_config blaster, int *MaxVoices, int *MaxSampleBits, int *MaxChannels );
+void FX_Init( int SoundCard, int numvoices, int numchannels, int samplebits, unsigned mixrate );
+void FX_Shutdown( void );
+void FX_SetVolume( int volume );
 
-int FX_SetPan( int handle, int vol, int left, int right );
-int FX_SetPitch( int handle, int pitchoffset );
+void FX_SetPan( int handle, int vol, int left, int right );
+void FX_SetPitch( int handle, int pitchoffset );
 
-int FX_PlayRaw( char *ptr, unsigned long length, unsigned rate, int pitchoffset, int vol, int left, int right, int priority, unsigned long callbackval );
-int FX_SoundActive( int handle );
-int FX_StopSound( int handle );
+int  FX_PlayRaw( char *ptr, unsigned long length, unsigned rate, int pitchoffset, int vol, int left, int right, int priority, unsigned long callbackval );
+int  FX_SoundActive( int handle );
+void FX_StopSound( int handle );
 
 #endif
