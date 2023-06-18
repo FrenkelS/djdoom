@@ -38,7 +38,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#include "sndscape.h"
 //#include "guswave.h"
 //#include "ll_man.h"
-//#include "user.h"
 #include "fx_man.h"
 //#include "memcheck.h"
 
@@ -149,11 +148,6 @@ int FX_Init
    if ( FX_Installed )
       {
       FX_Shutdown();
-      }
-
-   if ( USER_CheckParameter( "ASSVER" ) )
-      {
-      return( FX_Error );
       }
 
    status = LL_LockMemory();
