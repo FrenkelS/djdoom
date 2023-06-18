@@ -1,4 +1,5 @@
 //
+// Copyright (C) 1994-1995 Apogee Software, Ltd.
 // Copyright (C) 2005-2014 Simon Howard
 // Copyright (C) 2015-2017 Alexey Khokholov (Nuke.YKT)
 // Copyright (C) 2023 Frenkel Smeijers
@@ -18,13 +19,24 @@
 //
 
 #include "al_midi.h"
+#include "blaster.h"
 #include "doomdef.h"
 #include "dmx.h"
-#include "fx_man.h"
 #include "mpu401.h"
 #include "music.h"
 #include "pcfx.h"
 #include "sndcards.h"
+
+typedef struct
+{
+	uint32_t Address;
+	uint32_t Type;
+	uint32_t Interrupt;
+	uint32_t Dma8;
+	uint32_t Dma16;
+	uint32_t Midi;
+	uint32_t Emu;
+} fx_blaster_config;
 
 static fx_blaster_config dmx_blaster;
 
@@ -160,11 +172,11 @@ int32_t SFX_PlayPatch(void *data, int32_t pitch, int32_t sep, int32_t volume, in
 		return PCFX_Play(data);
 	else if (type == 3)
 	{
-		uint16_t rate = ((uint16_t*)data)[1];
-		uint32_t len =  ((uint32_t*)data)[1];
+		uint16_t rate   = ((uint16_t*)data)[1];
+		uint32_t length = ((uint32_t*)data)[1];
 
-		len -= 32; // 16 pre pad bytes + 16 post pad bytes
-		return FX_PlayRaw((uint8_t*)data + 0x18, len, rate, ((pitch - 128) * 2400) / 128, volume * 2, ((254 - sep) * volume) / 63, ((sep) * volume) / 63, 127 - priority, 0);
+		length -= 32; // 16 pre pad bytes + 16 post pad bytes
+		return MV_PlayRaw((uint8_t*)data + 0x18, length, rate, ((pitch - 128) * 2400) / 128, volume * 2, ((254 - sep) * volume) / 63, ((sep) * volume) / 63, 127 - priority, 0);
 	}
 	else
 		return -1;
@@ -175,7 +187,7 @@ void SFX_StopPatch(int32_t handle)
 	if (ass_sdev == PC)
 		PCFX_Stop(handle);
 	else
-		FX_StopSound(handle);
+		MV_Kill(handle);
 }
 
 int32_t SFX_Playing(int32_t handle)
@@ -183,15 +195,15 @@ int32_t SFX_Playing(int32_t handle)
 	if (ass_sdev == PC)
 		return PCFX_SoundPlaying(handle);
 	else
-		return FX_SoundActive(handle);
+		return MV_VoicePlaying(handle);
 }
 
 void SFX_SetOrigin(int32_t handle, int32_t pitch, int32_t sep, int32_t volume)
 {
-	if (!(handle & 0x8000))
+	if (ass_sdev != PC)
 	{
-		FX_SetPan(handle, volume * 2, ((254 - sep) * volume) / 63, ((sep) * volume) / 63);
-		FX_SetPitch(handle, ((pitch - 128) * 2400) / 128);
+		MV_SetPan(handle, volume * 2, ((254 - sep) * volume) / 63, ((sep) * volume) / 63);
+		MV_SetPitch(handle, ((pitch - 128) * 2400) / 128);
 	}
 }
 
@@ -202,15 +214,43 @@ int32_t GF1_Detect(void) {return -1;}
 void GF1_SetMap(char *dmxlump, int32_t size) {UNUSED(dmxlump); UNUSED(size);}
 
 
+/*---------------------------------------------------------------------
+   Function: FX_GetBlasterSettings
+
+   Returns the current BLASTER environment variable settings.
+---------------------------------------------------------------------*/
+
+static boolean FX_GetBlasterSettings(fx_blaster_config *blaster)
+{
+	int32_t status;
+	BLASTER_CONFIG Blaster;
+
+	status = BLASTER_GetEnv(&Blaster);
+	if (status != BLASTER_Ok)
+		return true;
+
+	blaster->Type      = Blaster.Type;
+	blaster->Address   = Blaster.Address;
+	blaster->Interrupt = Blaster.Interrupt;
+	blaster->Dma8      = Blaster.Dma8;
+	blaster->Dma16     = Blaster.Dma16;
+	blaster->Midi      = Blaster.Midi;
+	blaster->Emu       = Blaster.Emu;
+
+	return false;
+}
+
 int32_t SB_Detect(int32_t *sbPort, int32_t *sbIrq, int32_t *sbDma, uint16_t *version)
 {
 	UNUSED(version);
 
 	if (FX_GetBlasterSettings(&dmx_blaster)) {
+		// BLASTER environment variable not set
+
 		if (!sbPort || !sbIrq || !sbDma)
 			return -1;
 
-		dmx_blaster.Type      = fx_SB;
+		dmx_blaster.Type      = 1; // Sound Blaster 1.0
 		dmx_blaster.Address   = *sbPort;
 		dmx_blaster.Interrupt = *sbIrq;
 		dmx_blaster.Dma8      = *sbDma;
@@ -299,6 +339,35 @@ void MPU_SetCard(int32_t mPort)
 }
 
 
+/*---------------------------------------------------------------------
+   Function: FX_SetupSoundBlaster
+
+   Handles manual setup of the Sound Blaster information.
+---------------------------------------------------------------------*/
+
+static void FX_SetupSoundBlaster(fx_blaster_config blaster, int32_t *MaxVoices, int32_t *MaxSampleBits, int32_t *MaxChannels)
+{
+	int32_t DeviceStatus;
+	BLASTER_CONFIG Blaster;
+
+	Blaster.Type      = blaster.Type;
+	Blaster.Address   = blaster.Address;
+	Blaster.Interrupt = blaster.Interrupt;
+	Blaster.Dma8      = blaster.Dma8;
+	Blaster.Dma16     = blaster.Dma16;
+	Blaster.Midi      = blaster.Midi;
+	Blaster.Emu       = blaster.Emu;
+
+	BLASTER_SetCardSettings(Blaster);
+
+	DeviceStatus = BLASTER_Init();
+	if (DeviceStatus == BLASTER_Ok)
+	{
+		*MaxVoices = 8;
+		BLASTER_GetCardInfo(MaxSampleBits, MaxChannels);
+	}
+}
+
 int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32_t sfxDevice)
 {
 	int32_t status;
@@ -354,8 +423,12 @@ int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32
 void DMX_DeInit(void)
 {
 	MUSIC_Shutdown();
-	FX_Shutdown();
-	PCFX_Shutdown();
+
+	if (ass_sdev == SoundBlaster)
+		MV_Shutdown();
+	else
+		PCFX_Shutdown();
+
 	if (mid_data)
 		free(mid_data);
 }
@@ -365,12 +438,16 @@ void WAV_PlayMode(int32_t channels, uint16_t sampleRate)
 {
 	if (ass_sdev == SoundBlaster)
 	{
-		int MaxVoices;
-		int MaxBits;
-		int MaxChannels;
+		int32_t MaxVoices;
+		int32_t MaxBits;
+		int32_t MaxChannels;
 
-		FX_SetupSoundBlaster(dmx_blaster, (int *)&MaxVoices, (int *)&MaxBits, (int *)&MaxChannels);
-		FX_Init(ass_sdev, channels, 2, 16, sampleRate);
-		FX_SetVolume(255);
+		FX_SetupSoundBlaster(dmx_blaster, (int32_t *)&MaxVoices, (int32_t *)&MaxBits, (int32_t *)&MaxChannels);
+		MV_Init(ass_sdev, sampleRate, channels, 2, 16);
+
+		if (BLASTER_CardHasMixer())
+			BLASTER_SetVoiceVolume(255);
+		else
+			MV_SetVolume(255);
 	}
 }

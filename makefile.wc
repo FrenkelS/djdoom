@@ -29,7 +29,6 @@ GLOBOBJS = &
  dmx.obj &
  al_midi.obj &
  blastold.obj &
- fx_man.obj &
  midi.obj &
  mpu401.obj &
  mus2mid.obj &
