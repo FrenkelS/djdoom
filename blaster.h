@@ -79,6 +79,10 @@ enum BLASTER_Types
 #define STEREO_8BIT  ( STEREO )
 #define STEREO_16BIT ( STEREO | SIXTEEN_BIT )
 
+#define BLASTER_DefaultSampleRate 11000
+#define BLASTER_DefaultMixMode    MONO_8BIT
+#define BLASTER_MaxIrq            15
+
 void BLASTER_SetVoiceVolume( int volume );
 int  BLASTER_CardHasMixer( void );
 int  BLASTER_GetEnv( BLASTER_CONFIG *Config );
