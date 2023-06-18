@@ -82,8 +82,6 @@ static const CARD_CAPABILITY BLASTER_CardConfig[ BLASTER_MaxCardType + 1 ] =
 static int BLASTER_MixerAddress = UNDEFINED;
 static int BLASTER_MixerType    = 0;
 
-static int BLASTER_GetEnv( BLASTER_CONFIG *Config );
-
 /*---------------------------------------------------------------------
    Function: BLASTER_WriteMixer
 
@@ -103,12 +101,51 @@ static void BLASTER_WriteMixer
 
 
 /*---------------------------------------------------------------------
+   Function: BLASTER_SetVoiceVolume
+
+   Sets the volume of the digitized sound channel on the Sound
+   Blaster's mixer chip.
+---------------------------------------------------------------------*/
+
+void BLASTER_SetVoiceVolume
+   (
+   int volume
+   )
+
+   {
+   int data;
+   int status;
+
+   volume = min( 255, volume );
+   volume = max( 0, volume );
+
+   status = BLASTER_Ok;
+   switch( BLASTER_MixerType )
+      {
+      case SBPro :
+      case SBPro2 :
+         data = ( volume & 0xf0 ) + ( volume >> 4 );
+         BLASTER_WriteMixer( MIXER_SBProVoice, data );
+         break;
+
+      case SB16 :
+         BLASTER_WriteMixer( MIXER_SB16VoiceLeft, volume & 0xf8 );
+         BLASTER_WriteMixer( MIXER_SB16VoiceRight, volume & 0xf8 );
+         break;
+
+      default :
+         status = BLASTER_Error;
+      }
+   }
+
+
+/*---------------------------------------------------------------------
    Function: BLASTER_CardHasMixer
 
    Checks if the selected Sound Blaster card has a mixer.
 ---------------------------------------------------------------------*/
 
-static int BLASTER_CardHasMixer
+int BLASTER_CardHasMixer
    (
    void
    )
@@ -148,7 +185,7 @@ static int BLASTER_CardHasMixer
    the caller.
 ---------------------------------------------------------------------*/
 
-static int BLASTER_GetEnv
+int BLASTER_GetEnv
    (
    BLASTER_CONFIG *Config
    )
@@ -263,6 +300,87 @@ static int BLASTER_GetEnv
 
 
 /*---------------------------------------------------------------------
+   Function: BLASTER_SetCardSettings
+
+   Sets up the sound card's parameters.
+---------------------------------------------------------------------*/
+
+void BLASTER_SetCardSettings
+   (
+   BLASTER_CONFIG Config
+   )
+
+   {
+   if ( BLASTER_Installed )
+      {
+      BLASTER_Shutdown();
+      }
+
+   if ( ( Config.Type < BLASTER_MinCardType ) ||
+      ( Config.Type > BLASTER_MaxCardType ) ||
+      ( !BLASTER_CardConfig[ Config.Type ].IsSupported ) )
+      {
+      return;
+      }
+
+   BLASTER_Config.Address   = Config.Address;
+   BLASTER_Config.Type      = Config.Type;
+   BLASTER_Config.Interrupt = Config.Interrupt;
+   BLASTER_Config.Dma8      = Config.Dma8;
+   BLASTER_Config.Dma16     = Config.Dma16;
+   BLASTER_Config.Midi      = Config.Midi;
+   BLASTER_Config.Emu       = Config.Emu;
+
+   BLASTER_MixerAddress = Config.Address;
+   BLASTER_MixerType = 0;
+   BLASTER_MixerType = Config.Type;
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_GetCardInfo
+
+   Returns the maximum number of bits that can represent a sample
+   (8 or 16) and the number of channels (1 for mono, 2 for stereo).
+---------------------------------------------------------------------*/
+
+void BLASTER_GetCardInfo
+   (
+   int *MaxSampleBits,
+   int *MaxChannels
+   )
+
+   {
+   int CardType;
+
+   CardType = BLASTER_Config.Type;
+
+   if ( CardType == UNDEFINED )
+      {
+      return;
+      }
+
+   if ( BLASTER_CardConfig[ CardType ].MaxMixMode & STEREO )
+      {
+      *MaxChannels = 2;
+      }
+   else
+      {
+      *MaxChannels = 1;
+      }
+
+   if ( BLASTER_CardConfig[ CardType ].MaxMixMode & SIXTEEN_BIT )
+      {
+      *MaxSampleBits = 16;
+      }
+   else
+      {
+      *MaxSampleBits = 8;
+      }
+   }
+
+
+/*---------------------------------------------------------------------
    Function: BLASTER_SetupWaveBlaster
 
    Allows the WaveBlaster to play music while the Sound Blaster 16
@@ -281,4 +399,119 @@ void BLASTER_SetupWaveBlaster
       // the SB16 will not produce sound or music.
       BLASTER_WriteMixer( MIXER_DSP4xxISR_Enable, MIXER_DisableMPU401Interrupts );
       }
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_Init
+
+   Initializes the sound card and prepares the module to play
+   digitized sounds.
+---------------------------------------------------------------------*/
+
+int BLASTER_Init
+   (
+   void
+   )
+
+   {
+   int Irq;
+   int Interrupt;
+   int status;
+
+   if ( BLASTER_Installed )
+      {
+      BLASTER_Shutdown();
+      }
+
+   // Save the interrupt masks
+   BLASTER_IntController1Mask = inp( 0x21 );
+   BLASTER_IntController2Mask = inp( 0xA1 );
+
+   status = BLASTER_ResetDSP();
+   if ( status == BLASTER_Ok )
+      {
+      BLASTER_SaveVoiceVolume();
+
+      BLASTER_SoundPlaying = FALSE;
+
+      BLASTER_SetCallBack( NULL );
+
+      BLASTER_DMABuffer = NULL;
+
+      BLASTER_Version = BLASTER_GetDSPVersion();
+
+      BLASTER_SetPlaybackRate( BLASTER_DefaultSampleRate );
+      BLASTER_SetMixMode( BLASTER_DefaultMixMode );
+
+      if ( BLASTER_Config.Dma16 != UNDEFINED )
+         {
+         status = DMA_VerifyChannel( BLASTER_Config.Dma16 );
+         if ( status == DMA_Error )
+            {
+            return( BLASTER_Error );
+            }
+         }
+
+      if ( BLASTER_Config.Dma8 != UNDEFINED )
+         {
+         status = DMA_VerifyChannel( BLASTER_Config.Dma8 );
+         if ( status == DMA_Error )
+            {
+            return( BLASTER_Error );
+            }
+         }
+
+      // Install our interrupt handler
+      Irq = BLASTER_Config.Interrupt;
+      if ( !VALID_IRQ( Irq ) )
+         {
+         return( BLASTER_Error );
+         }
+
+      Interrupt = BLASTER_Interrupts[ Irq ];
+      if ( Interrupt == INVALID )
+         {
+         return( BLASTER_Error );
+         }
+
+      status = BLASTER_LockMemory();
+      if ( status != BLASTER_Ok )
+         {
+         BLASTER_UnlockMemory();
+         return( status );
+         }
+
+      StackSelector = allocateTimerStack( kStackSize );
+      if ( StackSelector == NULL )
+         {
+         BLASTER_UnlockMemory();
+         return( BLASTER_Error );
+         }
+
+      // Leave a little room at top of stack just for the hell of it...
+      StackPointer = kStackSize - sizeof( long );
+
+      BLASTER_OldInt = _dos_getvect( Interrupt );
+      if ( Irq < 8 )
+         {
+         _dos_setvect( Interrupt, BLASTER_ServiceInterrupt );
+         }
+      else
+         {
+         status = IRQ_SetVector( Interrupt, BLASTER_ServiceInterrupt );
+         if ( status != IRQ_Ok )
+            {
+            BLASTER_UnlockMemory();
+            deallocateTimerStack( StackSelector );
+            StackSelector = NULL;
+            return( BLASTER_Error );
+            }
+         }
+
+      BLASTER_Installed = TRUE;
+      status = BLASTER_Ok;
+      }
+
+   return( status );
    }

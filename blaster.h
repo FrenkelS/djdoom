@@ -79,6 +79,12 @@ enum BLASTER_Types
 #define STEREO_8BIT  ( STEREO )
 #define STEREO_16BIT ( STEREO | SIXTEEN_BIT )
 
-void  BLASTER_SetupWaveBlaster( void );
+void BLASTER_SetVoiceVolume( int volume );
+int  BLASTER_CardHasMixer( void );
+int  BLASTER_GetEnv( BLASTER_CONFIG *Config );
+void BLASTER_SetCardSettings( BLASTER_CONFIG Config );
+void BLASTER_GetCardInfo( int *MaxSampleBits, int *MaxChannels );
+void BLASTER_SetupWaveBlaster( void );
+int  BLASTER_Init( void );
 
 #endif
