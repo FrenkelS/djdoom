@@ -186,7 +186,7 @@ void SFX_StopPatch(int32_t handle)
 {
 	if (ass_sdev == PC)
 		PCFX_Stop(handle);
-	else
+	else if (ass_sdev == SoundBlaster)
 		MV_Kill(handle);
 }
 
@@ -194,13 +194,13 @@ int32_t SFX_Playing(int32_t handle)
 {
 	if (ass_sdev == PC)
 		return PCFX_SoundPlaying(handle);
-	else
+	else if (ass_sdev == SoundBlaster) 
 		return MV_VoicePlaying(handle);
 }
 
 void SFX_SetOrigin(int32_t handle, int32_t pitch, int32_t sep, int32_t volume)
 {
-	if (ass_sdev != PC)
+	if (ass_sdev == SoundBlaster)
 	{
 		MV_SetPan(handle, volume * 2, ((254 - sep) * volume) / 63, ((sep) * volume) / 63);
 		MV_SetPitch(handle, ((pitch - 128) * 2400) / 128);
@@ -370,12 +370,9 @@ static void FX_SetupSoundBlaster(fx_blaster_config blaster, int32_t *MaxVoices, 
 
 int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32_t sfxDevice)
 {
-	int32_t status;
-
 	UNUSED(maxsongs);
 
-	mus_rate = ticrate;
-
+	// Sound effects
 	switch (sfxDevice)
 	{
 		case AHW_SOUND_BLASTER:
@@ -388,6 +385,21 @@ int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32
 			ass_sdev = NumSoundCards;
 			break;
 	}
+
+	if (ass_sdev == PC)
+		PCFX_Init(ticrate);
+	else if (ass_sdev == SoundBlaster)
+	{
+		int32_t MaxVoices;
+		int32_t MaxBits;
+		int32_t MaxChannels;
+
+		FX_SetupSoundBlaster(dmx_blaster, (int32_t *)&MaxVoices, (int32_t *)&MaxBits, (int32_t *)&MaxChannels);
+	}
+
+
+	// Music
+	mus_rate = ticrate;
 
 	switch (musicDevice)
 	{
@@ -402,19 +414,11 @@ int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32
 			break;
 	}
 
-	status = MUSIC_Init(ass_mdev, dmx_mus_port);
-	if (status == MUSIC_Ok)
-		MUSIC_SetVolume(0);
-
-	if (ass_sdev == PC)
-		PCFX_Init(ticrate);
-	else if (ass_sdev == SoundBlaster)
+	if (ass_mdev == Adlib || ass_mdev == GenMidi)
 	{
-		int32_t MaxVoices;
-		int32_t MaxBits;
-		int32_t MaxChannels;
-
-		FX_SetupSoundBlaster(dmx_blaster, (int32_t *)&MaxVoices, (int32_t *)&MaxBits, (int32_t *)&MaxChannels);
+		int32_t status = MUSIC_Init(ass_mdev, dmx_mus_port);
+		if (status == MUSIC_Ok)
+			MUSIC_SetVolume(0);
 	}
 
 	return musicDevice | sfxDevice;
@@ -424,10 +428,10 @@ void DMX_DeInit(void)
 {
 	MUSIC_Shutdown();
 
-	if (ass_sdev == SoundBlaster)
-		MV_Shutdown();
-	else
+	if (ass_sdev == PC)
 		PCFX_Shutdown();
+	else if (ass_sdev == SoundBlaster)
+		MV_Shutdown();
 
 	if (mid_data)
 		free(mid_data);
