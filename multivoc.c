@@ -30,42 +30,305 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    (c) Copyright 1993 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
+#define LIBVER_ASSREV 19960108L
+
 #include <stdlib.h>
 #include <string.h>
 #include <dos.h>
 #include <time.h>
 #include <conio.h>
-#include "dpmi.h"
-#include "usrhooks.h"
-#if (LIBVER_ASSREV < 20021225L) // *** VERSIONS RESTORATION ***
-#include "interrupt.h"
-#else
+//#include "dpmi.h"
+//#include "usrhooks.h"
 #include "interrup.h"
-#endif
 #include "dma.h"
-// *** VERSIONS RESTORATION ***
-// FIXME GUESSING
-#if (LIBVER_ASSREV < 19960510L)
-#include "ll_man.h"
-// FIXME - HUGE HACK
+//#include "ll_man.h"
 #define LL_Empty(a,b,c) ((a)->start == NULL)
 #define LL_Reset( list, next, prev ) (list)->start = NULL; (list)->end = NULL // Based on macro from LINKLIST.H
-#else
-#include "linklist.h"
-#endif
 #include "sndcards.h"
 #include "blaster.h"
-#include "sndscape.h"
-#include "sndsrc.h"
-#include "pas16.h"
-#include "guswave.h"
-#include "pitch.h"
+//#include "sndscape.h"
+//#include "sndsrc.h"
+//#include "pas16.h"
+//#include "guswave.h"
+//#include "pitch.h"
 #include "multivoc.h"
-#include "_multivc.h"
-#include "debugio.h"
-#if (LIBVER_ASSREV < 20021225L) // *** VERSIONS RESTORATION ***
-#include "memcheck.h"
+
+
+#define TRUE  ( 1 == 1 )
+#define FALSE ( !TRUE )
+
+#define VOC_8BIT            0x0
+#define VOC_CT4_ADPCM       0x1
+#define VOC_CT3_ADPCM       0x2
+#define VOC_CT2_ADPCM       0x3
+#define VOC_16BIT           0x4
+#define VOC_ALAW            0x6
+#define VOC_MULAW           0x7
+#define VOC_CREATIVE_ADPCM  0x200
+
+#define T_SIXTEENBIT_STEREO 0
+#define T_8BITS       1
+#define T_MONO        2
+#define T_16BITSOURCE 4
+#define T_LEFTQUIET   8
+#define T_RIGHTQUIET  16
+#define T_DEFAULT     T_SIXTEENBIT_STEREO
+
+#define MV_MaxPanPosition  31
+#define MV_NumPanPositions ( MV_MaxPanPosition + 1 )
+#define MV_MaxTotalVolume  255
+// *** VERSIONS RESTORATION ***
+// Uncomment for earlier versions
+#if (LIBVER_ASSREV < 19960510L)
+#define MV_MaxVolume       63
 #endif
+#define MV_NumVoices       8
+
+// *** VERSIONS RESTORATION ***
+// Uncomment line for earlier revisions
+#if (LIBVER_ASSREV >= 19960510L)
+#define MIX_VOLUME( volume ) \
+   ( ( max( 0, min( ( volume ), 255 ) ) * ( MV_MaxVolume + 1 ) ) >> 8 )
+#else
+#define MIX_VOLUME( volume ) \
+   ( ( max( 0, min( ( volume ), 255 ) ) ) >> 2 )
+#endif
+
+//#define SILENCE_16BIT     0x80008000
+#define SILENCE_16BIT     0
+#define SILENCE_8BIT      0x80808080
+//#define SILENCE_16BIT_PAS 0
+
+#define MixBufferSize     256
+
+#define NumberOfBuffers   16
+#define TotalBufferSize   ( MixBufferSize * NumberOfBuffers )
+
+#define PI                3.1415926536
+
+typedef enum
+   {
+   Raw,
+   VOC,
+   DemandFeed,
+   WAV
+   } wavedata;
+
+typedef enum
+   {
+   NoMoreData,
+   KeepPlaying
+   } playbackstatus;
+
+
+typedef struct VoiceNode
+   {
+   struct VoiceNode *next;
+   struct VoiceNode *prev;
+
+   wavedata      wavetype;
+   char          bits;
+
+   playbackstatus ( *GetSound )( struct VoiceNode *voice );
+
+   void ( *mix )( unsigned long position, unsigned long rate,
+      char *start, unsigned long length );
+
+   char         *NextBlock;
+   char         *LoopStart;
+   char         *LoopEnd;
+   unsigned      LoopCount;
+   unsigned long LoopSize;
+   unsigned long BlockLength;
+
+   unsigned long PitchScale;
+   unsigned long FixedPointBufferSize;
+
+   char         *sound;
+   unsigned long length;
+   unsigned long SamplingRate;
+   unsigned long RateScale;
+   unsigned long position;
+   int           Playing;
+
+   int           handle;
+   int           priority;
+
+   void          ( *DemandFeed )( char **ptr, unsigned long *length );
+
+   short        *LeftVolume;
+   short        *RightVolume;
+
+   unsigned long callbackval;
+
+   } VoiceNode;
+
+typedef struct
+   {
+   VoiceNode *start;
+   VoiceNode *end;
+   } VList;
+
+typedef struct
+   {
+   char left;
+   char right;
+   } Pan;
+
+typedef signed short MONO16;
+typedef signed char  MONO8;
+
+typedef struct
+   {
+   MONO16 left;
+   MONO16 right;
+//   unsigned short left;
+//   unsigned short right;
+   } STEREO16;
+
+typedef struct
+   {
+   MONO16 left;
+   MONO16 right;
+   } SIGNEDSTEREO16;
+
+typedef struct
+   {
+//   MONO8 left;
+//   MONO8 right;
+   char left;
+   char right;
+   } STEREO8;
+
+typedef struct
+   {
+   char          RIFF[ 4 ];
+   unsigned long file_size;
+   char          WAVE[ 4 ];
+   char          fmt[ 4 ];
+   unsigned long format_size;
+   } riff_header;
+
+typedef struct
+   {
+   unsigned short wFormatTag;
+   unsigned short nChannels;
+   unsigned long  nSamplesPerSec;
+   unsigned long  nAvgBytesPerSec;
+   unsigned short nBlockAlign;
+   unsigned short nBitsPerSample;
+   } format_header;
+
+typedef struct
+   {
+   unsigned char DATA[ 4 ];
+   unsigned long size;
+   } data_header;
+
+typedef MONO8  VOLUME8[ 256 ];
+typedef MONO16 VOLUME16[ 256 ];
+
+typedef char HARSH_CLIP_TABLE_8[ MV_NumVoices * 256 ];
+
+static void MV_Mix( VoiceNode *voice, int buffer );
+static void MV_PlayVoice( VoiceNode *voice );
+static void MV_StopVoice( VoiceNode *voice );
+static void MV_ServiceVoc( void );
+
+static playbackstatus MV_GetNextVOCBlock( VoiceNode *voice );
+static playbackstatus MV_GetNextDemandFeedBlock( VoiceNode *voice );
+static playbackstatus MV_GetNextRawBlock( VoiceNode *voice );
+static playbackstatus MV_GetNextWAVBlock( VoiceNode *voice );
+
+static void       MV_ServiceRecord( void );
+static VoiceNode *MV_GetVoice( int handle );
+static VoiceNode *MV_AllocVoice( int priority );
+
+static short     *MV_GetVolumeTable( int vol );
+
+static void       MV_SetVoiceMixMode( VoiceNode *voice );
+
+static void       MV_SetVoicePitch( VoiceNode *voice, unsigned long rate, int pitchoffset );
+static void       MV_CalcVolume( int MaxLevel );
+static void       MV_CalcPanTable( void );
+
+#define ATR_INDEX               0x3c0
+#define STATUS_REGISTER_1       0x3da
+
+#define SetBorderColor(color) \
+   { \
+   inp  (STATUS_REGISTER_1); \
+   outp (ATR_INDEX,0x31);    \
+   outp (ATR_INDEX,color);   \
+   }
+
+void ClearBuffer_DW( void *ptr, unsigned data, int length );
+
+#pragma aux ClearBuffer_DW = \
+   "cld",                    \
+   "push   es",              \
+   "push   ds",              \
+   "pop    es",              \
+   "rep    stosd",           \
+   "pop    es",              \
+parm [ edi ] [ eax ] [ ecx ] modify exact [ ecx edi ];
+
+// *** VERSIONS RESTORATION ***
+#if (LIBVER_ASSREV < 19950821L)
+void MV_Mix8BitMonoFast( unsigned long position, unsigned long rate,
+   char *start, unsigned long length );
+
+void MV_Mix8BitStereoFast( unsigned long position, unsigned long rate,
+   char *start, unsigned long length );
+
+void MV_Mix8Bit1ChannelFast( unsigned long position, unsigned long rate,
+   char *start, unsigned long length );
+
+void MV_Mix16BitMonoFast( unsigned long position, unsigned long rate,
+   char *start, unsigned long length );
+
+void MV_Mix16BitStereoFast( unsigned long position, unsigned long rate,
+   char *start, unsigned long length );
+
+void MV_Mix16Bit1ChannelFast( unsigned long position, unsigned long rate,
+   char *start, unsigned long length );
+#else // LIBVER_ASSREV >= 19950821L
+void MV_Mix8BitMono( unsigned long position, unsigned long rate,
+   char *start, unsigned long length );
+
+void MV_Mix8BitStereo( unsigned long position,
+   unsigned long rate, char *start, unsigned long length );
+
+void MV_Mix16BitMono( unsigned long position,
+   unsigned long rate, char *start, unsigned long length );
+
+void MV_Mix16BitStereo( unsigned long position,
+   unsigned long rate, char *start, unsigned long length );
+
+void MV_Mix16BitMono16( unsigned long position,
+   unsigned long rate, char *start, unsigned long length );
+
+void MV_Mix8BitMono16( unsigned long position, unsigned long rate,
+   char *start, unsigned long length );
+
+void MV_Mix8BitStereo16( unsigned long position,
+   unsigned long rate, char *start, unsigned long length );
+
+void MV_Mix16BitStereo16( unsigned long position,
+   unsigned long rate, char *start, unsigned long length );
+
+void MV_16BitReverb( char *src, char *dest, VOLUME16 *volume, int count );
+#pragma aux MV_16BitReverb parm [eax] [edx] [ebx] [ecx] modify exact [eax ebx ecx edx esi edi]
+void MV_8BitReverb( signed char *src, signed char *dest, VOLUME16 *volume, int count );
+#pragma aux MV_8BitReverb parm [eax] [edx] [ebx] [ecx] modify exact [eax ebx ecx edx esi edi]
+void MV_16BitReverbFast( char *src, char *dest, int count, int shift );
+#pragma aux MV_16BitReverbFast parm [eax] [edx] [ebx] [ecx] modify exact [eax ebx ecx edx esi edi]
+void MV_8BitReverbFast( signed char *src, signed char *dest, int count, int shift );
+#pragma aux MV_8BitReverbFast parm [eax] [edx] [ebx] [ecx] modify exact [eax ebx ecx edx esi edi]
+#endif // LIBVER_ASSREV < 19950821L
+
+
+//#include "debugio.h"
 
 #define RoundFixed( fixedval, bits )            \
         (                                       \
@@ -179,7 +442,7 @@ int MV_ErrorCode = MV_Ok;
    number.  A -1 returns a pointer the current error.
 ---------------------------------------------------------------------*/
 
-char *MV_ErrorString
+static char *MV_ErrorString
    (
    int ErrorNumber
    )
@@ -396,7 +659,7 @@ static void MV_Mix
    Adds a voice to the play list.
 ---------------------------------------------------------------------*/
 
-void MV_PlayVoice
+static void MV_PlayVoice
    (
    VoiceNode *voice
    )
@@ -422,7 +685,7 @@ void MV_PlayVoice
    Removes the voice from the play list and adds it to the free list.
 ---------------------------------------------------------------------*/
 
-void MV_StopVoice
+static void MV_StopVoice
    (
    VoiceNode *voice
    )
@@ -454,7 +717,7 @@ void MV_StopVoice
 
 // static int backcolor = 1;
 
-void MV_ServiceVoc
+static void MV_ServiceVoc
    (
    void
    )
@@ -700,7 +963,7 @@ void MV_ServiceVoc
 int leftpage  = -1;
 int rightpage = -1;
 
-void MV_ServiceGus( char **ptr, unsigned long *length )
+static void MV_ServiceGus( char **ptr, unsigned long *length )
    {
    if ( leftpage == MV_MixPage )
       {
@@ -713,7 +976,7 @@ void MV_ServiceGus( char **ptr, unsigned long *length )
    *length = MV_BufferSize;
    }
 
-void MV_ServiceRightGus( char **ptr, unsigned long *length )
+static void MV_ServiceRightGus( char **ptr, unsigned long *length )
    {
    if ( rightpage == MV_MixPage )
       {
@@ -733,7 +996,7 @@ void MV_ServiceRightGus( char **ptr, unsigned long *length )
    Interperate the information of a VOC format sound file.
 ---------------------------------------------------------------------*/
 
-playbackstatus MV_GetNextVOCBlock
+static playbackstatus MV_GetNextVOCBlock
    (
    VoiceNode *voice
    )
@@ -1031,7 +1294,7 @@ playbackstatus MV_GetNextVOCBlock
    Controls playback of demand fed data.
 ---------------------------------------------------------------------*/
 
-playbackstatus MV_GetNextDemandFeedBlock
+static playbackstatus MV_GetNextDemandFeedBlock
    (
    VoiceNode *voice
    )
@@ -1117,7 +1380,7 @@ playbackstatus MV_GetNextRawBlock
    Controls playback of demand fed data.
 ---------------------------------------------------------------------*/
 
-playbackstatus MV_GetNextWAVBlock
+static playbackstatus MV_GetNextWAVBlock
    (
    VoiceNode *voice
    )
@@ -1188,7 +1451,7 @@ static void MV_ServiceRecord
    Locates the voice with the specified handle.
 ---------------------------------------------------------------------*/
 
-VoiceNode *MV_GetVoice
+static VoiceNode *MV_GetVoice
    (
    int handle
    )
@@ -1266,7 +1529,7 @@ int MV_VoicePlaying
    Stops output of all currently active voices.
 ---------------------------------------------------------------------*/
 
-int MV_KillAllVoices
+static int MV_KillAllVoices
    (
    void
    )
@@ -1294,7 +1557,7 @@ int MV_KillAllVoices
    Stops output of the voice associated with the specified handle.
 ---------------------------------------------------------------------*/
 
-int MV_Kill
+void MV_Kill
    (
    int handle
    )
@@ -1307,7 +1570,7 @@ int MV_Kill
    if ( !MV_Installed )
       {
       MV_SetErrorCode( MV_NotInstalled );
-      return( MV_Error );
+      return;
       }
 
    flags = DisableInterrupts();
@@ -1317,7 +1580,7 @@ int MV_Kill
       {
       RestoreInterrupts( flags );
       MV_SetErrorCode( MV_VoiceNotFound );
-      return( MV_Error );
+      return;
       }
 
    callbackval = voice->callbackval;
@@ -1330,8 +1593,6 @@ int MV_Kill
       {
       MV_CallBackFunc( callbackval );
       }
-
-   return( MV_Ok );
    }
 
 
@@ -1341,7 +1602,7 @@ int MV_Kill
    Determines the number of currently active voices.
 ---------------------------------------------------------------------*/
 
-int MV_VoicesPlaying
+static int MV_VoicesPlaying
    (
    void
    )
@@ -1386,7 +1647,7 @@ int MV_VoicesPlaying
    Retrieve an inactive or lower priority voice for output.
 ---------------------------------------------------------------------*/
 
-VoiceNode *MV_AllocVoice
+static VoiceNode *MV_AllocVoice
    (
    int priority
    )
@@ -1474,7 +1735,7 @@ VoiceNode *MV_AllocVoice
    Checks if a voice can be play at the specified priority.
 ---------------------------------------------------------------------*/
 
-int MV_VoiceAvailable
+static int MV_VoiceAvailable
    (
    int priority
    )
@@ -1530,7 +1791,7 @@ int MV_VoiceAvailable
    Sets the pitch for the specified voice.
 ---------------------------------------------------------------------*/
 
-void MV_SetVoicePitch
+static void MV_SetVoicePitch
    (
    VoiceNode *voice,
    unsigned long rate,
@@ -1554,7 +1815,7 @@ void MV_SetVoicePitch
    Sets the pitch for the voice associated with the specified handle.
 ---------------------------------------------------------------------*/
 
-int MV_SetPitch
+void MV_SetPitch
    (
    int handle,
    int pitchoffset
@@ -1566,19 +1827,17 @@ int MV_SetPitch
    if ( !MV_Installed )
       {
       MV_SetErrorCode( MV_NotInstalled );
-      return( MV_Error );
+      return;
       }
 
    voice = MV_GetVoice( handle );
    if ( voice == NULL )
       {
       MV_SetErrorCode( MV_VoiceNotFound );
-      return( MV_Error );
+      return;
       }
 
    MV_SetVoicePitch( voice, voice->SamplingRate, pitchoffset );
-
-   return( MV_Ok );
    }
 
 
@@ -1588,7 +1847,7 @@ int MV_SetPitch
    Sets the frequency for the voice associated with the specified handle.
 ---------------------------------------------------------------------*/
 
-int MV_SetFrequency
+static int MV_SetFrequency
    (
    int handle,
    int frequency
@@ -1775,7 +2034,7 @@ static void MV_SetVoiceMixMode
    with the specified handle.
 ---------------------------------------------------------------------*/
 
-void MV_SetVoiceVolume
+static void MV_SetVoiceVolume
    (
    VoiceNode *voice,
    int vol,
@@ -1860,7 +2119,7 @@ void MV_SetVoiceVolume
    without stoping the sound.
 ---------------------------------------------------------------------*/
 
-int MV_EndLooping
+static int MV_EndLooping
    (
    int handle
    )
@@ -1903,7 +2162,7 @@ int MV_EndLooping
    with the specified handle.
 ---------------------------------------------------------------------*/
 
-int MV_SetPan
+void MV_SetPan
    (
    int handle,
    int vol,
@@ -1917,19 +2176,17 @@ int MV_SetPan
    if ( !MV_Installed )
       {
       MV_SetErrorCode( MV_NotInstalled );
-      return( MV_Error );
+      return;
       }
 
    voice = MV_GetVoice( handle );
    if ( voice == NULL )
       {
       MV_SetErrorCode( MV_VoiceNotFound );
-      return( MV_Warning );
+      return;
       }
 
    MV_SetVoiceVolume( voice, vol, left, right );
-
-   return( MV_Ok );
    }
 
 
@@ -1940,7 +2197,7 @@ int MV_SetPan
    with the specified handle.
 ---------------------------------------------------------------------*/
 
-int MV_Pan3D
+static int MV_Pan3D
    (
    int handle,
    int angle,
@@ -1981,7 +2238,7 @@ int MV_Pan3D
    Sets the level of reverb to add to mix.
 ---------------------------------------------------------------------*/
 
-void MV_SetReverb
+static void MV_SetReverb
    (
    int reverb
    )
@@ -1998,7 +2255,7 @@ void MV_SetReverb
    Sets the level of reverb to add to mix.
 ---------------------------------------------------------------------*/
 
-void MV_SetFastReverb
+static void MV_SetFastReverb
    (
    int reverb
    )
@@ -2017,7 +2274,7 @@ void MV_SetFastReverb
    Returns the maximum delay time for reverb.
 ---------------------------------------------------------------------*/
 
-int MV_GetMaxReverbDelay
+static int MV_GetMaxReverbDelay
    (
    void
    )
@@ -2037,7 +2294,7 @@ int MV_GetMaxReverbDelay
    Returns the current delay time for reverb.
 ---------------------------------------------------------------------*/
 
-int MV_GetReverbDelay
+static int MV_GetReverbDelay
    (
    void
    )
@@ -2053,7 +2310,7 @@ int MV_GetReverbDelay
    Sets the delay level of reverb to add to mix.
 ---------------------------------------------------------------------*/
 
-void MV_SetReverbDelay
+static void MV_SetReverbDelay
    (
    int delay
    )
@@ -2074,7 +2331,7 @@ void MV_SetReverbDelay
    Prepares Multivoc to play stereo of mono digitized sounds.
 ---------------------------------------------------------------------*/
 
-int MV_SetMixMode
+static int MV_SetMixMode
    (
    int numchannels,
    int samplebits
@@ -2182,7 +2439,7 @@ int MV_SetMixMode
    Starts the sound playback engine.
 ---------------------------------------------------------------------*/
 
-int MV_StartPlayback
+static int MV_StartPlayback
    (
    void
    )
@@ -2309,7 +2566,7 @@ int MV_StartPlayback
    Stops the sound playback engine.
 ---------------------------------------------------------------------*/
 
-void MV_StopPlayback
+static void MV_StopPlayback
    (
    void
    )
@@ -2386,7 +2643,7 @@ void MV_StopPlayback
    Starts the sound recording engine.
 ---------------------------------------------------------------------*/
 
-int MV_StartRecording
+static int MV_StartRecording
    (
    int MixRate,
    void ( *function )( char *ptr, int length )
@@ -2466,7 +2723,7 @@ int MV_StartRecording
    Stops the sound record engine.
 ---------------------------------------------------------------------*/
 
-void MV_StopRecord
+static void MV_StopRecord
    (
    void
    )
@@ -2497,7 +2754,7 @@ void MV_StopRecord
    Plays a digitized sound from a user controlled buffering system.
 ---------------------------------------------------------------------*/
 
-int MV_StartDemandFeedPlayback
+static int MV_StartDemandFeedPlayback
    (
    void ( *function )( char **ptr, unsigned long *length ),
    int rate,
@@ -2592,7 +2849,7 @@ int MV_PlayRaw
    priority.
 ---------------------------------------------------------------------*/
 
-int MV_PlayLoopedRaw
+static int MV_PlayLoopedRaw
    (
    char *ptr,
    long  length,
@@ -2658,7 +2915,7 @@ int MV_PlayLoopedRaw
    priority.
 ---------------------------------------------------------------------*/
 
-int MV_PlayWAV
+static int MV_PlayWAV
    (
    char *ptr,
    int   pitchoffset,
@@ -2686,7 +2943,7 @@ int MV_PlayWAV
    from listener.
 ---------------------------------------------------------------------*/
 
-int MV_PlayWAV3D
+static int MV_PlayWAV3D
    (
    char *ptr,
    int  pitchoffset,
@@ -2738,7 +2995,7 @@ int MV_PlayWAV3D
    priority.
 ---------------------------------------------------------------------*/
 
-int MV_PlayLoopedWAV
+static int MV_PlayLoopedWAV
    (
    char *ptr,
    long  loopstart,
@@ -2896,7 +3153,7 @@ int MV_PlayLoopedWAV
    from listener.
 ---------------------------------------------------------------------*/
 
-int MV_PlayVOC3D
+static int MV_PlayVOC3D
    (
    char *ptr,
    int  pitchoffset,
@@ -2948,7 +3205,7 @@ int MV_PlayVOC3D
    priority.
 ---------------------------------------------------------------------*/
 
-int MV_PlayVOC
+static int MV_PlayVOC
    (
    char *ptr,
    int   pitchoffset,
@@ -2976,7 +3233,7 @@ int MV_PlayVOC
    priority.
 ---------------------------------------------------------------------*/
 
-int MV_PlayLoopedVOC
+static int MV_PlayLoopedVOC
    (
    char *ptr,
    long  loopstart,
@@ -3073,7 +3330,7 @@ static void MV_LockEnd
    level.
 ---------------------------------------------------------------------*/
 
-void MV_CreateVolumeTable
+static void MV_CreateVolumeTable
    (
    int index,
    int volume,
@@ -3117,7 +3374,7 @@ void MV_CreateVolumeTable
    level.
 ---------------------------------------------------------------------*/
 
-void MV_CalcVolume
+static void MV_CalcVolume
    (
    int MaxVolume
    )
@@ -3219,7 +3476,7 @@ void MV_CalcVolume
    a sound located at a specific angle and distance from the listener.
 ---------------------------------------------------------------------*/
 
-void MV_CalcPanTable
+static void MV_CalcPanTable
    (
    void
    )
@@ -3300,7 +3557,7 @@ void MV_SetVolume
    Returns the volume of digitized sound playback.
 ---------------------------------------------------------------------*/
 
-int MV_GetVolume
+static int MV_GetVolume
    (
    void
    )
@@ -3316,7 +3573,7 @@ int MV_GetVolume
    Set the function to call when a voice stops.
 ---------------------------------------------------------------------*/
 
-void MV_SetCallBack
+static void MV_SetCallBack
    (
    void ( *function )( unsigned long )
    )
@@ -3332,7 +3589,7 @@ void MV_SetCallBack
    Set the orientation of the left and right channels.
 ---------------------------------------------------------------------*/
 
-void MV_SetReverseStereo
+static void MV_SetReverseStereo
    (
    int setting
    )
@@ -3348,7 +3605,7 @@ void MV_SetReverseStereo
    Returns the orientation of the left and right channels.
 ---------------------------------------------------------------------*/
 
-int MV_GetReverseStereo
+static int MV_GetReverseStereo
    (
    void
    )
@@ -3364,7 +3621,7 @@ int MV_GetReverseStereo
    Checks if playback has started.
 ---------------------------------------------------------------------*/
 
-int MV_TestPlayback
+static int MV_TestPlayback
    (
    void
    )
@@ -3464,7 +3721,7 @@ int MV_TestPlayback
    Multivoc.
 ---------------------------------------------------------------------*/
 
-int MV_Init
+void MV_Init
    (
    int soundcard,
    int MixRate,
@@ -3489,7 +3746,7 @@ int MV_Init
    status = MV_LockMemory();
    if ( status != MV_Ok )
       {
-      return( status );
+      return;
       }
 
    MV_TotalMemory = Voices * sizeof( VoiceNode ) + sizeof( HARSH_CLIP_TABLE_8 );
@@ -3498,7 +3755,7 @@ int MV_Init
       {
       MV_UnlockMemory();
       MV_SetErrorCode( MV_NoMem );
-      return( MV_Error );
+      return;
       }
 
    status = DPMI_LockMemory( ptr, MV_TotalMemory );
@@ -3507,7 +3764,7 @@ int MV_Init
       USRHOOKS_FreeMem( ptr );
       MV_UnlockMemory();
       MV_SetErrorCode( MV_DPMI_Error );
-      return( MV_Error );
+      return;
       }
 
    MV_Voices = ( VoiceNode * )ptr;
@@ -3542,7 +3799,7 @@ int MV_Init
       MV_UnlockMemory();
 
       MV_SetErrorCode( MV_NoMem );
-      return( MV_Error );
+      return;
       }
 
    MV_SetReverseStereo( FALSE );
@@ -3670,7 +3927,7 @@ int MV_Init
       status = MV_ErrorCode;
       MV_Shutdown();
       MV_SetErrorCode( status );
-      return( MV_Error );
+      return;
       }
 
    if ( MV_TestPlayback() != MV_Ok )
@@ -3678,10 +3935,7 @@ int MV_Init
       status = MV_ErrorCode;
       MV_Shutdown();
       MV_SetErrorCode( status );
-      return( MV_Error );
       }
-
-   return( MV_Ok );
    }
 
 
@@ -3691,7 +3945,7 @@ int MV_Init
    Restore any resources allocated by Multivoc back to the system.
 ---------------------------------------------------------------------*/
 
-int MV_Shutdown
+void MV_Shutdown
    (
    void
    )
@@ -3705,9 +3959,9 @@ int MV_Shutdown
       // *** VERSIONS RESTORATION ***
 #if (LIBVER_ASSREV < 19950821L)
       MV_SetErrorCode( MV_NotInstalled );
-      return( MV_Error );
+      return;
 #else
-      return( MV_Ok );
+      return;
 #endif
       }
 
@@ -3777,8 +4031,6 @@ int MV_Shutdown
       {
       MV_MixBuffer[ buffer ] = NULL;
       }
-
-   return( MV_Ok );
    }
 
 
@@ -3788,7 +4040,7 @@ int MV_Shutdown
    Unlocks all neccessary data.
 ---------------------------------------------------------------------*/
 
-void MV_UnlockMemory
+static void MV_UnlockMemory
    (
    void
    )
@@ -3852,7 +4104,7 @@ void MV_UnlockMemory
    Locks all neccessary data.
 ---------------------------------------------------------------------*/
 
-int MV_LockMemory
+static int MV_LockMemory
    (
    void
    )
