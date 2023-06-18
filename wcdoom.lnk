@@ -19,6 +19,7 @@ file al_midi.obj
 file blastold.obj
 file midi.obj
 file mpu401.obj
+file multivoc.obj
 file mus2mid.obj
 file music.obj
 file pcfx.obj

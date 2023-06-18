@@ -31,6 +31,7 @@ GLOBOBJS = &
  blastold.obj &
  midi.obj &
  mpu401.obj &
+ multivoc.obj &
  mus2mid.obj &
  music.obj &
  pcfx.obj &
