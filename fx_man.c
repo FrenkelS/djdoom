@@ -49,10 +49,7 @@ static unsigned FX_MixRate;
 
 int FX_SoundDevice = -1;
 int FX_ErrorCode = FX_Ok;
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
 int FX_Installed = FALSE;
-#endif
 
 void TextMode( void );
 #pragma aux TextMode =  \
@@ -165,19 +162,10 @@ int FX_Init
    int status;
    int devicestatus;
 
-   // *** VERSIONS RESTORATION ***
-   // FIXME - Can't be a vanilla bug?
-#if (LIBVER_ASSREV < 19950821L)
-   if ( status = FX_ErrorCode )
-      {
-      return( FX_Error );
-      }
-#else
    if ( FX_Installed )
       {
       FX_Shutdown();
       }
-#endif
 
    if ( USER_CheckParameter( "ASSVER" ) )
       {
@@ -185,13 +173,8 @@ int FX_Init
       return( FX_Error );
       }
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-   if ( LL_LockMemory() != LL_Ok )
-#else
    status = LL_LockMemory();
    if ( status != LL_Ok )
-#endif
       {
       FX_SetErrorCode( FX_DPMI_Error );
       return( FX_Error );
@@ -199,10 +182,8 @@ int FX_Init
 
    FX_MixRate = mixrate;
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    status = FX_Ok;
-#endif
+
    FX_SoundDevice = SoundCard;
    switch( SoundCard )
       {
@@ -211,10 +192,7 @@ int FX_Init
       case ProAudioSpectrum :
       case SoundMan16 :
       case SoundScape :
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
       case UltraSound :
-#endif
          devicestatus = MV_Init( SoundCard, FX_MixRate, numvoices,
             numchannels, samplebits );
          if ( devicestatus != MV_Ok )
@@ -224,19 +202,6 @@ int FX_Init
             }
          break;
 
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
-#if (LIBVER_ASSREV < 19950821L)
-      case UltraSound :
-         if ( GUSWAVE_Init( numvoices ) != GUSWAVE_Ok )
-            {
-            FX_SetErrorCode( FX_SoundCardError );
-            status = FX_Error;
-            }
-         break;
-
-#endif
-#endif // LIBVER_ASSREV
       default :
          FX_SetErrorCode( FX_InvalidCard );
          status = FX_Error;
@@ -246,13 +211,10 @@ int FX_Init
       {
       LL_UnlockMemory();
       }
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    else
       {
       FX_Installed = TRUE;
       }
-#endif
 
    return( status );
    }
@@ -272,13 +234,10 @@ int FX_Shutdown
    {
    int status;
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    if ( !FX_Installed )
       {
       return( FX_Ok );
       }
-#endif
 
    status = FX_Ok;
    switch( FX_SoundDevice )
@@ -288,10 +247,7 @@ int FX_Shutdown
       case ProAudioSpectrum :
       case SoundMan16 :
       case SoundScape :
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
       case UltraSound :
-#endif
          status = MV_Shutdown();
          if ( status != MV_Ok )
             {
@@ -300,24 +256,13 @@ int FX_Shutdown
             }
          break;
 
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
-#if (LIBVER_ASSREV < 19950821L)
-      case UltraSound :
-         GUSWAVE_Shutdown();
-         break;
-
-#endif
-#endif // LIBVER_ASSREV
       default :
          FX_SetErrorCode( FX_InvalidCard );
          status = FX_Error;
       }
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    FX_Installed = FALSE;
-#endif
+
    LL_UnlockMemory();
 
    return( status );
@@ -393,8 +338,6 @@ int FX_SetPan
    )
 
    {
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
    int status = FX_Ok;
 
    switch( FX_SoundDevice )
@@ -404,9 +347,7 @@ int FX_SetPan
       case ProAudioSpectrum :
       case SoundMan16 :
       case SoundScape :
-#if (LIBVER_ASSREV >= 19950821L) // VERSIONS RESTORATION
       case UltraSound :
-#endif
          status = MV_SetPan( handle, vol, left, right );
          if ( status == MV_Error )
             {
@@ -415,24 +356,10 @@ int FX_SetPan
             }
          break;
 
-#if (LIBVER_ASSREV < 19950821L) // VERSIONS RESTORATION
-      case UltraSound :
-#endif
-
       default:
          FX_SetErrorCode( FX_InvalidCard );
          status = FX_Error;
       }
-#else // LIBVER_ASSREV
-   int status;
-
-   status = MV_SetPan( handle, vol, left, right );
-   if ( status == MV_Error )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      status = FX_Warning;
-      }
-#endif // LIBVER_ASSREV
 
    return( status );
    }
@@ -451,9 +378,6 @@ int FX_SetPitch
    )
 
    {
-// *** VERSIONS RESTORATION ***
-// FIXME - Verify error codes come from the right enums, in ALL files
-#if (LIBVER_ASSREV < 19960116L)
    int status = FX_Ok;
 
    switch( FX_SoundDevice )
@@ -463,9 +387,7 @@ int FX_SetPitch
       case ProAudioSpectrum :
       case SoundMan16 :
       case SoundScape :
-#if (LIBVER_ASSREV >= 19950821L) // VERSIONS RESTORATION
       case UltraSound :
-#endif
          status = MV_SetPitch( handle, pitchoffset );
          if ( status == MV_Error )
             {
@@ -474,32 +396,10 @@ int FX_SetPitch
             }
          break;
 
-#if (LIBVER_ASSREV < 19950821L) // VERSIONS RESTORATION
-      case UltraSound :
-         status = GUSWAVE_SetPitch( handle, pitchoffset );
-         // VERSIONS RESTORATION - A vanilla bug
-         if ( handle == GUSWAVE_Error )
-            {
-            FX_SetErrorCode( FX_SoundCardError );
-            }
-         break;
-
-#endif
-
       default :
          FX_SetErrorCode( FX_InvalidCard );
          status = FX_Error;
       }
-#else // LIBVER_ASSREV
-   int status;
-
-   status = MV_SetPitch( handle, pitchoffset );
-   if ( status == MV_Error )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      status = FX_Warning;
-      }
-#endif // LIBVER_ASSREV
 
    return( status );
    }
@@ -527,8 +427,6 @@ int FX_PlayRaw
    {
    int handle;
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
    switch( FX_SoundDevice )
       {
       case SoundBlaster :
@@ -536,9 +434,7 @@ int FX_PlayRaw
       case ProAudioSpectrum :
       case SoundMan16 :
       case SoundScape :
-#if (LIBVER_ASSREV >= 19950821L) // VERSIONS RESTORATION
       case UltraSound :
-#endif
          handle = MV_PlayRaw( ptr, length, rate, pitchoffset,
             vol, left, right, priority, callbackval );
          if ( handle < MV_Ok )
@@ -552,15 +448,6 @@ int FX_PlayRaw
          FX_SetErrorCode( FX_InvalidCard );
          handle = FX_Error;
       }
-#else // LIBVER_ASSREV
-   handle = MV_PlayRaw( ptr, length, rate, pitchoffset,
-      vol, left, right, priority, callbackval );
-   if ( handle < MV_Ok )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      handle = FX_Warning;
-      }
-#endif // LIBVER_ASSREV
 
    return( handle );
    }
@@ -578,30 +465,17 @@ int FX_SoundActive
    )
 
    {
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
    switch( FX_SoundDevice )
       {
       case SoundBlaster :
       case Awe32 :
       case ProAudioSpectrum :
       case SoundMan16 :
-#if (LIBVER_ASSREV >= 19950821L) // VERSIONS RESTORATION
       case UltraSound :
-#endif
       case SoundScape :
          return( MV_VoicePlaying( handle ) );
-
-#if (LIBVER_ASSREV < 19950821L) // VERSIONS RESTORATION
-      case UltraSound :
-         return( GUSWAVE_VoicePlaying( handle ) );
-
-#endif
       }
    return( FALSE );
-#else // LIBVER_ASSREV
-   return( MV_VoicePlaying( handle ) );
-#endif // LIBVER_ASSREV
    }
 
 
@@ -619,8 +493,6 @@ int FX_StopSound
    {
    int status;
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
    switch( FX_SoundDevice )
       {
       case SoundBlaster :
@@ -628,9 +500,7 @@ int FX_StopSound
       case ProAudioSpectrum :
       case SoundMan16 :
       case SoundScape :
-#if (LIBVER_ASSREV >= 19950821L) // VERSIONS RESTORATION
       case UltraSound :
-#endif
          status = MV_Kill( handle );
          if ( status != MV_Ok )
             {
@@ -639,28 +509,9 @@ int FX_StopSound
             }
          break;
 
-#if (LIBVER_ASSREV < 19950821L) // VERSIONS RESTORATION
-      case UltraSound :
-         status = GUSWAVE_Kill( handle );
-         if ( status != GUSWAVE_Ok )
-            {
-            FX_SetErrorCode( FX_SoundCardError );
-            return( FX_Warning );
-            }
-         break;
-
-#endif
       default:
          FX_SetErrorCode( FX_InvalidCard );
        }
-#else // LIBVER_ASSREV
-   status = MV_Kill( handle );
-   if ( status != MV_Ok )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      return( FX_Warning );
-      }
-#endif // LIBVER_ASSREV
 
    return( FX_Ok );
    }
