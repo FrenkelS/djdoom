@@ -23,6 +23,7 @@
 #include "doomdef.h"
 #include "dmx.h"
 #include "mpu401.h"
+#include "multivoc.h"
 #include "music.h"
 #include "pcfx.h"
 #include "sndcards.h"
