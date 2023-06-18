@@ -38,7 +38,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#include "sndscape.h"
 //#include "guswave.h"
 //#include "sndsrc.h"
-//#include "pcfx.h"
 //#include "ll_man.h"
 //#include "user.h"
 #include "fx_man.h"
@@ -240,14 +239,6 @@ int FX_Init
          break;
 
 #endif
-      case PC :
-         if ( PCFX_Init() != PCFX_Ok )
-            {
-            FX_SetErrorCode( FX_SoundCardError );
-            status = FX_Error;
-            }
-         break;
-
 #endif // LIBVER_ASSREV
       default :
          FX_SetErrorCode( FX_InvalidCard );
@@ -322,10 +313,6 @@ int FX_Shutdown
          break;
 
 #endif
-      case PC :
-         PCFX_Shutdown();
-         break;
-
 #endif // LIBVER_ASSREV
       default :
          FX_SetErrorCode( FX_InvalidCard );
@@ -396,18 +383,6 @@ void FX_SetVolume
       case UltraSound :
          GUSWAVE_SetVolume( volume );
          break;
-
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960116L)
-      case PC :
-         PCFX_SetTotalVolume( volume );
-         break;
-#else
-      case SoundSource :
-      case TandySoundSource :
-         MV_SetVolume( volume );
-         break;
-#endif
       }
    }
 
@@ -455,8 +430,6 @@ int FX_SetPan
 #if (LIBVER_ASSREV < 19950821L) // VERSIONS RESTORATION
       case UltraSound :
 #endif
-      case PC :
-         break;
 
       default:
          FX_SetErrorCode( FX_InvalidCard );
@@ -526,8 +499,6 @@ int FX_SetPitch
          break;
 
 #endif
-      case PC :
-         break;
 
       default :
          FX_SetErrorCode( FX_InvalidCard );
@@ -593,15 +564,6 @@ int FX_PlayRaw
             }
          break;
 
-      case PC :
-         handle = PCFX_Play( ptr, priority, callbackval );
-         if ( handle < PCFX_Ok )
-            {
-            FX_SetErrorCode( FX_SoundCardError );
-            handle = FX_Warning;
-            }
-         break;
-
       default :
          FX_SetErrorCode( FX_InvalidCard );
          handle = FX_Error;
@@ -653,8 +615,6 @@ int FX_SoundActive
          return( GUSWAVE_VoicePlaying( handle ) );
 
 #endif
-      case PC :
-         return( PCFX_SoundPlaying( handle ) );
       }
    return( FALSE );
 #else // LIBVER_ASSREV
@@ -710,15 +670,6 @@ int FX_StopSound
          break;
 
 #endif
-      case PC :
-         status = PCFX_Stop( handle );
-         if ( status != PCFX_Ok )
-            {
-            FX_SetErrorCode( FX_SoundCardError );
-            return( FX_Warning );
-            }
-         break;
-
       default:
          FX_SetErrorCode( FX_InvalidCard );
        }
