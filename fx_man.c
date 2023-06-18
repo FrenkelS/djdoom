@@ -48,17 +48,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static unsigned FX_MixRate;
 
 int FX_SoundDevice = -1;
-int FX_ErrorCode = FX_Ok;
 int FX_Installed = FALSE;
-
-void TextMode( void );
-#pragma aux TextMode =  \
-    "mov    ax, 0003h", \
-    "int    10h"        \
-    modify [ ax ];
-
-#define FX_SetErrorCode( status ) \
-   FX_ErrorCode = ( status );
 
 
 /*---------------------------------------------------------------------
@@ -76,12 +66,9 @@ int FX_GetBlasterSettings
    int status;
    BLASTER_CONFIG Blaster;
 
-   FX_SetErrorCode( FX_Ok );
-
    status = BLASTER_GetEnv( &Blaster );
    if ( status != BLASTER_Ok )
       {
-      FX_SetErrorCode( FX_BlasterError );
       return( FX_Error );
       }
 
@@ -115,8 +102,6 @@ int FX_SetupSoundBlaster
    int DeviceStatus;
    BLASTER_CONFIG Blaster;
 
-   FX_SetErrorCode( FX_Ok );
-
    FX_SoundDevice = SoundBlaster;
 
    Blaster.Type      = blaster.Type;
@@ -132,7 +117,6 @@ int FX_SetupSoundBlaster
    DeviceStatus = BLASTER_Init();
    if ( DeviceStatus != BLASTER_Ok )
       {
-      FX_SetErrorCode( FX_SoundCardError );
       return( FX_Error );
       }
 
@@ -169,14 +153,12 @@ int FX_Init
 
    if ( USER_CheckParameter( "ASSVER" ) )
       {
-      FX_SetErrorCode( FX_ASSVersion );
       return( FX_Error );
       }
 
    status = LL_LockMemory();
    if ( status != LL_Ok )
       {
-      FX_SetErrorCode( FX_DPMI_Error );
       return( FX_Error );
       }
 
@@ -197,13 +179,11 @@ int FX_Init
             numchannels, samplebits );
          if ( devicestatus != MV_Ok )
             {
-            FX_SetErrorCode( FX_MultiVocError );
             status = FX_Error;
             }
          break;
 
       default :
-         FX_SetErrorCode( FX_InvalidCard );
          status = FX_Error;
       }
 
@@ -251,13 +231,11 @@ int FX_Shutdown
          status = MV_Shutdown();
          if ( status != MV_Ok )
             {
-            FX_SetErrorCode( FX_MultiVocError );
             status = FX_Error;
             }
          break;
 
       default :
-         FX_SetErrorCode( FX_InvalidCard );
          status = FX_Error;
       }
 
@@ -351,13 +329,11 @@ int FX_SetPan
          status = MV_SetPan( handle, vol, left, right );
          if ( status == MV_Error )
             {
-            FX_SetErrorCode( FX_MultiVocError );
             status = FX_Warning;
             }
          break;
 
       default:
-         FX_SetErrorCode( FX_InvalidCard );
          status = FX_Error;
       }
 
@@ -391,13 +367,11 @@ int FX_SetPitch
          status = MV_SetPitch( handle, pitchoffset );
          if ( status == MV_Error )
             {
-            FX_SetErrorCode( FX_MultiVocError );
             status = FX_Warning;
             }
          break;
 
       default :
-         FX_SetErrorCode( FX_InvalidCard );
          status = FX_Error;
       }
 
@@ -439,13 +413,11 @@ int FX_PlayRaw
             vol, left, right, priority, callbackval );
          if ( handle < MV_Ok )
             {
-            FX_SetErrorCode( FX_MultiVocError );
             handle = FX_Warning;
             }
          break;
 
       default :
-         FX_SetErrorCode( FX_InvalidCard );
          handle = FX_Error;
       }
 
@@ -504,13 +476,9 @@ int FX_StopSound
          status = MV_Kill( handle );
          if ( status != MV_Ok )
             {
-            FX_SetErrorCode( FX_MultiVocError );
             return( FX_Warning );
             }
          break;
-
-      default:
-         FX_SetErrorCode( FX_InvalidCard );
        }
 
    return( FX_Ok );
