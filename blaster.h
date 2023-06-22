@@ -60,7 +60,8 @@ enum BLASTER_ERRORS
    BLASTER_MIDINotSet,
    BLASTER_CardTypeNotSet,
    BLASTER_InvalidParameter,
-   BLASTER_UnsupportedCardType
+   BLASTER_UnsupportedCardType,
+   BLASTER_CardNotReady
    };
 
 enum BLASTER_Types

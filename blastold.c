@@ -49,7 +49,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define BLASTER_MixerAddressPort  0x04
 #define BLASTER_MixerDataPort     0x05
+#define BLASTER_ResetPort         0x06
 #define BLASTER_DataAvailablePort 0x0E
+#define BLASTER_Ready             0xAA
 #define BLASTER_16BitDMAAck       0x0F
 
 #define MIXER_DSP4xxISR_Ack       0x82
@@ -63,6 +65,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define DSP_Version2xx            0x0200
 #define DSP_Version4xx            0x0400
+
+#define DSP_Old8BitADC                0x24
+#define DSP_Old8BitDAC                0x14
+#define DSP_Halt8bitTransfer          0xd0
 
 #define BlasterEnv_Address    'A'
 #define BlasterEnv_Interrupt  'I'
@@ -115,6 +121,8 @@ static char   *BLASTER_DMABufferEnd;
 static char   *BLASTER_CurrentDMABuffer;
 
 static int      BLASTER_TransferLength   = 0;
+
+static unsigned BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
 
 static volatile int   BLASTER_SoundPlaying;
 static volatile int   BLASTER_SoundRecording;
@@ -235,6 +243,139 @@ void __interrupt __far BLASTER_ServiceInterrupt
       }
 
    outp( 0x20, 0x20 );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_ResetDSP
+
+   Sends a reset command to the sound card's Digital Signal Processor
+   (DSP), causing it to perform an initialization.
+---------------------------------------------------------------------*/
+
+int BLASTER_ResetDSP
+   (
+   void
+   )
+
+   {
+   volatile int count;
+   int port;
+   int status;
+
+   port = BLASTER_Config.Address + BLASTER_ResetPort;
+
+   status = BLASTER_CardNotReady;
+
+   outp( port, 1 );
+
+/* What the hell am I doing here?
+   count = 100;
+
+   do
+      {
+      if ( inp( port ) == 255 )
+         {
+         break;
+         }
+
+      count--;
+      }
+   while( count > 0 );
+*/
+
+   count = 0x100;
+   do
+      {
+      count--;
+      }
+   while( count > 0 );
+
+   outp( port, 0 );
+
+   count = 100;
+
+   do
+      {
+      if ( BLASTER_ReadDSP() == BLASTER_Ready )
+         {
+         status = BLASTER_Ok;
+         break;
+         }
+
+      count--;
+      }
+   while( count > 0 );
+
+   return( status );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_DSP1xx_BeginPlayback
+
+   Starts playback of digitized sound on cards compatible with DSP
+   version 1.xx.
+---------------------------------------------------------------------*/
+
+int BLASTER_DSP1xx_BeginPlayback
+   (
+   int length
+   )
+
+   {
+   int SampleLength;
+   int LoByte;
+   int HiByte;
+
+   SampleLength = length - 1;
+   HiByte = hibyte( SampleLength );
+   LoByte = lobyte( SampleLength );
+
+   // Program DSP to play sound
+   BLASTER_WriteDSP( DSP_Old8BitDAC );
+   BLASTER_WriteDSP( LoByte );
+   BLASTER_WriteDSP( HiByte );
+
+   BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
+
+   BLASTER_SoundPlaying = TRUE;
+
+   return( BLASTER_Ok );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_DSP1xx_BeginRecord
+
+   Starts recording of digitized sound on cards compatible with DSP
+   version 1.xx.
+---------------------------------------------------------------------*/
+
+int BLASTER_DSP1xx_BeginRecord
+   (
+   int length
+   )
+
+   {
+   int SampleLength;
+   int LoByte;
+   int HiByte;
+
+   SampleLength = length - 1;
+   HiByte = hibyte( SampleLength );
+   LoByte = lobyte( SampleLength );
+
+   // Program DSP to play sound
+   BLASTER_WriteDSP( DSP_Old8BitADC );
+   BLASTER_WriteDSP( LoByte );
+   BLASTER_WriteDSP( HiByte );
+
+   BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
+
+   BLASTER_SoundRecording = TRUE;
+
+   return( BLASTER_Ok );
    }
 
 
@@ -670,4 +811,52 @@ int BLASTER_Init
       }
 
    return( status );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_Shutdown
+
+   Ends transfer of sound data to the sound card and restores the
+   system resources used by the card.
+---------------------------------------------------------------------*/
+
+void BLASTER_Shutdown
+   (
+   void
+   )
+
+   {
+   int Irq;
+   int Interrupt;
+
+   // Halt the DMA transfer
+   BLASTER_StopPlayback();
+
+   BLASTER_RestoreVoiceVolume();
+
+   // Reset the DSP
+   BLASTER_ResetDSP();
+
+   // Restore the original interrupt
+   Irq = BLASTER_Config.Interrupt;
+   Interrupt = BLASTER_Interrupts[ Irq ];
+   if ( Irq >= 8 )
+      {
+      IRQ_RestoreVector( Interrupt );
+      }
+   _dos_setvect( Interrupt, BLASTER_OldInt );
+
+   BLASTER_SoundPlaying = FALSE;
+
+   BLASTER_DMABuffer = NULL;
+
+   BLASTER_SetCallBack( NULL );
+
+   BLASTER_UnlockMemory();
+
+   deallocateTimerStack( StackSelector );
+   StackSelector = NULL;
+
+   BLASTER_Installed = FALSE;
    }
