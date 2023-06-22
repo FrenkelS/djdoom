@@ -67,10 +67,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "sndcards.h"
 #include "blaster.h"
 
-//#include "sndscape.h"
-extern int SOUNDSCAPE_DMAChannel;
-#define SOUNDSCAPE_Ok 0
-
 //#include "guswave.h"
 #define GUSWAVE_Ok 0
 
@@ -508,11 +504,6 @@ static char *MV_ErrorString
 
       case MV_BlasterError :
          ErrorString = BLASTER_ErrorString( BLASTER_Error );
-         break;
-
-      case MV_SoundScapeError :
-	     #define SOUNDSCAPE_Error -1
-         ErrorString = SOUNDSCAPE_ErrorString( SOUNDSCAPE_Error );
          break;
 
       case MV_DPMI_Error :
@@ -2324,10 +2315,6 @@ static int MV_SetMixMode
       case Awe32 :
          MV_MixMode = BLASTER_SetMixMode( mode );
          break;
-
-      case SoundScape :
-         MV_MixMode = SOUNDSCAPE_SetMixMode( mode );
-         break;
       }
 
    MV_Channels = 1;
@@ -2455,21 +2442,6 @@ static int MV_StartPlayback
          MV_DMAChannel = -1;
          break;
 #endif
-
-      case SoundScape :
-         status = SOUNDSCAPE_BeginBufferedPlayback( MV_MixBuffer[ 0 ],
-            TotalBufferSize, MV_NumberOfBuffers, MV_RequestedMixRate,
-            MV_MixMode, MV_ServiceVoc );
-
-         if ( status != SOUNDSCAPE_Ok )
-            {
-            MV_SetErrorCode( MV_SoundScapeError );
-            return( MV_Error );
-            }
-
-         MV_MixRate = SOUNDSCAPE_GetPlaybackRate();
-         MV_DMAChannel = SOUNDSCAPE_DMAChannel;
-         break;
       }
 
    return( MV_Ok );
@@ -2506,10 +2478,6 @@ static void MV_StopPlayback
          GUSWAVE_KillAllVoices();
          break;
 #endif
-
-      case SoundScape :
-         SOUNDSCAPE_StopPlayback();
-         break;
       }
 
    // Make sure all callbacks are done.
@@ -3554,10 +3522,6 @@ static int MV_TestPlayback
             pos = BLASTER_GetCurrentPos();
             break;
 
-         case SoundScape :
-            pos = SOUNDSCAPE_GetCurrentPos();
-            break;
-
          default :
             MV_SetErrorCode( MV_UnsupportedCard );
             pos = -2;
@@ -3705,14 +3669,6 @@ void MV_Init
             }
          break;
 
-      case SoundScape :
-         status = SOUNDSCAPE_Init();
-         if ( status != SOUNDSCAPE_Ok )
-            {
-            MV_SetErrorCode( MV_SoundScapeError );
-            }
-         break;
-
       default :
          MV_SetErrorCode( MV_UnsupportedCard );
          break;
@@ -3844,10 +3800,6 @@ void MV_Shutdown
       case SoundBlaster :
       case Awe32 :
          BLASTER_Shutdown();
-         break;
-
-      case SoundScape :
-         SOUNDSCAPE_Shutdown();
          break;
       }
 
