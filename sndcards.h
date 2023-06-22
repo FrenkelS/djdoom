@@ -37,6 +37,7 @@ typedef enum
 	SoundBlaster,
 	Adlib,
 	GenMidi,
+	UltraSound,       //TODO remove me
 	PC,
 	NumSoundCards
 } soundcardnames;

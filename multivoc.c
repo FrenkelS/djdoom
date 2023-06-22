@@ -2312,7 +2312,6 @@ static int MV_SetMixMode
 #endif
 
       case SoundBlaster :
-      case Awe32 :
          MV_MixMode = BLASTER_SetMixMode( mode );
          break;
       }
@@ -2398,7 +2397,6 @@ static int MV_StartPlayback
    switch( MV_SoundCard )
       {
       case SoundBlaster :
-      case Awe32 :
          status = BLASTER_BeginBufferedPlayback( MV_MixBuffer[ 0 ],
             TotalBufferSize, MV_NumberOfBuffers,
             MV_RequestedMixRate, MV_MixMode, MV_ServiceVoc );
@@ -2468,7 +2466,6 @@ static void MV_StopPlayback
    switch( MV_SoundCard )
       {
       case SoundBlaster :
-      case Awe32 :
          BLASTER_StopPlayback();
          break;
 
@@ -2527,7 +2524,6 @@ static int MV_StartRecording
    switch( MV_SoundCard )
       {
       case SoundBlaster :
-      case Awe32 :
          break;
 
       default :
@@ -2556,7 +2552,6 @@ static int MV_StartRecording
    switch( MV_SoundCard )
       {
       case SoundBlaster :
-      case Awe32 :
          status = BLASTER_BeginBufferedRecord( MV_MixBuffer[ 0 ],
             TotalBufferSize, NumberOfBuffers, MixRate, MONO_8BIT,
             MV_ServiceRecord );
@@ -2590,7 +2585,6 @@ static void MV_StopRecord
    switch( MV_SoundCard )
       {
       case SoundBlaster :
-      case Awe32 :
          BLASTER_StopPlayback();
          break;
       }
@@ -3518,7 +3512,6 @@ static int MV_TestPlayback
       switch( MV_SoundCard )
          {
          case SoundBlaster :
-         case Awe32 :
             pos = BLASTER_GetCurrentPos();
             break;
 
@@ -3655,7 +3648,6 @@ void MV_Init
 #endif
 
       case SoundBlaster :
-      case Awe32 :
          status = BLASTER_Init();
          if ( status != BLASTER_Ok )
             {
@@ -3798,7 +3790,6 @@ void MV_Shutdown
 #endif
 
       case SoundBlaster :
-      case Awe32 :
          BLASTER_Shutdown();
          break;
       }
