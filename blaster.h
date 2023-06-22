@@ -43,6 +43,9 @@ typedef struct
    unsigned Emu;
    } BLASTER_CONFIG;
 
+extern BLASTER_CONFIG BLASTER_Config;
+extern int BLASTER_DMAChannel;
+
 #define UNDEFINED -1
 
 enum BLASTER_ERRORS

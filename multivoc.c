@@ -37,20 +37,54 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <dos.h>
 #include <time.h>
 #include <conio.h>
+
 //#include "dpmi.h"
+#define DPMI_Ok 0
+
 //#include "usrhooks.h"
+#define USRHOOKS_Ok 0
+
 #include "interrup.h"
 #include "dma.h"
+
 //#include "ll_man.h"
+#define LL_AddToTail( type, listhead, node )         \
+    LL_AddNode( ( char * )( node ),                  \
+                ( char ** )&( ( listhead )->end ),   \
+                ( char ** )&( ( listhead )->start ), \
+                ( int )&( ( type * ) 0 )->prev,      \
+                ( int )&( ( type * ) 0 )->next )
+
+#define LL_Remove( type, listhead, node )               \
+    LL_RemoveNode( ( char * )( node ),                  \
+                   ( char ** )&( ( listhead )->start ), \
+                   ( char ** )&( ( listhead )->end ),   \
+                   ( int )&( ( type * ) 0 )->next,      \
+                   ( int )&( ( type * ) 0 )->prev )
+
 #define LL_Empty(a,b,c) ((a)->start == NULL)
 #define LL_Reset( list, next, prev ) (list)->start = NULL; (list)->end = NULL // Based on macro from LINKLIST.H
 #include "sndcards.h"
 #include "blaster.h"
+
 //#include "sndscape.h"
+extern int SOUNDSCAPE_DMAChannel;
+#define SOUNDSCAPE_Ok 0
+
 //#include "sndsrc.h"
+#define SS_Ok 0
+#define SS_SampleRate  7000
+
 //#include "pas16.h"
+#define PAS_Ok 0
+extern unsigned int PAS_DMAChannel;
+
 //#include "guswave.h"
+#define GUSWAVE_Ok 0
+
 //#include "pitch.h"
+#define PITCH_Ok 0
+
 #include "multivoc.h"
 
 
@@ -486,15 +520,18 @@ static char *MV_ErrorString
          break;
 
       case MV_PasError :
+	     #define PAS_Error -1
          ErrorString = PAS_ErrorString( PAS_Error );
          break;
 
       case MV_SoundScapeError :
+	     #define SOUNDSCAPE_Error -1
          ErrorString = SOUNDSCAPE_ErrorString( SOUNDSCAPE_Error );
          break;
 
       #ifndef SOUNDSOURCE_OFF
       case MV_SoundSourceError :
+	     #define SS_Error -1
          ErrorString = SS_ErrorString( SS_Error );
          break;
       #endif
@@ -668,12 +705,7 @@ static void MV_PlayVoice
    unsigned flags;
 
    flags = DisableInterrupts();
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960510L)
    LL_AddToTail( VoiceNode, &VoiceList, voice );
-#else
-   LL_SortedInsertion( &VoiceList, voice, prev, next, VoiceNode, priority );
-#endif
 
    RestoreInterrupts( flags );
    }
@@ -695,16 +727,9 @@ static void MV_StopVoice
 
    flags = DisableInterrupts();
 
-   // *** VERSIONS RESTORATION ***
-
    // move the voice from the play list to the free list
-#if (LIBVER_ASSREV < 19960510L)
    LL_Remove( VoiceNode, &VoiceList, voice );
    LL_AddToTail( VoiceNode, &VoicePool, voice );
-#else
-   LL_Remove( voice, next, prev );
-   LL_Add( &VoicePool, voice, next, prev );
-#endif
 
    RestoreInterrupts( flags );
    }
@@ -764,14 +789,11 @@ static void MV_ServiceVoc
 #endif
          {
          ClearBuffer_DW( MV_MixBuffer[ MV_MixPage ], MV_Silence, MV_BufferSize >> 2 );
-         // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
          if ( ( MV_SoundCard == UltraSound ) && ( MV_Channels == 2 ) )
             {
             ClearBuffer_DW( MV_MixBuffer[ MV_MixPage ] + MV_RightChannelOffset,
                MV_Silence, MV_BufferSize >> 2 );
             }
-#endif
          MV_BufferEmpty[ MV_MixPage ] = TRUE;
          }
       }
@@ -2191,48 +2213,6 @@ void MV_SetPan
 
 
 /*---------------------------------------------------------------------
-   Function: MV_Pan3D
-
-   Set the angle and distance from the listener of the voice associated
-   with the specified handle.
----------------------------------------------------------------------*/
-
-static int MV_Pan3D
-   (
-   int handle,
-   int angle,
-   int distance
-   )
-
-   {
-   int left;
-   int right;
-   int mid;
-   int volume;
-   int status;
-
-   if ( distance < 0 )
-      {
-      distance  = -distance;
-      angle    += MV_NumPanPositions / 2;
-      }
-
-   volume = MIX_VOLUME( distance );
-
-   // Ensure angle is within 0 - 31
-   angle &= MV_MaxPanPosition;
-
-   left  = MV_PanTable[ angle ][ volume ].left;
-   right = MV_PanTable[ angle ][ volume ].right;
-   mid   = max( 0, 255 - distance );
-
-   status = MV_SetPan( handle, mid, left, right );
-
-   return( status );
-   }
-
-
-/*---------------------------------------------------------------------
    Function: MV_SetReverb
 
    Sets the level of reverb to add to mix.
@@ -2929,7 +2909,7 @@ static int MV_PlayWAV
    {
    int status;
 
-   status = MV_PlayLoopedWAV( ptr, -1, -1, pitchoffset, vol, left, right,
+   status = MV_PlayLoopedWAV( ptr, -1L, -1L, pitchoffset, vol, left, right,
       priority, callbackval );
 
    return( status );
@@ -3219,7 +3199,7 @@ static int MV_PlayVOC
    {
    int status;
 
-   status = MV_PlayLoopedVOC( ptr, -1, -1, pitchoffset, vol, left, right,
+   status = MV_PlayLoopedVOC( ptr, -1L, -1L, pitchoffset, vol, left, right,
       priority, callbackval );
 
    return( status );
@@ -3880,7 +3860,7 @@ void MV_Init
       MV_UnlockMemory();
 
       MV_SetErrorCode( status );
-      return( MV_Error );
+      return;
       }
 
    MV_SoundCard    = soundcard;
