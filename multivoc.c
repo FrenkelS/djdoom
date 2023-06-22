@@ -67,9 +67,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "sndcards.h"
 #include "blaster.h"
 
-//#include "guswave.h"
-#define GUSWAVE_Ok 0
-
 //#include "pitch.h"
 #define PITCH_Ok 0
 
@@ -755,11 +752,6 @@ static void MV_ServiceVoc
 #endif
          {
          ClearBuffer_DW( MV_MixBuffer[ MV_MixPage ], MV_Silence, MV_BufferSize >> 2 );
-         if ( ( MV_SoundCard == UltraSound ) && ( MV_Channels == 2 ) )
-            {
-            ClearBuffer_DW( MV_MixBuffer[ MV_MixPage ] + MV_RightChannelOffset,
-               MV_Silence, MV_BufferSize >> 2 );
-            }
          MV_BufferEmpty[ MV_MixPage ] = TRUE;
          }
       }
@@ -860,20 +852,10 @@ static void MV_ServiceVoc
             if ( MV_ReverbTable != NULL )
                {
                MV_16BitReverb( source, dest, MV_ReverbTable, count / 2 );
-               if ( ( MV_SoundCard == UltraSound ) && ( MV_Channels == 2 ) )
-                  {
-                  MV_16BitReverb( source + MV_RightChannelOffset,
-                     dest + MV_RightChannelOffset, MV_ReverbTable, count / 2 );
-                  }
                }
             else
                {
                MV_16BitReverbFast( source, dest, count / 2, MV_ReverbLevel );
-               if ( ( MV_SoundCard == UltraSound ) && ( MV_Channels == 2 ) )
-                  {
-                  MV_16BitReverbFast( source + MV_RightChannelOffset,
-                     dest + MV_RightChannelOffset, count / 2, MV_ReverbLevel );
-                  }
                }
             }
          else
@@ -881,20 +863,10 @@ static void MV_ServiceVoc
             if ( MV_ReverbTable != NULL )
                {
                MV_8BitReverb( source, dest, MV_ReverbTable, count );
-               if ( ( MV_SoundCard == UltraSound ) && ( MV_Channels == 2 ) )
-                  {
-                  MV_8BitReverb( source + MV_RightChannelOffset,
-                     dest + MV_RightChannelOffset, MV_ReverbTable, count );
-                  }
                }
             else
                {
                MV_8BitReverbFast( source, dest, count, MV_ReverbLevel );
-               if ( ( MV_SoundCard == UltraSound ) && ( MV_Channels == 2 ) )
-                  {
-                  MV_8BitReverbFast( source + MV_RightChannelOffset,
-                     dest + MV_RightChannelOffset, count, MV_ReverbLevel );
-                  }
                }
             }
 
@@ -945,38 +917,6 @@ static void MV_ServiceVoc
       }
    }
 
-
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-int leftpage  = -1;
-int rightpage = -1;
-
-static void MV_ServiceGus( char **ptr, unsigned long *length )
-   {
-   if ( leftpage == MV_MixPage )
-      {
-      MV_ServiceVoc();
-      }
-
-   leftpage = MV_MixPage;
-
-   *ptr = MV_MixBuffer[ MV_MixPage ];
-   *length = MV_BufferSize;
-   }
-
-static void MV_ServiceRightGus( char **ptr, unsigned long *length )
-   {
-   if ( rightpage == MV_MixPage )
-      {
-      MV_ServiceVoc();
-      }
-
-   rightpage = MV_MixPage;
-
-   *ptr = MV_MixBuffer[ MV_MixPage ] + MV_RightChannelOffset;
-   *length = MV_BufferSize;
-   }
-#endif // LIBVER_ASSREV >= 19950821L
 
 /*---------------------------------------------------------------------
    Function: MV_GetNextVOCBlock
@@ -2304,13 +2244,6 @@ static int MV_SetMixMode
 
    switch( MV_SoundCard )
       {
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-      case UltraSound :
-         MV_MixMode = mode;
-         break;
-#endif
-
       case SoundBlaster :
          MV_MixMode = BLASTER_SetMixMode( mode );
          break;
@@ -2349,13 +2282,6 @@ static int MV_SetMixMode
    MV_BufferLength = TotalBufferSize;
 
    MV_RightChannelOffset = MV_SampleSize / 2;
-   if ( ( MV_SoundCard == UltraSound ) && ( MV_Channels == 2 ) )
-      {
-      MV_SampleSize         /= 2;
-      MV_BufferSize         /= 2;
-      MV_RightChannelOffset  = MV_BufferSize * MV_NumberOfBuffers;
-      MV_BufferLength       /= 2;
-      }
 #endif
 
    return( MV_Ok );
@@ -2410,36 +2336,6 @@ static int MV_StartPlayback
          MV_MixRate = BLASTER_GetPlaybackRate();
          MV_DMAChannel = BLASTER_DMAChannel;
          break;
-
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-      case UltraSound :
-
-         status = GUSWAVE_StartDemandFeedPlayback( MV_ServiceGus, 1,
-            MV_Bits, MV_RequestedMixRate, 0, ( MV_Channels == 1 ) ?
-            0 : 24, 255, 0xffff, 0 );
-         if ( status < GUSWAVE_Ok )
-            {
-            MV_SetErrorCode( MV_BlasterError );
-            return( MV_Error );
-            }
-
-         if ( MV_Channels == 2 )
-            {
-            status = GUSWAVE_StartDemandFeedPlayback( MV_ServiceRightGus, 1,
-               MV_Bits, MV_RequestedMixRate, 0, 8, 255, 0xffff, 0 );
-            if ( status < GUSWAVE_Ok )
-               {
-               GUSWAVE_KillAllVoices();
-               MV_SetErrorCode( MV_BlasterError );
-               return( MV_Error );
-               }
-            }
-
-         MV_MixRate = MV_RequestedMixRate;
-         MV_DMAChannel = -1;
-         break;
-#endif
       }
 
    return( MV_Ok );
@@ -2468,13 +2364,6 @@ static void MV_StopPlayback
       case SoundBlaster :
          BLASTER_StopPlayback();
          break;
-
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-      case UltraSound :
-         GUSWAVE_KillAllVoices();
-         break;
-#endif
       }
 
    // Make sure all callbacks are done.
@@ -3479,14 +3368,6 @@ static int MV_TestPlayback
    int  status;
    int  pos;
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-   if ( MV_SoundCard == UltraSound )
-      {
-      return( MV_Ok );
-      }
-#endif
-
    flags = DisableInterrupts();
    _enable();
 
@@ -3635,18 +3516,6 @@ void MV_Init
    // Initialize the sound card
    switch( soundcard )
       {
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-      case UltraSound :
-         status = GUSWAVE_Init( 2 );
-         if ( status != GUSWAVE_Ok )
-            {
-            //JIM
-            MV_SetErrorCode( MV_BlasterError );
-            }
-         break;
-#endif
-
       case SoundBlaster :
          status = BLASTER_Init();
          if ( status != BLASTER_Ok )
@@ -3782,13 +3651,6 @@ void MV_Shutdown
    // Shutdown the sound card
    switch( MV_SoundCard )
       {
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-      case UltraSound :
-         GUSWAVE_Shutdown();
-         break;
-#endif
-
       case SoundBlaster :
          BLASTER_Shutdown();
          break;
