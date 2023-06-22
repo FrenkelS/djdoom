@@ -71,10 +71,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern int SOUNDSCAPE_DMAChannel;
 #define SOUNDSCAPE_Ok 0
 
-//#include "pas16.h"
-#define PAS_Ok 0
-extern unsigned int PAS_DMAChannel;
-
 //#include "guswave.h"
 #define GUSWAVE_Ok 0
 
@@ -127,7 +123,6 @@ extern unsigned int PAS_DMAChannel;
 //#define SILENCE_16BIT     0x80008000
 #define SILENCE_16BIT     0
 #define SILENCE_8BIT      0x80808080
-//#define SILENCE_16BIT_PAS 0
 
 #define MixBufferSize     256
 
@@ -513,11 +508,6 @@ static char *MV_ErrorString
 
       case MV_BlasterError :
          ErrorString = BLASTER_ErrorString( BLASTER_Error );
-         break;
-
-      case MV_PasError :
-	     #define PAS_Error -1
-         ErrorString = PAS_ErrorString( PAS_Error );
          break;
 
       case MV_SoundScapeError :
@@ -2335,11 +2325,6 @@ static int MV_SetMixMode
          MV_MixMode = BLASTER_SetMixMode( mode );
          break;
 
-      case ProAudioSpectrum :
-      case SoundMan16 :
-         MV_MixMode = PAS_SetMixMode( mode );
-         break;
-
       case SoundScape :
          MV_MixMode = SOUNDSCAPE_SetMixMode( mode );
          break;
@@ -2471,22 +2456,6 @@ static int MV_StartPlayback
          break;
 #endif
 
-      case ProAudioSpectrum :
-      case SoundMan16 :
-         status = PAS_BeginBufferedPlayback( MV_MixBuffer[ 0 ],
-            TotalBufferSize, MV_NumberOfBuffers,
-            MV_RequestedMixRate, MV_MixMode, MV_ServiceVoc );
-
-         if ( status != PAS_Ok )
-            {
-            MV_SetErrorCode( MV_PasError );
-            return( MV_Error );
-            }
-
-         MV_MixRate = PAS_GetPlaybackRate();
-         MV_DMAChannel = PAS_DMAChannel;
-         break;
-
       case SoundScape :
          status = SOUNDSCAPE_BeginBufferedPlayback( MV_MixBuffer[ 0 ],
             TotalBufferSize, MV_NumberOfBuffers, MV_RequestedMixRate,
@@ -2537,11 +2506,6 @@ static void MV_StopPlayback
          GUSWAVE_KillAllVoices();
          break;
 #endif
-
-      case ProAudioSpectrum :
-      case SoundMan16 :
-         PAS_StopPlayback();
-         break;
 
       case SoundScape :
          SOUNDSCAPE_StopPlayback();
@@ -2596,8 +2560,6 @@ static int MV_StartRecording
       {
       case SoundBlaster :
       case Awe32 :
-      case ProAudioSpectrum :
-      case SoundMan16 :
          break;
 
       default :
@@ -2637,19 +2599,6 @@ static int MV_StartRecording
             return( MV_Error );
             }
          break;
-
-      case ProAudioSpectrum :
-      case SoundMan16 :
-         status = PAS_BeginBufferedRecord( MV_MixBuffer[ 0 ],
-            TotalBufferSize, NumberOfBuffers, MixRate, MONO_8BIT,
-            MV_ServiceRecord );
-
-         if ( status != PAS_Ok )
-            {
-            MV_SetErrorCode( MV_PasError );
-            return( MV_Error );
-            }
-         break;
       }
 
    MV_Recording = TRUE;
@@ -2675,11 +2624,6 @@ static void MV_StopRecord
       case SoundBlaster :
       case Awe32 :
          BLASTER_StopPlayback();
-         break;
-
-      case ProAudioSpectrum :
-      case SoundMan16 :
-         PAS_StopPlayback();
          break;
       }
 
@@ -3610,11 +3554,6 @@ static int MV_TestPlayback
             pos = BLASTER_GetCurrentPos();
             break;
 
-         case ProAudioSpectrum :
-         case SoundMan16 :
-            pos = PAS_GetCurrentPos();
-            break;
-
          case SoundScape :
             pos = SOUNDSCAPE_GetCurrentPos();
             break;
@@ -3766,15 +3705,6 @@ void MV_Init
             }
          break;
 
-      case ProAudioSpectrum :
-      case SoundMan16 :
-         status = PAS_Init();
-         if ( status != PAS_Ok )
-            {
-            MV_SetErrorCode( MV_PasError );
-            }
-         break;
-
       case SoundScape :
          status = SOUNDSCAPE_Init();
          if ( status != SOUNDSCAPE_Ok )
@@ -3914,11 +3844,6 @@ void MV_Shutdown
       case SoundBlaster :
       case Awe32 :
          BLASTER_Shutdown();
-         break;
-
-      case ProAudioSpectrum :
-      case SoundMan16 :
-         PAS_Shutdown();
          break;
 
       case SoundScape :
