@@ -50,6 +50,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define BLASTER_MixerAddressPort  0x04
 #define BLASTER_MixerDataPort     0x05
 #define BLASTER_ResetPort         0x06
+#define BLASTER_ReadPort          0x0A
+#define BLASTER_WritePort         0x0C
 #define BLASTER_DataAvailablePort 0x0E
 #define BLASTER_Ready             0xAA
 #define BLASTER_16BitDMAAck       0x0F
@@ -59,6 +61,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIXER_16BITDMA_INT        0x2
 #define MIXER_8BITDMA_INT         0x1
 #define MIXER_DisableMPU401Interrupts 0xB
+#define MIXER_SBProOutputSetting  0x0E
+#define MIXER_SBProStereoFlag     0x02
 #define MIXER_SBProVoice          0x04
 #define MIXER_SB16VoiceLeft       0x32
 #define MIXER_SB16VoiceRight      0x33
@@ -68,7 +72,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define DSP_Old8BitADC                0x24
 #define DSP_Old8BitDAC                0x14
+#define DSP_SetTimeConstant           0x40
+#define DSP_Set_DA_Rate               0x41
+#define DSP_Set_AD_Rate               0x42
 #define DSP_Halt8bitTransfer          0xd0
+#define DSP_SpeakerOff                0xd3
+#define DSP_GetVersion                0xE1
+#define DSP_Reset                     0xFFFF
 
 #define BlasterEnv_Address    'A'
 #define BlasterEnv_Interrupt  'I'
@@ -78,12 +88,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define BlasterEnv_Midi       'P'
 #define BlasterEnv_EmuAddress 'E'
 
+#define CalcTimeConstant( rate, samplesize ) \
+   ( ( 65536L - ( 256000000L / ( ( samplesize ) * ( rate ) ) ) ) >> 8 )
+
+#define CalcSamplingRate( tc ) \
+   ( 256000000L / ( 65536L - ( tc << 8 ) ) )
+
 const int BLASTER_Interrupts[ BLASTER_MaxIrq + 1 ]  =
    {
    INVALID, INVALID,     0xa,     0xb,
    INVALID,     0xd, INVALID,     0xf,
    INVALID, INVALID,    0x72,    0x73,
       0x74, INVALID, INVALID,    0x77
+   };
+
+const int BLASTER_SampleSize[ BLASTER_MaxMixMode + 1 ] =
+   {
+   MONO_8BIT_SAMPLE_SIZE,  STEREO_8BIT_SAMPLE_SIZE,
+   MONO_16BIT_SAMPLE_SIZE, STEREO_16BIT_SAMPLE_SIZE
    };
 
 typedef struct
@@ -121,6 +143,9 @@ static char   *BLASTER_DMABufferEnd;
 static char   *BLASTER_CurrentDMABuffer;
 
 static int      BLASTER_TransferLength   = 0;
+static int      BLASTER_MixMode          = BLASTER_DefaultMixMode;
+static int      BLASTER_SamplePacketSize = MONO_16BIT_SAMPLE_SIZE;
+static unsigned BLASTER_SampleRate       = BLASTER_DefaultSampleRate;
 
 static unsigned BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
 
@@ -134,6 +159,8 @@ static int  BLASTER_IntController2Mask;
 
 static int BLASTER_MixerAddress = UNDEFINED;
 static int BLASTER_MixerType    = 0;
+static int BLASTER_OriginalVoiceVolumeLeft  = 255;
+static int BLASTER_OriginalVoiceVolumeRight = 255;
 
 // adequate stack size
 #define kStackSize 2048
@@ -144,6 +171,42 @@ static unsigned long  StackPointer;
 // This is defined because we can't create local variables in a
 // function that switches stacks.
 static int GlobalStatus;
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_DisableInterrupt
+
+   Disables the triggering of the sound card interrupt.
+---------------------------------------------------------------------*/
+
+void BLASTER_DisableInterrupt
+   (
+   void
+   )
+
+   {
+   int Irq;
+   int mask;
+
+   // Restore interrupt mask
+   Irq  = BLASTER_Config.Interrupt;
+   if ( Irq < 8 )
+      {
+      mask  = inp( 0x21 ) & ~( 1 << Irq );
+      mask |= BLASTER_IntController1Mask & ( 1 << Irq );
+      outp( 0x21, mask  );
+      }
+   else
+      {
+      mask  = inp( 0x21 ) & ~( 1 << 2 );
+      mask |= BLASTER_IntController1Mask & ( 1 << 2 );
+      outp( 0x21, mask  );
+
+      mask  = inp( 0xA1 ) & ~( 1 << ( Irq - 8 ) );
+      mask |= BLASTER_IntController2Mask & ( 1 << ( Irq - 8 ) );
+      outp( 0xA1, mask  );
+      }
+   }
 
 
 /*---------------------------------------------------------------------
@@ -247,6 +310,83 @@ void __interrupt __far BLASTER_ServiceInterrupt
 
 
 /*---------------------------------------------------------------------
+   Function: BLASTER_WriteDSP
+
+   Writes a byte of data to the sound card's DSP.
+---------------------------------------------------------------------*/
+
+int BLASTER_WriteDSP
+   (
+   unsigned data
+   )
+
+   {
+   int      port;
+   unsigned count;
+   int      status;
+
+   port = BLASTER_Config.Address + BLASTER_WritePort;
+
+   status = BLASTER_Error;
+
+   count = 0xFFFF;
+
+   do
+      {
+      if ( ( inp( port ) & 0x80 ) == 0 )
+         {
+         outp( port, data );
+         status = BLASTER_Ok;
+         break;
+         }
+
+      count--;
+      }
+   while( count > 0 );
+
+   return( status );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_ReadDSP
+
+   Reads a byte of data from the sound card's DSP.
+---------------------------------------------------------------------*/
+
+int BLASTER_ReadDSP
+   (
+   void
+   )
+
+   {
+   int      port;
+   unsigned count;
+   int      status;
+
+   port = BLASTER_Config.Address + BLASTER_DataAvailablePort;
+
+   status = BLASTER_Error;
+
+   count = 0xFFFF;
+
+   do
+      {
+      if ( inp( port ) & 0x80 )
+         {
+         status = inp( BLASTER_Config.Address + BLASTER_ReadPort );
+         break;
+         }
+
+      count--;
+      }
+   while( count > 0 );
+
+   return( status );
+   }
+
+
+/*---------------------------------------------------------------------
    Function: BLASTER_ResetDSP
 
    Sends a reset command to the sound card's Digital Signal Processor
@@ -312,6 +452,248 @@ int BLASTER_ResetDSP
 
 
 /*---------------------------------------------------------------------
+   Function: BLASTER_GetDSPVersion
+
+   Returns the version number of the sound card's DSP.
+---------------------------------------------------------------------*/
+
+int BLASTER_GetDSPVersion
+   (
+   void
+   )
+
+   {
+   int MajorVersion;
+   int MinorVersion;
+   int version;
+
+   BLASTER_WriteDSP( DSP_GetVersion );
+
+   MajorVersion   = BLASTER_ReadDSP();
+   MinorVersion   = BLASTER_ReadDSP();
+
+   if ( ( MajorVersion == BLASTER_Error ) ||
+      ( MinorVersion == BLASTER_Error ) )
+      {
+      return( BLASTER_Error );
+      }
+
+   version = ( MajorVersion << 8 ) + MinorVersion;
+
+   return( version );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_SpeakerOff
+
+   Disables output from the DAC.
+---------------------------------------------------------------------*/
+
+void BLASTER_SpeakerOff
+   (
+   void
+   )
+
+   {
+   BLASTER_WriteDSP( DSP_SpeakerOff );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_SetPlaybackRate
+
+   Sets the rate at which the digitized sound will be played in
+   hertz.
+---------------------------------------------------------------------*/
+
+void BLASTER_SetPlaybackRate
+   (
+   unsigned rate
+   )
+
+   {
+   int LoByte;
+   int HiByte;
+   CARD_CAPABILITY const *card;
+
+   card = &BLASTER_CardConfig[ BLASTER_Config.Type ];
+
+   if ( BLASTER_Version < DSP_Version4xx )
+      {
+      int  timeconstant;
+      long ActualRate;
+
+      // Send sampling rate as time constant for older Sound
+      // Blaster compatible cards.
+
+      ActualRate = rate * BLASTER_SamplePacketSize;
+      if ( ActualRate < card->MinSamplingRate )
+         {
+         rate = card->MinSamplingRate / BLASTER_SamplePacketSize;
+         }
+
+      if ( ActualRate > card->MaxSamplingRate )
+         {
+         rate = card->MaxSamplingRate / BLASTER_SamplePacketSize;
+         }
+
+      timeconstant = ( int )CalcTimeConstant( rate, BLASTER_SamplePacketSize );
+
+      // Keep track of what the actual rate is
+      BLASTER_SampleRate  = ( unsigned )CalcSamplingRate( timeconstant );
+      BLASTER_SampleRate /= BLASTER_SamplePacketSize;
+
+      BLASTER_WriteDSP( DSP_SetTimeConstant );
+      BLASTER_WriteDSP( timeconstant );
+      }
+   else
+      {
+      // Send literal sampling rate for cards with DSP version
+      // 4.xx (Sound Blaster 16)
+
+      BLASTER_SampleRate = rate;
+
+      if ( BLASTER_SampleRate < card->MinSamplingRate )
+         {
+         BLASTER_SampleRate = card->MinSamplingRate;
+         }
+
+      if ( BLASTER_SampleRate > card->MaxSamplingRate )
+         {
+         BLASTER_SampleRate = card->MaxSamplingRate;
+         }
+
+      HiByte = HIBYTE( BLASTER_SampleRate );
+      LoByte = LOBYTE( BLASTER_SampleRate );
+
+      // Set playback rate
+      BLASTER_WriteDSP( DSP_Set_DA_Rate );
+      BLASTER_WriteDSP( HiByte );
+      BLASTER_WriteDSP( LoByte );
+
+      // Set recording rate
+      BLASTER_WriteDSP( DSP_Set_AD_Rate );
+      BLASTER_WriteDSP( HiByte );
+      BLASTER_WriteDSP( LoByte );
+      }
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_SetMixMode
+
+   Sets the sound card to play samples in mono or stereo.
+---------------------------------------------------------------------*/
+
+int BLASTER_SetMixMode
+   (
+   int mode
+   )
+
+   {
+   int   port;
+   int   data;
+   int   CardType;
+
+   CardType = BLASTER_Config.Type;
+
+   mode &= BLASTER_MaxMixMode;
+
+   if ( !( BLASTER_CardConfig[ CardType ].MaxMixMode & STEREO ) )
+      {
+      mode &= ~STEREO;
+      }
+
+   if ( !( BLASTER_CardConfig[ CardType ].MaxMixMode & SIXTEEN_BIT ) )
+      {
+      mode &= ~SIXTEEN_BIT;
+      }
+
+   BLASTER_MixMode = mode;
+   BLASTER_SamplePacketSize = BLASTER_SampleSize[ mode ];
+
+   // For the Sound Blaster Pro, we have to set the mixer chip
+   // to play mono or stereo samples.
+
+   if ( ( CardType == SBPro ) || ( CardType == SBPro2 ) )
+      {
+      port = BLASTER_Config.Address + BLASTER_MixerAddressPort;
+      outp( port, MIXER_SBProOutputSetting );
+
+      port = BLASTER_Config.Address + BLASTER_MixerDataPort;
+
+      // Get current mode
+      data = inp( port );
+
+      // set stereo mode bit
+      if ( mode & STEREO )
+         {
+         data |= MIXER_SBProStereoFlag;
+         }
+      else
+         {
+         data &= ~MIXER_SBProStereoFlag;
+         }
+
+      // set the mode
+      outp( port, data );
+
+      BLASTER_SetPlaybackRate( BLASTER_SampleRate );
+      }
+
+   return( mode );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_StopPlayback
+
+   Ends the DMA transfer of digitized sound to the sound card.
+---------------------------------------------------------------------*/
+
+void BLASTER_StopPlayback
+   (
+   void
+   )
+
+   {
+   int DmaChannel;
+
+   // Don't allow anymore interrupts
+   BLASTER_DisableInterrupt();
+
+   if ( BLASTER_HaltTransferCommand == DSP_Reset )
+      {
+      BLASTER_ResetDSP();
+      }
+   else
+      {
+      BLASTER_WriteDSP( BLASTER_HaltTransferCommand );
+      }
+
+   // Disable the DMA channel
+   if ( BLASTER_MixMode & SIXTEEN_BIT )
+      {
+      DmaChannel = BLASTER_Config.Dma16;
+      }
+   else
+      {
+      DmaChannel = BLASTER_Config.Dma8;
+      }
+   DMA_EndTransfer( DmaChannel );
+
+   // Turn off speaker
+   BLASTER_SpeakerOff();
+
+   BLASTER_SoundPlaying = FALSE;
+   BLASTER_SoundRecording = FALSE;
+
+   BLASTER_DMABuffer = NULL;
+   }
+
+
+/*---------------------------------------------------------------------
    Function: BLASTER_DSP1xx_BeginPlayback
 
    Starts playback of digitized sound on cards compatible with DSP
@@ -329,8 +711,8 @@ int BLASTER_DSP1xx_BeginPlayback
    int HiByte;
 
    SampleLength = length - 1;
-   HiByte = hibyte( SampleLength );
-   LoByte = lobyte( SampleLength );
+   HiByte = HIBYTE( SampleLength );
+   LoByte = LOBYTE( SampleLength );
 
    // Program DSP to play sound
    BLASTER_WriteDSP( DSP_Old8BitDAC );
@@ -363,8 +745,8 @@ int BLASTER_DSP1xx_BeginRecord
    int HiByte;
 
    SampleLength = length - 1;
-   HiByte = hibyte( SampleLength );
-   LoByte = lobyte( SampleLength );
+   HiByte = HIBYTE( SampleLength );
+   LoByte = LOBYTE( SampleLength );
 
    // Program DSP to play sound
    BLASTER_WriteDSP( DSP_Old8BitADC );
@@ -394,6 +776,26 @@ static void BLASTER_WriteMixer
    {
    outp( BLASTER_MixerAddress + BLASTER_MixerAddressPort, reg );
    outp( BLASTER_MixerAddress + BLASTER_MixerDataPort, data );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_ReadMixer
+
+   Reads a byte of data from the Sound Blaster's mixer chip.
+---------------------------------------------------------------------*/
+
+int BLASTER_ReadMixer
+   (
+   int reg
+   )
+
+   {
+   int data;
+
+   outp( BLASTER_MixerAddress + BLASTER_MixerAddressPort, reg );
+   data = inp( BLASTER_MixerAddress + BLASTER_MixerDataPort );
+   return( data );
    }
 
 
@@ -472,6 +874,72 @@ int BLASTER_CardHasMixer
       }
 
    return( FALSE );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_SaveVoiceVolume
+
+   Saves the user's voice mixer settings.
+---------------------------------------------------------------------*/
+
+void BLASTER_SaveVoiceVolume
+   (
+   void
+   )
+
+   {
+   if ( BLASTER_CardHasMixer() )
+      {
+      switch( BLASTER_MixerType )
+         {
+         case SBPro :
+         case SBPro2 :
+            BLASTER_OriginalVoiceVolumeLeft =
+               BLASTER_ReadMixer( MIXER_SBProVoice );
+            break;
+
+         case SB16 :
+            BLASTER_OriginalVoiceVolumeLeft =
+               BLASTER_ReadMixer( MIXER_SB16VoiceLeft );
+            BLASTER_OriginalVoiceVolumeRight =
+               BLASTER_ReadMixer( MIXER_SB16VoiceRight );
+            break;
+         }
+      }
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_RestoreVoiceVolume
+
+   Restores the user's voice mixer settings.
+---------------------------------------------------------------------*/
+
+void BLASTER_RestoreVoiceVolume
+   (
+   void
+   )
+
+   {
+   if ( BLASTER_CardHasMixer() )
+      {
+      switch( BLASTER_MixerType )
+         {
+         case SBPro :
+         case SBPro2 :
+            BLASTER_WriteMixer( MIXER_SBProVoice,
+               BLASTER_OriginalVoiceVolumeLeft );
+            break;
+
+         case SB16 :
+            BLASTER_WriteMixer( MIXER_SB16VoiceLeft,
+               BLASTER_OriginalVoiceVolumeLeft );
+            BLASTER_WriteMixer( MIXER_SB16VoiceRight,
+               BLASTER_OriginalVoiceVolumeRight );
+            break;
+         }
+      }
    }
 
 
@@ -678,6 +1146,89 @@ void BLASTER_GetCardInfo
 
 
 /*---------------------------------------------------------------------
+   Function: BLASTER_SetCallBack
+
+   Specifies the user function to call at the end of a sound transfer.
+---------------------------------------------------------------------*/
+
+void BLASTER_SetCallBack
+   (
+   void ( *func )( void )
+   )
+
+   {
+   BLASTER_CallBack = func;
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: allocateTimerStack
+
+   Allocate a block of memory from conventional (low) memory and return
+   the selector (which can go directly into a segment register) of the
+   memory block or 0 if an error occured.
+---------------------------------------------------------------------*/
+
+static unsigned short allocateTimerStack
+   (
+   unsigned short size
+   )
+
+   {
+   union REGS regs;
+
+   // clear all registers
+   memset( &regs, 0, sizeof( regs ) );
+
+   // DPMI allocate conventional memory
+   regs.w.ax = 0x100;
+
+   // size in paragraphs
+   regs.w.bx = ( size + 15 ) / 16;
+
+   int386( 0x31, &regs, &regs );
+   if (!regs.w.cflag)
+      {
+      // DPMI call returns selector in dx
+      // (ax contains real mode segment
+      // which is ignored here)
+
+      return( regs.w.dx );
+      }
+
+   // Couldn't allocate memory.
+   return( NULL );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: deallocateTimerStack
+
+   Deallocate a block of conventional (low) memory given a selector to
+   it.  Assumes the block was allocated with DPMI function 0x100.
+---------------------------------------------------------------------*/
+
+static void deallocateTimerStack
+   (
+   unsigned short selector
+   )
+
+   {
+   union REGS regs;
+
+   if ( selector != NULL )
+      {
+      // clear all registers
+      memset( &regs, 0, sizeof( regs ) );
+
+      regs.w.ax = 0x101;
+      regs.w.dx = selector;
+      int386( 0x31, &regs, &regs );
+      }
+   }
+
+
+/*---------------------------------------------------------------------
    Function: BLASTER_SetupWaveBlaster
 
    Allows the WaveBlaster to play music while the Sound Blaster 16
@@ -772,17 +1323,9 @@ int BLASTER_Init
          return( BLASTER_Error );
          }
 
-      status = BLASTER_LockMemory();
-      if ( status != BLASTER_Ok )
-         {
-         BLASTER_UnlockMemory();
-         return( status );
-         }
-
       StackSelector = allocateTimerStack( kStackSize );
       if ( StackSelector == NULL )
          {
-         BLASTER_UnlockMemory();
          return( BLASTER_Error );
          }
 
@@ -799,7 +1342,6 @@ int BLASTER_Init
          status = IRQ_SetVector( Interrupt, BLASTER_ServiceInterrupt );
          if ( status != IRQ_Ok )
             {
-            BLASTER_UnlockMemory();
             deallocateTimerStack( StackSelector );
             StackSelector = NULL;
             return( BLASTER_Error );
@@ -852,8 +1394,6 @@ void BLASTER_Shutdown
    BLASTER_DMABuffer = NULL;
 
    BLASTER_SetCallBack( NULL );
-
-   BLASTER_UnlockMemory();
 
    deallocateTimerStack( StackSelector );
    StackSelector = NULL;

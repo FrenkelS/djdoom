@@ -83,6 +83,13 @@ enum BLASTER_Types
 #define STEREO_8BIT  ( STEREO )
 #define STEREO_16BIT ( STEREO | SIXTEEN_BIT )
 
+#define BLASTER_MaxMixMode        STEREO_16BIT
+
+#define MONO_8BIT_SAMPLE_SIZE    1
+#define MONO_16BIT_SAMPLE_SIZE   2
+#define STEREO_8BIT_SAMPLE_SIZE  ( 2 * MONO_8BIT_SAMPLE_SIZE )
+#define STEREO_16BIT_SAMPLE_SIZE ( 2 * MONO_16BIT_SAMPLE_SIZE )
+
 #define BLASTER_DefaultSampleRate 11000
 #define BLASTER_DefaultMixMode    MONO_8BIT
 #define BLASTER_MaxIrq            15
