@@ -68,17 +68,35 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIXER_SB16VoiceRight      0x33
 
 #define DSP_Version2xx            0x0200
+#define DSP_Version201            0x0201
 #define DSP_Version4xx            0x0400
 
+#define DSP_MaxNormalRate         22000
+
 #define DSP_Old8BitADC                0x24
+#define DSP_8BitAutoInitMode          0x1c
+#define DSP_8BitHighSpeedAutoInitMode 0x90
+#define DSP_SetBlockLength            0x48
 #define DSP_Old8BitDAC                0x14
+#define DSP_16BitDAC                  0xB6
+#define DSP_8BitDAC                   0xC6
 #define DSP_SetTimeConstant           0x40
 #define DSP_Set_DA_Rate               0x41
 #define DSP_Set_AD_Rate               0x42
 #define DSP_Halt8bitTransfer          0xd0
+#define DSP_Halt16bitTransfer         0xd5
+#define DSP_SpeakerOn                 0xd1
 #define DSP_SpeakerOff                0xd3
 #define DSP_GetVersion                0xE1
 #define DSP_Reset                     0xFFFF
+
+#define DSP_SignedBit                 0x10
+#define DSP_StereoBit                 0x20
+
+#define DSP_UnsignedMonoData      0x00
+#define DSP_SignedMonoData        ( DSP_SignedBit )
+#define DSP_UnsignedStereoData    ( DSP_StereoBit )
+#define DSP_SignedStereoData      ( DSP_SignedBit | DSP_StereoBit )
 
 #define BlasterEnv_Address    'A'
 #define BlasterEnv_Interrupt  'I'
@@ -141,6 +159,7 @@ static int BLASTER_Version;
 static char   *BLASTER_DMABuffer;
 static char   *BLASTER_DMABufferEnd;
 static char   *BLASTER_CurrentDMABuffer;
+static int     BLASTER_TotalDMABufferSize;
 
 static int      BLASTER_TransferLength   = 0;
 static int      BLASTER_MixMode          = BLASTER_DefaultMixMode;
@@ -171,6 +190,42 @@ static unsigned long  StackPointer;
 // This is defined because we can't create local variables in a
 // function that switches stacks.
 static int GlobalStatus;
+
+int BLASTER_DMAChannel;
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_EnableInterrupt
+
+   Enables the triggering of the sound card interrupt.
+---------------------------------------------------------------------*/
+
+void BLASTER_EnableInterrupt
+   (
+   void
+   )
+
+   {
+   int Irq;
+   int mask;
+
+   // Unmask system interrupt
+   Irq  = BLASTER_Config.Interrupt;
+   if ( Irq < 8 )
+      {
+      mask = inp( 0x21 ) & ~( 1 << Irq );
+      outp( 0x21, mask  );
+      }
+   else
+      {
+      mask = inp( 0xA1 ) & ~( 1 << ( Irq - 8 ) );
+      outp( 0xA1, mask  );
+
+      mask = inp( 0x21 ) & ~( 1 << 2 );
+      outp( 0x21, mask  );
+      }
+
+   }
 
 
 /*---------------------------------------------------------------------
@@ -485,6 +540,22 @@ int BLASTER_GetDSPVersion
 
 
 /*---------------------------------------------------------------------
+   Function: BLASTER_SpeakerOn
+
+   Enables output from the DAC.
+---------------------------------------------------------------------*/
+
+void BLASTER_SpeakerOn
+   (
+   void
+   )
+
+   {
+   BLASTER_WriteDSP( DSP_SpeakerOn );
+   }
+
+
+/*---------------------------------------------------------------------
    Function: BLASTER_SpeakerOff
 
    Disables output from the DAC.
@@ -577,6 +648,23 @@ void BLASTER_SetPlaybackRate
       BLASTER_WriteDSP( HiByte );
       BLASTER_WriteDSP( LoByte );
       }
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_GetPlaybackRate
+
+   Returns the rate at which the digitized sound will be played in
+   hertz.
+---------------------------------------------------------------------*/
+
+unsigned BLASTER_GetPlaybackRate
+   (
+   void
+   )
+
+   {
+   return( BLASTER_SampleRate );
    }
 
 
@@ -694,6 +782,108 @@ void BLASTER_StopPlayback
 
 
 /*---------------------------------------------------------------------
+   Function: BLASTER_SetupDMABuffer
+
+   Programs the DMAC for sound transfer.
+---------------------------------------------------------------------*/
+
+int BLASTER_SetupDMABuffer
+   (
+   char *BufferPtr,
+   int   BufferSize,
+   int   mode
+   )
+
+   {
+   int DmaChannel;
+   int DmaStatus;
+
+   if ( BLASTER_MixMode & SIXTEEN_BIT )
+      {
+      DmaChannel = BLASTER_Config.Dma16;
+      }
+   else
+      {
+      DmaChannel = BLASTER_Config.Dma8;
+      }
+
+   if ( DmaChannel == UNDEFINED )
+      {
+      return( BLASTER_Error );
+      }
+
+   DmaStatus = DMA_SetupTransfer( DmaChannel, BufferPtr, BufferSize, mode );
+   if ( DmaStatus == DMA_Error )
+      {
+      return( BLASTER_Error );
+      }
+
+   BLASTER_DMAChannel = DmaChannel;
+
+   BLASTER_DMABuffer          = BufferPtr;
+   BLASTER_CurrentDMABuffer   = BufferPtr;
+   BLASTER_TotalDMABufferSize = BufferSize;
+   BLASTER_DMABufferEnd       = BufferPtr + BufferSize;
+
+   return( BLASTER_Ok );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_GetCurrentPos
+
+   Returns the offset within the current sound being played.
+---------------------------------------------------------------------*/
+
+int BLASTER_GetCurrentPos
+   (
+   void
+   )
+
+   {
+   char *CurrentAddr;
+   int   DmaChannel;
+   int   offset;
+
+   if ( !BLASTER_SoundPlaying )
+      {
+      return( BLASTER_Error );
+      }
+
+   if ( BLASTER_MixMode & SIXTEEN_BIT )
+      {
+      DmaChannel = BLASTER_Config.Dma16;
+      }
+   else
+      {
+      DmaChannel = BLASTER_Config.Dma8;
+      }
+
+   if ( DmaChannel == UNDEFINED )
+      {
+      return( BLASTER_Error );
+      }
+
+   CurrentAddr = DMA_GetCurrentPos( DmaChannel );
+
+   offset = ( int )( ( ( unsigned long )CurrentAddr ) -
+      ( ( unsigned long )BLASTER_CurrentDMABuffer ) );
+
+   if ( BLASTER_MixMode & SIXTEEN_BIT )
+      {
+      offset >>= 1;
+      }
+
+   if ( BLASTER_MixMode & STEREO )
+      {
+      offset >>= 1;
+      }
+
+   return( offset );
+   }
+
+
+/*---------------------------------------------------------------------
    Function: BLASTER_DSP1xx_BeginPlayback
 
    Starts playback of digitized sound on cards compatible with DSP
@@ -722,6 +912,175 @@ int BLASTER_DSP1xx_BeginPlayback
    BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
 
    BLASTER_SoundPlaying = TRUE;
+
+   return( BLASTER_Ok );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_DSP2xx_BeginPlayback
+
+   Starts playback of digitized sound on cards compatible with DSP
+   version 2.xx.
+---------------------------------------------------------------------*/
+
+int BLASTER_DSP2xx_BeginPlayback
+   (
+   int length
+   )
+
+   {
+   int SampleLength;
+   int LoByte;
+   int HiByte;
+
+   SampleLength = length - 1;
+   HiByte = HIBYTE( SampleLength );
+   LoByte = LOBYTE( SampleLength );
+
+   BLASTER_WriteDSP( DSP_SetBlockLength );
+   BLASTER_WriteDSP( LoByte );
+   BLASTER_WriteDSP( HiByte );
+
+   if ( ( BLASTER_Version >= DSP_Version201 ) && ( DSP_MaxNormalRate <
+      ( BLASTER_SampleRate * BLASTER_SamplePacketSize ) ) )
+      {
+      BLASTER_WriteDSP( DSP_8BitHighSpeedAutoInitMode );
+      BLASTER_HaltTransferCommand = DSP_Reset;
+      }
+   else
+      {
+      BLASTER_WriteDSP( DSP_8BitAutoInitMode );
+      BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
+      }
+
+   BLASTER_SoundPlaying = TRUE;
+
+   return( BLASTER_Ok );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_DSP4xx_BeginPlayback
+
+   Starts playback of digitized sound on cards compatible with DSP
+   version 4.xx, such as the Sound Blaster 16.
+---------------------------------------------------------------------*/
+
+int BLASTER_DSP4xx_BeginPlayback
+   (
+   int length
+   )
+
+   {
+   int TransferCommand;
+   int TransferMode;
+   int SampleLength;
+   int LoByte;
+   int HiByte;
+
+   if ( BLASTER_MixMode & SIXTEEN_BIT )
+      {
+      TransferCommand = DSP_16BitDAC;
+      SampleLength = ( length / 2 ) - 1;
+      BLASTER_HaltTransferCommand = DSP_Halt16bitTransfer;
+      if ( BLASTER_MixMode & STEREO )
+         {
+         TransferMode = DSP_SignedStereoData;
+         }
+      else
+         {
+         TransferMode = DSP_SignedMonoData;
+         }
+      }
+   else
+      {
+      TransferCommand = DSP_8BitDAC;
+      SampleLength = length - 1;
+      BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
+      if ( BLASTER_MixMode & STEREO )
+         {
+         TransferMode = DSP_UnsignedStereoData;
+         }
+      else
+         {
+         TransferMode = DSP_UnsignedMonoData;
+         }
+      }
+
+   HiByte = HIBYTE( SampleLength );
+   LoByte = LOBYTE( SampleLength );
+
+   // Program DSP to play sound
+   BLASTER_WriteDSP( TransferCommand );
+   BLASTER_WriteDSP( TransferMode );
+   BLASTER_WriteDSP( LoByte );
+   BLASTER_WriteDSP( HiByte );
+
+   BLASTER_SoundPlaying = TRUE;
+
+   return( BLASTER_Ok );
+   }
+
+
+/*---------------------------------------------------------------------
+   Function: BLASTER_BeginBufferedPlayback
+
+   Begins multibuffered playback of digitized sound on the sound card.
+---------------------------------------------------------------------*/
+
+int BLASTER_BeginBufferedPlayback
+   (
+   char    *BufferStart,
+   int      BufferSize,
+   int      NumDivisions,
+   unsigned SampleRate,
+   int      MixMode,
+   void  ( *CallBackFunc )( void )
+   )
+
+   {
+   int DmaStatus;
+   int TransferLength;
+
+   if ( BLASTER_SoundPlaying || BLASTER_SoundRecording )
+      {
+      BLASTER_StopPlayback();
+      }
+
+   BLASTER_SetMixMode( MixMode );
+
+   DmaStatus = BLASTER_SetupDMABuffer( BufferStart, BufferSize, DMA_AutoInitRead );
+   if ( DmaStatus == BLASTER_Error )
+      {
+      return( BLASTER_Error );
+      }
+
+   BLASTER_SetPlaybackRate( SampleRate );
+
+   BLASTER_SetCallBack( CallBackFunc );
+
+   BLASTER_EnableInterrupt();
+
+   // Turn on speaker
+   BLASTER_SpeakerOn();
+
+   TransferLength = BufferSize / NumDivisions;
+   BLASTER_TransferLength = TransferLength;
+
+   //  Program the sound card to start the transfer.
+   if ( BLASTER_Version < DSP_Version2xx )
+      {
+      BLASTER_DSP1xx_BeginPlayback( TransferLength );
+      }
+   else if ( BLASTER_Version < DSP_Version4xx )
+      {
+      BLASTER_DSP2xx_BeginPlayback( TransferLength );
+      }
+   else
+      {
+      BLASTER_DSP4xx_BeginPlayback( TransferLength );
+      }
 
    return( BLASTER_Ok );
    }
