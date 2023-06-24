@@ -17,6 +17,7 @@ alias R_DrawColumn_=_R_DrawColumn, R_DrawColumnLow_=_R_DrawColumnLow, R_DrawSpan
 file dmx.obj
 file al_midi.obj
 file blastold.obj
+file dma.obj
 file midi.obj
 file mpu401.obj
 file multivoc.obj

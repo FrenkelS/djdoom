@@ -29,6 +29,7 @@ GLOBOBJS = &
  dmx.obj &
  al_midi.obj &
  blastold.obj &
+ dma.obj &
  midi.obj &
  mpu401.obj &
  multivoc.obj &
