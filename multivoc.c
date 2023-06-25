@@ -48,12 +48,45 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "dma.h"
 
 //#include "ll_man.h"
+#define OFFSET(structure, offset) \
+   (*((char **)&(structure)[offset]))
+
+static void LL_AddNode(char *item, char **head, char **tail, int next, int prev)
+{
+	OFFSET(item, prev) = NULL;
+	OFFSET(item, next) = *head;
+
+	if (*head)
+		OFFSET(*head, prev) = item;
+	else    
+		*tail = item;
+
+	*head = item;
+}
+
 #define LL_AddToTail( type, listhead, node )         \
     LL_AddNode( ( char * )( node ),                  \
                 ( char ** )&( ( listhead )->end ),   \
                 ( char ** )&( ( listhead )->start ), \
                 ( int )&( ( type * ) 0 )->prev,      \
                 ( int )&( ( type * ) 0 )->next )
+
+
+static void LL_RemoveNode(char *item, char **head, char **tail, int next, int prev)
+{
+	if (OFFSET(item, prev) == NULL )
+		*head = OFFSET(item, next);
+	else
+		OFFSET(OFFSET(item, prev), next) = OFFSET(item, next);
+
+	if (OFFSET(item, next) == NULL)
+		*tail = OFFSET(item, prev);
+	else
+		OFFSET(OFFSET(item, next), prev) = OFFSET(item, prev);
+
+	OFFSET(item, next) = NULL;
+	OFFSET(item, prev) = NULL;
+}
 
 #define LL_Remove( type, listhead, node )               \
     LL_RemoveNode( ( char * )( node ),                  \
