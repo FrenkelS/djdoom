@@ -6,6 +6,7 @@ option map
 option stack=65536
 option stub=wstub
 option static
+OPTION NOCASEEXACT
 debug all
 libpath %WATCOM%\lib386
 libpath %WATCOM%\lib386\dos
@@ -24,6 +25,9 @@ file mpu401.obj
 file multivoc.obj
 file mus2mid.obj
 file music.obj
+file mv_mix.obj
+file mv_mix16.obj
+file mvreverb.obj
 file pcfx.obj
 file tsmapi.obj
 file task_man.obj
