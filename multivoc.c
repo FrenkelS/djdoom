@@ -40,6 +40,31 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //#include "dpmi.h"
 #define DPMI_Ok 0
+static int  DPMI_GetDOSMemory( void **ptr, int *descriptor, unsigned length );
+#pragma aux DPMI_GetDOSMemory = \
+   "mov    eax, 0100h",         \
+   "add    ebx, 15",            \
+   "shr    ebx, 4",             \
+   "int    31h",                \
+   "jc     DPMI_Exit",          \
+   "movzx  eax, ax",            \
+   "shl    eax, 4",             \
+   "mov    [ esi ], eax",       \
+   "mov    [ edi ], edx",       \
+   "sub    eax, eax",           \
+   "DPMI_Exit:",                \
+   parm [ esi ] [ edi ] [ ebx ] modify exact [ eax ebx edx ];
+
+
+static int  DPMI_FreeDOSMemory( int descriptor );
+#pragma aux DPMI_FreeDOSMemory = \
+   "mov    eax, 0101h",          \
+   "int    31h",                 \
+   "jc     DPMI_Exit",           \
+   "sub    eax, eax",            \
+   "DPMI_Exit:",                 \
+   parm [ edx ] modify exact [ eax ];
+
 
 //#include "usrhooks.h"
 #define USRHOOKS_Error -1
