@@ -214,7 +214,7 @@ void SFX_SetOrigin(int32_t handle, int32_t pitch, int32_t sep, int32_t volume)
 int32_t ENS_Detect(void) {return -1;}
 int32_t CODEC_Detect(int32_t *sbPort, int32_t *sbDma) {UNUSED(sbPort); UNUSED(sbDma); return -1;}
 int32_t GF1_Detect(void) {return -1;}
-void GF1_SetMap(char *dmxlump, int32_t size) {UNUSED(dmxlump); UNUSED(size);}
+void GF1_SetMap(uint8_t *dmxlump, int32_t size) {UNUSED(dmxlump); UNUSED(size);}
 
 
 /*---------------------------------------------------------------------
@@ -274,13 +274,13 @@ int32_t AL_Detect(int32_t *wait, int32_t *type)
 
 void AL_SetCard(int32_t wait, void *data)
 {
-	unsigned char *cdata;
-	unsigned char *tmb;
-	int i;
+	uint8_t *cdata;
+	uint8_t *tmb;
+	int32_t i;
 
 	UNUSED(wait);
 
-	cdata = (unsigned char *)data;
+	cdata = (uint8_t *)data;
 	tmb = malloc(13 * 256);
 	if (!tmb)
 		return;

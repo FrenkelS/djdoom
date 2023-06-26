@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 **********************************************************************/
 
 #include <dos.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include "irq.h"
 
@@ -61,7 +62,7 @@ typedef struct
 static DPMI_REGS rmregs = { 0 };
 static void ( __interrupt __far *IRQ_Callback )( void ) = NULL;
 
-static char *IRQ_RealModeCode = NULL;
+static uint8_t *IRQ_RealModeCode = NULL;
 
 static unsigned short IRQ_CallBackSegment;
 static unsigned short IRQ_CallBackOffset;
