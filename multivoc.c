@@ -859,14 +859,7 @@ static void MV_ServiceVoc
 
    // Toggle which buffer we'll mix next
    MV_MixPage++;
-   // FIXME - VERSIONS RESTORATION TEST - Uncomment to ensure the function
-   // body's size is the same as in ROTT Site Licensed v1.3
-   //
-   // *** THIS MODIFIES THE FUNCTION'S BEHAVIORS ***
-#if 0
-   MV_MixPage++;
-   MV_MixPage++;
-#endif
+
    if ( MV_MixPage >= MV_NumberOfBuffers )
       {
       MV_MixPage -= MV_NumberOfBuffers;
@@ -874,16 +867,11 @@ static void MV_ServiceVoc
 
    if ( MV_ReverbLevel == 0 )
       {
-      // *** VERSIONS RESTORATION ***
-      // Do uncomment this in earlier versions
-
       // Initialize buffer
       //Commented out so that the buffer is always cleared.
       //This is so the guys at Echo Speech can mix into the
       //buffer even when no sounds are playing.
-#if (LIBVER_ASSREV < 19960116L)
       if ( !MV_BufferEmpty[ MV_MixPage ] )
-#endif
          {
          ClearBuffer_DW( MV_MixBuffer[ MV_MixPage ], MV_Silence, MV_BufferSize >> 2 );
          MV_BufferEmpty[ MV_MixPage ] = TRUE;
@@ -891,73 +879,6 @@ static void MV_ServiceVoc
       }
    else
       {
-      // *** VERSIONS RESTORATION ***
-      // FIXME GUESSING, partially based on code from MV1.C (e.g., MV_Mix8bitMono)
-#if (LIBVER_ASSREV < 19950821L)
-      int   sourceOffset;
-      //int   length;
-      int   i;
-      if ( MV_ReverbTable != NULL )
-         {
-         if ( ( sourceOffset = MV_MixPage - 3 ) < 0 )
-         {
-            sourceOffset = MV_MixPage - 3 + MV_NumberOfBuffers;
-         }
-
-         if ( MV_Bits == 16 )
-            {
-            int length = MV_BufferSize / 2;
-            MONO16 *to = MV_MixBuffer[MV_MixPage];
-            MONO16 *from = MV_MixBuffer[sourceOffset];
-            for( i = 0; i < length; i++, from++, to++ )
-               {
-               *to = *( (MONO16 *)(*MV_ReverbTable) + ((*from + 128) >> 8) + 128);
-               }
-            }
-         else
-            {
-            unsigned char *from = MV_MixBuffer[sourceOffset];
-            unsigned char *to = MV_MixBuffer[MV_MixPage];
-            //length = MV_BufferSize;
-            for( i = 0; i < MV_BufferSize; i++, from++, to++ )
-               {
-               *to = *( (unsigned char *)(*MV_ReverbTable) + 2*(*from)) + 128;
-               }
-            }
-         }
-      else
-         {
-
-         unsigned valToShift = MV_ReverbLevel;
-         if ( ( sourceOffset = MV_MixPage - 3 ) < 0 )
-         {
-            sourceOffset = MV_MixPage - 3 + MV_NumberOfBuffers;
-         }
-
-         if ( MV_Bits == 16 )
-            {
-            MONO16 *from, *to;
-            int length = MV_BufferSize / 2;
-            /*MONO16 **/from = MV_MixBuffer[sourceOffset];
-            /*MONO16 **/to = MV_MixBuffer[MV_MixPage];
-            for( i = 0; i < length; i++, from++, to++ )
-               {
-               *to = (*from) >> (unsigned char)valToShift;
-               }
-            }
-         else
-            {
-            unsigned char *from, *to;
-            int length = MV_BufferSize;
-            /*unsigned char **/from = MV_MixBuffer[sourceOffset];
-            /*unsigned char **/to = MV_MixBuffer[MV_MixPage];
-            for( i = 0; i < length; i++, from++, to++ )
-               {
-               *to = ((*from) >> (unsigned char)valToShift) + 64;
-               }
-            }
-         }
-#else // LIBVER_ASSREV >= 19950821L
       char *end;
       char *source;
       char *dest;
@@ -1009,25 +930,12 @@ static void MV_ServiceVoc
          dest   += count;
          length -= count;
          }
-#endif // LIBVER_ASSREV < 19950821L
       }
 
-   // *** VERSIONS RESTORATION ***
-
    // Play any waiting voices
-#if (LIBVER_ASSREV < 19960510L)
    voice = VoiceList.start;
    while( voice != NULL )
-#else
-   for( voice = VoiceList.LIBVER_ASS_MV_VOICESTART; voice != LIBVER_ASS_MV_VOICELISTEND; voice = next )
-#endif
       {
-//      if ( ( voice < &MV_Voices[ 0 ] ) || ( voice > &MV_Voices[ 8 ] ) )
-//         {
-//         SetBorderColor(backcolor++);
-//         break;
-//         }
-
       MV_BufferEmpty[ MV_MixPage ] = FALSE;
 
       MV_MixFunction( voice, MV_MixPage );
@@ -1044,10 +952,7 @@ static void MV_ServiceVoc
             MV_CallBackFunc( voice->callbackval );
             }
          }
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960510L)
       voice = next;
-#endif
       }
    }
 
@@ -1809,10 +1714,6 @@ static int MV_StartPlayback
    MV_MixPage = 1;
 
    MV_MixFunction = MV_Mix;
-
-//JIM
-//   MV_MixRate = MV_RequestedMixRate;
-//   return( MV_Ok );
 
    // Start playback
    switch( MV_SoundCard )

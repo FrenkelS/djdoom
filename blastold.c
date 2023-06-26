@@ -112,6 +112,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CalcSamplingRate( tc ) \
    ( 256000000L / ( 65536L - ( tc << 8 ) ) )
 
+#define USESTACK
+
 static const int BLASTER_Interrupts[ BLASTER_MaxIrq + 1 ]  =
    {
    INVALID, INVALID,     0xa,     0xb,
@@ -187,9 +189,34 @@ static int BLASTER_OriginalVoiceVolumeRight = 255;
 static unsigned short StackSelector = NULL;
 static unsigned long  StackPointer;
 
+static unsigned short oldStackSelector;
+static unsigned long  oldStackPointer;
+
 // This is defined because we can't create local variables in a
 // function that switches stacks.
 static int GlobalStatus;
+
+// These declarations are necessary to use the inline assembly pragmas.
+
+extern void GetStack(unsigned short *selptr,unsigned long *stackptr);
+extern void SetStack(unsigned short selector,unsigned long stackptr);
+
+// This function will get the current stack selector and pointer and save
+// them off.
+#pragma aux GetStack =  \
+   "mov  [edi],esp"     \
+   "mov  ax,ss"         \
+   "mov  [esi],ax"      \
+   parm [esi] [edi]     \
+   modify [eax esi edi];
+
+// This function will set the stack selector and pointer to the specified
+// values.
+#pragma aux SetStack =  \
+   "mov  ss,ax"         \
+   "mov  esp,edx"       \
+   parm [ax] [edx]      \
+   modify [eax edx];
 
 int BLASTER_DMAChannel;
 
