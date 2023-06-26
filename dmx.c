@@ -197,6 +197,8 @@ int32_t SFX_Playing(int32_t handle)
 		return PCFX_SoundPlaying(handle);
 	else if (ass_sdev == SoundBlaster) 
 		return MV_VoicePlaying(handle);
+	else
+		return 0;
 }
 
 void SFX_SetOrigin(int32_t handle, int32_t pitch, int32_t sep, int32_t volume)
