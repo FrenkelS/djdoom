@@ -34,8 +34,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MV_MinVoiceHandle  1
 
-extern int MV_ErrorCode;
-
 enum MV_Errors
    {
    MV_Warning = -2,

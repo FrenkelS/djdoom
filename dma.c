@@ -68,53 +68,6 @@ static const DMA_PORT DMA_PortInfo[ DMA_MaxChannel + 1 ] =
       {   VALID, WORD, 0xD4, 0xD6, 0xD8, 0x8A, 0xCC, 0xCE },
    };
 
-int DMA_ErrorCode = DMA_Ok;
-
-#define DMA_SetErrorCode( status ) \
-   DMA_ErrorCode   = ( status );
-
-
-/*---------------------------------------------------------------------
-   Function: DMA_ErrorString
-
-   Returns a pointer to the error message associated with an error
-   number.  A -1 returns a pointer the current error.
----------------------------------------------------------------------*/
-
-char *DMA_ErrorString
-   (
-   int ErrorNumber
-   )
-
-   {
-   char *ErrorString;
-
-   switch( ErrorNumber )
-      {
-      case DMA_Error :
-         ErrorString = DMA_ErrorString( DMA_ErrorCode );
-         break;
-
-      case DMA_Ok :
-         ErrorString = "DMA channel ok.";
-         break;
-
-      case DMA_ChannelOutOfRange :
-         ErrorString = "DMA channel out of valid range.";
-         break;
-
-      case DMA_InvalidChannel :
-         ErrorString = "Unsupported DMA channel.";
-         break;
-
-      default :
-         ErrorString = "Unknown DMA error code.";
-         break;
-      }
-
-   return( ErrorString );
-   }
-
 
 /*---------------------------------------------------------------------
    Function: DMA_VerifyChannel
@@ -145,7 +98,6 @@ int DMA_VerifyChannel
       status = DMA_Error;
       }
 
-   DMA_SetErrorCode( Error );
    return( status );
    }
 
@@ -329,53 +281,4 @@ char *DMA_GetCurrentPos
       }
 
    return( ( char * )addr );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: DMA_GetTransferCount
-
-   Returns how many bytes are left in the DMA's transfer.
----------------------------------------------------------------------*/
-
-int DMA_GetTransferCount
-   (
-   int channel
-   )
-
-   {
-   DMA_PORT      *Port;
-   int           count;
-   int           status;
-
-   status = DMA_Ok;
-
-   count = 0;
-
-   if ( ( channel < 0 ) || ( DMA_MaxChannel < channel ) )
-      {
-      status = DMA_ChannelOutOfRange;
-      }
-   else if ( DMA_PortInfo[ channel ].Valid == INVALID )
-      {
-      status = DMA_InvalidChannel;
-      }
-
-   if ( status == DMA_Ok )
-      {
-      Port = &DMA_PortInfo[ channel ];
-
-      outp( Port->Clear, 0 );
-      count  = inp( Port->Length );
-      count += inp( Port->Length ) << 8;
-
-      if ( Port->Width == WORD )
-         {
-         count <<= 1;
-         }
-      }
-
-   DMA_SetErrorCode( status );
-
-   return( count );
    }

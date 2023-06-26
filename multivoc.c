@@ -242,7 +242,7 @@ static unsigned long PitchTable[ 12 ][ MAXDETUNE ] =
    Returns a fixed-point value to scale number the specified amount.
 ---------------------------------------------------------------------*/
 
-unsigned long PITCH_GetScale
+static unsigned long PITCH_GetScale
    (
    int pitchoffset
    )
@@ -629,7 +629,7 @@ static int MV_TotalMemory;
 
 static int   MV_BufferDescriptor;
 static int   MV_BufferEmpty[ NumberOfBuffers ];
-char *MV_MixBuffer[ NumberOfBuffers + 1 ];
+static char *MV_MixBuffer[ NumberOfBuffers + 1 ];
 
 static VoiceNode *MV_Voices = NULL;
 
@@ -673,7 +673,7 @@ int    MV_RightChannelOffset;
 
 unsigned long MV_MixPosition;
 
-int MV_ErrorCode = MV_Ok;
+static int MV_ErrorCode = MV_Ok;
 
 #define MV_SetErrorCode( status ) \
    MV_ErrorCode   = ( status );
