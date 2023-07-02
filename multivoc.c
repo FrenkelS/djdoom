@@ -2183,7 +2183,7 @@ static int MV_TestPlayback
    start  = MV_MixPage;
    time   = clock() + CLOCKS_PER_SEC * 2;
 
-   while( clock() < time )
+   while (clock() < time && status != MV_Ok)
       {
       if ( MV_MixPage != start )
          {
