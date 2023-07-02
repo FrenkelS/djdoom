@@ -1483,7 +1483,6 @@ void BLASTER_SetCardSettings
    BLASTER_Config.Emu       = Config.Emu;
 
    BLASTER_MixerAddress = Config.Address;
-   BLASTER_MixerType = 0;
    BLASTER_MixerType = Config.Type;
    }
 
