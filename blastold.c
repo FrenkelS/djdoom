@@ -1170,12 +1170,10 @@ void BLASTER_SetVoiceVolume
 
    {
    int data;
-   int status;
 
    volume = min( 255, volume );
    volume = max( 0, volume );
 
-   status = BLASTER_Ok;
    switch( BLASTER_MixerType )
       {
       case SBPro :
@@ -1188,9 +1186,6 @@ void BLASTER_SetVoiceVolume
          BLASTER_WriteMixer( MIXER_SB16VoiceLeft, volume & 0xf8 );
          BLASTER_WriteMixer( MIXER_SB16VoiceRight, volume & 0xf8 );
          break;
-
-      default :
-         status = BLASTER_Error;
       }
    }
 
