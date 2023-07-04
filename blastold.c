@@ -405,11 +405,8 @@ static void BLASTER_WriteDSP
    {
    int      port;
    unsigned count;
-   int      status;
 
    port = BLASTER_Config.Address + BLASTER_WritePort;
-
-   status = BLASTER_Error;
 
    count = 0xFFFF;
 
@@ -418,7 +415,6 @@ static void BLASTER_WriteDSP
       if ( ( inp( port ) & 0x80 ) == 0 )
          {
          outp( port, data );
-         status = BLASTER_Ok;
          break;
          }
 
