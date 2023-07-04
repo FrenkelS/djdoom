@@ -397,7 +397,7 @@ static void __interrupt __far BLASTER_ServiceInterrupt
    Writes a byte of data to the sound card's DSP.
 ---------------------------------------------------------------------*/
 
-static int BLASTER_WriteDSP
+static void BLASTER_WriteDSP
    (
    unsigned data
    )
@@ -425,8 +425,6 @@ static int BLASTER_WriteDSP
       count--;
       }
    while( count > 0 );
-
-   return( status );
    }
 
 
@@ -490,21 +488,6 @@ static int BLASTER_ResetDSP
    status = BLASTER_CardNotReady;
 
    outp( port, 1 );
-
-/* What the hell am I doing here?
-   count = 100;
-
-   do
-      {
-      if ( inp( port ) == 255 )
-         {
-         break;
-         }
-
-      count--;
-      }
-   while( count > 0 );
-*/
 
    count = 0x100;
    do
@@ -917,7 +900,7 @@ int BLASTER_GetCurrentPos
    version 1.xx.
 ---------------------------------------------------------------------*/
 
-static int BLASTER_DSP1xx_BeginPlayback
+static void BLASTER_DSP1xx_BeginPlayback
    (
    int length
    )
@@ -939,8 +922,6 @@ static int BLASTER_DSP1xx_BeginPlayback
    BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
 
    BLASTER_SoundPlaying = TRUE;
-
-   return( BLASTER_Ok );
    }
 
 
@@ -951,7 +932,7 @@ static int BLASTER_DSP1xx_BeginPlayback
    version 2.xx.
 ---------------------------------------------------------------------*/
 
-static int BLASTER_DSP2xx_BeginPlayback
+static void BLASTER_DSP2xx_BeginPlayback
    (
    int length
    )
@@ -982,8 +963,6 @@ static int BLASTER_DSP2xx_BeginPlayback
       }
 
    BLASTER_SoundPlaying = TRUE;
-
-   return( BLASTER_Ok );
    }
 
 
@@ -994,7 +973,7 @@ static int BLASTER_DSP2xx_BeginPlayback
    version 4.xx, such as the Sound Blaster 16.
 ---------------------------------------------------------------------*/
 
-static int BLASTER_DSP4xx_BeginPlayback
+static void BLASTER_DSP4xx_BeginPlayback
    (
    int length
    )
@@ -1045,8 +1024,6 @@ static int BLASTER_DSP4xx_BeginPlayback
    BLASTER_WriteDSP( HiByte );
 
    BLASTER_SoundPlaying = TRUE;
-
-   return( BLASTER_Ok );
    }
 
 
@@ -1120,7 +1097,7 @@ int BLASTER_BeginBufferedPlayback
    version 1.xx.
 ---------------------------------------------------------------------*/
 
-static int BLASTER_DSP1xx_BeginRecord
+static void BLASTER_DSP1xx_BeginRecord
    (
    int length
    )
@@ -1142,8 +1119,6 @@ static int BLASTER_DSP1xx_BeginRecord
    BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
 
    BLASTER_SoundRecording = TRUE;
-
-   return( BLASTER_Ok );
    }
 
 
