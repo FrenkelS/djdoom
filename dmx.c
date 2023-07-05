@@ -249,6 +249,7 @@ int32_t SB_Detect(int32_t *sbPort, int32_t *sbIrq, int32_t *sbDma, uint16_t *ver
 
 	if (FX_GetBlasterSettings(&dmx_blaster)) {
 		// BLASTER environment variable not set
+		// use the values set through the setup program
 
 		if (!sbPort || !sbIrq || !sbDma)
 			return -1;
