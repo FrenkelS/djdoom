@@ -56,6 +56,7 @@ static int  DPMI_GetDOSMemory( void **ptr, int *descriptor, unsigned length );
    parm [ esi ] [ edi ] [ ebx ] modify exact [ eax ebx edx ];
 
 
+//TODO return void instead of int
 static int  DPMI_FreeDOSMemory( int descriptor );
 #pragma aux DPMI_FreeDOSMemory = \
    "mov    eax, 0101h",          \
@@ -64,62 +65,6 @@ static int  DPMI_FreeDOSMemory( int descriptor );
    "sub    eax, eax",            \
    "DPMI_Exit:",                 \
    parm [ edx ] modify exact [ eax ];
-
-
-//#include "usrhooks.h"
-#define USRHOOKS_Error -1
-#define USRHOOKS_Ok     0
-
-/*---------------------------------------------------------------------
-   Function: USRHOOKS_GetMem
-
-   Allocates the requested amount of memory and returns a pointer to
-   its location, or NULL if an error occurs.  NOTE: pointer is assumed
-   to be dword aligned.
----------------------------------------------------------------------*/
-
-static int USRHOOKS_GetMem
-   (
-   void **ptr,
-   unsigned long size
-   )
-
-   {
-   void *memory;
-
-   memory = malloc( size );
-   if ( memory == NULL )
-      {
-      return( USRHOOKS_Error );
-      }
-
-   *ptr = memory;
-
-   return( USRHOOKS_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: USRHOOKS_FreeMem
-
-   Deallocates the memory associated with the specified pointer.
----------------------------------------------------------------------*/
-
-static int USRHOOKS_FreeMem
-   (
-   void *ptr
-   )
-
-   {
-   if ( ptr == NULL )
-      {
-      return( USRHOOKS_Error );
-      }
-
-   free( ptr );
-
-   return( USRHOOKS_Ok );
-   }
 
 
 #include "interrup.h"
@@ -1863,8 +1808,8 @@ void MV_Init
    MV_SetErrorCode( MV_Ok );
 
    MV_TotalMemory = Voices * sizeof( VoiceNode ) + sizeof( HARSH_CLIP_TABLE_8 );
-   status = USRHOOKS_GetMem( ( void ** )&ptr, MV_TotalMemory );
-   if ( status != USRHOOKS_Ok )
+   ptr = malloc(MV_TotalMemory);
+   if (!ptr)
       {
       MV_SetErrorCode( MV_NoMem );
       return;
@@ -1895,7 +1840,8 @@ void MV_Init
 
    if ( status )
       {
-      USRHOOKS_FreeMem( MV_Voices );
+      if (MV_Voices)
+         free(MV_Voices);
       MV_Voices      = NULL;
       MV_TotalMemory = 0;
 
@@ -1931,7 +1877,8 @@ void MV_Init
       {
       status = MV_ErrorCode;
 
-      USRHOOKS_FreeMem( MV_Voices );
+      if (MV_Voices)
+         free(MV_Voices);
       MV_Voices      = NULL;
       MV_TotalMemory = 0;
 
@@ -2034,7 +1981,8 @@ void MV_Shutdown
    RestoreInterrupts( flags );
 
    // Free any voices we allocated
-   USRHOOKS_FreeMem( MV_Voices );
+   if (MV_Voices)
+      free(MV_Voices);
    MV_Voices      = NULL;
    MV_TotalMemory = 0;
 
