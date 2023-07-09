@@ -242,15 +242,6 @@ enum MV_Errors
 #define TRUE  ( 1 == 1 )
 #define FALSE ( !TRUE )
 
-#define VOC_8BIT            0x0
-#define VOC_CT4_ADPCM       0x1
-#define VOC_CT3_ADPCM       0x2
-#define VOC_CT2_ADPCM       0x3
-#define VOC_16BIT           0x4
-#define VOC_ALAW            0x6
-#define VOC_MULAW           0x7
-#define VOC_CREATIVE_ADPCM  0x200
-
 #define T_SIXTEENBIT_STEREO 0
 #define T_8BITS       1
 #define T_MONO        2
@@ -287,10 +278,8 @@ typedef struct VoiceNode
    void ( *mix )( unsigned long position, unsigned long rate, char *start, unsigned long length );
 
    char         *NextBlock;
-   unsigned      LoopCount;
    unsigned long BlockLength;
 
-   unsigned long PitchScale;
    unsigned long FixedPointBufferSize;
 
    char         *sound;
@@ -771,8 +760,7 @@ static VoiceNode *MV_AllocVoice(int priority)
 static void MV_SetVoicePitch(VoiceNode *voice, unsigned long rate, int pitchoffset)
 {
 	voice->SamplingRate = rate;
-	voice->PitchScale   = PITCH_GetScale(pitchoffset);
-	voice->RateScale    = (rate * voice->PitchScale) / MV_MixRate;
+	voice->RateScale    = (rate * PITCH_GetScale(pitchoffset)) / MV_MixRate;
 
 	// Multiply by MixBufferSize - 1
 	voice->FixedPointBufferSize = (voice->RateScale * MixBufferSize) - voice->RateScale;
