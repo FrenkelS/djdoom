@@ -383,14 +383,14 @@ static int MV_VoiceHandle  = MV_MinVoiceHandle;
 
 static void ( *MV_MixFunction )( VoiceNode *voice, int buffer );
 
-uint8_t *MV_HarshClipTable;
-uint8_t *MV_MixDestination;
-short   *MV_LeftVolume;
-short   *MV_RightVolume;
-int      MV_SampleSize = 1;
-int      MV_RightChannelOffset;
-
+uint8_t      *MV_HarshClipTable;
+uint8_t      *MV_MixDestination;
 unsigned long MV_MixPosition;
+short        *MV_LeftVolume;
+short        *MV_RightVolume;
+int           MV_SampleSize = 1;
+int           MV_RightChannelOffset;
+
 
 static int MV_ErrorCode = MV_Ok;
 
