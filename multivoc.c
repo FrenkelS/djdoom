@@ -1813,31 +1813,9 @@ static void MV_CalcVolume
 
    {
    int volume;
-
-   // *** VERSIONS RESTORATION ***
-   // Partially based on code from MV1.C
-#if (LIBVER_ASSREV < 19950821L)
-   int bits;
-   int val;
-   int level;
-   int rate;
-   int i;
-   unsigned    flags;
-
-   flags = DisableInterrupts();
-
-
-   // For each volume level, create a translation table with the
-   // appropriate volume calculated.
-   rate  = ( MaxVolume << 16 ) / MV_MaxVolume;
-   level = 0;
-
-   bits = 32 - MV_Bits;
-#elif (LIBVER_ASSREV < 19960510L)
    int val;
    int level;
    int i;
-#endif
 
    for( volume = 0; volume < 128; volume++ )
       {
@@ -1861,7 +1839,7 @@ static void MV_CalcVolume
             val   = i - 0x8000;
             val  *= level;
             val  /= MV_MaxVolume;
-            MV_VolumeTable[ volume/*index*/ ][ i / 256 ] = val;
+            MV_VolumeTable[ volume ][ i / 256 ] = val;
             }
          }
       else
