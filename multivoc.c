@@ -490,8 +490,6 @@ static VoiceNode *MV_AllocVoice( int priority );
 
 static short     *MV_GetVolumeTable( int vol );
 
-static void       MV_SetVoiceMixMode( VoiceNode *voice );
-
 static void       MV_SetVoicePitch( VoiceNode *voice, unsigned long rate, int pitchoffset );
 static void       MV_CalcVolume( int MaxLevel );
 static void       MV_CalcPanTable( void );
@@ -1320,8 +1318,6 @@ static short *MV_GetVolumeTable
    }
 
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
 /*---------------------------------------------------------------------
    Function: MV_SetVoiceMixMode
 
@@ -1445,7 +1441,6 @@ static void MV_SetVoiceMixMode
 
    RestoreInterrupts( flags );
    }
-#endif // LIBVER_ASSREV >= 19950821L
 
 
 /*---------------------------------------------------------------------
@@ -1482,98 +1477,8 @@ static void MV_SetVoiceVolume
       voice->RightVolume = MV_GetVolumeTable( right );
       }
 
-   // *** VERSIONS RESTORATION ***
-   // A simpler revision of MV_SetVoiceMixMode in earlier revisions
-#if (LIBVER_ASSREV >= 19950821L)
    MV_SetVoiceMixMode( voice );
-#else
-   if ( MV_Bits == 8 )
-      {
-      if ( MV_Channels == 1 )
-         {
-            voice->mix = MV_Mix8BitMonoFast;
-         }
-      else if ( IS_QUIET( voice->LeftVolume ) )
-         {
-            MV_LeftVolume = MV_RightVolume;
-            voice->mix = MV_Mix8Bit1ChannelFast;
-         }
-      else if ( IS_QUIET( voice->RightVolume ) )
-         {
-            voice->mix = MV_Mix8Bit1ChannelFast;
-         }
-      else
-         {
-            voice->mix = MV_Mix8BitStereoFast;
-         }
-      }
-   else
-      {
-      if ( MV_Channels == 1 )
-         {
-            voice->mix = MV_Mix16BitMonoFast;
-         }
-      else if ( IS_QUIET( voice->LeftVolume ) )
-         {
-            MV_LeftVolume = MV_RightVolume;
-            voice->mix = MV_Mix16Bit1ChannelFast;
-         }
-      else if ( IS_QUIET( voice->RightVolume ) )
-         {
-            voice->mix = MV_Mix16Bit1ChannelFast;
-         }
-      else
-         {
-            voice->mix = MV_Mix16BitStereoFast;
-         }
-      }
-#endif
    }
-
-
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19960510L)
-/*---------------------------------------------------------------------
-   Function: MV_EndLooping
-
-   Stops the voice associated with the specified handle from looping
-   without stoping the sound.
----------------------------------------------------------------------*/
-
-static int MV_EndLooping
-   (
-   int handle
-   )
-
-   {
-   VoiceNode *voice;
-   unsigned flags;
-
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return( MV_Error );
-      }
-
-   flags = DisableInterrupts();
-
-   voice = MV_GetVoice( handle );
-   if ( voice == NULL )
-      {
-      RestoreInterrupts( flags );
-      MV_SetErrorCode( MV_VoiceNotFound );
-      return( MV_Warning );
-      }
-
-   voice->LoopCount = 0;
-   voice->LoopStart = NULL;
-   voice->LoopEnd   = NULL;
-
-   RestoreInterrupts( flags );
-
-   return( MV_Ok );
-   }
-#endif // LIBVER_ASSREV >= 19960510L
 
 
 /*---------------------------------------------------------------------
@@ -1894,52 +1799,6 @@ static int MV_PlayLoopedRaw
    }
 
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19960510L)
-/*---------------------------------------------------------------------
-   Function: MV_CreateVolumeTable
-
-   Create the table used to convert sound data to a specific volume
-   level.
----------------------------------------------------------------------*/
-
-static void MV_CreateVolumeTable
-   (
-   int index,
-   int volume,
-   int MaxVolume
-   )
-
-   {
-   int val;
-   int level;
-   int i;
-
-   level = ( volume * MaxVolume ) / MV_MaxTotalVolume;
-   if ( MV_Bits == 16 )
-      {
-      for( i = 0; i < 65536; i += 256 )
-         {
-         val   = i - 0x8000;
-         val  *= level;
-         val  /= MV_MaxVolume;
-         MV_VolumeTable[ index ][ i / 256 ] = val;
-         }
-      }
-   else
-      {
-      for( i = 0; i < 256; i++ )
-         {
-         val   = i - 0x80;
-         val  *= level;
-         val  /= MV_MaxVolume;
-         MV_VolumeTable[ volume ][ i ] = val;
-         }
-      }
-   }
-#endif // LIBVER_ASSREV >= 19950821L
-
-
 /*---------------------------------------------------------------------
    Function: MV_CalcVolume
 
@@ -1990,29 +1849,10 @@ static void MV_CalcVolume
       MV_HarshClipTable[ volume + 128 ] = volume;
       }
 
-   // *** VERSIONS RESTORATION ***
-   // Partially based on code from MV1.C.
-#if (LIBVER_ASSREV < 19950821L)
-      for( volume = 0; volume <= MV_MaxVolume; volume++ )
-         {
-         for( i = 0; i < 256; i++ )
-            {
-            val = i - 128;
-            val *= level;
-            val = RoundFixed( val, bits );
-            MV_VolumeTable[ volume ][ i ] = val;
-            }
-         level += rate;
-         }
-
-   RestoreInterrupts( flags );
-#else
    // For each volume level, create a translation table with the
    // appropriate volume calculated.
    for( volume = 0; volume <= MV_MaxVolume; volume++ )
       {
-#if (LIBVER_ASSREV < 19960510L)
-      // More-or-less MV_CreateVolumeTable, inlined
       level = ( volume * MaxVolume ) / MV_MaxTotalVolume;
       if ( MV_Bits == 16 )
          {
@@ -2034,11 +1874,7 @@ static void MV_CalcVolume
             MV_VolumeTable[ volume ][ i ] = val;
             }
          }
-#else
-      MV_CreateVolumeTable( volume, volume, MaxVolume );
-#endif // LIBVER_ASSREV < 19960510L
       }
-#endif // LIBVER_ASSREV < 19950821L
    }
 
 
