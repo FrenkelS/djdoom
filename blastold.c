@@ -144,10 +144,10 @@ BLASTER_CONFIG BLASTER_Config =
 static int BLASTER_Installed = FALSE;
 static int BLASTER_Version;
 
-static char   *BLASTER_DMABuffer;
-static char   *BLASTER_DMABufferEnd;
-static char   *BLASTER_CurrentDMABuffer;
-static int     BLASTER_TotalDMABufferSize;
+static uint8_t *BLASTER_DMABuffer;
+static uint8_t *BLASTER_DMABufferEnd;
+static uint8_t *BLASTER_CurrentDMABuffer;
+static int      BLASTER_TotalDMABufferSize;
 
 #define BLASTER_DefaultSampleRate 11000
 #define BLASTER_DefaultMixMode    MONO_8BIT
@@ -174,7 +174,7 @@ static int BLASTER_OriginalVoiceVolumeRight = 255;
 // adequate stack size
 #define kStackSize 2048
 
-static unsigned short StackSelector = NULL;
+static unsigned short StackSelector = 0;
 static unsigned long  StackPointer;
 
 static unsigned short oldStackSelector;
@@ -184,13 +184,9 @@ static unsigned long  oldStackPointer;
 // function that switches stacks.
 static int GlobalStatus;
 
-// These declarations are necessary to use the inline assembly pragmas.
-
-extern void GetStack(unsigned short *selptr,unsigned long *stackptr);
-extern void SetStack(unsigned short selector,unsigned long stackptr);
-
 // This function will get the current stack selector and pointer and save
 // them off.
+static void GetStack(unsigned short *selptr,unsigned long *stackptr);
 #pragma aux GetStack =  \
    "mov  [edi],esp"     \
    "mov  ax,ss"         \
@@ -200,6 +196,7 @@ extern void SetStack(unsigned short selector,unsigned long stackptr);
 
 // This function will set the stack selector and pointer to the specified
 // values.
+static void SetStack(unsigned short selector,unsigned long stackptr);
 #pragma aux SetStack =  \
    "mov  ss,ax"         \
    "mov  esp,edx"       \
@@ -208,6 +205,7 @@ extern void SetStack(unsigned short selector,unsigned long stackptr);
 
 int BLASTER_DMAChannel;
 
+static void BLASTER_DSP1xx_BeginPlayback(int length);
 
 /*---------------------------------------------------------------------
    Function: BLASTER_EnableInterrupt
@@ -606,7 +604,7 @@ void BLASTER_StopPlayback(void)
    Programs the DMAC for sound transfer.
 ---------------------------------------------------------------------*/
 
-static int BLASTER_SetupDMABuffer(char *BufferPtr, int BufferSize)
+static int BLASTER_SetupDMABuffer(uint8_t *BufferPtr, int BufferSize)
 {
 	int DmaStatus;
 
@@ -736,7 +734,7 @@ static void BLASTER_DSP4xx_BeginPlayback(int length)
    Begins multibuffered playback of digitized sound on the sound card.
 ---------------------------------------------------------------------*/
 
-int BLASTER_BeginBufferedPlayback(char *BufferStart, int BufferSize, int NumDivisions, unsigned SampleRate, int MixMode, void (*CallBackFunc)(void))
+int BLASTER_BeginBufferedPlayback(uint8_t *BufferStart, int BufferSize, int NumDivisions, unsigned SampleRate, int MixMode, void (*CallBackFunc)(void))
 {
 	int DmaStatus;
 	int TransferLength;
@@ -1039,7 +1037,7 @@ static unsigned short allocateTimerStack(unsigned short size)
 		return regs.w.dx;
 	} else {
 		// Couldn't allocate memory.
-		return NULL;
+		return 0;
 	}
 }
 
@@ -1053,16 +1051,16 @@ static unsigned short allocateTimerStack(unsigned short size)
 
 static void deallocateTimerStack(unsigned short selector)
 {
-	if ( selector != NULL )
+	if (selector != 0)
 	{
 		union REGS regs;
 
 		// clear all registers
-		memset( &regs, 0, sizeof( regs ) );
+		memset(&regs, 0, sizeof(regs));
 
 		regs.w.ax = 0x101;
 		regs.w.dx = selector;
-		int386( 0x31, &regs, &regs );
+		int386(0x31, &regs, &regs);
 	}
 }
 
@@ -1138,7 +1136,7 @@ int BLASTER_Init(void)
 			return BLASTER_Error;
 
 		StackSelector = allocateTimerStack( kStackSize );
-		if ( StackSelector == NULL )
+		if ( StackSelector == 0 )
 			return BLASTER_Error;
 
 		// Leave a little room at top of stack just for the hell of it...
@@ -1182,7 +1180,7 @@ void BLASTER_Shutdown(void)
 	BLASTER_CallBack = NULL;
 
 	deallocateTimerStack( StackSelector );
-	StackSelector = NULL;
+	StackSelector = 0;
 
 	BLASTER_Installed = FALSE;
 }

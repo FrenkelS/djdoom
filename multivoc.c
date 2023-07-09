@@ -275,14 +275,14 @@ typedef struct VoiceNode
    struct VoiceNode *next;
    struct VoiceNode *prev;
 
-   void ( *mix )( unsigned long position, unsigned long rate, char *start, unsigned long length );
+   void ( *mix )( unsigned long position, unsigned long rate, uint8_t *start, unsigned long length );
 
-   char         *NextBlock;
+   uint8_t      *NextBlock;
    unsigned long BlockLength;
 
    unsigned long FixedPointBufferSize;
 
-   char         *sound;
+   uint8_t      *sound;
    unsigned long length;
    unsigned long SamplingRate;
    unsigned long RateScale;
@@ -295,6 +295,8 @@ typedef struct VoiceNode
    short        *LeftVolume;
    short        *RightVolume;
    } VoiceNode;
+
+static playbackstatus MV_GetNextRawBlock(VoiceNode *voice);
 
 typedef struct
    {
@@ -328,10 +330,10 @@ void ClearBuffer_DW( void *ptr, unsigned data, int length );
    "pop    es",              \
 parm [ edi ] [ eax ] [ ecx ] modify exact [ ecx edi ];
 
-void MV_Mix8BitMono(   unsigned long position, unsigned long rate, char *start, unsigned long length );
-void MV_Mix8BitStereo( unsigned long position, unsigned long rate, char *start, unsigned long length );
-void MV_Mix16BitMono(  unsigned long position, unsigned long rate, char *start, unsigned long length );
-void MV_Mix16BitStereo(unsigned long position, unsigned long rate, char *start, unsigned long length );
+void MV_Mix8BitMono(   unsigned long position, unsigned long rate, uint8_t *start, unsigned long length );
+void MV_Mix8BitStereo( unsigned long position, unsigned long rate, uint8_t *start, unsigned long length );
+void MV_Mix16BitMono(  unsigned long position, unsigned long rate, uint8_t *start, unsigned long length );
+void MV_Mix16BitStereo(unsigned long position, unsigned long rate, uint8_t *start, unsigned long length );
 
 
 #define IS_QUIET( ptr )  ( ( void * )( ptr ) == ( void * )&MV_VolumeTable[ 0 ] )
@@ -365,9 +367,9 @@ static int MV_BuffShift;
 
 static int MV_TotalMemory;
 
-static int   MV_BufferDescriptor;
-static int   MV_BufferEmpty[ NumberOfBuffers ];
-static char *MV_MixBuffer[ NumberOfBuffers + 1 ];
+static int      MV_BufferDescriptor;
+static int      MV_BufferEmpty[NumberOfBuffers];
+static uint8_t *MV_MixBuffer[NumberOfBuffers + 1];
 
 static VoiceNode *MV_Voices = NULL;
 
@@ -381,12 +383,12 @@ static int MV_VoiceHandle  = MV_MinVoiceHandle;
 
 static void ( *MV_MixFunction )( VoiceNode *voice, int buffer );
 
-uint8_t  *MV_HarshClipTable;
-char  *MV_MixDestination;
-short *MV_LeftVolume;
-short *MV_RightVolume;
-int    MV_SampleSize = 1;
-int    MV_RightChannelOffset;
+uint8_t *MV_HarshClipTable;
+uint8_t *MV_MixDestination;
+short   *MV_LeftVolume;
+short   *MV_RightVolume;
+int      MV_SampleSize = 1;
+int      MV_RightChannelOffset;
 
 unsigned long MV_MixPosition;
 
@@ -404,7 +406,7 @@ static int MV_ErrorCode = MV_Ok;
 
 static void MV_Mix(VoiceNode *voice, int buffer)
 {
-	char          *start;
+	uint8_t       *start;
 	int            length;
 	long           voclength;
 	unsigned long  position;
@@ -520,12 +522,12 @@ static void MV_ServiceVoc(void)
 {
 	VoiceNode *voice;
 	VoiceNode *next;
-	char      *buffer;
+	uint8_t   *buffer;
 
 	if (MV_DMAChannel >= 0)
 	{
 		// Get the currently playing buffer
-		buffer = (char *)DMA_GetCurrentPos(MV_DMAChannel);
+		buffer = DMA_GetCurrentPos(MV_DMAChannel);
 		MV_MixPage   = (unsigned)(buffer - MV_MixBuffer[0]);
 		MV_MixPage >>= MV_BuffShift;
 	}
@@ -573,7 +575,7 @@ static void MV_ServiceVoc(void)
 
 static playbackstatus MV_GetNextRawBlock(VoiceNode *voice)
 {
-	if (voice->BlockLength <= 0)
+	if (voice->BlockLength == 0)
 	{
 		voice->Playing = FALSE;
 
@@ -1066,7 +1068,7 @@ static void MV_StopPlayback(void)
    priority.
 ---------------------------------------------------------------------*/
 
-int MV_PlayRaw(char *ptr, unsigned long length, unsigned rate, int pitchoffset, int vol, int left, int right, int priority)
+int MV_PlayRaw(uint8_t *ptr, unsigned long length, unsigned rate, int pitchoffset, int vol, int left, int right, int priority)
 {
    VoiceNode *voice;
 
@@ -1232,7 +1234,7 @@ static int MV_TestPlayback(void)
 
 void MV_Init(int soundcard, int MixRate, int Voices)
 {
-	char *ptr;
+	uint8_t *ptr;
 	int  status;
 	int  buffer;
 	int  index;
@@ -1251,7 +1253,7 @@ void MV_Init(int soundcard, int MixRate, int Voices)
 	}
 
 	MV_Voices = (VoiceNode *)ptr;
-	MV_HarshClipTable = ptr + (MV_TotalMemory - sizeof( HARSH_CLIP_TABLE_8));
+	MV_HarshClipTable = ptr + (MV_TotalMemory - sizeof(HARSH_CLIP_TABLE_8));
 
 	// Set number of voices before calculating volume table
 	MV_MaxVoices = Voices;
@@ -1323,7 +1325,7 @@ void MV_Init(int soundcard, int MixRate, int Voices)
 
 	// Make sure we don't cross a physical page
 	if (((unsigned long)ptr & 0xffff) + TotalBufferSize > 0x10000)
-		ptr = (char *)(((unsigned long)ptr & 0xff0000) + 0x10000);
+		ptr = (uint8_t *)(((unsigned long)ptr & 0xff0000) + 0x10000);
 
 	MV_MixBuffer[MV_NumberOfBuffers] = ptr;
 	for (buffer = 0; buffer < MV_NumberOfBuffers; buffer++)

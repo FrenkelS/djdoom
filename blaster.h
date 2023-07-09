@@ -32,6 +32,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __BLASTER_H
 #define __BLASTER_H
 
+#include <stdint.h>
+
 typedef struct
    {
    unsigned Address;
@@ -84,11 +86,16 @@ enum BLASTER_Types
 #define STEREO_8BIT_SAMPLE_SIZE  ( 2 * MONO_8BIT_SAMPLE_SIZE )
 #define STEREO_16BIT_SAMPLE_SIZE ( 2 * MONO_16BIT_SAMPLE_SIZE )
 
-void BLASTER_SetVoiceVolume( void );
-int  BLASTER_CardHasMixer( void );
-int  BLASTER_GetEnv( BLASTER_CONFIG *Config );
-void BLASTER_SetCardSettings( BLASTER_CONFIG Config );
-void BLASTER_SetupWaveBlaster( void );
-int  BLASTER_Init( void );
+unsigned BLASTER_GetPlaybackRate(void);
+int  BLASTER_SetMixMode(int mode);
+void BLASTER_StopPlayback(void);
+int  BLASTER_BeginBufferedPlayback(uint8_t *BufferStart, int BufferSize, int NumDivisions, unsigned SampleRate, int MixMode, void (*CallBackFunc)(void));
+void BLASTER_SetVoiceVolume(void);
+int  BLASTER_CardHasMixer(void);
+int  BLASTER_GetEnv(BLASTER_CONFIG *Config);
+void BLASTER_SetCardSettings(BLASTER_CONFIG Config);
+void BLASTER_SetupWaveBlaster(void);
+int  BLASTER_Init(void);
+void BLASTER_Shutdown(void);
 
 #endif

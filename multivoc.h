@@ -32,11 +32,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __MULTIVOC_H
 #define __MULTIVOC_H
 
+#include <stdint.h>
+
 int  MV_VoicePlaying(int handle);
 void MV_Kill(int handle);
 void MV_SetPitch(int handle, int pitchoffset);
 void MV_SetPan(int handle, int vol, int left, int right);
-int  MV_PlayRaw(char *ptr, unsigned long length, unsigned rate, int pitchoffset, int vol, int left, int right, int priority);
+int  MV_PlayRaw(uint8_t *ptr, unsigned long length, unsigned rate, int pitchoffset, int vol, int left, int right, int priority);
 void MV_SetVolume(void);
 void MV_Init(int soundcard, int MixRate, int Voices);
 void MV_Shutdown(void);
