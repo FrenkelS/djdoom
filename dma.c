@@ -81,20 +81,14 @@ int DMA_VerifyChannel
    )
 
    {
-   int      status;
-   int      Error;
-
-   status = DMA_Ok;
-   Error  = DMA_Ok;
+   int      status = DMA_Ok;
 
    if ( ( channel < 0 ) || ( DMA_MaxChannel < channel ) )
       {
-      Error = DMA_ChannelOutOfRange;
       status = DMA_Error;
       }
    else if ( DMA_PortInfo[ channel ].Valid == INVALID )
       {
-      Error = DMA_InvalidChannel;
       status = DMA_Error;
       }
 
