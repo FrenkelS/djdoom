@@ -19,7 +19,6 @@ file dmx.obj
 file al_midi.obj
 file blastold.obj
 file dma.obj
-file irq.obj
 file midi.obj
 file mpu401.obj
 file multivoc.obj

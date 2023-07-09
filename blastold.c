@@ -35,7 +35,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <ctype.h>
 #include "blaster.h"
 #include "dma.h"
-#include "irq.h"
 #include "doomdef.h"
 
 #define VALID   ( 1 == 1 )
@@ -113,16 +112,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    ( 256000000L / ( 65536L - ( tc << 8 ) ) )
 
 #define USESTACK
-
-#define BLASTER_MaxIrq            15
-
-static const int BLASTER_Interrupts[ BLASTER_MaxIrq + 1 ]  =
-   {
-   INVALID, INVALID,     0xa,     0xb,
-   INVALID,     0xd, INVALID,     0xf,
-   INVALID, INVALID,    0x72,    0x73,
-      0x74, INVALID, INVALID,    0x77
-   };
 
 #define BLASTER_MaxMixMode        STEREO_16BIT
 
@@ -240,25 +229,11 @@ static void BLASTER_EnableInterrupt
    )
 
    {
-   int Irq;
    int mask;
 
    // Unmask system interrupt
-   Irq  = BLASTER_Config.Interrupt;
-   if ( Irq < 8 )
-      {
-      mask = inp( 0x21 ) & ~( 1 << Irq );
-      outp( 0x21, mask  );
-      }
-   else
-      {
-      mask = inp( 0xA1 ) & ~( 1 << ( Irq - 8 ) );
-      outp( 0xA1, mask  );
-
-      mask = inp( 0x21 ) & ~( 1 << 2 );
-      outp( 0x21, mask  );
-      }
-
+   mask = inp( 0x21 ) & ~( 1 << BLASTER_Config.Interrupt );
+   outp( 0x21, mask  );
    }
 
 
@@ -274,27 +249,12 @@ static void BLASTER_DisableInterrupt
    )
 
    {
-   int Irq;
    int mask;
 
    // Restore interrupt mask
-   Irq  = BLASTER_Config.Interrupt;
-   if ( Irq < 8 )
-      {
-      mask  = inp( 0x21 ) & ~( 1 << Irq );
-      mask |= BLASTER_IntController1Mask & ( 1 << Irq );
-      outp( 0x21, mask  );
-      }
-   else
-      {
-      mask  = inp( 0x21 ) & ~( 1 << 2 );
-      mask |= BLASTER_IntController1Mask & ( 1 << 2 );
-      outp( 0x21, mask  );
-
-      mask  = inp( 0xA1 ) & ~( 1 << ( Irq - 8 ) );
-      mask |= BLASTER_IntController2Mask & ( 1 << ( Irq - 8 ) );
-      outp( 0xA1, mask  );
-      }
+   mask  = inp( 0x21 ) & ~( 1 << BLASTER_Config.Interrupt );
+   mask |= BLASTER_IntController1Mask & ( 1 << BLASTER_Config.Interrupt );
+   outp( 0x21, mask  );
    }
 
 
@@ -389,11 +349,6 @@ static void __interrupt __far BLASTER_ServiceInterrupt
    #endif
 
    // send EOI to Interrupt Controller
-   if ( BLASTER_Config.Interrupt > 7 )
-      {
-      outp( 0xA0, 0x20 );
-      }
-
    outp( 0x20, 0x20 );
    }
 
@@ -1577,8 +1532,6 @@ int BLASTER_Init
    )
 
    {
-   int Irq;
-   int Interrupt;
    int status;
 
    if ( BLASTER_Installed )
@@ -1625,14 +1578,7 @@ int BLASTER_Init
          }
 
       // Install our interrupt handler
-      Irq = BLASTER_Config.Interrupt;
-      if ( !VALID_IRQ( Irq ) )
-         {
-         return( BLASTER_Error );
-         }
-
-      Interrupt = BLASTER_Interrupts[ Irq ];
-      if ( Interrupt == INVALID )
+      if (!(BLASTER_Config.Interrupt == 2 || BLASTER_Config.Interrupt == 5 || BLASTER_Config.Interrupt == 7))
          {
          return( BLASTER_Error );
          }
@@ -1646,21 +1592,8 @@ int BLASTER_Init
       // Leave a little room at top of stack just for the hell of it...
       StackPointer = kStackSize - sizeof( long );
 
-      BLASTER_OldInt = _dos_getvect( Interrupt );
-      if ( Irq < 8 )
-         {
-         _dos_setvect( Interrupt, BLASTER_ServiceInterrupt );
-         }
-      else
-         {
-         status = IRQ_SetVector( Interrupt, BLASTER_ServiceInterrupt );
-         if ( status != IRQ_Ok )
-            {
-            deallocateTimerStack( StackSelector );
-            StackSelector = NULL;
-            return( BLASTER_Error );
-            }
-         }
+      BLASTER_OldInt = _dos_getvect( BLASTER_Config.Interrupt + 8 );
+      _dos_setvect( BLASTER_Config.Interrupt + 8, BLASTER_ServiceInterrupt );
 
       BLASTER_Installed = TRUE;
       status = BLASTER_Ok;
@@ -1683,9 +1616,6 @@ void BLASTER_Shutdown
    )
 
    {
-   int Irq;
-   int Interrupt;
-
    // Halt the DMA transfer
    BLASTER_StopPlayback();
 
@@ -1695,13 +1625,7 @@ void BLASTER_Shutdown
    BLASTER_ResetDSP();
 
    // Restore the original interrupt
-   Irq = BLASTER_Config.Interrupt;
-   Interrupt = BLASTER_Interrupts[ Irq ];
-   if ( Irq >= 8 )
-      {
-      IRQ_RestoreVector( Interrupt );
-      }
-   _dos_setvect( Interrupt, BLASTER_OldInt );
+   _dos_setvect( BLASTER_Config.Interrupt + 8, BLASTER_OldInt );
 
    BLASTER_SoundPlaying = FALSE;
 
