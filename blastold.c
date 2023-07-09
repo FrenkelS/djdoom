@@ -114,6 +114,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define USESTACK
 
+#define BLASTER_MaxIrq            15
+
 static const int BLASTER_Interrupts[ BLASTER_MaxIrq + 1 ]  =
    {
    INVALID, INVALID,     0xa,     0xb,
@@ -121,6 +123,8 @@ static const int BLASTER_Interrupts[ BLASTER_MaxIrq + 1 ]  =
    INVALID, INVALID,    0x72,    0x73,
       0x74, INVALID, INVALID,    0x77
    };
+
+#define BLASTER_MaxMixMode        STEREO_16BIT
 
 static const int BLASTER_SampleSize[ BLASTER_MaxMixMode + 1 ] =
    {
@@ -162,6 +166,9 @@ static char   *BLASTER_DMABuffer;
 static char   *BLASTER_DMABufferEnd;
 static char   *BLASTER_CurrentDMABuffer;
 static int     BLASTER_TotalDMABufferSize;
+
+#define BLASTER_DefaultSampleRate 11000
+#define BLASTER_DefaultMixMode    MONO_8BIT
 
 static int      BLASTER_TransferLength   = 0;
 static int      BLASTER_MixMode          = BLASTER_DefaultMixMode;
