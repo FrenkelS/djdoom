@@ -31,13 +31,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 **********************************************************************/
 
 #include <stdlib.h>
-#include <string.h>
 #include <dos.h>
 #include <time.h>
-#include <conio.h>
 
-//#include "dpmi.h"
-#define DPMI_Ok 0
 static int  DPMI_GetDOSMemory( void **ptr, int *descriptor, unsigned length );
 #pragma aux DPMI_GetDOSMemory = \
    "mov    eax, 0100h",         \
@@ -424,15 +420,6 @@ static short     *MV_GetVolumeTable( int vol );
 static void       MV_SetVoicePitch( VoiceNode *voice, unsigned long rate, int pitchoffset );
 static void       MV_CalcPanTable( void );
 
-#define ATR_INDEX               0x3c0
-#define STATUS_REGISTER_1       0x3da
-
-#define SetBorderColor(color) \
-   { \
-   inp  (STATUS_REGISTER_1); \
-   outp (ATR_INDEX,0x31);    \
-   outp (ATR_INDEX,color);   \
-   }
 
 void ClearBuffer_DW( void *ptr, unsigned data, int length );
 
