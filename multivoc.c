@@ -299,7 +299,6 @@ typedef struct VoiceNode
 
    char         *NextBlock;
    unsigned      LoopCount;
-   unsigned long LoopSize;
    unsigned long BlockLength;
 
    unsigned long PitchScale;
@@ -1236,7 +1235,6 @@ int MV_PlayRaw(char *ptr, unsigned long length, unsigned rate, int pitchoffset, 
    voice->next        = NULL;
    voice->prev        = NULL;
    voice->priority    = priority;
-   voice->LoopSize    = 1;
 
    MV_SetVoicePitch( voice, rate, pitchoffset );
    MV_SetVoiceVolume( voice, vol, left, right );
