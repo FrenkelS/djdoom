@@ -586,7 +586,6 @@ static int       MV_ReverbLevel;
 #if (LIBVER_ASSREV >= 19950821L)
 static int       MV_ReverbDelay;
 #endif
-static VOLUME16 *MV_ReverbTable = NULL;
 
 //static signed short MV_VolumeTable[ MV_MaxVolume + 1 ][ 256 ];
 static signed short MV_VolumeTable[ 63 + 1 ][ 256 ];
@@ -902,25 +901,11 @@ static void MV_ServiceVoc
 
          if ( MV_Bits == 16 )
             {
-            if ( MV_ReverbTable != NULL )
-               {
-               MV_16BitReverb( source, dest, MV_ReverbTable, count / 2 );
-               }
-            else
-               {
-               MV_16BitReverbFast( source, dest, count / 2, MV_ReverbLevel );
-               }
+            MV_16BitReverbFast( source, dest, count / 2, MV_ReverbLevel );
             }
          else
             {
-            if ( MV_ReverbTable != NULL )
-               {
-               MV_8BitReverb( source, dest, MV_ReverbTable, count );
-               }
-            else
-               {
-               MV_8BitReverbFast( source, dest, count, MV_ReverbLevel );
-               }
+            MV_8BitReverbFast( source, dest, count, MV_ReverbLevel );
             }
 
          // if we go through the loop again, it means that we've wrapped around the buffer
@@ -2139,7 +2124,6 @@ void MV_Init
    MV_RecordFunc   = NULL;
    MV_Recording    = FALSE;
    MV_ReverbLevel  = 0;
-   MV_ReverbTable  = NULL;
 
    // Set the sampling rate
    MV_RequestedMixRate = MixRate;
