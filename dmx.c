@@ -1,5 +1,4 @@
 //
-// Copyright (C) 1994-1995 Apogee Software, Ltd.
 // Copyright (C) 2005-2014 Simon Howard
 // Copyright (C) 2015-2017 Alexey Khokholov (Nuke.YKT)
 // Copyright (C) 2023 Frenkel Smeijers
@@ -349,9 +348,8 @@ void MPU_SetCard(int32_t mPort)
    Handles manual setup of the Sound Blaster information.
 ---------------------------------------------------------------------*/
 
-static void FX_SetupSoundBlaster(fx_blaster_config blaster, int32_t *MaxVoices, int32_t *MaxSampleBits, int32_t *MaxChannels)
+static void FX_SetupSoundBlaster(fx_blaster_config blaster)
 {
-	int32_t DeviceStatus;
 	BLASTER_CONFIG Blaster;
 
 	Blaster.Type      = blaster.Type;
@@ -364,12 +362,7 @@ static void FX_SetupSoundBlaster(fx_blaster_config blaster, int32_t *MaxVoices, 
 
 	BLASTER_SetCardSettings(Blaster);
 
-	DeviceStatus = BLASTER_Init();
-	if (DeviceStatus == BLASTER_Ok)
-	{
-		*MaxVoices = 8;
-		BLASTER_GetCardInfo(MaxSampleBits, MaxChannels);
-	}
+	BLASTER_Init();
 }
 
 int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32_t sfxDevice)
@@ -393,13 +386,7 @@ int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32
 	if (ass_sdev == PC)
 		PCFX_Init(ticrate);
 	else if (ass_sdev == SoundBlaster)
-	{
-		int32_t MaxVoices;
-		int32_t MaxBits;
-		int32_t MaxChannels;
-
-		FX_SetupSoundBlaster(dmx_blaster, (int32_t *)&MaxVoices, (int32_t *)&MaxBits, (int32_t *)&MaxChannels);
-	}
+		FX_SetupSoundBlaster(dmx_blaster);
 
 
 	// Music
@@ -446,11 +433,7 @@ void WAV_PlayMode(int32_t channels, uint16_t sampleRate)
 {
 	if (ass_sdev == SoundBlaster)
 	{
-		int32_t MaxVoices;
-		int32_t MaxBits;
-		int32_t MaxChannels;
-
-		FX_SetupSoundBlaster(dmx_blaster, (int32_t *)&MaxVoices, (int32_t *)&MaxBits, (int32_t *)&MaxChannels);
+		FX_SetupSoundBlaster(dmx_blaster);
 		MV_Init(ass_sdev, sampleRate, channels, 2, 16);
 
 		if (BLASTER_CardHasMixer())

@@ -98,7 +98,6 @@ void BLASTER_SetVoiceVolume( int volume );
 int  BLASTER_CardHasMixer( void );
 int  BLASTER_GetEnv( BLASTER_CONFIG *Config );
 void BLASTER_SetCardSettings( BLASTER_CONFIG Config );
-void BLASTER_GetCardInfo( int *MaxSampleBits, int *MaxChannels );
 void BLASTER_SetupWaveBlaster( void );
 int  BLASTER_Init( void );
 

@@ -1454,49 +1454,6 @@ void BLASTER_SetCardSettings
 
 
 /*---------------------------------------------------------------------
-   Function: BLASTER_GetCardInfo
-
-   Returns the maximum number of bits that can represent a sample
-   (8 or 16) and the number of channels (1 for mono, 2 for stereo).
----------------------------------------------------------------------*/
-
-void BLASTER_GetCardInfo
-   (
-   int *MaxSampleBits,
-   int *MaxChannels
-   )
-
-   {
-   int CardType;
-
-   CardType = BLASTER_Config.Type;
-
-   if ( CardType == UNDEFINED )
-      {
-      return;
-      }
-
-   if ( BLASTER_CardConfig[ CardType ].MaxMixMode & STEREO )
-      {
-      *MaxChannels = 2;
-      }
-   else
-      {
-      *MaxChannels = 1;
-      }
-
-   if ( BLASTER_CardConfig[ CardType ].MaxMixMode & SIXTEEN_BIT )
-      {
-      *MaxSampleBits = 16;
-      }
-   else
-      {
-      *MaxSampleBits = 8;
-      }
-   }
-
-
-/*---------------------------------------------------------------------
    Function: BLASTER_SetCallBack
 
    Specifies the user function to call at the end of a sound transfer.
