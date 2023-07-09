@@ -30,8 +30,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    (c) Copyright 1993 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#define LIBVER_ASSREV 19960108L
-
 #include <stdlib.h>
 #include <string.h>
 #include <dos.h>
@@ -276,24 +274,12 @@ enum MV_Errors
 #define MV_MaxPanPosition  31
 #define MV_NumPanPositions ( MV_MaxPanPosition + 1 )
 #define MV_MaxTotalVolume  255
-// *** VERSIONS RESTORATION ***
-// Uncomment for earlier versions
-#if (LIBVER_ASSREV < 19960510L)
 #define MV_MaxVolume       63
-#endif
 #define MV_NumVoices       8
 
-// *** VERSIONS RESTORATION ***
-// Uncomment line for earlier revisions
-#if (LIBVER_ASSREV >= 19960510L)
-#define MIX_VOLUME( volume ) \
-   ( ( max( 0, min( ( volume ), 255 ) ) * ( MV_MaxVolume + 1 ) ) >> 8 )
-#else
 #define MIX_VOLUME( volume ) \
    ( ( max( 0, min( ( volume ), 255 ) ) ) >> 2 )
-#endif
 
-//#define SILENCE_16BIT     0x80008000
 #define SILENCE_16BIT     0
 #define SILENCE_8BIT      0x80808080
 
@@ -506,21 +492,8 @@ static char *MV_MixBuffer[ NumberOfBuffers + 1 ];
 
 static VoiceNode *MV_Voices = NULL;
 
-// *** VERSIONS RESTORATION ***
-// 1. Different definitions for list and pool, from MV1.C
-// 2. HACK - Misc. convenience macros
-// 3. FIXME - Maybe LIBVER_ASS_MV_VOICESTART/LISTEND won't be required (replacing for loops with while loops)
-#if (LIBVER_ASSREV < 19960510L)
-#define LIBVER_ASS_MV_VOICELISTEND NULL
-#define LIBVER_ASS_MV_VOICESTART start
 static volatile VList VoiceList = { NULL, NULL };
 static volatile VList VoicePool = { NULL, NULL };
-#else
-#define LIBVER_ASS_MV_VOICELISTEND (&VoiceList)
-#define LIBVER_ASS_MV_VOICESTART next
-static volatile VoiceNode VoiceList;
-static volatile VoiceNode VoicePool;
-#endif
 
 #define MV_MinVoiceHandle  1
 
@@ -529,19 +502,11 @@ static int MV_VoiceHandle  = MV_MinVoiceHandle;
 
 static void ( *MV_MixFunction )( VoiceNode *voice, int buffer );
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19960510L)
-static int MV_MaxVolume = 63;
-#endif
-
 uint8_t  *MV_HarshClipTable;
 char  *MV_MixDestination;
 short *MV_LeftVolume;
 short *MV_RightVolume;
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
 int    MV_SampleSize = 1;
-#endif
 int    MV_RightChannelOffset;
 
 unsigned long MV_MixPosition;
@@ -582,12 +547,7 @@ static void MV_Mix(VoiceNode *voice, int buffer)
    if ( ( MV_Channels == 2 ) && ( IS_QUIET( MV_LeftVolume ) ) )
       {
       MV_LeftVolume      = MV_RightVolume;
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-      MV_MixDestination += MV_SampleSize / 2;
-#else
       MV_MixDestination += MV_RightChannelOffset;
-#endif
       }
 
    // Add this voice to the mix
@@ -766,13 +726,12 @@ playbackstatus MV_GetNextRawBlock(VoiceNode *voice)
    voice->position    -= voice->length;
    voice->length       = min( voice->BlockLength, 0x8000 );
    voice->NextBlock   += voice->length;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
+
    if ( voice->bits == 16 )
       {
       voice->NextBlock += voice->length;
       }
-#endif
+
    voice->BlockLength -= voice->length;
    voice->length     <<= 16;
 
@@ -793,27 +752,19 @@ static VoiceNode *MV_GetVoice(int handle)
 
    flags = DisableInterrupts();
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960510L)
    voice = VoiceList.start;
    while( voice != NULL )
-#else
-   for( voice = VoiceList.LIBVER_ASS_MV_VOICESTART; voice != LIBVER_ASS_MV_VOICELISTEND; voice = voice->next )
-#endif
       {
       if ( handle == voice->handle )
          {
          break;
          }
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960510L)
       voice = voice->next;
-#endif
       }
 
    RestoreInterrupts( flags );
 
-   if ( voice == LIBVER_ASS_MV_VOICELISTEND )
+   if ( voice == NULL )
       {
       MV_SetErrorCode( MV_VoiceNotFound );
       }
@@ -865,9 +816,9 @@ static void MV_KillAllVoices(void)
       }
 
    // Remove all the voices from the list
-   while( VoiceList.LIBVER_ASS_MV_VOICESTART != LIBVER_ASS_MV_VOICELISTEND )
+   while( VoiceList.start != NULL )
       {
-      MV_Kill( VoiceList.LIBVER_ASS_MV_VOICESTART->handle );
+      MV_Kill( VoiceList.start->handle );
       }
 }
 
@@ -922,25 +873,15 @@ static VoiceNode *MV_AllocVoice(int priority)
    // Check if we have any free voices
    if ( LL_Empty( &VoicePool, next, prev ) )
       {
-      // *** VERSIONS RESTORATION ***
-
       // check if we have a higher priority than a voice that is playing.
-#if (LIBVER_ASSREV < 19960510L)
       voice = node = VoiceList.start;
       while( node != NULL )
-#else
-      voice = VoiceList.LIBVER_ASS_MV_VOICESTART;
-      for( node = voice->next; node != LIBVER_ASS_MV_VOICELISTEND; node = node->next )
-#endif
          {
          if ( node->priority < voice->priority )
             {
             voice = node;
             }
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960510L)
          node = node->next;
-#endif
          }
 
       if ( priority >= voice->priority )
@@ -957,13 +898,8 @@ static VoiceNode *MV_AllocVoice(int priority)
       return( NULL );
       }
 
-   voice = VoicePool.LIBVER_ASS_MV_VOICESTART;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960510L)
+   voice = VoicePool.start;
    LL_Remove( VoiceNode, &VoicePool, voice );
-#else
-   LL_Remove( voice, next, prev );
-#endif
    RestoreInterrupts( flags );
 
    // Find a free voice handle
@@ -1648,12 +1584,7 @@ void MV_Init(int soundcard, int MixRate, int Voices)
 
    for( index = 0; index < Voices; index++ )
       {
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960510L)
       LL_AddToTail( VoiceNode, &VoicePool, &MV_Voices[ index ] );
-#else
-      LL_Add( &VoicePool, &MV_Voices[ index ], next, prev );
-#endif
       }
 
    // Allocate mix buffer within 1st megabyte
@@ -1770,13 +1701,7 @@ void MV_Shutdown(void)
 
    if ( !MV_Installed )
       {
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-      MV_SetErrorCode( MV_NotInstalled );
       return;
-#else
-      return;
-#endif
       }
 
    flags = DisableInterrupts();
