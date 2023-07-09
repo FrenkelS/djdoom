@@ -183,50 +183,42 @@ static unsigned long PitchTable[ 12 ][ MAXDETUNE ] =
 
 static unsigned long PITCH_GetScale(int pitchoffset)
 {
-   unsigned long scale;
-   int octaveshift;
-   int noteshift;
-   int note;
-   int detune;
+	unsigned long scale;
+	int octaveshift;
+	int noteshift;
+	int note;
+	int detune;
 
-   if ( pitchoffset == 0 )
-      {
-      return( PitchTable[ 0 ][ 0 ] );
-      }
+	if (pitchoffset == 0)
+		return PitchTable[0][0];
 
-   noteshift = pitchoffset % 1200;
-   if ( noteshift < 0 )
-      {
-      noteshift += 1200;
-      }
+	noteshift = pitchoffset % 1200;
+	if (noteshift < 0)
+		noteshift += 1200;
 
-   note   = noteshift / 100;
-   detune = ( noteshift % 100 ) / ( 100 / MAXDETUNE );
-   octaveshift = ( pitchoffset - noteshift ) / 1200;
+	note   = noteshift / 100;
+	detune = (noteshift % 100) / (100 / MAXDETUNE);
+	octaveshift = (pitchoffset - noteshift) / 1200;
 
-   if ( detune < 0 )
-      {
-      detune += ( 100 / MAXDETUNE );
-      note--;
-      if ( note < 0 )
-         {
-         note += 12;
-         octaveshift--;
-         }
-      }
+	if (detune < 0)
+	{
+		detune += (100 / MAXDETUNE);
+		note--;
+		if (note < 0)
+		{
+			note += 12;
+			octaveshift--;
+		}
+	}
 
-   scale = PitchTable[ note ][ detune ];
+	scale = PitchTable[note][detune];
 
-   if ( octaveshift < 0 )
-      {
-      scale >>= -octaveshift;
-      }
-   else
-      {
-      scale <<= octaveshift;
-      }
+	if (octaveshift < 0)
+		scale >>= -octaveshift;
+	else
+		scale <<= octaveshift;
 
-   return( scale );
+	return scale;
 }
 
 
@@ -271,9 +263,6 @@ enum MV_Errors
 #define MV_MaxTotalVolume  255
 #define MV_MaxVolume       63
 #define MV_NumVoices       8
-
-#define MIX_VOLUME( volume ) \
-   ( ( max( 0, min( ( volume ), 255 ) ) ) >> 2 )
 
 #define SILENCE_16BIT     0
 #define SILENCE_8BIT      0x80808080
@@ -333,53 +322,6 @@ typedef struct
 typedef signed short MONO16;
 typedef signed char  MONO8;
 
-typedef struct
-   {
-   MONO16 left;
-   MONO16 right;
-//   unsigned short left;
-//   unsigned short right;
-   } STEREO16;
-
-typedef struct
-   {
-   MONO16 left;
-   MONO16 right;
-   } SIGNEDSTEREO16;
-
-typedef struct
-   {
-//   MONO8 left;
-//   MONO8 right;
-   char left;
-   char right;
-   } STEREO8;
-
-typedef struct
-   {
-   char          RIFF[ 4 ];
-   unsigned long file_size;
-   char          WAVE[ 4 ];
-   char          fmt[ 4 ];
-   unsigned long format_size;
-   } riff_header;
-
-typedef struct
-   {
-   unsigned short wFormatTag;
-   unsigned short nChannels;
-   unsigned long  nSamplesPerSec;
-   unsigned long  nAvgBytesPerSec;
-   unsigned short nBlockAlign;
-   unsigned short nBitsPerSample;
-   } format_header;
-
-typedef struct
-   {
-   unsigned char DATA[ 4 ];
-   unsigned long size;
-   } data_header;
-
 typedef MONO8  VOLUME8[ 256 ];
 typedef MONO16 VOLUME16[ 256 ];
 
@@ -410,14 +352,10 @@ void ClearBuffer_DW( void *ptr, unsigned data, int length );
    "pop    es",              \
 parm [ edi ] [ eax ] [ ecx ] modify exact [ ecx edi ];
 
-void MV_Mix8BitMono(      unsigned long position, unsigned long rate, char *start, unsigned long length );
-void MV_Mix8BitStereo(    unsigned long position, unsigned long rate, char *start, unsigned long length );
-void MV_Mix16BitMono(     unsigned long position, unsigned long rate, char *start, unsigned long length );
-void MV_Mix16BitStereo(   unsigned long position, unsigned long rate, char *start, unsigned long length );
-void MV_Mix16BitMono16(   unsigned long position, unsigned long rate, char *start, unsigned long length );
-void MV_Mix8BitMono16(    unsigned long position, unsigned long rate, char *start, unsigned long length );
-void MV_Mix8BitStereo16(  unsigned long position, unsigned long rate, char *start, unsigned long length );
-void MV_Mix16BitStereo16( unsigned long position, unsigned long rate, char *start, unsigned long length );
+void MV_Mix8BitMono(   unsigned long position, unsigned long rate, char *start, unsigned long length );
+void MV_Mix8BitStereo( unsigned long position, unsigned long rate, char *start, unsigned long length );
+void MV_Mix16BitMono(  unsigned long position, unsigned long rate, char *start, unsigned long length );
+void MV_Mix16BitStereo(unsigned long position, unsigned long rate, char *start, unsigned long length );
 
 
 #define IS_QUIET( ptr )  ( ( void * )( ptr ) == ( void * )&MV_VolumeTable[ 0 ] )
@@ -479,7 +417,7 @@ unsigned long MV_MixPosition;
 static int MV_ErrorCode = MV_Ok;
 
 #define MV_SetErrorCode( status ) \
-   MV_ErrorCode   = ( status );
+   MV_ErrorCode   = ( status )
 
 
 /*---------------------------------------------------------------------
@@ -490,83 +428,75 @@ static int MV_ErrorCode = MV_Ok;
 
 static void MV_Mix(VoiceNode *voice, int buffer)
 {
-   char          *start;
-   int            length;
-   long           voclength;
-   unsigned long  position;
-   unsigned long  rate;
-   unsigned long  FixedPointBufferSize;
+	char          *start;
+	int            length;
+	long           voclength;
+	unsigned long  position;
+	unsigned long  rate;
+	unsigned long  FixedPointBufferSize;
 
-   if ( ( voice->length == 0 ) && ( MV_GetNextRawBlock( voice ) != KeepPlaying ) )
-      {
-      return;
-      }
+	if ((voice->length == 0) && (MV_GetNextRawBlock(voice) != KeepPlaying))
+		return;
 
-   length               = MixBufferSize;
-   FixedPointBufferSize = voice->FixedPointBufferSize;
+	length               = MixBufferSize;
+	FixedPointBufferSize = voice->FixedPointBufferSize;
 
-   MV_MixDestination    = MV_MixBuffer[ buffer ];
-   MV_LeftVolume        = voice->LeftVolume;
-   MV_RightVolume       = voice->RightVolume;
+	MV_MixDestination    = MV_MixBuffer[buffer];
+	MV_LeftVolume        = voice->LeftVolume;
+	MV_RightVolume       = voice->RightVolume;
 
-   if ( ( MV_Channels == 2 ) && ( IS_QUIET( MV_LeftVolume ) ) )
-      {
-      MV_LeftVolume      = MV_RightVolume;
-      MV_MixDestination += MV_RightChannelOffset;
-      }
+	if ((MV_Channels == 2) && (IS_QUIET(MV_LeftVolume)))
+	{
+		MV_LeftVolume      = MV_RightVolume;
+		MV_MixDestination += MV_RightChannelOffset;
+	}
 
-   // Add this voice to the mix
-   while( length > 0 )
-      {
-      start    = voice->sound;
-      rate     = voice->RateScale;
-      position = voice->position;
+	// Add this voice to the mix
+	while (length > 0)
+	{
+		start    = voice->sound;
+		rate     = voice->RateScale;
+		position = voice->position;
 
-      // Check if the last sample in this buffer would be
-      // beyond the length of the sample block
-      if ( ( position + FixedPointBufferSize ) >= voice->length )
-         {
-         if ( position < voice->length )
-            {
-            voclength = ( voice->length - position + rate - 1 ) / rate;
-            }
-         else
-            {
-            MV_GetNextRawBlock( voice );
-            return;
-            }
-         }
-      else
-         {
-         voclength = length;
-         }
+		// Check if the last sample in this buffer would be
+		// beyond the length of the sample block
+		if ((position + FixedPointBufferSize) >= voice->length)
+		{
+			if (position < voice->length)
+				voclength = (voice->length - position + rate - 1) / rate;
+			else
+			{
+				MV_GetNextRawBlock(voice);
+				return;
+			}
+		}
+		else
+			voclength = length;
 
-      voice->mix( position, rate, start, voclength );
+		voice->mix(position, rate, start, voclength);
 
-      if ( voclength & 1 )
-         {
-         MV_MixPosition += rate;
-         voclength -= 1;
-         }
-      voice->position = MV_MixPosition;
+		if (voclength & 1)
+		{
+			MV_MixPosition += rate;
+			voclength      -= 1;
+		}
+		voice->position = MV_MixPosition;
 
-      length -= voclength;
+		length -= voclength;
 
-      if ( voice->position >= voice->length )
-         {
-         // Get the next block of sound
-         if ( MV_GetNextRawBlock( voice ) != KeepPlaying )
-            {
-            return;
-            }
+		if (voice->position >= voice->length)
+		{
+			// Get the next block of sound
+			if (MV_GetNextRawBlock(voice) != KeepPlaying)
+				return;
 
-         if ( length > 0 )
-            {
-            // Get the position of the last sample in the buffer
-            FixedPointBufferSize = voice->RateScale * ( length - 1 );
-            }
-         }
-      }
+			if (length > 0)
+			{
+				// Get the position of the last sample in the buffer
+				FixedPointBufferSize = voice->RateScale * (length - 1);
+			}
+		}
+	}
 }
 
 
@@ -578,12 +508,11 @@ static void MV_Mix(VoiceNode *voice, int buffer)
 
 static void MV_PlayVoice(VoiceNode *voice)
 {
-   unsigned flags;
+	unsigned flags = DisableInterrupts();
 
-   flags = DisableInterrupts();
-   LL_AddToTail( VoiceNode, &VoiceList, voice );
+	LL_AddToTail(VoiceNode, &VoiceList, voice);
 
-   RestoreInterrupts( flags );
+	RestoreInterrupts(flags);
 }
 
 
@@ -595,15 +524,13 @@ static void MV_PlayVoice(VoiceNode *voice)
 
 static void MV_StopVoice(VoiceNode *voice)
 {
-   unsigned  flags;
+	unsigned flags = DisableInterrupts();
 
-   flags = DisableInterrupts();
+	// move the voice from the play list to the free list
+	LL_Remove(VoiceNode, &VoiceList, voice);
+	LL_AddToTail(VoiceNode, &VoicePool, voice);
 
-   // move the voice from the play list to the free list
-   LL_Remove( VoiceNode, &VoiceList, voice );
-   LL_AddToTail( VoiceNode, &VoicePool, voice );
-
-   RestoreInterrupts( flags );
+	RestoreInterrupts(flags);
 }
 
 
@@ -615,53 +542,50 @@ static void MV_StopVoice(VoiceNode *voice)
 
 static void MV_ServiceVoc(void)
 {
-   VoiceNode *voice;
-   VoiceNode *next;
-   char      *buffer;
+	VoiceNode *voice;
+	VoiceNode *next;
+	char      *buffer;
 
-   if ( MV_DMAChannel >= 0 )
-      {
-      // Get the currently playing buffer
-      buffer = ( char * )DMA_GetCurrentPos( MV_DMAChannel );
-      MV_MixPage   = ( unsigned )( buffer - MV_MixBuffer[ 0 ] );
-      MV_MixPage >>= MV_BuffShift;
-      }
+	if (MV_DMAChannel >= 0)
+	{
+		// Get the currently playing buffer
+		buffer = (char *)DMA_GetCurrentPos(MV_DMAChannel);
+		MV_MixPage   = (unsigned)(buffer - MV_MixBuffer[0]);
+		MV_MixPage >>= MV_BuffShift;
+	}
 
-   // Toggle which buffer we'll mix next
-   MV_MixPage++;
+	// Toggle which buffer we'll mix next
+	MV_MixPage++;
 
-   if ( MV_MixPage >= MV_NumberOfBuffers )
-      {
-      MV_MixPage -= MV_NumberOfBuffers;
-      }
+	if (MV_MixPage >= MV_NumberOfBuffers)
+		MV_MixPage -= MV_NumberOfBuffers;
 
-   // Initialize buffer
-   //Commented out so that the buffer is always cleared.
-   //This is so the guys at Echo Speech can mix into the
-   //buffer even when no sounds are playing.
-   if ( !MV_BufferEmpty[ MV_MixPage ] )
-      {
-      ClearBuffer_DW( MV_MixBuffer[ MV_MixPage ], MV_Silence, MV_BufferSize >> 2 );
-      MV_BufferEmpty[ MV_MixPage ] = TRUE;
-      }
+	// Initialize buffer
+	//Commented out so that the buffer is always cleared.
+	//This is so the guys at Echo Speech can mix into the
+	//buffer even when no sounds are playing.
+	if (!MV_BufferEmpty[MV_MixPage])
+	{
+		ClearBuffer_DW(MV_MixBuffer[MV_MixPage], MV_Silence, MV_BufferSize >> 2);
+		MV_BufferEmpty[MV_MixPage] = TRUE;
+	}
 
-   // Play any waiting voices
-   voice = VoiceList.start;
-   while( voice != NULL )
-      {
-      MV_BufferEmpty[ MV_MixPage ] = FALSE;
+	// Play any waiting voices
+	voice = VoiceList.start;
+	while (voice != NULL)
+	{
+		MV_BufferEmpty[MV_MixPage] = FALSE;
 
-      MV_MixFunction( voice, MV_MixPage );
+		MV_MixFunction(voice, MV_MixPage);
 
-      next = voice->next;
+		next = voice->next;
 
-      // Is this voice done?
-      if ( !voice->Playing )
-         {
-         MV_StopVoice( voice );
-         }
-      voice = next;
-      }
+		// Is this voice done?
+		if (!voice->Playing)
+			MV_StopVoice(voice);
+
+		voice = next;
+	}
 }
 
 
@@ -699,29 +623,25 @@ static playbackstatus MV_GetNextRawBlock(VoiceNode *voice)
 
 static VoiceNode *MV_GetVoice(int handle)
 {
-   VoiceNode *voice;
-   unsigned  flags;
+	VoiceNode *voice;
+	
+	unsigned flags = DisableInterrupts();
 
-   flags = DisableInterrupts();
+	voice = VoiceList.start;
+	while (voice != NULL)
+	{
+		if (handle == voice->handle)
+			break;
 
-   voice = VoiceList.start;
-   while( voice != NULL )
-      {
-      if ( handle == voice->handle )
-         {
-         break;
-         }
-      voice = voice->next;
-      }
+		voice = voice->next;
+	}
 
-   RestoreInterrupts( flags );
+	RestoreInterrupts(flags);
 
-   if ( voice == NULL )
-      {
-      MV_SetErrorCode( MV_VoiceNotFound );
-      }
+	if (voice == NULL)
+		MV_SetErrorCode(MV_VoiceNotFound);
 
-   return( voice );
+	return voice;
 }
 
 
@@ -734,22 +654,17 @@ static VoiceNode *MV_GetVoice(int handle)
 
 int MV_VoicePlaying(int handle)
 {
-   VoiceNode *voice;
+	VoiceNode *voice;
 
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return( FALSE );
-      }
+	if (!MV_Installed)
+	{
+		MV_SetErrorCode(MV_NotInstalled);
+		return FALSE;
+	}
 
-   voice = MV_GetVoice( handle );
+	voice = MV_GetVoice(handle);
 
-   if ( voice == NULL )
-      {
-      return( FALSE );
-      }
-
-   return( TRUE );
+	return voice != NULL;
 }
 
 
@@ -761,17 +676,17 @@ int MV_VoicePlaying(int handle)
 
 static void MV_KillAllVoices(void)
 {
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return;
-      }
+	if (!MV_Installed)
+	{
+		MV_SetErrorCode(MV_NotInstalled);
+		return;
+	}
 
-   // Remove all the voices from the list
-   while( VoiceList.start != NULL )
-      {
-      MV_Kill( VoiceList.start->handle );
-      }
+	// Remove all the voices from the list
+	while (VoiceList.start != NULL)
+	{
+		MV_Kill(VoiceList.start->handle);
+	}
 }
 
 
@@ -783,28 +698,24 @@ static void MV_KillAllVoices(void)
 
 void MV_Kill(int handle)
 {
-   VoiceNode *voice;
-   unsigned  flags;
+	VoiceNode *voice;
+	unsigned  flags;
 
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return;
-      }
+	if (!MV_Installed)
+	{
+		MV_SetErrorCode(MV_NotInstalled);
+		return;
+	}
 
-   flags = DisableInterrupts();
+	flags = DisableInterrupts();
 
-   voice = MV_GetVoice( handle );
-   if ( voice == NULL )
-      {
-      RestoreInterrupts( flags );
-      MV_SetErrorCode( MV_VoiceNotFound );
-      return;
-      }
+	voice = MV_GetVoice(handle);
+	if (voice == NULL)
+		MV_SetErrorCode(MV_VoiceNotFound);
+	else
+		MV_StopVoice(voice);
 
-   MV_StopVoice( voice );
-
-   RestoreInterrupts( flags );
+	RestoreInterrupts(flags);
 }
 
 
@@ -816,58 +727,51 @@ void MV_Kill(int handle)
 
 static VoiceNode *MV_AllocVoice(int priority)
 {
-   VoiceNode   *voice;
-   VoiceNode   *node;
-   unsigned    flags;
+	VoiceNode   *voice;
+	VoiceNode   *node;
 
-   flags = DisableInterrupts();
+	unsigned flags = DisableInterrupts();
 
-   // Check if we have any free voices
-   if ( LL_Empty( &VoicePool, next, prev ) )
-      {
-      // check if we have a higher priority than a voice that is playing.
-      voice = node = VoiceList.start;
-      while( node != NULL )
-         {
-         if ( node->priority < voice->priority )
-            {
-            voice = node;
-            }
-         node = node->next;
-         }
+	// Check if we have any free voices
+	if (LL_Empty(&VoicePool, next, prev))
+	{
+		// check if we have a higher priority than a voice that is playing.
+		voice = node = VoiceList.start;
+		while (node != NULL)
+		{
+			if (node->priority < voice->priority)
+				voice = node;
 
-      if ( priority >= voice->priority )
-         {
-         MV_Kill( voice->handle );
-         }
-      }
+			node = node->next;
+		}
 
-   // Check if any voices are in the voice pool
-   if ( LL_Empty( &VoicePool, next, prev ) )
-      {
-      // No free voices
-      RestoreInterrupts( flags );
-      return( NULL );
-      }
+		if (priority >= voice->priority)
+			MV_Kill( voice->handle );
+	}
 
-   voice = VoicePool.start;
-   LL_Remove( VoiceNode, &VoicePool, voice );
-   RestoreInterrupts( flags );
+	// Check if any voices are in the voice pool
+	if (LL_Empty(&VoicePool, next, prev))
+	{
+		// No free voices
+		RestoreInterrupts(flags);
+		return NULL;
+	}
 
-   // Find a free voice handle
-   do
-      {
-      MV_VoiceHandle++;
-      if ( MV_VoiceHandle < MV_MinVoiceHandle )
-         {
-         MV_VoiceHandle = MV_MinVoiceHandle;
-         }
-      }
-   while( MV_VoicePlaying( MV_VoiceHandle ) );
+	voice = VoicePool.start;
+	LL_Remove(VoiceNode, &VoicePool, voice);
+	RestoreInterrupts(flags);
 
-   voice->handle = MV_VoiceHandle;
+	// Find a free voice handle
+	do
+	{
+		MV_VoiceHandle++;
+		if (MV_VoiceHandle < MV_MinVoiceHandle)
+			MV_VoiceHandle = MV_MinVoiceHandle;
+	} while (MV_VoicePlaying(MV_VoiceHandle));
 
-   return( voice );
+	voice->handle = MV_VoiceHandle;
+
+	return voice;
 }
 
 
@@ -879,12 +783,12 @@ static VoiceNode *MV_AllocVoice(int priority)
 
 static void MV_SetVoicePitch(VoiceNode *voice, unsigned long rate, int pitchoffset)
 {
-   voice->SamplingRate = rate;
-   voice->PitchScale   = PITCH_GetScale( pitchoffset );
-   voice->RateScale    = ( rate * voice->PitchScale ) / MV_MixRate;
+	voice->SamplingRate = rate;
+	voice->PitchScale   = PITCH_GetScale(pitchoffset);
+	voice->RateScale    = (rate * voice->PitchScale) / MV_MixRate;
 
-   // Multiply by MixBufferSize - 1
-   voice->FixedPointBufferSize = ( voice->RateScale * MixBufferSize ) - voice->RateScale;
+	// Multiply by MixBufferSize - 1
+	voice->FixedPointBufferSize = (voice->RateScale * MixBufferSize) - voice->RateScale;
 }
 
 
@@ -896,22 +800,19 @@ static void MV_SetVoicePitch(VoiceNode *voice, unsigned long rate, int pitchoffs
 
 void MV_SetPitch(int handle, int pitchoffset)
 {
-   VoiceNode *voice;
+	VoiceNode *voice;
 
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return;
-      }
+	if (!MV_Installed)
+	{
+		MV_SetErrorCode(MV_NotInstalled);
+		return;
+	}
 
-   voice = MV_GetVoice( handle );
-   if ( voice == NULL )
-      {
-      MV_SetErrorCode( MV_VoiceNotFound );
-      return;
-      }
-
-   MV_SetVoicePitch( voice, voice->SamplingRate, pitchoffset );
+	voice = MV_GetVoice(handle);
+	if (voice == NULL)
+		MV_SetErrorCode(MV_VoiceNotFound);
+	else
+		MV_SetVoicePitch(voice, voice->SamplingRate, pitchoffset);
 }
 
 
@@ -924,14 +825,15 @@ void MV_SetPitch(int handle, int pitchoffset)
 
 static short *MV_GetVolumeTable(int vol)
 {
-   int volume;
-   short *table;
+	short *table;
 
-   volume = MIX_VOLUME( vol );
+	vol = min(vol, 255);
+	vol = max(0, vol);
+	vol = vol >> 2;
 
-   table = &MV_VolumeTable[ volume ];
+	table = &MV_VolumeTable[vol];
 
-   return( table );
+	return table;
 }
 
 
@@ -1015,25 +917,23 @@ static void MV_SetVoiceMixMode(VoiceNode *voice)
 
 static void MV_SetVoiceVolume(VoiceNode *voice, int vol, int left, int right)
 {
-   if ( MV_Channels == 1 )
-      {
-      left  = vol;
-      right = vol;
-      }
+	if (MV_Channels == 1)
+	{
+		left  = vol;
+		right = vol;
+	}
 
-   if ( MV_SwapLeftRight )
-      {
-      // SBPro uses reversed panning
-      voice->LeftVolume  = MV_GetVolumeTable( right );
-      voice->RightVolume = MV_GetVolumeTable( left );
-      }
-   else
-      {
-      voice->LeftVolume  = MV_GetVolumeTable( left );
-      voice->RightVolume = MV_GetVolumeTable( right );
-      }
+	if (MV_SwapLeftRight)
+	{
+		// SBPro uses reversed panning
+		voice->LeftVolume  = MV_GetVolumeTable(right);
+		voice->RightVolume = MV_GetVolumeTable(left);
+	} else {
+		voice->LeftVolume  = MV_GetVolumeTable(left);
+		voice->RightVolume = MV_GetVolumeTable(right);
+	}
 
-   MV_SetVoiceMixMode( voice );
+	MV_SetVoiceMixMode(voice);
 }
 
 
@@ -1046,22 +946,19 @@ static void MV_SetVoiceVolume(VoiceNode *voice, int vol, int left, int right)
 
 void MV_SetPan(int handle, int vol, int left, int right)
 {
-   VoiceNode *voice;
+	VoiceNode *voice;
 
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return;
-      }
+	if (!MV_Installed)
+	{
+		MV_SetErrorCode(MV_NotInstalled);
+		return;
+	}
 
-   voice = MV_GetVoice( handle );
-   if ( voice == NULL )
-      {
-      MV_SetErrorCode( MV_VoiceNotFound );
-      return;
-      }
-
-   MV_SetVoiceVolume( voice, vol, left, right );
+	voice = MV_GetVoice(handle);
+	if (voice == NULL)
+		MV_SetErrorCode(MV_VoiceNotFound);
+	else 
+		MV_SetVoiceVolume(voice, vol, left, right);
 }
 
 
@@ -1073,49 +970,38 @@ void MV_SetPan(int handle, int vol, int left, int right)
 
 static void MV_SetMixMode(void)
 {
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return;
-      }
+	if (!MV_Installed)
+	{
+		MV_SetErrorCode(MV_NotInstalled);
+		return;
+	}
 
-   switch( MV_SoundCard )
-      {
-      case SoundBlaster :
-         MV_MixMode = BLASTER_SetMixMode( STEREO | SIXTEEN_BIT );
-         break;
-      }
+	switch(MV_SoundCard)
+	{
+		case SoundBlaster:
+			MV_MixMode = BLASTER_SetMixMode(STEREO | SIXTEEN_BIT);
+			break;
+	}
 
-   MV_Channels = 1;
-   if ( MV_MixMode & STEREO )
-      {
-      MV_Channels = 2;
-      }
+	MV_Channels = MV_MixMode & STEREO      ?  2 : 1;
+	MV_Bits     = MV_MixMode & SIXTEEN_BIT ? 16 : 8;
 
-   MV_Bits = 8;
-   if ( MV_MixMode & SIXTEEN_BIT )
-      {
-      MV_Bits = 16;
-      }
+	MV_BuffShift  = 7 + MV_Channels;
+	MV_SampleSize = sizeof(MONO8) * MV_Channels;
 
-   MV_BuffShift  = 7 + MV_Channels;
-   MV_SampleSize = sizeof( MONO8 ) * MV_Channels;
+	if (MV_Bits == 8)
+		MV_Silence = SILENCE_8BIT;
+	else
+	{
+		MV_Silence     = SILENCE_16BIT;
+		MV_BuffShift  += 1;
+		MV_SampleSize *= 2;
+	}
 
-   if ( MV_Bits == 8 )
-      {
-      MV_Silence = SILENCE_8BIT;
-      }
-   else
-      {
-      MV_Silence     = SILENCE_16BIT;
-      MV_BuffShift  += 1;
-      MV_SampleSize *= 2;
-      }
+	MV_BufferSize = MixBufferSize * MV_SampleSize;
+	MV_NumberOfBuffers = TotalBufferSize / MV_BufferSize;
 
-   MV_BufferSize = MixBufferSize * MV_SampleSize;
-   MV_NumberOfBuffers = TotalBufferSize / MV_BufferSize;
-
-   MV_RightChannelOffset = MV_SampleSize / 2;
+	MV_RightChannelOffset = MV_SampleSize / 2;
 }
 
 
@@ -1127,41 +1013,37 @@ static void MV_SetMixMode(void)
 
 static int MV_StartPlayback(void)
 {
-   int status;
-   int buffer;
+	int status;
+	int buffer;
 
-   // Initialize the buffers
-   ClearBuffer_DW( MV_MixBuffer[ 0 ], MV_Silence, TotalBufferSize >> 2 );
-   for( buffer = 0; buffer < MV_NumberOfBuffers; buffer++ )
-      {
-      MV_BufferEmpty[ buffer ] = TRUE;
-      }
+	// Initialize the buffers
+	ClearBuffer_DW(MV_MixBuffer[0], MV_Silence, TotalBufferSize >> 2);
+	for (buffer = 0; buffer < MV_NumberOfBuffers; buffer++)
+		MV_BufferEmpty[buffer] = TRUE;
 
-   // Set the mix buffer variables
-   MV_MixPage = 1;
+	// Set the mix buffer variables
+	MV_MixPage = 1;
 
-   MV_MixFunction = MV_Mix;
+	MV_MixFunction = MV_Mix;
 
-   // Start playback
-   switch( MV_SoundCard )
-      {
-      case SoundBlaster :
-         status = BLASTER_BeginBufferedPlayback( MV_MixBuffer[ 0 ],
-            TotalBufferSize, MV_NumberOfBuffers,
-            MV_RequestedMixRate, MV_MixMode, MV_ServiceVoc );
+	// Start playback
+	switch (MV_SoundCard)
+	{
+		case SoundBlaster:
+			status = BLASTER_BeginBufferedPlayback(MV_MixBuffer[0], TotalBufferSize, MV_NumberOfBuffers, MV_RequestedMixRate, MV_MixMode, MV_ServiceVoc);
 
-         if ( status != BLASTER_Ok )
-            {
-            MV_SetErrorCode( MV_BlasterError );
-            return( MV_Error );
-            }
+			if (status != BLASTER_Ok)
+			{
+				MV_SetErrorCode(MV_BlasterError);
+				return MV_Error;
+			}
 
-         MV_MixRate = BLASTER_GetPlaybackRate();
-         MV_DMAChannel = BLASTER_DMAChannel;
-         break;
-      }
+			MV_MixRate = BLASTER_GetPlaybackRate();
+			MV_DMAChannel = BLASTER_DMAChannel;
+			break;
+	}
 
-   return( MV_Ok );
+	return MV_Ok;
 }
 
 
@@ -1173,32 +1055,32 @@ static int MV_StartPlayback(void)
 
 static void MV_StopPlayback(void)
 {
-   VoiceNode   *voice;
-   VoiceNode   *next;
-   unsigned    flags;
+	VoiceNode   *voice;
+	VoiceNode   *next;
+	unsigned    flags;
 
-   // Stop sound playback
-   switch( MV_SoundCard )
-      {
-      case SoundBlaster :
-         BLASTER_StopPlayback();
-         break;
-      }
+	// Stop sound playback
+	switch (MV_SoundCard)
+	{
+		case SoundBlaster:
+			BLASTER_StopPlayback();
+			break;
+	}
 
-   // Make sure all callbacks are done.
-   flags = DisableInterrupts();
+	// Make sure all callbacks are done.
+	flags = DisableInterrupts();
 
-   voice = VoiceList.start;
-   while( voice != NULL )
-      {
-      next = voice->next;
+	voice = VoiceList.start;
+	while (voice != NULL)
+	{
+		next = voice->next;
 
-      MV_StopVoice( voice );
+		MV_StopVoice(voice);
 
-      voice = next;
-      }
+		voice = next;
+	}
 
-   RestoreInterrupts( flags );
+	RestoreInterrupts(flags);
 }
 
 
@@ -1213,85 +1095,34 @@ int MV_PlayRaw(char *ptr, unsigned long length, unsigned rate, int pitchoffset, 
 {
    VoiceNode *voice;
 
-   if ( !MV_Installed )
-      {
-      MV_SetErrorCode( MV_NotInstalled );
-      return( MV_Error );
-      }
+	if (!MV_Installed)
+	{
+		MV_SetErrorCode(MV_NotInstalled);
+		return MV_Error;
+	}
 
-   // Request a voice from the voice pool
-   voice = MV_AllocVoice( priority );
-   if ( voice == NULL )
-      {
-      MV_SetErrorCode( MV_NoVoices );
-      return( MV_Error );
-      }
+	// Request a voice from the voice pool
+	voice = MV_AllocVoice(priority);
+	if (voice == NULL)
+	{
+		MV_SetErrorCode(MV_NoVoices);
+		return MV_Error;
+	}
 
-   voice->Playing     = TRUE;
-   voice->NextBlock   = ptr;
-   voice->position    = 0;
-   voice->BlockLength = length;
-   voice->length      = 0;
-   voice->next        = NULL;
-   voice->prev        = NULL;
-   voice->priority    = priority;
+	voice->Playing     = TRUE;
+	voice->NextBlock   = ptr;
+	voice->position    = 0;
+	voice->BlockLength = length;
+	voice->length      = 0;
+	voice->next        = NULL;
+	voice->prev        = NULL;
+	voice->priority    = priority;
 
-   MV_SetVoicePitch( voice, rate, pitchoffset );
-   MV_SetVoiceVolume( voice, vol, left, right );
-   MV_PlayVoice( voice );
+	MV_SetVoicePitch(voice, rate, pitchoffset);
+	MV_SetVoiceVolume(voice, vol, left, right);
+	MV_PlayVoice(voice);
 
-   return( voice->handle );
-}
-
-
-/*---------------------------------------------------------------------
-   Function: MV_CalcVolume
-
-   Create the table used to convert sound data to a specific volume
-   level.
----------------------------------------------------------------------*/
-
-static void MV_CalcVolume(void)
-{
-   int volume;
-   int val;
-   int i;
-
-   for( volume = 0; volume < 128; volume++ )
-      {
-      MV_HarshClipTable[ volume ] = 0;
-      MV_HarshClipTable[ volume + 384 ] = 255;
-      }
-   for( volume = 0; volume < 256; volume++ )
-      {
-      MV_HarshClipTable[ volume + 128 ] = volume;
-      }
-
-   // For each volume level, create a translation table with the
-   // appropriate volume calculated.
-   for( volume = 0; volume <= MV_MaxVolume; volume++ )
-      {
-      if ( MV_Bits == 16 )
-         {
-         for( i = 0; i < 65536; i += 256 )
-            {
-            val   = i - 0x8000;
-            val  *= volume;
-            val  /= MV_MaxVolume;
-            MV_VolumeTable[ volume ][ i / 256 ] = val;
-            }
-         }
-      else
-         {
-         for( i = 0; i < 256; i++ )
-            {
-            val   = i - 0x80;
-            val  *= volume;
-            val  /= MV_MaxVolume;
-            MV_VolumeTable[ volume ][ i ] = val;
-            }
-         }
-      }
+	return voice->handle;
 }
 
 
@@ -1304,33 +1135,32 @@ static void MV_CalcVolume(void)
 
 static void MV_CalcPanTable(void)
 {
-   int   level;
-   int   angle;
-   int   distance;
-   int   HalfAngle;
-   int   ramp;
+	int   level;
+	int   angle;
+	int   distance;
+	int   HalfAngle;
+	int   ramp;
 
-   HalfAngle = ( MV_NumPanPositions / 2 );
+	HalfAngle = MV_NumPanPositions / 2;
 
-   for( distance = 0; distance <= MV_MaxVolume; distance++ )
-      {
-      level = ( 255 * ( MV_MaxVolume - distance ) ) / MV_MaxVolume;
-      for( angle = 0; angle <= HalfAngle / 2; angle++ )
-         {
-         ramp = level - ( ( level * angle ) /
-            ( MV_NumPanPositions / 4 ) );
+	for (distance = 0; distance <= MV_MaxVolume; distance++)
+	{
+		level = (255 * (MV_MaxVolume - distance)) / MV_MaxVolume;
+		for (angle = 0; angle <= HalfAngle / 2; angle++)
+		{
+			ramp = level - ((level * angle) / (MV_NumPanPositions / 4));
 
-         MV_PanTable[ angle ][ distance ].left = ramp;
-         MV_PanTable[ HalfAngle - angle ][ distance ].left = ramp;
-         MV_PanTable[ HalfAngle + angle ][ distance ].left = level;
-         MV_PanTable[ MV_MaxPanPosition - angle ][ distance ].left = level;
+			MV_PanTable[                    angle][distance].left = ramp;
+			MV_PanTable[HalfAngle         - angle][distance].left = ramp;
+			MV_PanTable[HalfAngle         + angle][distance].left = level;
+			MV_PanTable[MV_MaxPanPosition - angle][distance].left = level;
 
-         MV_PanTable[ angle ][ distance ].right = level;
-         MV_PanTable[ HalfAngle - angle ][ distance ].right = level;
-         MV_PanTable[ HalfAngle + angle ][ distance ].right = ramp;
-         MV_PanTable[ MV_MaxPanPosition - angle ][ distance ].right = ramp;
-         }
-      }
+			MV_PanTable[                    angle][distance].right = level;
+			MV_PanTable[HalfAngle         - angle][distance].right = level;
+			MV_PanTable[HalfAngle         + angle][distance].right = ramp;
+			MV_PanTable[MV_MaxPanPosition - angle][distance].right = ramp;
+		}
+	}
 }
 
 
@@ -1338,23 +1168,48 @@ static void MV_CalcPanTable(void)
    Function: MV_SetVolume
 
    Sets the volume of digitized sound playback.
+
+   Create the table used to convert sound data to a specific volume
+   level.
 ---------------------------------------------------------------------*/
 
 void MV_SetVolume(void)
 {
-	MV_CalcVolume();
-}
+	int volume;
+	int val;
+	int i;
 
+	for (volume = 0; volume < 128; volume++)
+	{
+		MV_HarshClipTable[volume]       = 0;
+		MV_HarshClipTable[volume + 384] = 255;
+	}
+	for (volume = 0; volume < 256; volume++)
+		MV_HarshClipTable[volume + 128] = volume;
 
-/*---------------------------------------------------------------------
-   Function: MV_SetReverseStereo
-
-   Set the orientation of the left and right channels.
----------------------------------------------------------------------*/
-
-static void MV_SetReverseStereo(int setting)
-{
-	MV_SwapLeftRight = setting;
+	// For each volume level, create a translation table with the
+	// appropriate volume calculated.
+	for (volume = 0; volume <= MV_MaxVolume; volume++)
+	{
+		if (MV_Bits == 16)
+		{
+			for (i = 0; i < 65536; i += 256)
+			{
+				val   = i - 0x8000;
+				val  *= volume;
+				val  /= MV_MaxVolume;
+				MV_VolumeTable[volume][i / 256] = val;
+			}
+		} else {
+			for (i = 0; i < 256; i++)
+			{
+				val   = i - 0x80;
+				val  *= volume;
+				val  /= MV_MaxVolume;
+				MV_VolumeTable[volume][i] = val;
+			}
+		}
+	}
 }
 
 
@@ -1366,64 +1221,56 @@ static void MV_SetReverseStereo(int setting)
 
 static int MV_TestPlayback(void)
 {
-   unsigned flags;
-   long time;
-   int  start;
-   int  status;
-   int  pos;
+	unsigned flags;
+	long time;
+	int  start;
+	int  status;
+	int  pos;
 
-   flags = DisableInterrupts();
-   _enable();
+	flags = DisableInterrupts();
+	_enable();
 
-   status = MV_Error;
-   start  = MV_MixPage;
-   time   = clock() + CLOCKS_PER_SEC * 2;
+	status = MV_Error;
+	start  = MV_MixPage;
+	time   = clock() + CLOCKS_PER_SEC * 2;
 
-   while (clock() < time && status != MV_Ok)
-      {
-      if ( MV_MixPage != start )
-         {
-         status = MV_Ok;
-         }
-      }
+	while (clock() < time && status != MV_Ok)
+	{
+		if (MV_MixPage != start)
+			status = MV_Ok;
+	}
 
-   RestoreInterrupts( flags );
+	RestoreInterrupts(flags);
 
-   if ( status != MV_Ok )
-      {
-      // Just in case an error doesn't get reported
-      MV_SetErrorCode( MV_DMAFailure );
+	if (status != MV_Ok)
+	{
+		// Just in case an error doesn't get reported
+		MV_SetErrorCode(MV_DMAFailure);
 
-      switch( MV_SoundCard )
-         {
-         case SoundBlaster :
-            pos = BLASTER_GetCurrentPos();
-            break;
+		switch (MV_SoundCard)
+		{
+			case SoundBlaster:
+				pos = BLASTER_GetCurrentPos();
+				break;
 
-         default :
-            MV_SetErrorCode( MV_UnsupportedCard );
-            pos = -2;
-            break;
-         }
+			default:
+				MV_SetErrorCode(MV_UnsupportedCard);
+				pos = -2;
+				break;
+		}
 
-      if ( pos > 0 )
-         {
-         MV_SetErrorCode( MV_IrqFailure );
-         }
-      else if ( pos == 0 )
-         {
-         if ( MV_Bits == 16 )
-            {
-            MV_SetErrorCode( MV_DMA16Failure );
-            }
-         else
-            {
-            MV_SetErrorCode( MV_DMAFailure );
-            }
-         }
-      }
+		if (pos > 0)
+			MV_SetErrorCode(MV_IrqFailure);
+		else if (pos == 0)
+		{
+			if (MV_Bits == 16)
+				MV_SetErrorCode(MV_DMA16Failure);
+			else
+				MV_SetErrorCode(MV_DMAFailure);
+		}
+	}
 
-   return( status );
+	return status;
 }
 
 
@@ -1436,138 +1283,128 @@ static int MV_TestPlayback(void)
 
 void MV_Init(int soundcard, int MixRate, int Voices)
 {
-   char *ptr;
-   int  status;
-   int  buffer;
-   int  index;
+	char *ptr;
+	int  status;
+	int  buffer;
+	int  index;
 
-   if ( MV_Installed )
-      {
-      MV_Shutdown();
-      }
+	if (MV_Installed)
+		MV_Shutdown();
 
-   MV_SetErrorCode( MV_Ok );
+	MV_SetErrorCode(MV_Ok);
 
-   MV_TotalMemory = Voices * sizeof( VoiceNode ) + sizeof( HARSH_CLIP_TABLE_8 );
-   ptr = malloc(MV_TotalMemory);
-   if (!ptr)
-      {
-      MV_SetErrorCode( MV_NoMem );
-      return;
-      }
+	MV_TotalMemory = Voices * sizeof(VoiceNode) + sizeof(HARSH_CLIP_TABLE_8);
+	ptr = malloc(MV_TotalMemory);
+	if (!ptr)
+	{
+		MV_SetErrorCode(MV_NoMem);
+		return;
+	}
 
-   MV_Voices = ( VoiceNode * )ptr;
-   MV_HarshClipTable = ptr + ( MV_TotalMemory - sizeof( HARSH_CLIP_TABLE_8 ) );
+	MV_Voices = (VoiceNode *)ptr;
+	MV_HarshClipTable = ptr + (MV_TotalMemory - sizeof( HARSH_CLIP_TABLE_8));
 
-   // Set number of voices before calculating volume table
-   MV_MaxVoices = Voices;
+	// Set number of voices before calculating volume table
+	MV_MaxVoices = Voices;
 
-   LL_Reset( &VoiceList, next, prev );
-   LL_Reset( &VoicePool, next, prev );
+	LL_Reset(&VoiceList, next, prev);
+	LL_Reset(&VoicePool, next, prev);
 
-   for( index = 0; index < Voices; index++ )
-      {
-      LL_AddToTail( VoiceNode, &VoicePool, &MV_Voices[ index ] );
-      }
+	for (index = 0; index < Voices; index++)
+		LL_AddToTail(VoiceNode, &VoicePool, &MV_Voices[index]);
 
-   // Allocate mix buffer within 1st megabyte
-   status = DPMI_GetDOSMemory( ( void ** )&ptr, &MV_BufferDescriptor,
-      2 * TotalBufferSize );
+	// Allocate mix buffer within 1st megabyte
+	status = DPMI_GetDOSMemory((void **)&ptr, &MV_BufferDescriptor, 2 * TotalBufferSize);
 
-   if ( status )
-      {
-      if (MV_Voices)
-         free(MV_Voices);
-      MV_Voices      = NULL;
-      MV_TotalMemory = 0;
+	if (status)
+	{
+		if (MV_Voices)
+			free(MV_Voices);
 
-      MV_SetErrorCode( MV_NoMem );
-      return;
-      }
+		MV_Voices      = NULL;
+		MV_TotalMemory = 0;
 
-   MV_SetReverseStereo( FALSE );
+		MV_SetErrorCode(MV_NoMem);
+		return;
+	}
 
-   // Initialize the sound card
-   switch( soundcard )
-      {
-      case SoundBlaster :
-         status = BLASTER_Init();
-         if ( status != BLASTER_Ok )
-            {
-            MV_SetErrorCode( MV_BlasterError );
-            }
+	MV_SwapLeftRight = FALSE;
 
-         if ( ( BLASTER_Config.Type == SBPro ) ||
-            ( BLASTER_Config.Type == SBPro2 ) )
-            {
-            MV_SetReverseStereo( TRUE );
-            }
-         break;
+	// Initialize the sound card
+	switch (soundcard)
+	{
+		case SoundBlaster:
+			status = BLASTER_Init();
+			if (status != BLASTER_Ok)
+				MV_SetErrorCode(MV_BlasterError);
 
-      default :
-         MV_SetErrorCode( MV_UnsupportedCard );
-         break;
-      }
+			if ((BLASTER_Config.Type == SBPro) || (BLASTER_Config.Type == SBPro2))
+				MV_SwapLeftRight = TRUE;
+			break;
 
-   if ( MV_ErrorCode != MV_Ok )
-      {
-      status = MV_ErrorCode;
+		default:
+			MV_SetErrorCode(MV_UnsupportedCard);
+			break;
+	}
 
-      if (MV_Voices)
-         free(MV_Voices);
-      MV_Voices      = NULL;
-      MV_TotalMemory = 0;
+	if (MV_ErrorCode != MV_Ok)
+	{
+		status = MV_ErrorCode;
 
-      DPMI_FreeDOSMemory( MV_BufferDescriptor );
+		if (MV_Voices)
+			free(MV_Voices);
 
-      MV_SetErrorCode( status );
-      return;
-      }
+		MV_Voices      = NULL;
+		MV_TotalMemory = 0;
 
-   MV_SoundCard    = soundcard;
-   MV_Installed    = TRUE;
+		DPMI_FreeDOSMemory(MV_BufferDescriptor);
 
-   // Set the sampling rate
-   MV_RequestedMixRate = MixRate;
+		MV_SetErrorCode(status);
+		return;
+	}
 
-   // Set Mixer to play stereo digitized sound
-   MV_SetMixMode();
+	MV_SoundCard    = soundcard;
+	MV_Installed    = TRUE;
 
-   // Make sure we don't cross a physical page
-   if ( ( ( unsigned long )ptr & 0xffff ) + TotalBufferSize > 0x10000 )
-      {
-      ptr = ( char * )( ( ( unsigned long )ptr & 0xff0000 ) + 0x10000 );
-      }
+	// Set the sampling rate
+	MV_RequestedMixRate = MixRate;
 
-   MV_MixBuffer[ MV_NumberOfBuffers ] = ptr;
-   for( buffer = 0; buffer < MV_NumberOfBuffers; buffer++ )
-      {
-      MV_MixBuffer[ buffer ] = ptr;
-      ptr += MV_BufferSize;
-      }
+	// Set Mixer to play stereo digitized sound
+	MV_SetMixMode();
 
-   // Calculate pan table
-   MV_CalcPanTable();
+	// Make sure we don't cross a physical page
+	if (((unsigned long)ptr & 0xffff) + TotalBufferSize > 0x10000)
+		ptr = (char *)(((unsigned long)ptr & 0xff0000) + 0x10000);
 
-   MV_SetVolume();
+	MV_MixBuffer[MV_NumberOfBuffers] = ptr;
+	for (buffer = 0; buffer < MV_NumberOfBuffers; buffer++)
+	{
+		MV_MixBuffer[buffer] = ptr;
+		ptr += MV_BufferSize;
+	}
 
-   // Start the playback engine
-   status = MV_StartPlayback();
-   if ( status != MV_Ok )
-      {
-      // Preserve error code while we shutdown.
-      status = MV_ErrorCode;
-      MV_Shutdown();
-      MV_SetErrorCode( status );
-      return;
-      }
+	// Calculate pan table
+	MV_CalcPanTable();
 
-   if ( MV_TestPlayback() != MV_Ok )
-      {
-      status = MV_ErrorCode;
-      MV_Shutdown();
-      MV_SetErrorCode( status );
-      }
+	MV_SetVolume();
+
+	// Start the playback engine
+	status = MV_StartPlayback();
+	if (status != MV_Ok)
+	{
+		// Preserve error code while we shutdown.
+		status = MV_ErrorCode;
+		MV_Shutdown();
+		MV_SetErrorCode(status);
+		return;
+	}
+
+	if (MV_TestPlayback() != MV_Ok)
+	{
+		status = MV_ErrorCode;
+		MV_Shutdown();
+		MV_SetErrorCode(status);
+	}
 }
 
 
@@ -1579,48 +1416,45 @@ void MV_Init(int soundcard, int MixRate, int Voices)
 
 void MV_Shutdown(void)
 {
-   int      buffer;
-   unsigned flags;
+	int      buffer;
+	unsigned flags;
 
-   if ( !MV_Installed )
-      {
-      return;
-      }
+	if (!MV_Installed)
+		return;
 
-   flags = DisableInterrupts();
+	flags = DisableInterrupts();
 
-   MV_KillAllVoices();
+	MV_KillAllVoices();
 
-   MV_Installed = FALSE;
+	MV_Installed = FALSE;
 
-   // Stop the sound playback engine
-   MV_StopPlayback();
+	// Stop the sound playback engine
+	MV_StopPlayback();
 
-   // Shutdown the sound card
-   switch( MV_SoundCard )
-      {
-      case SoundBlaster :
-         BLASTER_Shutdown();
-         break;
-      }
+	// Shutdown the sound card
+	switch (MV_SoundCard)
+	{
+		case SoundBlaster:
+			BLASTER_Shutdown();
+			break;
+	}
 
-   RestoreInterrupts( flags );
+	RestoreInterrupts(flags);
 
-   // Free any voices we allocated
-   if (MV_Voices)
-      free(MV_Voices);
-   MV_Voices      = NULL;
-   MV_TotalMemory = 0;
+	// Free any voices we allocated
+	if (MV_Voices)
+		free(MV_Voices);
 
-   LL_Reset( &VoiceList, next, prev );
-   LL_Reset( &VoicePool, next, prev );
+	MV_Voices      = NULL;
+	MV_TotalMemory = 0;
 
-   MV_MaxVoices = 1;
+	LL_Reset(&VoiceList, next, prev);
+	LL_Reset(&VoicePool, next, prev);
 
-   // Release the descriptor from our mix buffer
-   DPMI_FreeDOSMemory( MV_BufferDescriptor );
-   for( buffer = 0; buffer < NumberOfBuffers; buffer++ )
-      {
-      MV_MixBuffer[ buffer ] = NULL;
-      }
+	MV_MaxVoices = 1;
+
+	// Release the descriptor from our mix buffer
+	DPMI_FreeDOSMemory(MV_BufferDescriptor);
+	for (buffer = 0; buffer < NumberOfBuffers; buffer++)
+		MV_MixBuffer[buffer] = NULL;
 }
