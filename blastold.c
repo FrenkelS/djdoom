@@ -630,39 +630,6 @@ static int BLASTER_SetupDMABuffer(char *BufferPtr, int BufferSize)
 
 
 /*---------------------------------------------------------------------
-   Function: BLASTER_GetCurrentPos
-
-   Returns the offset within the current sound being played.
----------------------------------------------------------------------*/
-
-int BLASTER_GetCurrentPos(void)
-{
-	char *CurrentAddr;
-	int   DmaChannel;
-	int   offset;
-
-	if ( !BLASTER_SoundPlaying )
-		return BLASTER_Error;
-
-	DmaChannel = BLASTER_MixMode & SIXTEEN_BIT ? BLASTER_Config.Dma16 : BLASTER_Config.Dma8;
-	if ( DmaChannel == UNDEFINED )
-		return BLASTER_Error;
-
-	CurrentAddr = DMA_GetCurrentPos( DmaChannel );
-
-	offset = ( int )( ( ( unsigned long )CurrentAddr ) - ( ( unsigned long )BLASTER_CurrentDMABuffer ) );
-
-	if ( BLASTER_MixMode & SIXTEEN_BIT )
-		offset >>= 1;
-
-	if ( BLASTER_MixMode & STEREO )
-		offset >>= 1;
-
-	return offset;
-}
-
-
-/*---------------------------------------------------------------------
    Function: BLASTER_DSP1xx_BeginPlayback
 
    Starts playback of digitized sound on cards compatible with DSP

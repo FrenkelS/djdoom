@@ -1212,7 +1212,6 @@ static int MV_TestPlayback(void)
 	long time;
 	int  start;
 	int  status;
-	int  pos;
 
 	flags = DisableInterrupts();
 	_enable();
@@ -1230,32 +1229,7 @@ static int MV_TestPlayback(void)
 	RestoreInterrupts(flags);
 
 	if (status != MV_Ok)
-	{
-		// Just in case an error doesn't get reported
 		MV_SetErrorCode(MV_DMAFailure);
-
-		switch (MV_SoundCard)
-		{
-			case SoundBlaster:
-				pos = BLASTER_GetCurrentPos();
-				break;
-
-			default:
-				MV_SetErrorCode(MV_UnsupportedCard);
-				pos = -2;
-				break;
-		}
-
-		if (pos > 0)
-			MV_SetErrorCode(MV_IrqFailure);
-		else if (pos == 0)
-		{
-			if (MV_Bits == 16)
-				MV_SetErrorCode(MV_DMA16Failure);
-			else
-				MV_SetErrorCode(MV_DMAFailure);
-		}
-	}
 
 	return status;
 }
