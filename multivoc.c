@@ -327,19 +327,6 @@ typedef MONO16 VOLUME16[ 256 ];
 
 typedef char HARSH_CLIP_TABLE_8[ MV_NumVoices * 256 ];
 
-static void MV_Mix( VoiceNode *voice, int buffer );
-static void MV_PlayVoice( VoiceNode *voice );
-static void MV_StopVoice( VoiceNode *voice );
-static void MV_ServiceVoc( void );
-
-static VoiceNode *MV_GetVoice( int handle );
-static VoiceNode *MV_AllocVoice( int priority );
-
-static short     *MV_GetVolumeTable( int vol );
-
-static void       MV_SetVoicePitch( VoiceNode *voice, unsigned long rate, int pitchoffset );
-static void       MV_CalcPanTable( void );
-
 
 void ClearBuffer_DW( void *ptr, unsigned data, int length );
 
