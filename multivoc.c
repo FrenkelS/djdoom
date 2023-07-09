@@ -286,14 +286,6 @@ enum MV_Errors
 
 typedef enum
    {
-   Raw,
-   VOC,
-   DemandFeed,
-   WAV
-   } wavedata;
-
-typedef enum
-   {
    NoMoreData,
    KeepPlaying
    } playbackstatus;
@@ -304,7 +296,6 @@ typedef struct VoiceNode
    struct VoiceNode *next;
    struct VoiceNode *prev;
 
-   wavedata      wavetype;
    char          bits;
 
    playbackstatus ( *GetSound )( struct VoiceNode *voice );
@@ -313,8 +304,6 @@ typedef struct VoiceNode
       char *start, unsigned long length );
 
    char         *NextBlock;
-   char         *LoopStart;
-   char         *LoopEnd;
    unsigned      LoopCount;
    unsigned long LoopSize;
    unsigned long BlockLength;
@@ -331,8 +320,6 @@ typedef struct VoiceNode
 
    int           handle;
    int           priority;
-
-   void          ( *DemandFeed )( char **ptr, unsigned long *length );
 
    short        *LeftVolume;
    short        *RightVolume;
@@ -409,8 +396,6 @@ static void MV_Mix( VoiceNode *voice, int buffer );
 static void MV_PlayVoice( VoiceNode *voice );
 static void MV_StopVoice( VoiceNode *voice );
 static void MV_ServiceVoc( void );
-
-static playbackstatus MV_GetNextRawBlock( VoiceNode *voice );
 
 static VoiceNode *MV_GetVoice( int handle );
 static VoiceNode *MV_AllocVoice( int priority );
@@ -693,36 +678,26 @@ static void MV_ServiceVoc(void)
    Controls playback of demand fed data.
 ---------------------------------------------------------------------*/
 
-playbackstatus MV_GetNextRawBlock(VoiceNode *voice)
+static playbackstatus MV_GetNextRawBlock(VoiceNode *voice)
 {
-   if ( voice->BlockLength <= 0 )
-      {
-      if ( voice->LoopStart == NULL )
-         {
-         voice->Playing = FALSE;
-         return( NoMoreData );
-         }
+	if (voice->BlockLength <= 0)
+	{
+		voice->Playing = FALSE;
+		return NoMoreData;
+	}
 
-      voice->BlockLength = voice->LoopSize;
-      voice->NextBlock   = voice->LoopStart;
-      voice->length = 0;
-      voice->position = 0;
-      }
+	voice->sound      = voice->NextBlock;
+	voice->position  -= voice->length;
+	voice->length     = min(voice->BlockLength, 0x8000);
+	voice->NextBlock += voice->length;
 
-   voice->sound        = voice->NextBlock;
-   voice->position    -= voice->length;
-   voice->length       = min( voice->BlockLength, 0x8000 );
-   voice->NextBlock   += voice->length;
+	if (voice->bits == 16)
+		voice->NextBlock += voice->length;
 
-   if ( voice->bits == 16 )
-      {
-      voice->NextBlock += voice->length;
-      }
+	voice->BlockLength -= voice->length;
+	voice->length     <<= 16;
 
-   voice->BlockLength -= voice->length;
-   voice->length     <<= 16;
-
-   return( KeepPlaying );
+	return KeepPlaying;
 }
 
 
@@ -1296,19 +1271,6 @@ static void MV_StopPlayback(void)
 
 int MV_PlayRaw(char *ptr, unsigned long length, unsigned rate, int pitchoffset, int vol, int left, int right, int priority)
 {
-	return MV_PlayLoopedRaw(ptr, length, rate, pitchoffset, vol, left, right, priority);
-}
-
-
-/*---------------------------------------------------------------------
-   Function: MV_PlayLoopedRaw
-
-   Begin playback of sound data with the given sound levels and
-   priority.
----------------------------------------------------------------------*/
-
-static int MV_PlayLoopedRaw(char *ptr, long length, unsigned rate, int pitchoffset, int vol, int left, int right, int priority)
-{
    VoiceNode *voice;
 
    if ( !MV_Installed )
@@ -1325,7 +1287,6 @@ static int MV_PlayLoopedRaw(char *ptr, long length, unsigned rate, int pitchoffs
       return( MV_Error );
       }
 
-   voice->wavetype    = Raw;
    voice->bits        = 8;
    voice->GetSound    = MV_GetNextRawBlock;
    voice->Playing     = TRUE;
@@ -1336,9 +1297,7 @@ static int MV_PlayLoopedRaw(char *ptr, long length, unsigned rate, int pitchoffs
    voice->next        = NULL;
    voice->prev        = NULL;
    voice->priority    = priority;
-   voice->LoopStart   = NULL;
-   voice->LoopEnd     = NULL;
-   voice->LoopSize    = ( voice->LoopEnd - voice->LoopStart ) + 1;
+   voice->LoopSize    = 1;
 
    MV_SetVoicePitch( voice, rate, pitchoffset );
    MV_SetVoiceVolume( voice, vol, left, right );
