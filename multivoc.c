@@ -298,10 +298,7 @@ typedef struct VoiceNode
 
    char          bits;
 
-   playbackstatus ( *GetSound )( struct VoiceNode *voice );
-
-   void ( *mix )( unsigned long position, unsigned long rate,
-      char *start, unsigned long length );
+   void ( *mix )( unsigned long position, unsigned long rate, char *start, unsigned long length );
 
    char         *NextBlock;
    unsigned      LoopCount;
@@ -504,7 +501,7 @@ static void MV_Mix(VoiceNode *voice, int buffer)
    unsigned long  rate;
    unsigned long  FixedPointBufferSize;
 
-   if ( ( voice->length == 0 ) && ( voice->GetSound( voice ) != KeepPlaying ) )
+   if ( ( voice->length == 0 ) && ( MV_GetNextRawBlock( voice ) != KeepPlaying ) )
       {
       return;
       }
@@ -539,7 +536,7 @@ static void MV_Mix(VoiceNode *voice, int buffer)
             }
          else
             {
-            voice->GetSound( voice );
+            MV_GetNextRawBlock( voice );
             return;
             }
          }
@@ -562,7 +559,7 @@ static void MV_Mix(VoiceNode *voice, int buffer)
       if ( voice->position >= voice->length )
          {
          // Get the next block of sound
-         if ( voice->GetSound( voice ) != KeepPlaying )
+         if ( MV_GetNextRawBlock( voice ) != KeepPlaying )
             {
             return;
             }
@@ -684,20 +681,20 @@ static playbackstatus MV_GetNextRawBlock(VoiceNode *voice)
 	{
 		voice->Playing = FALSE;
 		return NoMoreData;
-	}
-
-	voice->sound      = voice->NextBlock;
-	voice->position  -= voice->length;
-	voice->length     = min(voice->BlockLength, 0x8000);
-	voice->NextBlock += voice->length;
-
-	if (voice->bits == 16)
+	} else {
+		voice->sound      = voice->NextBlock;
+		voice->position  -= voice->length;
+		voice->length     = min(voice->BlockLength, 0x8000);
 		voice->NextBlock += voice->length;
 
-	voice->BlockLength -= voice->length;
-	voice->length     <<= 16;
+		if (voice->bits == 16)
+			voice->NextBlock += voice->length;
 
-	return KeepPlaying;
+		voice->BlockLength -= voice->length;
+		voice->length     <<= 16;
+
+		return KeepPlaying;
+	}
 }
 
 
@@ -1288,7 +1285,6 @@ int MV_PlayRaw(char *ptr, unsigned long length, unsigned rate, int pitchoffset, 
       }
 
    voice->bits        = 8;
-   voice->GetSound    = MV_GetNextRawBlock;
    voice->Playing     = TRUE;
    voice->NextBlock   = ptr;
    voice->position    = 0;
