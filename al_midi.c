@@ -37,7 +37,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "doomdef.h"
 #include "interrup.h"
 #include "sndcards.h"
-#include "blaster.h"
 #include "al_midi.h"
 
 

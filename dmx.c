@@ -34,8 +34,6 @@ typedef struct
 	uint32_t Interrupt;
 	uint32_t Dma8;
 	uint32_t Dma16;
-	uint32_t Midi;
-	uint32_t Emu;
 } fx_blaster_config;
 
 static fx_blaster_config dmx_blaster;
@@ -236,8 +234,6 @@ static boolean FX_GetBlasterSettings(fx_blaster_config *blaster)
 	blaster->Interrupt = Blaster.Interrupt;
 	blaster->Dma8      = Blaster.Dma8;
 	blaster->Dma16     = Blaster.Dma16;
-	blaster->Midi      = Blaster.Midi;
-	blaster->Emu       = Blaster.Emu;
 
 	return false;
 }
@@ -357,8 +353,6 @@ static void FX_SetupSoundBlaster(fx_blaster_config blaster)
 	Blaster.Interrupt = blaster.Interrupt;
 	Blaster.Dma8      = blaster.Dma8;
 	Blaster.Dma16     = blaster.Dma16;
-	Blaster.Midi      = blaster.Midi;
-	Blaster.Emu       = blaster.Emu;
 
 	BLASTER_SetCardSettings(Blaster);
 

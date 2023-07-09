@@ -101,8 +101,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define BlasterEnv_8bitDma    'D'
 #define BlasterEnv_16bitDma   'H'
 #define BlasterEnv_Type       'T'
-#define BlasterEnv_Midi       'P'
-#define BlasterEnv_EmuAddress 'E'
 
 #define CalcTimeConstant( rate, samplesize ) \
    ( ( 65536L - ( 256000000L / ( ( samplesize ) * ( rate ) ) ) ) >> 8 )
@@ -142,9 +140,11 @@ static const CARD_CAPABILITY BLASTER_CardConfig[ BLASTER_MaxCardType + 1 ] =
 
 static void    ( __interrupt __far *BLASTER_OldInt )( void );
 
+#define UNDEFINED -1
+
 BLASTER_CONFIG BLASTER_Config =
    {
-   UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED
+   UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED
    };
 
 static int BLASTER_Installed = FALSE;
@@ -963,8 +963,6 @@ int BLASTER_GetEnv(BLASTER_CONFIG *Config)
 	Config->Interrupt = UNDEFINED;
 	Config->Dma8      = UNDEFINED;
 	Config->Dma16     = UNDEFINED;
-	Config->Midi      = UNDEFINED;
-	Config->Emu       = UNDEFINED;
 
 	Blaster = getenv( "BLASTER" );
 	if ( Blaster == NULL )
@@ -1000,12 +998,6 @@ int BLASTER_GetEnv(BLASTER_CONFIG *Config)
 				break;
 			case BlasterEnv_16bitDma :
 				sscanf( Blaster, "%d", &Config->Dma16 );
-				break;
-			case BlasterEnv_Midi :
-				sscanf( Blaster, "%x", &Config->Midi );
-				break;
-			case BlasterEnv_EmuAddress :
-				sscanf( Blaster, "%x", &Config->Emu );
 				break;
 			default  :
 				// Skip the offending data
@@ -1060,11 +1052,9 @@ void BLASTER_SetCardSettings(BLASTER_CONFIG Config)
 	BLASTER_Config.Interrupt = Config.Interrupt;
 	BLASTER_Config.Dma8      = Config.Dma8;
 	BLASTER_Config.Dma16     = Config.Dma16;
-	BLASTER_Config.Midi      = Config.Midi;
-	BLASTER_Config.Emu       = Config.Emu;
 
-	BLASTER_MixerAddress = Config.Address;
-	BLASTER_MixerType = Config.Type;
+	BLASTER_MixerAddress     = Config.Address;
+	BLASTER_MixerType        = Config.Type;
 }
 
 
