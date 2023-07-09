@@ -803,8 +803,7 @@ void BLASTER_StopPlayback
 static int BLASTER_SetupDMABuffer
    (
    char *BufferPtr,
-   int   BufferSize,
-   int   mode
+   int   BufferSize
    )
 
    {
@@ -825,7 +824,7 @@ static int BLASTER_SetupDMABuffer
       return( BLASTER_Error );
       }
 
-   DmaStatus = DMA_SetupTransfer( DmaChannel, BufferPtr, BufferSize, mode );
+   DmaStatus = DMA_SetupTransfer( DmaChannel, BufferPtr, BufferSize );
    if ( DmaStatus == DMA_Error )
       {
       return( BLASTER_Error );
@@ -1057,7 +1056,7 @@ int BLASTER_BeginBufferedPlayback
 
    BLASTER_SetMixMode( MixMode );
 
-   DmaStatus = BLASTER_SetupDMABuffer( BufferStart, BufferSize, DMA_AutoInitRead );
+   DmaStatus = BLASTER_SetupDMABuffer( BufferStart, BufferSize );
    if ( DmaStatus == BLASTER_Error )
       {
       return( BLASTER_Error );

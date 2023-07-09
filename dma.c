@@ -106,8 +106,7 @@ int DMA_SetupTransfer
    (
    int  channel,
    char *address,
-   int  length,
-   int  mode
+   int  length
    )
 
    {
@@ -159,25 +158,8 @@ int DMA_SetupTransfer
       // Clear flip-flop to lower byte with any data
       outp( Port->Clear, 0 );
 
-      // Set DMA mode
-      switch( mode )
-         {
-         case DMA_SingleShotRead :
-            outp( Port->Mode, 0x48 | ChannelSelect );
-            break;
-
-         case DMA_SingleShotWrite :
-            outp( Port->Mode, 0x44 | ChannelSelect );
-            break;
-
-         case DMA_AutoInitRead :
-            outp( Port->Mode, 0x58 | ChannelSelect );
-            break;
-
-         case DMA_AutoInitWrite :
-            outp( Port->Mode, 0x54 | ChannelSelect );
-            break;
-         }
+      // Set DMA mode to AutoInitRead
+      outp( Port->Mode, 0x58 | ChannelSelect );
 
       // Send address
       outp( Port->Address, LoByte );
