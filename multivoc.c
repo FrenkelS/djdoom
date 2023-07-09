@@ -262,7 +262,6 @@ enum MV_Errors
 #define T_SIXTEENBIT_STEREO 0
 #define T_8BITS       1
 #define T_MONO        2
-#define T_16BITSOURCE 4
 #define T_LEFTQUIET   8
 #define T_RIGHTQUIET  16
 #define T_DEFAULT     T_SIXTEENBIT_STEREO
@@ -295,8 +294,6 @@ typedef struct VoiceNode
    {
    struct VoiceNode *next;
    struct VoiceNode *prev;
-
-   char          bits;
 
    void ( *mix )( unsigned long position, unsigned long rate, char *start, unsigned long length );
 
@@ -680,16 +677,13 @@ static playbackstatus MV_GetNextRawBlock(VoiceNode *voice)
 	if (voice->BlockLength <= 0)
 	{
 		voice->Playing = FALSE;
+
 		return NoMoreData;
 	} else {
-		voice->sound      = voice->NextBlock;
-		voice->position  -= voice->length;
-		voice->length     = min(voice->BlockLength, 0x8000);
-		voice->NextBlock += voice->length;
-
-		if (voice->bits == 16)
-			voice->NextBlock += voice->length;
-
+		voice->sound        = voice->NextBlock;
+		voice->position    -= voice->length;
+		voice->length       = min(voice->BlockLength, 0x8000);
+		voice->NextBlock   += voice->length;
 		voice->BlockLength -= voice->length;
 		voice->length     <<= 16;
 
@@ -950,116 +944,66 @@ static short *MV_GetVolumeTable(int vol)
 
 static void MV_SetVoiceMixMode(VoiceNode *voice)
 {
-   unsigned flags;
-   int test;
+	unsigned flags;
+	int test;
 
-   flags = DisableInterrupts();
+	flags = DisableInterrupts();
 
-   test = T_DEFAULT;
-   if ( MV_Bits == 8 )
-      {
-      test |= T_8BITS;
-      }
+	test = T_DEFAULT;
+	if (MV_Bits == 8)
+		test |= T_8BITS;
 
-   if ( voice->bits == 16 )
-      {
-      test |= T_16BITSOURCE;
-      }
+	if (MV_Channels == 1)
+		test |= T_MONO;
+	else
+	{
+		if (IS_QUIET(voice->RightVolume))
+			test |= T_RIGHTQUIET;
+		else if (IS_QUIET(voice->LeftVolume))
+			test |= T_LEFTQUIET;
+	}
 
-   if ( MV_Channels == 1 )
-      {
-      test |= T_MONO;
-      }
-   else
-      {
-      if ( IS_QUIET( voice->RightVolume ) )
-         {
-         test |= T_RIGHTQUIET;
-         }
-      else if ( IS_QUIET( voice->LeftVolume ) )
-         {
-         test |= T_LEFTQUIET;
-         }
-      }
+	switch (test)
+	{
+		case T_8BITS | T_MONO:
+			voice->mix = MV_Mix8BitMono;
+			break;
 
-   // Default case
-   voice->mix = MV_Mix8BitMono;
+		case T_8BITS | T_LEFTQUIET:
+			MV_LeftVolume = MV_RightVolume;
+			voice->mix = MV_Mix8BitMono;
+			break;
 
-   switch( test )
-      {
-      case T_8BITS | T_MONO | T_16BITSOURCE :
-         voice->mix = MV_Mix8BitMono16;
-         break;
+		case T_8BITS | T_RIGHTQUIET:
+			voice->mix = MV_Mix8BitMono;
+			break;
 
-      case T_8BITS | T_MONO :
-         voice->mix = MV_Mix8BitMono;
-         break;
+		case T_8BITS:
+			voice->mix = MV_Mix8BitStereo;
+			break;
 
-      case T_8BITS | T_16BITSOURCE | T_LEFTQUIET :
-         MV_LeftVolume = MV_RightVolume;
-         voice->mix = MV_Mix8BitMono16;
-         break;
+		case T_MONO:
+			voice->mix = MV_Mix16BitMono;
+			break;
 
-      case T_8BITS | T_LEFTQUIET :
-         MV_LeftVolume = MV_RightVolume;
-         voice->mix = MV_Mix8BitMono;
-         break;
+		case T_LEFTQUIET:
+			MV_LeftVolume = MV_RightVolume;
+			voice->mix = MV_Mix16BitMono;
+			break;
 
-      case T_8BITS | T_16BITSOURCE | T_RIGHTQUIET :
-         voice->mix = MV_Mix8BitMono16;
-         break;
+		case T_RIGHTQUIET:
+			voice->mix = MV_Mix16BitMono;
+			break;
 
-      case T_8BITS | T_RIGHTQUIET :
-         voice->mix = MV_Mix8BitMono;
-         break;
+		case T_SIXTEENBIT_STEREO:
+			voice->mix = MV_Mix16BitStereo;
+			break;
 
-      case T_8BITS | T_16BITSOURCE :
-         voice->mix = MV_Mix8BitStereo16;
-         break;
+		default:
+			voice->mix = MV_Mix8BitMono;
+	}
 
-      case T_8BITS :
-         voice->mix = MV_Mix8BitStereo;
-         break;
-
-      case T_MONO | T_16BITSOURCE :
-         voice->mix = MV_Mix16BitMono16;
-         break;
-
-      case T_MONO :
-         voice->mix = MV_Mix16BitMono;
-         break;
-
-      case T_16BITSOURCE | T_LEFTQUIET :
-         MV_LeftVolume = MV_RightVolume;
-         voice->mix = MV_Mix16BitMono16;
-         break;
-
-      case T_LEFTQUIET :
-         MV_LeftVolume = MV_RightVolume;
-         voice->mix = MV_Mix16BitMono;
-         break;
-
-      case T_16BITSOURCE | T_RIGHTQUIET :
-         voice->mix = MV_Mix16BitMono16;
-         break;
-
-      case T_RIGHTQUIET :
-         voice->mix = MV_Mix16BitMono;
-         break;
-
-      case T_16BITSOURCE :
-         voice->mix = MV_Mix16BitStereo16;
-         break;
-
-      case T_SIXTEENBIT_STEREO :
-         voice->mix = MV_Mix16BitStereo;
-         break;
-
-      default :
-         voice->mix = MV_Mix8BitMono;
-      }
-
-   RestoreInterrupts( flags );
+	RestoreInterrupts(flags);
 }
 
 
@@ -1284,7 +1228,6 @@ int MV_PlayRaw(char *ptr, unsigned long length, unsigned rate, int pitchoffset, 
       return( MV_Error );
       }
 
-   voice->bits        = 8;
    voice->Playing     = TRUE;
    voice->NextBlock   = ptr;
    voice->position    = 0;

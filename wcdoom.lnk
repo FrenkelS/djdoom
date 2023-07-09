@@ -25,7 +25,6 @@ file multivoc.obj
 file mus2mid.obj
 file music.obj
 file mv_mix.obj
-file mv_mix16.obj
 file pcfx.obj
 file tsmapi.obj
 file task_man.obj
