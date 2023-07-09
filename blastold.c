@@ -72,7 +72,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define DSP_MaxNormalRate         22000
 
-#define DSP_Old8BitADC                0x24
 #define DSP_8BitAutoInitMode          0x1c
 #define DSP_8BitHighSpeedAutoInitMode 0x90
 #define DSP_SetBlockLength            0x48
@@ -167,7 +166,6 @@ static unsigned BLASTER_SampleRate       = BLASTER_DefaultSampleRate;
 static unsigned BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
 
 static volatile int   BLASTER_SoundPlaying;
-static volatile int   BLASTER_SoundRecording;
 
 static void ( *BLASTER_CallBack )( void );
 
@@ -223,18 +221,12 @@ int BLASTER_DMAChannel;
    Enables the triggering of the sound card interrupt.
 ---------------------------------------------------------------------*/
 
-static void BLASTER_EnableInterrupt
-   (
-   void
-   )
-
-   {
-   int mask;
-
-   // Unmask system interrupt
-   mask = inp( 0x21 ) & ~( 1 << BLASTER_Config.Interrupt );
-   outp( 0x21, mask  );
-   }
+static void BLASTER_EnableInterrupt(void)
+{
+	// Unmask system interrupt
+	int mask = inp(0x21) & ~(1 << BLASTER_Config.Interrupt);
+	outp(0x21, mask);
+}
 
 
 /*---------------------------------------------------------------------
@@ -243,19 +235,15 @@ static void BLASTER_EnableInterrupt
    Disables the triggering of the sound card interrupt.
 ---------------------------------------------------------------------*/
 
-static void BLASTER_DisableInterrupt
-   (
-   void
-   )
+static void BLASTER_DisableInterrupt(void)
+{
+	int mask;
 
-   {
-   int mask;
-
-   // Restore interrupt mask
-   mask  = inp( 0x21 ) & ~( 1 << BLASTER_Config.Interrupt );
-   mask |= BLASTER_IntController1Mask & ( 1 << BLASTER_Config.Interrupt );
-   outp( 0x21, mask  );
-   }
+	// Restore interrupt mask
+	mask  = inp(0x21) & ~(1 << BLASTER_Config.Interrupt);
+	mask |= BLASTER_IntController1Mask & (1 << BLASTER_Config.Interrupt);
+	outp(0x21, mask);
+}
 
 
 /*---------------------------------------------------------------------
@@ -265,92 +253,70 @@ static void BLASTER_DisableInterrupt
    transfer.  Calls the user supplied callback function.
 ---------------------------------------------------------------------*/
 
-static void __interrupt __far BLASTER_ServiceInterrupt
-   (
-   void
-   )
+static void __interrupt __far BLASTER_ServiceInterrupt(void)
+{
+	#ifdef USESTACK
+	// save stack
+	GetStack( &oldStackSelector, &oldStackPointer );
 
-   {
-   #ifdef USESTACK
-   // save stack
-   GetStack( &oldStackSelector, &oldStackPointer );
+	// set our stack
+	SetStack( StackSelector, StackPointer );
+	#endif
 
-   // set our stack
-   SetStack( StackSelector, StackPointer );
-   #endif
+	// Acknowledge interrupt
+	// Check if this is this an SB16 or newer
+	if ( BLASTER_Version >= DSP_Version4xx )
+	{
+		outp( BLASTER_Config.Address + BLASTER_MixerAddressPort, MIXER_DSP4xxISR_Ack );
 
-   // Acknowledge interrupt
-   // Check if this is this an SB16 or newer
-   if ( BLASTER_Version >= DSP_Version4xx )
-      {
-      outp( BLASTER_Config.Address + BLASTER_MixerAddressPort,
-         MIXER_DSP4xxISR_Ack );
+		GlobalStatus = inp( BLASTER_Config.Address + BLASTER_MixerDataPort );
 
-      GlobalStatus = inp( BLASTER_Config.Address + BLASTER_MixerDataPort );
+		// Check if a 16-bit DMA interrupt occurred
+		if ( GlobalStatus & MIXER_16BITDMA_INT )
+		{
+			// Acknowledge 16-bit transfer interrupt
+			inp( BLASTER_Config.Address + BLASTER_16BitDMAAck );
+		} else if ( GlobalStatus & MIXER_8BITDMA_INT ) {
+			inp( BLASTER_Config.Address + BLASTER_DataAvailablePort );
+		} else {
+			#ifdef USESTACK
+			// restore stack
+			SetStack( oldStackSelector, oldStackPointer );
+			#endif
 
-      // Check if a 16-bit DMA interrupt occurred
-      if ( GlobalStatus & MIXER_16BITDMA_INT )
-         {
-         // Acknowledge 16-bit transfer interrupt
-         inp( BLASTER_Config.Address + BLASTER_16BitDMAAck );
-         }
-      else if ( GlobalStatus & MIXER_8BITDMA_INT )
-         {
-         inp( BLASTER_Config.Address + BLASTER_DataAvailablePort );
-         }
-      else
-         {
-         #ifdef USESTACK
-         // restore stack
-         SetStack( oldStackSelector, oldStackPointer );
-         #endif
+			// Wasn't our interrupt.  Call the old one.
+			_chain_intr( BLASTER_OldInt );
+		}
+	} else {
+		// Older card - can't detect if an interrupt occurred.
+		inp( BLASTER_Config.Address + BLASTER_DataAvailablePort );
+	}
 
-         // Wasn't our interrupt.  Call the old one.
-         _chain_intr( BLASTER_OldInt );
-         }
-      }
-   else
-      {
-      // Older card - can't detect if an interrupt occurred.
-      inp( BLASTER_Config.Address + BLASTER_DataAvailablePort );
-      }
+	// Keep track of current buffer
+	BLASTER_CurrentDMABuffer += BLASTER_TransferLength;
 
-   // Keep track of current buffer
-   BLASTER_CurrentDMABuffer += BLASTER_TransferLength;
+	if ( BLASTER_CurrentDMABuffer >= BLASTER_DMABufferEnd )
+		BLASTER_CurrentDMABuffer = BLASTER_DMABuffer;
 
-   if ( BLASTER_CurrentDMABuffer >= BLASTER_DMABufferEnd )
-      {
-      BLASTER_CurrentDMABuffer = BLASTER_DMABuffer;
-      }
+	// Continue playback on cards without autoinit mode
+	if ( BLASTER_Version < DSP_Version2xx )
+	{
+		if ( BLASTER_SoundPlaying )
+			BLASTER_DSP1xx_BeginPlayback( BLASTER_TransferLength );
+	}
 
-   // Continue playback on cards without autoinit mode
-   if ( BLASTER_Version < DSP_Version2xx )
-      {
-      if ( BLASTER_SoundPlaying )
-         {
-         BLASTER_DSP1xx_BeginPlayback( BLASTER_TransferLength );
-         }
+	// Call the caller's callback function
+	if ( BLASTER_CallBack != NULL )
+		BLASTER_CallBack();
 
-      if ( BLASTER_SoundRecording )
-         {
-         BLASTER_DSP1xx_BeginRecord( BLASTER_TransferLength );
-         }
-      }
+	#ifdef USESTACK
+	// restore stack
+	SetStack( oldStackSelector, oldStackPointer );
+	#endif
 
-   // Call the caller's callback function
-   if ( BLASTER_CallBack != NULL )
-      {
-      BLASTER_CallBack();
-      }
-
-   #ifdef USESTACK
-   // restore stack
-   SetStack( oldStackSelector, oldStackPointer );
-   #endif
-
-   // send EOI to Interrupt Controller
-   outp( 0x20, 0x20 );
-   }
+	// send EOI to Interrupt Controller
+	outp( 0x20, 0x20 );
+}
 
 
 /*---------------------------------------------------------------------
@@ -743,7 +709,6 @@ void BLASTER_StopPlayback
    BLASTER_SpeakerOff();
 
    BLASTER_SoundPlaying = FALSE;
-   BLASTER_SoundRecording = FALSE;
 
    BLASTER_DMABuffer = NULL;
    }
@@ -1004,7 +969,7 @@ int BLASTER_BeginBufferedPlayback
    int DmaStatus;
    int TransferLength;
 
-   if ( BLASTER_SoundPlaying || BLASTER_SoundRecording )
+   if ( BLASTER_SoundPlaying )
       {
       BLASTER_StopPlayback();
       }
@@ -1044,38 +1009,6 @@ int BLASTER_BeginBufferedPlayback
       }
 
    return( BLASTER_Ok );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: BLASTER_DSP1xx_BeginRecord
-
-   Starts recording of digitized sound on cards compatible with DSP
-   version 1.xx.
----------------------------------------------------------------------*/
-
-static void BLASTER_DSP1xx_BeginRecord
-   (
-   int length
-   )
-
-   {
-   int SampleLength;
-   int LoByte;
-   int HiByte;
-
-   SampleLength = length - 1;
-   HiByte = HIBYTE( SampleLength );
-   LoByte = LOBYTE( SampleLength );
-
-   // Program DSP to play sound
-   BLASTER_WriteDSP( DSP_Old8BitADC );
-   BLASTER_WriteDSP( LoByte );
-   BLASTER_WriteDSP( HiByte );
-
-   BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
-
-   BLASTER_SoundRecording = TRUE;
    }
 
 
