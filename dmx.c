@@ -176,7 +176,7 @@ int32_t SFX_PlayPatch(void *data, int32_t pitch, int32_t sep, int32_t volume, in
 		uint32_t length = ((uint32_t*)data)[1];
 
 		length -= 32; // 16 pre pad bytes + 16 post pad bytes
-		return MV_PlayRaw((uint8_t*)data + 0x18, length, rate, ((pitch - 128) * 2400) / 128, volume * 2, ((254 - sep) * volume) / 63, ((sep) * volume) / 63, 127 - priority, 0);
+		return MV_PlayRaw((uint8_t*)data + 0x18, length, rate, ((pitch - 128) * 2400) / 128, volume * 2, ((254 - sep) * volume) / 63, ((sep) * volume) / 63, 127 - priority);
 	}
 	else
 		return -1;
@@ -437,8 +437,8 @@ void WAV_PlayMode(int32_t channels, uint16_t sampleRate)
 		MV_Init(ass_sdev, sampleRate, channels);
 
 		if (BLASTER_CardHasMixer())
-			BLASTER_SetVoiceVolume(255);
+			BLASTER_SetVoiceVolume();
 		else
-			MV_SetVolume(255);
+			MV_SetVolume();
 	}
 }

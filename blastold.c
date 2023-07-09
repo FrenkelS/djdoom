@@ -1126,14 +1126,13 @@ static int BLASTER_ReadMixer
 
 void BLASTER_SetVoiceVolume
    (
-   int volume
+   void
    )
 
    {
    int data;
 
-   volume = min( 255, volume );
-   volume = max( 0, volume );
+#define volume 255
 
    switch( BLASTER_MixerType )
       {
@@ -1144,7 +1143,7 @@ void BLASTER_SetVoiceVolume
          break;
 
       case SB16 :
-         BLASTER_WriteMixer( MIXER_SB16VoiceLeft, volume & 0xf8 );
+         BLASTER_WriteMixer( MIXER_SB16VoiceLeft,  volume & 0xf8 );
          BLASTER_WriteMixer( MIXER_SB16VoiceRight, volume & 0xf8 );
          break;
       }

@@ -88,7 +88,7 @@ enum BLASTER_Types
 #define STEREO_8BIT_SAMPLE_SIZE  ( 2 * MONO_8BIT_SAMPLE_SIZE )
 #define STEREO_16BIT_SAMPLE_SIZE ( 2 * MONO_16BIT_SAMPLE_SIZE )
 
-void BLASTER_SetVoiceVolume( int volume );
+void BLASTER_SetVoiceVolume( void );
 int  BLASTER_CardHasMixer( void );
 int  BLASTER_GetEnv( BLASTER_CONFIG *Config );
 void BLASTER_SetCardSettings( BLASTER_CONFIG Config );

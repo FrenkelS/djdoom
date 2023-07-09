@@ -302,6 +302,20 @@ static unsigned long PITCH_GetScale
 
 #include "multivoc.h"
 
+enum MV_Errors
+   {
+   MV_Error   = -1,
+   MV_Ok      = 0,
+   MV_UnsupportedCard,
+   MV_NotInstalled,
+   MV_NoVoices,
+   MV_NoMem,
+   MV_VoiceNotFound,
+   MV_BlasterError,
+   MV_IrqFailure,
+   MV_DMAFailure,
+   MV_DMA16Failure
+   };
 
 #define TRUE  ( 1 == 1 )
 #define FALSE ( !TRUE )
@@ -404,9 +418,6 @@ typedef struct VoiceNode
 
    short        *LeftVolume;
    short        *RightVolume;
-
-   unsigned long callbackval;
-
    } VoiceNode;
 
 typedef struct
@@ -489,7 +500,6 @@ static VoiceNode *MV_AllocVoice( int priority );
 static short     *MV_GetVolumeTable( int vol );
 
 static void       MV_SetVoicePitch( VoiceNode *voice, unsigned long rate, int pitchoffset );
-static void       MV_CalcVolume( int MaxLevel );
 static void       MV_CalcPanTable( void );
 
 #define ATR_INDEX               0x3c0
@@ -550,9 +560,7 @@ static Pan MV_PanTable[ MV_NumPanPositions ][ 63 + 1 ];
 
 static int MV_Installed   = FALSE;
 static int MV_SoundCard   = SoundBlaster;
-static int MV_TotalVolume = MV_MaxTotalVolume;
 static int MV_MaxVoices   = 1;
-static int MV_Recording;
 
 static int MV_BufferSize = MixBufferSize;
 
@@ -595,11 +603,11 @@ static volatile VoiceNode VoiceList;
 static volatile VoiceNode VoicePool;
 #endif
 
+#define MV_MinVoiceHandle  1
+
 static int MV_MixPage      = 0;
 static int MV_VoiceHandle  = MV_MinVoiceHandle;
 
-static void ( *MV_CallBackFunc )( unsigned long ) = NULL;
-static void ( *MV_RecordFunc )( char *ptr, int length ) = NULL;
 static void ( *MV_MixFunction )( VoiceNode *voice, int buffer );
 
 // *** VERSIONS RESTORATION ***
@@ -835,11 +843,6 @@ static void MV_ServiceVoc
       if ( !voice->Playing )
          {
          MV_StopVoice( voice );
-
-         if ( MV_CallBackFunc )
-            {
-            MV_CallBackFunc( voice->callbackval );
-            }
          }
       voice = next;
       }
@@ -1010,7 +1013,6 @@ void MV_Kill
    {
    VoiceNode *voice;
    unsigned  flags;
-   unsigned  long callbackval;
 
    if ( !MV_Installed )
       {
@@ -1028,16 +1030,9 @@ void MV_Kill
       return;
       }
 
-   callbackval = voice->callbackval;
-
    MV_StopVoice( voice );
 
    RestoreInterrupts( flags );
-
-   if ( MV_CallBackFunc )
-      {
-      MV_CallBackFunc( callbackval );
-      }
    }
 
 
@@ -1056,12 +1051,6 @@ static VoiceNode *MV_AllocVoice
    VoiceNode   *voice;
    VoiceNode   *node;
    unsigned    flags;
-
-//return( NULL );
-   if ( MV_Recording )
-      {
-      return( NULL );
-      }
 
    flags = DisableInterrupts();
 
@@ -1542,54 +1531,17 @@ static void MV_StopPlayback
    // Make sure all callbacks are done.
    flags = DisableInterrupts();
 
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960510L)
    voice = VoiceList.start;
    while( voice != NULL )
-#else
-   for( voice = VoiceList.LIBVER_ASS_MV_VOICESTART; voice != LIBVER_ASS_MV_VOICELISTEND; voice = next )
-#endif
       {
       next = voice->next;
 
       MV_StopVoice( voice );
 
-      if ( MV_CallBackFunc )
-         {
-         MV_CallBackFunc( voice->callbackval );
-         }
-      // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19960510L)
       voice = next;
-#endif
       }
 
    RestoreInterrupts( flags );
-   }
-
-
-/*---------------------------------------------------------------------
-   Function: MV_StopRecord
-
-   Stops the sound record engine.
----------------------------------------------------------------------*/
-
-static void MV_StopRecord
-   (
-   void
-   )
-
-   {
-   // Stop sound playback
-   switch( MV_SoundCard )
-      {
-      case SoundBlaster :
-         BLASTER_StopPlayback();
-         break;
-      }
-
-   MV_Recording = FALSE;
-   MV_StartPlayback();
    }
 
 
@@ -1609,15 +1561,13 @@ int MV_PlayRaw
    int   vol,
    int   left,
    int   right,
-   int   priority,
-   unsigned long callbackval
+   int   priority
    )
 
    {
    int status;
 
-   status = MV_PlayLoopedRaw( ptr, length, NULL, NULL, rate, pitchoffset,
-      vol, left, right, priority, callbackval );
+   status = MV_PlayLoopedRaw( ptr, length, rate, pitchoffset, vol, left, right, priority );
 
    return( status );
    }
@@ -1634,15 +1584,12 @@ static int MV_PlayLoopedRaw
    (
    char *ptr,
    long  length,
-   char *loopstart,
-   char *loopend,
    unsigned rate,
    int   pitchoffset,
    int   vol,
    int   left,
    int   right,
-   int   priority,
-   unsigned long callbackval
+   int   priority
    )
 
    {
@@ -1663,10 +1610,7 @@ static int MV_PlayLoopedRaw
       }
 
    voice->wavetype    = Raw;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    voice->bits        = 8;
-#endif
    voice->GetSound    = MV_GetNextRawBlock;
    voice->Playing     = TRUE;
    voice->NextBlock   = ptr;
@@ -1676,9 +1620,8 @@ static int MV_PlayLoopedRaw
    voice->next        = NULL;
    voice->prev        = NULL;
    voice->priority    = priority;
-   voice->callbackval = callbackval;
-   voice->LoopStart   = loopstart;
-   voice->LoopEnd     = loopend;
+   voice->LoopStart   = NULL;
+   voice->LoopEnd     = NULL;
    voice->LoopSize    = ( voice->LoopEnd - voice->LoopStart ) + 1;
 
    MV_SetVoicePitch( voice, rate, pitchoffset );
@@ -1698,13 +1641,12 @@ static int MV_PlayLoopedRaw
 
 static void MV_CalcVolume
    (
-   int MaxVolume
+   void
    )
 
    {
    int volume;
    int val;
-   int level;
    int i;
 
    for( volume = 0; volume < 128; volume++ )
@@ -1721,13 +1663,12 @@ static void MV_CalcVolume
    // appropriate volume calculated.
    for( volume = 0; volume <= MV_MaxVolume; volume++ )
       {
-      level = ( volume * MaxVolume ) / MV_MaxTotalVolume;
       if ( MV_Bits == 16 )
          {
          for( i = 0; i < 65536; i += 256 )
             {
             val   = i - 0x8000;
-            val  *= level;
+            val  *= volume;
             val  /= MV_MaxVolume;
             MV_VolumeTable[ volume ][ i / 256 ] = val;
             }
@@ -1737,7 +1678,7 @@ static void MV_CalcVolume
          for( i = 0; i < 256; i++ )
             {
             val   = i - 0x80;
-            val  *= level;
+            val  *= volume;
             val  /= MV_MaxVolume;
             MV_VolumeTable[ volume ][ i ] = val;
             }
@@ -1797,34 +1738,11 @@ static void MV_CalcPanTable
 
 void MV_SetVolume
    (
-   int volume
+   void
    )
 
    {
-   // *** VERSIONS RESTORATION ***
-   // From MV1.C
-#if (LIBVER_ASSREV < 19950821L)
-   int maxlevel;
-
-#endif
-   volume = max( 0, volume );
-   volume = min( volume, MV_MaxTotalVolume );
-
-   MV_TotalVolume = volume;
-
-   // *** VERSIONS RESTORATION ***
-   // From MV1.C, more-or-less
-	
-   // Calculate volume table
-#if (LIBVER_ASSREV < 19950821L)
-   maxlevel = ( 256 * volume ) / MV_MaxTotalVolume;
-   //printf( "maxlevel = %d\n", maxlevel );
-
-   // Calculate volume table
-   MV_CalcVolume( maxlevel );
-#else
-   MV_CalcVolume( volume );
-#endif
+   MV_CalcVolume();
    }
 
 
@@ -2025,9 +1943,6 @@ void MV_Init
 
    MV_SoundCard    = soundcard;
    MV_Installed    = TRUE;
-   MV_CallBackFunc = NULL;
-   MV_RecordFunc   = NULL;
-   MV_Recording    = FALSE;
 
    // Set the sampling rate
    MV_RequestedMixRate = MixRate;
@@ -2051,7 +1966,7 @@ void MV_Init
    // Calculate pan table
    MV_CalcPanTable();
 
-   MV_SetVolume( MV_MaxTotalVolume );
+   MV_SetVolume();
 
    // Start the playback engine
    status = MV_StartPlayback();
@@ -2104,12 +2019,6 @@ void MV_Shutdown
    MV_KillAllVoices();
 
    MV_Installed = FALSE;
-
-   // Stop the sound recording engine
-   if ( MV_Recording )
-      {
-      MV_StopRecord();
-      }
 
    // Stop the sound playback engine
    MV_StopPlayback();
