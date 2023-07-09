@@ -65,7 +65,7 @@ void MV_SetPitch(int handle, int pitchoffset);
 void MV_SetPan(int handle, int vol, int left, int right);
 int  MV_PlayRaw(char *ptr, unsigned long length, unsigned rate, int pitchoffset, int vol, int left, int right, int priority, unsigned long callbackval);
 void MV_SetVolume(int volume);
-void MV_Init(int soundcard, int MixRate, int Voices, int numchannels, int samplebits);
+void MV_Init(int soundcard, int MixRate, int Voices);
 void MV_Shutdown(void);
 
 #endif

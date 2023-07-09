@@ -434,7 +434,7 @@ void WAV_PlayMode(int32_t channels, uint16_t sampleRate)
 	if (ass_sdev == SoundBlaster)
 	{
 		FX_SetupSoundBlaster(dmx_blaster);
-		MV_Init(ass_sdev, sampleRate, channels, 2, 16);
+		MV_Init(ass_sdev, sampleRate, channels);
 
 		if (BLASTER_CardHasMixer())
 			BLASTER_SetVoiceVolume(255);

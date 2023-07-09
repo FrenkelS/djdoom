@@ -661,7 +661,7 @@ static void ( *MV_MixFunction )( VoiceNode *voice, int buffer );
 static int MV_MaxVolume = 63;
 #endif
 
-char  *MV_HarshClipTable;
+uint8_t  *MV_HarshClipTable;
 char  *MV_MixDestination;
 short *MV_LeftVolume;
 short *MV_RightVolume;
@@ -1617,35 +1617,22 @@ void MV_SetPan
    Prepares Multivoc to play stereo of mono digitized sounds.
 ---------------------------------------------------------------------*/
 
-static int MV_SetMixMode
+static void MV_SetMixMode
    (
-   int numchannels,
-   int samplebits
+   void
    )
 
    {
-   int mode;
-
    if ( !MV_Installed )
       {
       MV_SetErrorCode( MV_NotInstalled );
-      return( MV_Error );
-      }
-
-   mode = 0;
-   if ( numchannels == 2 )
-      {
-      mode |= STEREO;
-      }
-   if ( samplebits == 16 )
-      {
-      mode |= SIXTEEN_BIT;
+      return;
       }
 
    switch( MV_SoundCard )
       {
       case SoundBlaster :
-         MV_MixMode = BLASTER_SetMixMode( mode );
+         MV_MixMode = BLASTER_SetMixMode( STEREO | SIXTEEN_BIT );
          break;
       }
 
@@ -1677,14 +1664,9 @@ static int MV_SetMixMode
 
    MV_BufferSize = MixBufferSize * MV_SampleSize;
    MV_NumberOfBuffers = TotalBufferSize / MV_BufferSize;
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
    MV_BufferLength = TotalBufferSize;
 
    MV_RightChannelOffset = MV_SampleSize / 2;
-#endif
-
-   return( MV_Ok );
    }
 
 
@@ -2242,9 +2224,7 @@ void MV_Init
    (
    int soundcard,
    int MixRate,
-   int Voices,
-   int numchannels,
-   int samplebits
+   int Voices
    )
 
    {
@@ -2351,7 +2331,7 @@ void MV_Init
    MV_RequestedMixRate = MixRate;
 
    // Set Mixer to play stereo digitized sound
-   MV_SetMixMode( numchannels, samplebits );
+   MV_SetMixMode();
    // *** VERSIONS RESTORATION ***
 #if (LIBVER_ASSREV >= 19950821L)
    MV_ReverbDelay = MV_BufferSize * 3;
