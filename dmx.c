@@ -253,7 +253,7 @@ int32_t SB_Detect(int32_t *sbPort, int32_t *sbIrq, int32_t *sbDma, uint16_t *ver
 		if (!sbPort || !sbIrq || !sbDma)
 			return -1;
 
-		dmx_blaster.Type      = 1; // Sound Blaster 1.0
+		dmx_blaster.Type      = SB; // Sound Blaster 1.0
 		dmx_blaster.Address   = *sbPort;
 		dmx_blaster.Interrupt = *sbIrq;
 		dmx_blaster.Dma8      = *sbDma;
