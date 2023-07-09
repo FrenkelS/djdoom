@@ -352,8 +352,6 @@ static unsigned long PITCH_GetScale
 #define NumberOfBuffers   16
 #define TotalBufferSize   ( MixBufferSize * NumberOfBuffers )
 
-#define PI                3.1415926536
-
 typedef enum
    {
    Raw,
@@ -515,26 +513,6 @@ void ClearBuffer_DW( void *ptr, unsigned data, int length );
    "pop    es",              \
 parm [ edi ] [ eax ] [ ecx ] modify exact [ ecx edi ];
 
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-void MV_Mix8BitMonoFast( unsigned long position, unsigned long rate,
-   char *start, unsigned long length );
-
-void MV_Mix8BitStereoFast( unsigned long position, unsigned long rate,
-   char *start, unsigned long length );
-
-void MV_Mix8Bit1ChannelFast( unsigned long position, unsigned long rate,
-   char *start, unsigned long length );
-
-void MV_Mix16BitMonoFast( unsigned long position, unsigned long rate,
-   char *start, unsigned long length );
-
-void MV_Mix16BitStereoFast( unsigned long position, unsigned long rate,
-   char *start, unsigned long length );
-
-void MV_Mix16Bit1ChannelFast( unsigned long position, unsigned long rate,
-   char *start, unsigned long length );
-#else // LIBVER_ASSREV >= 19950821L
 void MV_Mix8BitMono( unsigned long position, unsigned long rate,
    char *start, unsigned long length );
 
@@ -559,33 +537,10 @@ void MV_Mix8BitStereo16( unsigned long position,
 void MV_Mix16BitStereo16( unsigned long position,
    unsigned long rate, char *start, unsigned long length );
 
-void MV_16BitReverb( char *src, char *dest, VOLUME16 *volume, int count );
-#pragma aux MV_16BitReverb parm [eax] [edx] [ebx] [ecx] modify exact [eax ebx ecx edx esi edi]
-void MV_8BitReverb( signed char *src, signed char *dest, VOLUME16 *volume, int count );
-#pragma aux MV_8BitReverb parm [eax] [edx] [ebx] [ecx] modify exact [eax ebx ecx edx esi edi]
-void MV_16BitReverbFast( char *src, char *dest, int count, int shift );
-#pragma aux MV_16BitReverbFast parm [eax] [edx] [ebx] [ecx] modify exact [eax ebx ecx edx esi edi]
-void MV_8BitReverbFast( signed char *src, signed char *dest, int count, int shift );
-#pragma aux MV_8BitReverbFast parm [eax] [edx] [ebx] [ecx] modify exact [eax ebx ecx edx esi edi]
-#endif // LIBVER_ASSREV < 19950821L
-
 
 //#include "debugio.h"
 
-#define RoundFixed( fixedval, bits )            \
-        (                                       \
-          (                                     \
-            (fixedval) + ( 1 << ( (bits) - 1 ) )\
-          ) >> (bits)                           \
-        )
-
 #define IS_QUIET( ptr )  ( ( void * )( ptr ) == ( void * )&MV_VolumeTable[ 0 ] )
-
-static int       MV_ReverbLevel;
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-static int       MV_ReverbDelay;
-#endif
 
 //static signed short MV_VolumeTable[ MV_MaxVolume + 1 ][ 256 ];
 static signed short MV_VolumeTable[ 63 + 1 ][ 256 ];
@@ -600,12 +555,6 @@ static int MV_MaxVoices   = 1;
 static int MV_Recording;
 
 static int MV_BufferSize = MixBufferSize;
-// *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV < 19950821L)
-static int MV_SampleSize = 1;
-#else
-static int MV_BufferLength;
-#endif
 
 static int MV_NumberOfBuffers = NumberOfBuffers;
 
@@ -862,57 +811,14 @@ static void MV_ServiceVoc
       MV_MixPage -= MV_NumberOfBuffers;
       }
 
-   if ( MV_ReverbLevel == 0 )
+   // Initialize buffer
+   //Commented out so that the buffer is always cleared.
+   //This is so the guys at Echo Speech can mix into the
+   //buffer even when no sounds are playing.
+   if ( !MV_BufferEmpty[ MV_MixPage ] )
       {
-      // Initialize buffer
-      //Commented out so that the buffer is always cleared.
-      //This is so the guys at Echo Speech can mix into the
-      //buffer even when no sounds are playing.
-      if ( !MV_BufferEmpty[ MV_MixPage ] )
-         {
-         ClearBuffer_DW( MV_MixBuffer[ MV_MixPage ], MV_Silence, MV_BufferSize >> 2 );
-         MV_BufferEmpty[ MV_MixPage ] = TRUE;
-         }
-      }
-   else
-      {
-      char *end;
-      char *source;
-      char *dest;
-      int   count;
-      int   length;
-
-      end = MV_MixBuffer[ 0 ] + MV_BufferLength;;
-      dest = MV_MixBuffer[ MV_MixPage ];
-      source = MV_MixBuffer[ MV_MixPage ] - MV_ReverbDelay;
-      if ( source < MV_MixBuffer[ 0 ] )
-         {
-         source += MV_BufferLength;
-         }
-
-      length = MV_BufferSize;
-      while( length > 0 )
-         {
-         count = length;
-         if ( source + count > end )
-            {
-            count = end - source;
-            }
-
-         if ( MV_Bits == 16 )
-            {
-            MV_16BitReverbFast( source, dest, count / 2, MV_ReverbLevel );
-            }
-         else
-            {
-            MV_8BitReverbFast( source, dest, count, MV_ReverbLevel );
-            }
-
-         // if we go through the loop again, it means that we've wrapped around the buffer
-         source  = MV_MixBuffer[ 0 ];
-         dest   += count;
-         length -= count;
-         }
+      ClearBuffer_DW( MV_MixBuffer[ MV_MixPage ], MV_Silence, MV_BufferSize >> 2 );
+      MV_BufferEmpty[ MV_MixPage ] = TRUE;
       }
 
    // Play any waiting voices
@@ -1554,7 +1460,6 @@ static void MV_SetMixMode
 
    MV_BufferSize = MixBufferSize * MV_SampleSize;
    MV_NumberOfBuffers = TotalBufferSize / MV_BufferSize;
-   MV_BufferLength = TotalBufferSize;
 
    MV_RightChannelOffset = MV_SampleSize / 2;
    }
@@ -2123,17 +2028,12 @@ void MV_Init
    MV_CallBackFunc = NULL;
    MV_RecordFunc   = NULL;
    MV_Recording    = FALSE;
-   MV_ReverbLevel  = 0;
 
    // Set the sampling rate
    MV_RequestedMixRate = MixRate;
 
    // Set Mixer to play stereo digitized sound
    MV_SetMixMode();
-   // *** VERSIONS RESTORATION ***
-#if (LIBVER_ASSREV >= 19950821L)
-   MV_ReverbDelay = MV_BufferSize * 3;
-#endif
 
    // Make sure we don't cross a physical page
    if ( ( ( unsigned long )ptr & 0xffff ) + TotalBufferSize > 0x10000 )
