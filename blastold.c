@@ -102,12 +102,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define BlasterEnv_16bitDma   'H'
 #define BlasterEnv_Type       'T'
 
-#define CalcTimeConstant( rate, samplesize ) \
-   ( ( 65536L - ( 256000000L / ( ( samplesize ) * ( rate ) ) ) ) >> 8 )
-
-#define CalcSamplingRate( tc ) \
-   ( 256000000L / ( 65536L - ( tc << 8 ) ) )
-
 #define USESTACK
 
 #define BLASTER_MaxMixMode        STEREO_16BIT
@@ -443,6 +437,12 @@ static int BLASTER_GetDSPVersion(void)
    Sets the rate at which the digitized sound will be played in
    hertz.
 ---------------------------------------------------------------------*/
+
+#define CalcTimeConstant( rate, samplesize ) \
+   ( ( 65536L - ( 256000000L / ( ( samplesize ) * ( rate ) ) ) ) >> 8 )
+
+#define CalcSamplingRate( tc ) \
+   ( 256000000L / ( 65536L - ( tc << 8 ) ) )
 
 static void BLASTER_SetPlaybackRate(unsigned rate)
 {
@@ -838,24 +838,7 @@ void BLASTER_SetVoiceVolume(void)
 
 int BLASTER_CardHasMixer(void)
 {
-	BLASTER_CONFIG Blaster;
-
-	if ( BLASTER_MixerAddress == UNDEFINED )
-	{
-		int status = BLASTER_GetEnv( &Blaster );
-		if ( status == BLASTER_Ok )
-		{
-			BLASTER_MixerAddress = Blaster.Address;
-			BLASTER_MixerType = 0;
-			if ( ( Blaster.Type < BLASTER_MinCardType ) || ( Blaster.Type > BLASTER_MaxCardType ) )
-				BLASTER_MixerType = Blaster.Type;
-		}
-	}
-
-	if ( BLASTER_MixerAddress != UNDEFINED )
-		return BLASTER_CardConfig[ BLASTER_MixerType ].HasMixer;
-	else
-		return FALSE;
+	return BLASTER_CardConfig[BLASTER_MixerType].HasMixer;
 }
 
 
@@ -1093,11 +1076,11 @@ static void deallocateTimerStack(unsigned short selector)
 
 void BLASTER_SetupWaveBlaster(void)
 {
-	if ( BLASTER_CardHasMixer() )
+	if (BLASTER_MixerType == SB16)
 	{
 		// Disable MPU401 interrupts.  If they are not disabled,
 		// the SB16 will not produce sound or music.
-		BLASTER_WriteMixer( MIXER_DSP4xxISR_Enable, MIXER_DisableMPU401Interrupts );
+		BLASTER_WriteMixer(MIXER_DSP4xxISR_Enable, MIXER_DisableMPU401Interrupts);
 	}
 }
 
