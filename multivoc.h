@@ -34,13 +34,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <stdint.h>
 
-int  MV_VoicePlaying(int handle);
-void MV_Kill(int handle);
-void MV_SetPitch(int handle, int pitchoffset);
-void MV_SetPan(int handle, int vol, int left, int right);
-int  MV_PlayRaw(uint8_t *ptr, unsigned long length, unsigned rate, int pitchoffset, int vol, int left, int right, int priority);
-void MV_SetVolume(void);
-void MV_Init(int soundcard, int MixRate, int Voices);
-void MV_Shutdown(void);
+int32_t MV_VoicePlaying(int32_t handle);
+void    MV_Kill(int32_t handle);
+void    MV_SetPitch(int32_t handle, int32_t pitchoffset);
+void    MV_SetPan(int32_t handle, int32_t vol, int32_t left, int32_t right);
+int32_t MV_PlayRaw(uint8_t *ptr, uint32_t length, uint32_t rate, int32_t pitchoffset, int32_t vol, int32_t left, int32_t right, int32_t priority);
+void    MV_SetVolume(void);
+void    MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices);
+void    MV_Shutdown(void);
 
 #endif

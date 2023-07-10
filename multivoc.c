@@ -32,9 +32,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <stdlib.h>
 #include <dos.h>
+#include <stdint.h>
 #include <time.h>
 
-static int  DPMI_GetDOSMemory( void **ptr, int *descriptor, unsigned length );
+static int32_t DPMI_GetDOSMemory(void **ptr, int32_t *descriptor, uint32_t length);
 #pragma aux DPMI_GetDOSMemory = \
    "mov    eax, 0100h",         \
    "add    ebx, 15",            \
@@ -51,7 +52,7 @@ static int  DPMI_GetDOSMemory( void **ptr, int *descriptor, unsigned length );
 
 
 //TODO return void instead of int
-static int  DPMI_FreeDOSMemory( int descriptor );
+static int32_t  DPMI_FreeDOSMemory(int32_t descriptor);
 #pragma aux DPMI_FreeDOSMemory = \
    "mov    eax, 0101h",          \
    "int    31h",                 \
@@ -66,9 +67,9 @@ static int  DPMI_FreeDOSMemory( int descriptor );
 
 //#include "ll_man.h"
 #define OFFSET(structure, offset) \
-   (*((char **)&(structure)[offset]))
+   (*((uint8_t **)&(structure)[offset]))
 
-static void LL_AddNode(char *item, char **head, char **tail, int next, int prev)
+static void LL_AddNode(uint8_t *item, uint8_t **head, uint8_t **tail, int32_t next, int32_t prev)
 {
 	OFFSET(item, prev) = NULL;
 	OFFSET(item, next) = *head;
@@ -82,14 +83,14 @@ static void LL_AddNode(char *item, char **head, char **tail, int next, int prev)
 }
 
 #define LL_AddToTail( type, listhead, node )         \
-    LL_AddNode( ( char * )( node ),                  \
-                ( char ** )&( ( listhead )->end ),   \
-                ( char ** )&( ( listhead )->start ), \
-                ( int )&( ( type * ) 0 )->prev,      \
-                ( int )&( ( type * ) 0 )->next )
+    LL_AddNode( ( uint8_t * )( node ),                  \
+                ( uint8_t ** )&( ( listhead )->end ),   \
+                ( uint8_t ** )&( ( listhead )->start ), \
+                ( int32_t )&( ( type * ) 0 )->prev,      \
+                ( int32_t )&( ( type * ) 0 )->next )
 
 
-static void LL_RemoveNode(char *item, char **head, char **tail, int next, int prev)
+static void LL_RemoveNode(uint8_t *item, uint8_t **head, uint8_t **tail, int32_t next, int32_t prev)
 {
 	if (OFFSET(item, prev) == NULL )
 		*head = OFFSET(item, next);
@@ -106,14 +107,15 @@ static void LL_RemoveNode(char *item, char **head, char **tail, int next, int pr
 }
 
 #define LL_Remove( type, listhead, node )               \
-    LL_RemoveNode( ( char * )( node ),                  \
-                   ( char ** )&( ( listhead )->start ), \
-                   ( char ** )&( ( listhead )->end ),   \
-                   ( int )&( ( type * ) 0 )->next,      \
-                   ( int )&( ( type * ) 0 )->prev )
+    LL_RemoveNode( ( uint8_t * )( node ),                  \
+                   ( uint8_t ** )&( ( listhead )->start ), \
+                   ( uint8_t ** )&( ( listhead )->end ),   \
+                   ( int32_t )&( ( type * ) 0 )->next,      \
+                   ( int32_t )&( ( type * ) 0 )->prev )
 
 #define LL_Empty(a,b,c) ((a)->start == NULL)
-#define LL_Reset( list, next, prev ) (list)->start = NULL; (list)->end = NULL // Based on macro from LINKLIST.H
+#define LL_Reset( list, next, prev ) (list)->start = NULL; (list)->end = NULL
+
 #include "sndcards.h"
 #include "blaster.h"
 
@@ -122,7 +124,7 @@ static void LL_RemoveNode(char *item, char **head, char **tail, int next, int pr
 
 #define MAXDETUNE 25
 
-static unsigned long PitchTable[ 12 ][ MAXDETUNE ] =
+static uint32_t PitchTable[ 12 ][ MAXDETUNE ] =
    {
       { 0x10000, 0x10097, 0x1012f, 0x101c7, 0x10260, 0x102f9, 0x10392, 0x1042c,
       0x104c6, 0x10561, 0x105fb, 0x10696, 0x10732, 0x107ce, 0x1086a, 0x10907,
@@ -181,13 +183,13 @@ static unsigned long PitchTable[ 12 ][ MAXDETUNE ] =
    Returns a fixed-point value to scale number the specified amount.
 ---------------------------------------------------------------------*/
 
-static unsigned long PITCH_GetScale(int pitchoffset)
+static uint32_t PITCH_GetScale(int32_t pitchoffset)
 {
-	unsigned long scale;
-	int octaveshift;
-	int noteshift;
-	int note;
-	int detune;
+	uint32_t scale;
+	 int32_t octaveshift;
+	 int32_t noteshift;
+	 int32_t note;
+	 int32_t detune;
 
 	if (pitchoffset == 0)
 		return PitchTable[0][0];
@@ -196,8 +198,8 @@ static unsigned long PITCH_GetScale(int pitchoffset)
 	if (noteshift < 0)
 		noteshift += 1200;
 
-	note   = noteshift / 100;
-	detune = (noteshift % 100) / (100 / MAXDETUNE);
+	note        = noteshift / 100;
+	detune      = (noteshift % 100) / (100 / MAXDETUNE);
 	octaveshift = (pitchoffset - noteshift) / 1200;
 
 	if (detune < 0)
@@ -225,19 +227,17 @@ static unsigned long PITCH_GetScale(int pitchoffset)
 #include "multivoc.h"
 
 enum MV_Errors
-   {
-   MV_Error   = -1,
-   MV_Ok      = 0,
-   MV_UnsupportedCard,
-   MV_NotInstalled,
-   MV_NoVoices,
-   MV_NoMem,
-   MV_VoiceNotFound,
-   MV_BlasterError,
-   MV_IrqFailure,
-   MV_DMAFailure,
-   MV_DMA16Failure
-   };
+{
+	MV_Error   = -1,
+	MV_Ok      = 0,
+	MV_UnsupportedCard,
+	MV_NotInstalled,
+	MV_NoVoices,
+	MV_NoMem,
+	MV_VoiceNotFound,
+	MV_BlasterError,
+	MV_DMAFailure
+};
 
 #define TRUE  ( 1 == 1 )
 #define FALSE ( !TRUE )
@@ -251,7 +251,6 @@ enum MV_Errors
 
 #define MV_MaxPanPosition  31
 #define MV_NumPanPositions ( MV_MaxPanPosition + 1 )
-#define MV_MaxTotalVolume  255
 #define MV_MaxVolume       63
 #define MV_NumVoices       8
 
@@ -264,51 +263,51 @@ enum MV_Errors
 #define TotalBufferSize   ( MixBufferSize * NumberOfBuffers )
 
 typedef enum
-   {
-   NoMoreData,
-   KeepPlaying
-   } playbackstatus;
+{
+	NoMoreData,
+	KeepPlaying
+} playbackstatus;
 
 
 typedef struct VoiceNode
-   {
-   struct VoiceNode *next;
-   struct VoiceNode *prev;
+{
+	struct VoiceNode *next;
+	struct VoiceNode *prev;
 
-   void ( *mix )( unsigned long position, unsigned long rate, uint8_t *start, unsigned long length );
+	void ( *mix )( uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
 
-   uint8_t      *NextBlock;
-   unsigned long BlockLength;
+	uint8_t *NextBlock;
+	uint32_t BlockLength;
 
-   unsigned long FixedPointBufferSize;
+	uint32_t FixedPointBufferSize;
 
-   uint8_t      *sound;
-   unsigned long length;
-   unsigned long SamplingRate;
-   unsigned long RateScale;
-   unsigned long position;
-   int           Playing;
+	uint8_t *sound;
+	uint32_t length;
+	uint32_t SamplingRate;
+	uint32_t RateScale;
+	uint32_t position;
+	int32_t  Playing;
 
-   int           handle;
-   int           priority;
+	int32_t  handle;
+	int32_t  priority;
 
-   short        *LeftVolume;
-   short        *RightVolume;
-   } VoiceNode;
+	int16_t *LeftVolume;
+	int16_t *RightVolume;
+} VoiceNode;
 
 static playbackstatus MV_GetNextRawBlock(VoiceNode *voice);
 
 typedef struct
-   {
-   VoiceNode *start;
-   VoiceNode *end;
-   } VList;
+{
+	VoiceNode *start;
+	VoiceNode *end;
+} VList;
 
 typedef struct
-   {
-   char left;
-   char right;
-   } Pan;
+{
+	char left;
+	char right;
+} Pan;
 
 typedef signed short MONO16;
 typedef signed char  MONO8;
@@ -330,10 +329,10 @@ void ClearBuffer_DW( void *ptr, unsigned data, int length );
    "pop    es",              \
 parm [ edi ] [ eax ] [ ecx ] modify exact [ ecx edi ];
 
-void MV_Mix8BitMono(   unsigned long position, unsigned long rate, uint8_t *start, unsigned long length );
-void MV_Mix8BitStereo( unsigned long position, unsigned long rate, uint8_t *start, unsigned long length );
-void MV_Mix16BitMono(  unsigned long position, unsigned long rate, uint8_t *start, unsigned long length );
-void MV_Mix16BitStereo(unsigned long position, unsigned long rate, uint8_t *start, unsigned long length );
+void MV_Mix8BitMono(   uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
+void MV_Mix8BitStereo( uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
+void MV_Mix16BitMono(  uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
+void MV_Mix16BitStereo(uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
 
 
 #define IS_QUIET( ptr )  ( ( void * )( ptr ) == ( void * )&MV_VolumeTable[ 0 ] )
@@ -1068,7 +1067,7 @@ static void MV_StopPlayback(void)
    priority.
 ---------------------------------------------------------------------*/
 
-int MV_PlayRaw(uint8_t *ptr, unsigned long length, unsigned rate, int pitchoffset, int vol, int left, int right, int priority)
+int32_t MV_PlayRaw(uint8_t *ptr, uint32_t length, uint32_t rate, int32_t pitchoffset, int32_t vol, int32_t left, int32_t right, int32_t priority)
 {
    VoiceNode *voice;
 
