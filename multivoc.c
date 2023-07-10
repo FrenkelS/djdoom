@@ -120,11 +120,9 @@ static void LL_RemoveNode(uint8_t *item, uint8_t **head, uint8_t **tail, int32_t
 #include "blaster.h"
 
 //#include "pitch.h"
-#define PITCH_Ok 0
-
 #define MAXDETUNE 25
 
-static uint32_t PitchTable[ 12 ][ MAXDETUNE ] =
+static const uint32_t PitchTable[ 12 ][ MAXDETUNE ] =
    {
       { 0x10000, 0x10097, 0x1012f, 0x101c7, 0x10260, 0x102f9, 0x10392, 0x1042c,
       0x104c6, 0x10561, 0x105fb, 0x10696, 0x10732, 0x107ce, 0x1086a, 0x10907,
@@ -249,11 +247,6 @@ enum MV_Errors
 #define T_RIGHTQUIET  16
 #define T_DEFAULT     T_SIXTEENBIT_STEREO
 
-#define MV_MaxPanPosition  31
-#define MV_NumPanPositions ( MV_MaxPanPosition + 1 )
-#define MV_MaxVolume       63
-#define MV_NumVoices       8
-
 #define SILENCE_16BIT     0
 #define SILENCE_8BIT      0x80808080
 
@@ -303,17 +296,13 @@ typedef struct
 	VoiceNode *end;
 } VList;
 
-typedef struct
-{
-	char left;
-	char right;
-} Pan;
-
 typedef signed short MONO16;
 typedef signed char  MONO8;
 
 typedef MONO8  VOLUME8[ 256 ];
 typedef MONO16 VOLUME16[ 256 ];
+
+#define MV_NumVoices       8
 
 typedef char HARSH_CLIP_TABLE_8[ MV_NumVoices * 256 ];
 
@@ -337,11 +326,10 @@ void MV_Mix16BitStereo(uint32_t position, uint32_t rate, uint8_t *start, uint32_
 
 #define IS_QUIET( ptr )  ( ( void * )( ptr ) == ( void * )&MV_VolumeTable[ 0 ] )
 
+#define MV_MaxVolume       63
+
 //static signed short MV_VolumeTable[ MV_MaxVolume + 1 ][ 256 ];
 static signed short MV_VolumeTable[ 63 + 1 ][ 256 ];
-
-//static Pan MV_PanTable[ MV_NumPanPositions ][ MV_MaxVolume + 1 ];
-static Pan MV_PanTable[ MV_NumPanPositions ][ 63 + 1 ];
 
 static int MV_Installed   = FALSE;
 static int MV_SoundCard   = SoundBlaster;
@@ -1103,44 +1091,6 @@ int32_t MV_PlayRaw(uint8_t *ptr, uint32_t length, uint32_t rate, int32_t pitchof
 
 
 /*---------------------------------------------------------------------
-   Function: MV_CalcPanTable
-
-   Create the table used to determine the stereo volume level of
-   a sound located at a specific angle and distance from the listener.
----------------------------------------------------------------------*/
-
-static void MV_CalcPanTable(void)
-{
-	int   level;
-	int   angle;
-	int   distance;
-	int   HalfAngle;
-	int   ramp;
-
-	HalfAngle = MV_NumPanPositions / 2;
-
-	for (distance = 0; distance <= MV_MaxVolume; distance++)
-	{
-		level = (255 * (MV_MaxVolume - distance)) / MV_MaxVolume;
-		for (angle = 0; angle <= HalfAngle / 2; angle++)
-		{
-			ramp = level - ((level * angle) / (MV_NumPanPositions / 4));
-
-			MV_PanTable[                    angle][distance].left = ramp;
-			MV_PanTable[HalfAngle         - angle][distance].left = ramp;
-			MV_PanTable[HalfAngle         + angle][distance].left = level;
-			MV_PanTable[MV_MaxPanPosition - angle][distance].left = level;
-
-			MV_PanTable[                    angle][distance].right = level;
-			MV_PanTable[HalfAngle         - angle][distance].right = level;
-			MV_PanTable[HalfAngle         + angle][distance].right = ramp;
-			MV_PanTable[MV_MaxPanPosition - angle][distance].right = ramp;
-		}
-	}
-}
-
-
-/*---------------------------------------------------------------------
    Function: MV_SetVolume
 
    Sets the volume of digitized sound playback.
@@ -1332,9 +1282,6 @@ void MV_Init(int soundcard, int MixRate, int Voices)
 		MV_MixBuffer[buffer] = ptr;
 		ptr += MV_BufferSize;
 	}
-
-	// Calculate pan table
-	MV_CalcPanTable();
 
 	MV_SetVolume();
 
