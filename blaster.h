@@ -35,41 +35,37 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdint.h>
 
 typedef struct
-   {
-   unsigned Address;
-   unsigned Type;
-   unsigned Interrupt;
-   unsigned Dma8;
-   unsigned Dma16;
-   } BLASTER_CONFIG;
+{
+	uint32_t Address;
+	uint32_t Type;
+	uint32_t Interrupt;
+	uint32_t Dma8;
+	uint32_t Dma16;
+} BLASTER_CONFIG;
 
 extern BLASTER_CONFIG BLASTER_Config;
-extern int BLASTER_DMAChannel;
+extern int32_t BLASTER_DMAChannel;
 
 enum BLASTER_ERRORS
-   {
-   BLASTER_Error = -1,
-   BLASTER_Ok = 0,
-   BLASTER_EnvNotFound,
-   BLASTER_AddrNotSet,
-   BLASTER_IntNotSet,
-   BLASTER_DMANotSet,
-   BLASTER_DMA16NotSet,
-   BLASTER_MIDINotSet,
-   BLASTER_CardTypeNotSet,
-   BLASTER_InvalidParameter,
-   BLASTER_UnsupportedCardType,
-   BLASTER_CardNotReady
-   };
+{
+	BLASTER_Error = -1,
+	BLASTER_Ok = 0,
+	BLASTER_AddrNotSet,
+	BLASTER_IntNotSet,
+	BLASTER_DMANotSet,
+	BLASTER_CardTypeNotSet,
+	BLASTER_UnsupportedCardType,
+	BLASTER_CardNotReady
+};
 
 enum BLASTER_Types
-   {
-   SB     = 1,
-   SBPro  = 2,
-   SB20   = 3,
-   SBPro2 = 4,
-   SB16   = 6
-   };
+{
+	SB     = 1,
+	SBPro  = 2,
+	SB20   = 3,
+	SBPro2 = 4,
+	SB16   = 6
+};
 
 #define BLASTER_MinCardType    SB
 #define BLASTER_MaxCardType    SB16
@@ -81,21 +77,16 @@ enum BLASTER_Types
 #define STEREO_8BIT  ( STEREO )
 #define STEREO_16BIT ( STEREO | SIXTEEN_BIT )
 
-#define MONO_8BIT_SAMPLE_SIZE    1
-#define MONO_16BIT_SAMPLE_SIZE   2
-#define STEREO_8BIT_SAMPLE_SIZE  ( 2 * MONO_8BIT_SAMPLE_SIZE )
-#define STEREO_16BIT_SAMPLE_SIZE ( 2 * MONO_16BIT_SAMPLE_SIZE )
-
-unsigned BLASTER_GetPlaybackRate(void);
-int  BLASTER_SetMixMode(int mode);
-void BLASTER_StopPlayback(void);
-int  BLASTER_BeginBufferedPlayback(uint8_t *BufferStart, int BufferSize, int NumDivisions, unsigned SampleRate, int MixMode, void (*CallBackFunc)(void));
-void BLASTER_SetVoiceVolume(void);
-int  BLASTER_CardHasMixer(void);
-int  BLASTER_GetEnv(BLASTER_CONFIG *Config);
-void BLASTER_SetCardSettings(BLASTER_CONFIG Config);
-void BLASTER_SetupWaveBlaster(void);
-int  BLASTER_Init(void);
-void BLASTER_Shutdown(void);
+uint32_t BLASTER_GetPlaybackRate(void);
+int32_t  BLASTER_SetMixMode(int32_t mode);
+void     BLASTER_StopPlayback(void);
+int32_t  BLASTER_BeginBufferedPlayback(uint8_t *BufferStart, int32_t BufferSize, int32_t NumDivisions, uint32_t SampleRate, int32_t MixMode, void (*CallBackFunc)(void));
+void     BLASTER_SetVoiceVolume(void);
+int32_t  BLASTER_CardHasMixer(void);
+int32_t  BLASTER_GetEnv(BLASTER_CONFIG *Config);
+void     BLASTER_SetCardSettings(BLASTER_CONFIG Config);
+void     BLASTER_SetupWaveBlaster(void);
+int32_t  BLASTER_Init(void);
+void     BLASTER_Shutdown(void);
 
 #endif

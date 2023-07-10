@@ -106,6 +106,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define BLASTER_MaxMixMode        STEREO_16BIT
 
+#define MONO_8BIT_SAMPLE_SIZE    1
+#define MONO_16BIT_SAMPLE_SIZE   2
+#define STEREO_8BIT_SAMPLE_SIZE  ( 2 * MONO_8BIT_SAMPLE_SIZE )
+#define STEREO_16BIT_SAMPLE_SIZE ( 2 * MONO_16BIT_SAMPLE_SIZE )
+
 static const int BLASTER_SampleSize[ BLASTER_MaxMixMode + 1 ] =
    {
    MONO_8BIT_SAMPLE_SIZE,  STEREO_8BIT_SAMPLE_SIZE,
