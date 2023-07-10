@@ -563,7 +563,7 @@ static playbackstatus MV_GetNextRawBlock(VoiceNode *voice)
 	} else {
 		voice->sound        = voice->NextBlock;
 		voice->position    -= voice->length;
-		voice->length       = min(voice->BlockLength, 0x8000);
+		voice->length       = voice->BlockLength > 0x8000 ? 0x8000 : voice->BlockLength;
 		voice->NextBlock   += voice->length;
 		voice->BlockLength -= voice->length;
 		voice->length     <<= 16;
@@ -784,8 +784,11 @@ static int16_t *MV_GetVolumeTable(int32_t vol)
 {
 	int16_t *table;
 
-	vol = min(vol, 255);
-	vol = max(0, vol);
+	if (vol > 255)
+		vol = 255;
+	else if (vol < 0)
+		vol = 0;
+
 	vol = vol >> 2;
 
 	table = &MV_VolumeTable[vol];
