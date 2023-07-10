@@ -23,7 +23,7 @@ and it took inspiration from
 There is some assembly in the code that requires [NASM](https://www.nasm.us).
 To build Doom using only C code, use the macro `C_ONLY`.
 
-Sound effects are supported through the PC speaker.
+Sound effects are supported through the PC speaker and Sound Blaster.
 And music is supported via Adlib, Sound Blaster, Pro Audio Spectrum, General MIDI, Wave Blaster and Sound Canvas.
 There's no support for joystick and Logitech Cyberman.
 
