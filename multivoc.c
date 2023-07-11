@@ -64,58 +64,7 @@ static int32_t  DPMI_FreeDOSMemory(int32_t descriptor);
 
 #include "interrup.h"
 #include "dma.h"
-
-//#include "ll_man.h"
-#define OFFSET(structure, offset) \
-   (*((uint8_t **)&(structure)[offset]))
-
-static void LL_AddNode(uint8_t *item, uint8_t **head, uint8_t **tail, int32_t next, int32_t prev)
-{
-	OFFSET(item, prev) = NULL;
-	OFFSET(item, next) = *head;
-
-	if (*head)
-		OFFSET(*head, prev) = item;
-	else    
-		*tail = item;
-
-	*head = item;
-}
-
-#define LL_AddToTail( type, listhead, node )         \
-    LL_AddNode( ( uint8_t * )( node ),                  \
-                ( uint8_t ** )&( ( listhead )->end ),   \
-                ( uint8_t ** )&( ( listhead )->start ), \
-                ( int32_t )&( ( type * ) 0 )->prev,      \
-                ( int32_t )&( ( type * ) 0 )->next )
-
-
-static void LL_RemoveNode(uint8_t *item, uint8_t **head, uint8_t **tail, int32_t next, int32_t prev)
-{
-	if (OFFSET(item, prev) == NULL )
-		*head = OFFSET(item, next);
-	else
-		OFFSET(OFFSET(item, prev), next) = OFFSET(item, next);
-
-	if (OFFSET(item, next) == NULL)
-		*tail = OFFSET(item, prev);
-	else
-		OFFSET(OFFSET(item, next), prev) = OFFSET(item, prev);
-
-	OFFSET(item, next) = NULL;
-	OFFSET(item, prev) = NULL;
-}
-
-#define LL_Remove( type, listhead, node )               \
-    LL_RemoveNode( ( uint8_t * )( node ),                  \
-                   ( uint8_t ** )&( ( listhead )->start ), \
-                   ( uint8_t ** )&( ( listhead )->end ),   \
-                   ( int32_t )&( ( type * ) 0 )->next,      \
-                   ( int32_t )&( ( type * ) 0 )->prev )
-
-#define LL_Empty(a,b,c) ((a)->start == NULL)
-#define LL_Reset( list, next, prev ) (list)->start = NULL; (list)->end = NULL
-
+#include "ll_man.h"
 #include "sndcards.h"
 #include "blaster.h"
 
@@ -691,7 +640,7 @@ static VoiceNode *MV_AllocVoice(int32_t priority)
 	uint32_t flags = DisableInterrupts();
 
 	// Check if we have any free voices
-	if (LL_Empty(&VoicePool, next, prev))
+	if (LL_Empty(&VoicePool))
 	{
 		// check if we have a higher priority than a voice that is playing.
 		voice = node = VoiceList.start;
@@ -708,7 +657,7 @@ static VoiceNode *MV_AllocVoice(int32_t priority)
 	}
 
 	// Check if any voices are in the voice pool
-	if (LL_Empty(&VoicePool, next, prev))
+	if (LL_Empty(&VoicePool))
 	{
 		// No free voices
 		RestoreInterrupts(flags);
@@ -1203,8 +1152,8 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 	// Set number of voices before calculating volume table
 	MV_MaxVoices = Voices;
 
-	LL_Reset(&VoiceList, next, prev);
-	LL_Reset(&VoicePool, next, prev);
+	LL_Reset(&VoiceList);
+	LL_Reset(&VoicePool);
 
 	for (index = 0; index < Voices; index++)
 		LL_AddToTail(VoiceNode, &VoicePool, &MV_Voices[index]);
@@ -1341,8 +1290,8 @@ void MV_Shutdown(void)
 	MV_Voices      = NULL;
 	MV_TotalMemory = 0;
 
-	LL_Reset(&VoiceList, next, prev);
-	LL_Reset(&VoicePool, next, prev);
+	LL_Reset(&VoiceList);
+	LL_Reset(&VoicePool);
 
 	MV_MaxVoices = 1;
 
