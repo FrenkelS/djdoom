@@ -1104,10 +1104,13 @@ static int32_t MV_TestPlayback(void)
 	start  = MV_MixPage;
 	time   = clock() + CLOCKS_PER_SEC * 2;
 
-	while (clock() < time && status != MV_Ok)
+	while (clock() < time)
 	{
 		if (MV_MixPage != start)
+		{
 			status = MV_Ok;
+			break;
+		}
 	}
 
 	RestoreInterrupts(flags);

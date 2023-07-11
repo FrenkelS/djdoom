@@ -37,6 +37,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "dma.h"
 #include "doomdef.h"
 
+#define USESTACK
+
 #define VALID   ( 1 == 1 )
 #define INVALID ( !VALID )
 
@@ -95,14 +97,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DSP_SignedMonoData        ( DSP_SignedBit )
 #define DSP_UnsignedStereoData    ( DSP_StereoBit )
 #define DSP_SignedStereoData      ( DSP_SignedBit | DSP_StereoBit )
-
-#define BlasterEnv_Address    'A'
-#define BlasterEnv_Interrupt  'I'
-#define BlasterEnv_8bitDma    'D'
-#define BlasterEnv_16bitDma   'H'
-#define BlasterEnv_Type       'T'
-
-#define USESTACK
 
 #define BLASTER_MaxMixMode        STEREO_16BIT
 
@@ -901,6 +895,12 @@ static void BLASTER_RestoreVoiceVolume(void)
    Retrieves the BLASTER environment settings and returns them to
    the caller.
 ---------------------------------------------------------------------*/
+
+#define BlasterEnv_Address    'A'
+#define BlasterEnv_Interrupt  'I'
+#define BlasterEnv_8bitDma    'D'
+#define BlasterEnv_16bitDma   'H'
+#define BlasterEnv_Type       'T'
 
 int32_t BLASTER_GetEnv(BLASTER_CONFIG *Config)
 {

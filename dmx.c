@@ -27,16 +27,7 @@
 #include "pcfx.h"
 #include "sndcards.h"
 
-typedef struct
-{
-	uint32_t Address;
-	uint32_t Type;
-	uint32_t Interrupt;
-	uint32_t Dma8;
-	uint32_t Dma16;
-} fx_blaster_config;
-
-static fx_blaster_config dmx_blaster;
+static BLASTER_CONFIG dmx_blaster;
 
 static void		*mus_data = NULL;
 static uint8_t	*mid_data = NULL;
@@ -214,35 +205,15 @@ int32_t GF1_Detect(void) {return -1;}
 void GF1_SetMap(uint8_t *dmxlump, int32_t size) {UNUSED(dmxlump); UNUSED(size);}
 
 
-/*---------------------------------------------------------------------
-   Function: FX_GetBlasterSettings
-
-   Returns the current BLASTER environment variable settings.
----------------------------------------------------------------------*/
-
-static boolean FX_GetBlasterSettings(fx_blaster_config *blaster)
-{
-	int32_t status;
-	BLASTER_CONFIG Blaster;
-
-	status = BLASTER_GetEnv(&Blaster);
-	if (status != BLASTER_Ok)
-		return true;
-
-	blaster->Type      = Blaster.Type;
-	blaster->Address   = Blaster.Address;
-	blaster->Interrupt = Blaster.Interrupt;
-	blaster->Dma8      = Blaster.Dma8;
-	blaster->Dma16     = Blaster.Dma16;
-
-	return false;
-}
-
 int32_t SB_Detect(int32_t *sbPort, int32_t *sbIrq, int32_t *sbDma, uint16_t *version)
 {
+	int32_t status;
+
 	UNUSED(version);
 
-	if (FX_GetBlasterSettings(&dmx_blaster)) {
+	status = BLASTER_GetEnv(&dmx_blaster);
+	if (status != BLASTER_Ok)
+	{
 		// BLASTER environment variable not set
 		// use the values set through the setup program
 
@@ -338,27 +309,6 @@ void MPU_SetCard(int32_t mPort)
 }
 
 
-/*---------------------------------------------------------------------
-   Function: FX_SetupSoundBlaster
-
-   Handles manual setup of the Sound Blaster information.
----------------------------------------------------------------------*/
-
-static void FX_SetupSoundBlaster(fx_blaster_config blaster)
-{
-	BLASTER_CONFIG Blaster;
-
-	Blaster.Type      = blaster.Type;
-	Blaster.Address   = blaster.Address;
-	Blaster.Interrupt = blaster.Interrupt;
-	Blaster.Dma8      = blaster.Dma8;
-	Blaster.Dma16     = blaster.Dma16;
-
-	BLASTER_SetCardSettings(Blaster);
-
-	BLASTER_Init();
-}
-
 int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32_t sfxDevice)
 {
 	UNUSED(maxsongs);
@@ -380,7 +330,10 @@ int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32
 	if (ass_sdev == PC)
 		PCFX_Init(ticrate);
 	else if (ass_sdev == SoundBlaster)
-		FX_SetupSoundBlaster(dmx_blaster);
+	{
+		BLASTER_SetCardSettings(dmx_blaster);
+		BLASTER_Init();
+	}
 
 
 	// Music
@@ -427,7 +380,6 @@ void WAV_PlayMode(int32_t channels, uint16_t sampleRate)
 {
 	if (ass_sdev == SoundBlaster)
 	{
-		FX_SetupSoundBlaster(dmx_blaster);
 		MV_Init(ass_sdev, sampleRate, channels);
 
 		if (BLASTER_CardHasMixer())
