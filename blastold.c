@@ -1025,16 +1025,13 @@ static uint16_t allocateTimerStack(uint16_t size)
 {
 	union REGS regs;
 
-	// clear all registers
-	memset( &regs, 0, sizeof( regs ) );
-
 	// DPMI allocate conventional memory
-	regs.w.ax = 0x100;
+	regs.w.ax = 0x0100;
 
 	// size in paragraphs
-	regs.w.bx = ( size + 15 ) / 16;
+	regs.w.bx = (size + 15) / 16;
 
-	int386( 0x31, &regs, &regs );
+	int386(0x31, &regs, &regs);
 	if (!regs.w.cflag)
 	{
 		// DPMI call returns selector in dx
@@ -1062,10 +1059,7 @@ static void deallocateTimerStack(uint16_t selector)
 	{
 		union REGS regs;
 
-		// clear all registers
-		memset(&regs, 0, sizeof(regs));
-
-		regs.w.ax = 0x101;
+		regs.w.ax = 0x0101;
 		regs.w.dx = selector;
 		int386(0x31, &regs, &regs);
 	}
