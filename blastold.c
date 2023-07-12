@@ -806,11 +806,11 @@ static int32_t BLASTER_ReadMixer(int32_t reg)
    Blaster's mixer chip.
 ---------------------------------------------------------------------*/
 
+#define volume 255
+
 void BLASTER_SetVoiceVolume(void)
 {
 	int32_t data;
-
-#define volume 255
 
 	switch (BLASTER_MixerType)
 	{

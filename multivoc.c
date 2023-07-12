@@ -191,16 +191,6 @@ enum MV_Errors
 	MV_DMAFailure
 };
 
-#define T_SIXTEENBIT_STEREO 0
-#define T_8BITS       1
-#define T_MONO        2
-#define T_LEFTQUIET   8
-#define T_RIGHTQUIET  16
-#define T_DEFAULT     T_SIXTEENBIT_STEREO
-
-#define SILENCE_16BIT     0
-#define SILENCE_8BIT      0x80808080
-
 #define MixBufferSize     256
 
 #define NumberOfBuffers   16
@@ -252,6 +242,9 @@ typedef struct
 typedef uint8_t HARSH_CLIP_TABLE_8[ MV_NumVoices * 256 ];
 
 
+#include <string.h>
+#define ClearBuffer_DW(ptr,data,length) memset(ptr,data,(length<<2))
+/* TODO enable assembly version of ClearBuffer_DW
 static void ClearBuffer_DW(void *ptr, uint32_t data, int32_t length);
 #pragma aux ClearBuffer_DW = \
    "cld",                    \
@@ -261,6 +254,7 @@ static void ClearBuffer_DW(void *ptr, uint32_t data, int32_t length);
    "rep    stosd",           \
    "pop    es",              \
 parm [ edi ] [ eax ] [ ecx ] modify exact [ ecx edi ];
+*/
 
 void MV_Mix8BitMono(   uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
 void MV_Mix8BitStereo( uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
@@ -286,6 +280,9 @@ static int32_t MV_NumberOfBuffers = NumberOfBuffers;
 static int32_t MV_MixMode    = MONO_8BIT;
 static int32_t MV_Channels   = 1;
 static int32_t MV_Bits       = 8;
+
+#define SILENCE_16BIT     0
+#define SILENCE_8BIT      0x80808080
 
 static int32_t MV_Silence    = SILENCE_8BIT;
 static int32_t MV_SwapLeftRight = FALSE;
@@ -753,6 +750,13 @@ static int16_t *MV_GetVolumeTable(int32_t vol)
 
    Selects which method should be used to mix the voice.
 ---------------------------------------------------------------------*/
+
+#define T_SIXTEENBIT_STEREO 0
+#define T_8BITS       1
+#define T_MONO        2
+#define T_LEFTQUIET   8
+#define T_RIGHTQUIET  16
+#define T_DEFAULT     T_SIXTEENBIT_STEREO
 
 static void MV_SetVoiceMixMode(VoiceNode *voice)
 {
