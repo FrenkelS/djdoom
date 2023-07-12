@@ -36,6 +36,7 @@ GLOBOBJS = &
  multivoc.obj &
  mus2mid.obj &
  music.obj &
+ mv_mix.obj &
  pcfx.obj &
  tsmapi.obj &
  task_man.obj &

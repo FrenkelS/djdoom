@@ -2,6 +2,7 @@ if "%DJDIR%" == "" goto error
 
 mkdir DJDM19
 
+nasm mv_mix.asm -f coff
 nasm planar.asm -f coff
 
 set CFLAGS=-Ofast -march=i386 -flto -fwhole-program -fomit-frame-pointer -funroll-loops -fgcse-sm -fgcse-las -fipa-pta -mpreferred-stack-boundary=2 -Wno-attributes -Wpedantic
@@ -12,6 +13,7 @@ gcc -DAPPVER_EXEDEF=DM19 %GLOBOBJS% %CFLAGS% -o DJDM19/djdoom.exe
 strip -s DJDM19/djdoom.exe
 stubedit DJDM19/djdoom.exe dpmi=CWSDPR0.EXE
 
+del mv_mix.o
 del planar.o
 
 goto end
