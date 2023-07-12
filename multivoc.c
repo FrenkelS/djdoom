@@ -48,8 +48,12 @@ static int32_t DPMI_GetDOSMemory(void **ptr, uint16_t *selector, uint32_t length
 	int386(0x31, &regs, &regs);
 	if (!regs.w.cflag)
 	{
-		*ptr     = (void     *)((regs.x.eax & 0xFFFF) << 4);
-		selector = (uint16_t *) (regs.x.edx & 0xFFFF);
+		uint32_t eax = regs.w.ax;
+		uint32_t edx = regs.w.dx;
+
+		*ptr     = (void     *)(eax << 4);
+		selector = (uint16_t *)(edx);
+
 		return FALSE;
 	} else {
 		return TRUE;
@@ -739,7 +743,7 @@ static int16_t *MV_GetVolumeTable(int32_t vol)
 
 	vol = vol >> 2;
 
-	table = &MV_VolumeTable[vol];
+	table = (int16_t *) &MV_VolumeTable[vol];
 
 	return table;
 }
