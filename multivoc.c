@@ -35,31 +35,36 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdint.h>
 #include <time.h>
 
-static int32_t DPMI_GetDOSMemory(void **ptr, int32_t *descriptor, uint32_t length);
-#pragma aux DPMI_GetDOSMemory = \
-   "mov    eax, 0100h",         \
-   "add    ebx, 15",            \
-   "shr    ebx, 4",             \
-   "int    31h",                \
-   "jc     DPMI_Exit",          \
-   "movzx  eax, ax",            \
-   "shl    eax, 4",             \
-   "mov    [ esi ], eax",       \
-   "mov    [ edi ], edx",       \
-   "sub    eax, eax",           \
-   "DPMI_Exit:",                \
-   parm [ esi ] [ edi ] [ ebx ] modify exact [ eax ebx edx ];
+#define TRUE  ( 1 == 1 )
+#define FALSE ( !TRUE )
+
+static int32_t DPMI_GetDOSMemory(void **ptr, uint16_t *selector, uint32_t length)
+{
+	union REGS regs;
+
+	regs.w.ax = 0x0100;
+	regs.w.bx = (length + 15) / 16;
+
+	int386(0x31, &regs, &regs);
+	if (!regs.w.cflag)
+	{
+		*ptr     = (void     *)((regs.x.eax & 0xFFFF) << 4);
+		selector = (uint16_t *) (regs.x.edx & 0xFFFF);
+		return FALSE;
+	} else {
+		return TRUE;
+	}
+}
 
 
-//TODO return void instead of int
-static int32_t  DPMI_FreeDOSMemory(int32_t descriptor);
-#pragma aux DPMI_FreeDOSMemory = \
-   "mov    eax, 0101h",          \
-   "int    31h",                 \
-   "jc     DPMI_Exit",           \
-   "sub    eax, eax",            \
-   "DPMI_Exit:",                 \
-   parm [ edx ] modify exact [ eax ];
+static void DPMI_FreeDOSMemory(uint16_t selector)
+{
+	union REGS regs;
+
+	regs.w.ax = 0x0101;
+	regs.w.dx = selector;
+	int386(0x31, &regs, &regs);
+}
 
 
 #include "interrup.h"
@@ -186,9 +191,6 @@ enum MV_Errors
 	MV_DMAFailure
 };
 
-#define TRUE  ( 1 == 1 )
-#define FALSE ( !TRUE )
-
 #define T_SIXTEENBIT_STEREO 0
 #define T_8BITS       1
 #define T_MONO        2
@@ -296,7 +298,7 @@ static int32_t MV_BuffShift;
 
 static int32_t MV_TotalMemory;
 
-static int32_t  MV_BufferDescriptor;
+static uint16_t MV_BufferDescriptor;
 static int32_t  MV_BufferEmpty[NumberOfBuffers];
 static uint8_t *MV_MixBuffer[NumberOfBuffers + 1];
 
