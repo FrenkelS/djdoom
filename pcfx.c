@@ -173,7 +173,7 @@ typedef struct {
 static pcspkmuse_t pcspkmuse;
 
 typedef struct {
-	uint16_t	id;
+	uint16_t	type; // 0 = PC Speaker
 	uint16_t	length;
 	uint8_t		data[];
 } dmxpcs_t;
