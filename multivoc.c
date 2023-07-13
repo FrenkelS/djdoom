@@ -34,26 +34,42 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <dos.h>
 #include <stdint.h>
 #include <time.h>
+#include "doomdef.h"
 
 #define TRUE  ( 1 == 1 )
 #define FALSE ( !TRUE )
+
 
 static int32_t DPMI_GetDOSMemory(void **ptr, uint16_t *selector, uint32_t length)
 {
 	union REGS regs;
 
+#if defined __DJGPP__ || defined __CCDL__ || defined __WATCOMC__
 	regs.w.ax = 0x0100;
 	regs.w.bx = (length + 15) / 16;
+#elif defined __DMC__
+	regs.x.ax = 0x0100;
+	regs.x.bx = (length + 15) / 16;
+#endif
 
 	int386(0x31, &regs, &regs);
+
+#if defined __DJGPP__ || defined __CCDL__ || defined __WATCOMC__
 	if (!regs.w.cflag)
+#elif defined __DMC__
+	if (!regs.x.cflag)
+#endif
 	{
+#if defined __DJGPP__ || defined __CCDL__ || defined __WATCOMC__
 		uint32_t eax = regs.w.ax;
-		uint32_t edx = regs.w.dx;
+		uint16_t  dx = regs.w.dx;
+#elif defined __DMC__
+		uint32_t eax = regs.x.ax;
+		uint16_t  dx = regs.x.dx;
+#endif
 
-		*ptr     = (void     *)(eax << 4);
-		selector = (uint16_t *)(edx);
-
+		*ptr      = (void *)(eax << 4);
+		*selector = dx;
 		return FALSE;
 	} else {
 		return TRUE;
@@ -64,9 +80,13 @@ static int32_t DPMI_GetDOSMemory(void **ptr, uint16_t *selector, uint32_t length
 static void DPMI_FreeDOSMemory(uint16_t selector)
 {
 	union REGS regs;
-
+#if defined __DJGPP__ || defined __CCDL__ || defined __WATCOMC__
 	regs.w.ax = 0x0101;
 	regs.w.dx = selector;
+#elif __DMC__
+	regs.x.ax = 0x0101;
+	regs.x.dx = selector;
+#endif
 	int386(0x31, &regs, &regs);
 }
 
@@ -315,13 +335,13 @@ static int32_t MV_VoiceHandle  = MV_MinVoiceHandle;
 
 static void ( *MV_MixFunction )( VoiceNode *voice, int32_t buffer );
 
-uint8_t *MV_HarshClipTable;
-uint8_t *MV_MixDestination;
-uint32_t MV_MixPosition;
-int16_t *MV_LeftVolume;
-int16_t *MV_RightVolume;
-int32_t  MV_SampleSize = 1;
-int32_t  MV_RightChannelOffset;
+uint8_t *MV_HarshClipTable		__attribute__ ((externally_visible));
+uint8_t *MV_MixDestination		__attribute__ ((externally_visible));
+uint32_t MV_MixPosition			__attribute__ ((externally_visible));
+int16_t *MV_LeftVolume			__attribute__ ((externally_visible));
+int16_t *MV_RightVolume			__attribute__ ((externally_visible));
+int32_t  MV_SampleSize			__attribute__ ((externally_visible)) = 1;
+int32_t  MV_RightChannelOffset	__attribute__ ((externally_visible));
 
 
 static int32_t MV_ErrorCode = MV_Ok;
@@ -1173,7 +1193,6 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 
 	// Allocate mix buffer within 1st megabyte
 	status = DPMI_GetDOSMemory((void **)&ptr, &MV_BufferDescriptor, 2 * TotalBufferSize);
-
 	if (status)
 	{
 		if (MV_Voices)

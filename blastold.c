@@ -37,8 +37,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "dma.h"
 #include "doomdef.h"
 
-#define USESTACK
-
 #define VALID   ( 1 == 1 )
 #define INVALID ( !VALID )
 
@@ -131,7 +129,16 @@ static const CARD_CAPABILITY BLASTER_CardConfig[ BLASTER_MaxCardType + 1 ] =
 	{  TRUE,     YES, STEREO_16BIT,    5000,   44100 }, // SB16
 };
 
-static void    ( __interrupt __far *BLASTER_OldInt )( void );
+
+#if defined __DJGPP__
+static _go32_dpmi_seginfo BLASTER_OldInt, BLASTER_NewInt;
+#elif defined __CCDL__
+static uint16_t BLASTER_OldIntSelector;
+static uint32_t BLASTER_OldIntOffset;
+#elif defined __WATCOMC__
+static void (_interrupt _far *BLASTER_OldInt)(void);
+#endif
+
 
 #define UNDEFINED -1
 
@@ -169,37 +176,6 @@ static int32_t BLASTER_MixerAddress = UNDEFINED;
 static int32_t BLASTER_MixerType    = 0;
 static int32_t BLASTER_OriginalVoiceVolumeLeft  = 255;
 static int32_t BLASTER_OriginalVoiceVolumeRight = 255;
-
-
-#ifdef USESTACK
-
-static uint16_t StackSelector = 0;
-static uint32_t StackPointer;
-
-static uint16_t oldStackSelector;
-static uint32_t oldStackPointer;
-
-// This function will get the current stack selector and pointer and save
-// them off.
-static void GetStack(uint16_t *selptr, uint32_t *stackptr);
-#pragma aux GetStack =  \
-   "mov  [edi],esp"     \
-   "mov  ax,ss"         \
-   "mov  [esi],ax"      \
-   parm [esi] [edi]     \
-   modify [eax esi edi];
-
-// This function will set the stack selector and pointer to the specified
-// values.
-static void SetStack(uint16_t selector, uint32_t stackptr);
-#pragma aux SetStack =  \
-   "mov  ss,ax"         \
-   "mov  esp,edx"       \
-   parm [ax] [edx]      \
-   modify [eax edx];
-
-#endif
-
 
 int32_t BLASTER_DMAChannel;
 
@@ -247,16 +223,14 @@ static void BLASTER_DisableInterrupt(void)
 // function that switches stacks.
 static int32_t GlobalStatus;
 
-static void __interrupt __far BLASTER_ServiceInterrupt(void)
+#if defined __DJGPP__
+static void BLASTER_ServiceInterrupt(void)
+#elif defined __CCDL__ || defined __WATCOMC__
+static void _interrupt _far BLASTER_ServiceInterrupt(void)
+#elif defined __DMC__
+static int BLASTER_ServiceInterrupt(struct INT_DATA *pd)
+#endif
 {
-	#ifdef USESTACK
-	// save stack
-	GetStack( &oldStackSelector, &oldStackPointer );
-
-	// set our stack
-	SetStack( StackSelector, StackPointer );
-	#endif
-
 	// Acknowledge interrupt
 	// Check if this is this an SB16 or newer
 	if ( BLASTER_Version >= DSP_Version4xx )
@@ -273,13 +247,24 @@ static void __interrupt __far BLASTER_ServiceInterrupt(void)
 		} else if ( GlobalStatus & MIXER_8BITDMA_INT ) {
 			inp( BLASTER_Config.Address + BLASTER_DataAvailablePort );
 		} else {
-			#ifdef USESTACK
-			// restore stack
-			SetStack( oldStackSelector, oldStackPointer );
-			#endif
-
 			// Wasn't our interrupt.  Call the old one.
-			_chain_intr( BLASTER_OldInt );
+#if defined __DJGPP__
+			asm
+			(
+				"cli \n"
+				"pushfl \n"
+				"lcall *%0"
+				:
+				: "m" (BLASTER_OldInt.pm_offset)
+			);
+#elif defined __WATCOMC__
+			_chain_intr(BLASTER_OldInt);
+#elif defined __CCDL__
+			//TODO call BLASTER_OldInt() instead of acknowledging the interrupt
+			outp(0x20, 0x20);
+#elif defined __DMC__
+			return 0;
+#endif
 		}
 	} else {
 		// Older card - can't detect if an interrupt occurred.
@@ -303,13 +288,12 @@ static void __interrupt __far BLASTER_ServiceInterrupt(void)
 	if ( BLASTER_CallBack != NULL )
 		BLASTER_CallBack();
 
-	#ifdef USESTACK
-	// restore stack
-	SetStack( oldStackSelector, oldStackPointer );
-	#endif
-
 	// send EOI to Interrupt Controller
 	outp( 0x20, 0x20 );
+
+#if defined __DMC__
+	return 1;
+#endif
 }
 
 
@@ -1012,61 +996,6 @@ void BLASTER_SetCardSettings(BLASTER_CONFIG Config)
 }
 
 
-#ifdef USESTACK
-/*---------------------------------------------------------------------
-   Function: allocateTimerStack
-
-   Allocate a block of memory from conventional (low) memory and return
-   the selector (which can go directly into a segment register) of the
-   memory block or 0 if an error occured.
----------------------------------------------------------------------*/
-
-static uint16_t allocateTimerStack(uint16_t size)
-{
-	union REGS regs;
-
-	// DPMI allocate conventional memory
-	regs.w.ax = 0x0100;
-
-	// size in paragraphs
-	regs.w.bx = (size + 15) / 16;
-
-	int386(0x31, &regs, &regs);
-	if (!regs.w.cflag)
-	{
-		// DPMI call returns selector in dx
-		// (ax contains real mode segment
-		// which is ignored here)
-
-		return regs.w.dx;
-	} else {
-		// Couldn't allocate memory.
-		return 0;
-	}
-}
-
-
-/*---------------------------------------------------------------------
-   Function: deallocateTimerStack
-
-   Deallocate a block of conventional (low) memory given a selector to
-   it.  Assumes the block was allocated with DPMI function 0x100.
----------------------------------------------------------------------*/
-
-static void deallocateTimerStack(uint16_t selector)
-{
-	if (selector != 0)
-	{
-		union REGS regs;
-
-		regs.w.ax = 0x0101;
-		regs.w.dx = selector;
-		int386(0x31, &regs, &regs);
-	}
-}
-#endif
-
-
 /*---------------------------------------------------------------------
    Function: BLASTER_SetupWaveBlaster
 
@@ -1091,9 +1020,6 @@ void BLASTER_SetupWaveBlaster(void)
    Initializes the sound card and prepares the module to play
    digitized sounds.
 ---------------------------------------------------------------------*/
-
-// adequate stack size
-#define kStackSize 2048
 
 int32_t BLASTER_Init(void)
 {
@@ -1140,17 +1066,27 @@ int32_t BLASTER_Init(void)
 		if (!(BLASTER_Config.Interrupt == 2 || BLASTER_Config.Interrupt == 5 || BLASTER_Config.Interrupt == 7))
 			return BLASTER_Error;
 
-#ifdef USESTACK
-		StackSelector = allocateTimerStack( kStackSize );
-		if ( StackSelector == 0 )
-			return BLASTER_Error;
+#if defined __DJGPP__
+		_go32_dpmi_get_protected_mode_interrupt_vector(BLASTER_Config.Interrupt + 8, &BLASTER_OldInt);
 
-		// Leave a little room at top of stack just for the hell of it...
-		StackPointer = kStackSize - sizeof( long );
+		BLASTER_NewInt.pm_selector = _go32_my_cs(); 
+		BLASTER_NewInt.pm_offset = (int32_t)BLASTER_ServiceInterrupt;
+		_go32_dpmi_allocate_iret_wrapper(&BLASTER_NewInt);
+		_go32_dpmi_set_protected_mode_interrupt_vector(BLASTER_Config.Interrupt + 8, &BLASTER_NewInt);
+#elif defined __DMC__
+		int_intercept(BLASTER_Config.Interrupt + 8, BLASTER_ServiceInterrupt, 0);
+#elif defined __CCDL__
+		{
+			struct SREGS	segregs;
+
+			_segread(&segregs);
+			dpmi_get_protected_interrupt(&BLASTER_OldIntSelector, &BLASTER_OldIntOffset, BLASTER_Config.Interrupt + 8);
+			dpmi_set_protected_interrupt(BLASTER_Config.Interrupt + 8, segregs.cs, (uint32_t)BLASTER_ServiceInterrupt);
+		}
+#elif defined __WATCOMC__
+		BLASTER_OldInt = _dos_getvect(BLASTER_Config.Interrupt + 8);
+		_dos_setvect(BLASTER_Config.Interrupt + 8, BLASTER_ServiceInterrupt);
 #endif
-
-		BLASTER_OldInt = _dos_getvect( BLASTER_Config.Interrupt + 8 );
-		_dos_setvect( BLASTER_Config.Interrupt + 8, BLASTER_ServiceInterrupt );
 
 		BLASTER_Installed = TRUE;
 		status = BLASTER_Ok;
@@ -1178,18 +1114,22 @@ void BLASTER_Shutdown(void)
 	BLASTER_ResetDSP();
 
 	// Restore the original interrupt
-	_dos_setvect( BLASTER_Config.Interrupt + 8, BLASTER_OldInt );
+#if defined __DJGPP__
+	_go32_dpmi_set_protected_mode_interrupt_vector(BLASTER_Config.Interrupt + 8, &BLASTER_OldInt);
+	_go32_dpmi_free_iret_wrapper(&BLASTER_NewInt);
+#elif defined __DMC__
+	int_restore(BLASTER_Config.Interrupt + 8);
+#elif defined __CCDL__
+	dpmi_set_protected_interrupt(BLASTER_Config.Interrupt + 8, BLASTER_OldIntSelector, BLASTER_OldIntOffset);
+#elif defined __WATCOMC__
+	_dos_setvect(BLASTER_Config.Interrupt + 8, BLASTER_OldInt);
+#endif
 
 	BLASTER_SoundPlaying = FALSE;
 
 	BLASTER_DMABuffer = NULL;
 
 	BLASTER_CallBack = NULL;
-
-#ifdef USESTACK
-	deallocateTimerStack( StackSelector );
-	StackSelector = 0;
-#endif
 
 	BLASTER_Installed = FALSE;
 }
