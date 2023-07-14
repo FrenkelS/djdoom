@@ -1190,10 +1190,9 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 	status = DPMI_GetDOSMemory((void **)&ptr, &MV_BufferDescriptor, 2 * TotalBufferSize);
 	if (status)
 	{
-		if (MV_Voices)
-			free(MV_Voices);
+		free(MV_Voices);
+		MV_Voices = NULL;
 
-		MV_Voices      = NULL;
 		MV_TotalMemory = 0;
 
 		MV_SetErrorCode(MV_NoMem);
@@ -1223,10 +1222,9 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 	{
 		status = MV_ErrorCode;
 
-		if (MV_Voices)
-			free(MV_Voices);
+		free(MV_Voices);
+		MV_Voices = NULL;
 
-		MV_Voices      = NULL;
 		MV_TotalMemory = 0;
 
 		DPMI_FreeDOSMemory(MV_BufferDescriptor);
@@ -1314,7 +1312,8 @@ void MV_Shutdown(void)
 	if (MV_Voices)
 		free(MV_Voices);
 
-	MV_Voices      = NULL;
+	MV_Voices = NULL;
+
 	MV_TotalMemory = 0;
 
 	LL_Reset(&VoiceList);
