@@ -105,7 +105,7 @@ typedef uint8_t HARSH_CLIP_TABLE_8[ MV_NumVoices * 256 ];
 
 
 #include <string.h>
-#define ClearBuffer_DW(ptr,data,length) memset(ptr,data,(length<<2))
+#define ClearBuffer_DW(ptr,data,length) memset(ptr,data,(length)<<2)
 /* TODO enable assembly version of ClearBuffer_DW
 static void ClearBuffer_DW(void *ptr, uint32_t data, int32_t length);
 #pragma aux ClearBuffer_DW = \
