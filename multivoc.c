@@ -58,11 +58,6 @@ enum MV_Errors
 	MV_DMAFailure
 };
 
-#define MixBufferSize     256
-
-#define NumberOfBuffers   16
-#define TotalBufferSize   ( MixBufferSize * NumberOfBuffers )
-
 typedef enum
 {
 	NoMoreData,
@@ -140,8 +135,13 @@ static int32_t MV_Installed   = FALSE;
 static int32_t MV_SoundCard   = SoundBlaster;
 static int32_t MV_MaxVoices   = 1;
 
-static int32_t MV_BufferSize = MixBufferSize;
 
+#define MixBufferSize     256
+
+#define NumberOfBuffers   16
+#define TotalBufferSize   (MixBufferSize * NumberOfBuffers)
+
+static int32_t MV_BufferSize      = MixBufferSize;
 static int32_t MV_NumberOfBuffers = NumberOfBuffers;
 
 static int32_t MV_MixMode    = MONO_8BIT;
