@@ -176,8 +176,6 @@ static volatile VList VoicePool = { NULL, NULL };
 static int32_t MV_MixPage      = 0;
 static int32_t MV_VoiceHandle  = MV_MinVoiceHandle;
 
-static void ( *MV_MixFunction )( VoiceNode *voice, int32_t buffer );
-
 uint8_t *MV_HarshClipTable		__attribute__ ((externally_visible));
 uint8_t *MV_MixDestination		__attribute__ ((externally_visible));
 uint32_t MV_MixPosition			__attribute__ ((externally_visible));
@@ -349,7 +347,7 @@ static void MV_ServiceVoc(void)
 	{
 		MV_BufferEmpty[MV_MixPage] = FALSE;
 
-		MV_MixFunction(voice, MV_MixPage);
+		MV_Mix(voice, MV_MixPage);
 
 		next = voice->next;
 
@@ -906,8 +904,6 @@ static int32_t MV_StartPlayback(void)
 
 	// Set the mix buffer variables
 	MV_MixPage = 1;
-
-	MV_MixFunction = MV_Mix;
 
 	// Start playback
 	switch (MV_SoundCard)
