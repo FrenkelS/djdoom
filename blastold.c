@@ -70,8 +70,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DSP_Version201            0x0201
 #define DSP_Version4xx            0x0400
 
-#define DSP_MaxNormalRate         22000
-
 #define DSP_8BitAutoInitMode          0x1c
 #define DSP_8BitHighSpeedAutoInitMode 0x90
 #define DSP_SetBlockLength            0x48
@@ -87,27 +85,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DSP_SpeakerOff                0xd3
 #define DSP_GetVersion                0xE1
 #define DSP_Reset                     0xFFFF
-
-#define DSP_SignedBit                 0x10
-#define DSP_StereoBit                 0x20
-
-#define DSP_UnsignedMonoData      0x00
-#define DSP_SignedMonoData        ( DSP_SignedBit )
-#define DSP_UnsignedStereoData    ( DSP_StereoBit )
-#define DSP_SignedStereoData      ( DSP_SignedBit | DSP_StereoBit )
-
-#define BLASTER_MaxMixMode        STEREO_16BIT
-
-#define MONO_8BIT_SAMPLE_SIZE    1
-#define MONO_16BIT_SAMPLE_SIZE   2
-#define STEREO_8BIT_SAMPLE_SIZE  ( 2 * MONO_8BIT_SAMPLE_SIZE )
-#define STEREO_16BIT_SAMPLE_SIZE ( 2 * MONO_16BIT_SAMPLE_SIZE )
-
-static const int32_t BLASTER_SampleSize[ BLASTER_MaxMixMode + 1 ] =
-{
-	MONO_8BIT_SAMPLE_SIZE,  STEREO_8BIT_SAMPLE_SIZE,
-	MONO_16BIT_SAMPLE_SIZE, STEREO_16BIT_SAMPLE_SIZE
-};
 
 typedef struct
 {
@@ -157,6 +134,11 @@ static int32_t  BLASTER_TotalDMABufferSize;
 
 #define BLASTER_DefaultSampleRate 11000
 #define BLASTER_DefaultMixMode    MONO_8BIT
+
+#define MONO_8BIT_SAMPLE_SIZE    1
+#define MONO_16BIT_SAMPLE_SIZE   2
+#define STEREO_8BIT_SAMPLE_SIZE  ( 2 * MONO_8BIT_SAMPLE_SIZE )
+#define STEREO_16BIT_SAMPLE_SIZE ( 2 * MONO_16BIT_SAMPLE_SIZE )
 
 static  int32_t BLASTER_TransferLength   = 0;
 static  int32_t BLASTER_MixMode          = BLASTER_DefaultMixMode;
@@ -506,6 +488,14 @@ uint32_t BLASTER_GetPlaybackRate(void)
    Sets the sound card to play samples in mono or stereo.
 ---------------------------------------------------------------------*/
 
+#define BLASTER_MaxMixMode        STEREO_16BIT
+
+static const int32_t BLASTER_SampleSize[ BLASTER_MaxMixMode + 1 ] =
+{
+	MONO_8BIT_SAMPLE_SIZE,  STEREO_8BIT_SAMPLE_SIZE,
+	MONO_16BIT_SAMPLE_SIZE, STEREO_16BIT_SAMPLE_SIZE
+};
+
 int32_t BLASTER_SetMixMode(int32_t mode)
 {
 	int32_t CardType = BLASTER_Config.Type;
@@ -642,6 +632,8 @@ static void BLASTER_DSP1xx_BeginPlayback(int32_t length)
    version 2.xx.
 ---------------------------------------------------------------------*/
 
+#define DSP_MaxNormalRate         22000
+
 static void BLASTER_DSP2xx_BeginPlayback(int32_t length)
 {
 	int32_t SampleLength = length - 1;
@@ -671,6 +663,14 @@ static void BLASTER_DSP2xx_BeginPlayback(int32_t length)
    Starts playback of digitized sound on cards compatible with DSP
    version 4.xx, such as the Sound Blaster 16.
 ---------------------------------------------------------------------*/
+
+#define DSP_SignedBit                 0x10
+#define DSP_StereoBit                 0x20
+
+#define DSP_UnsignedMonoData      0x00
+#define DSP_SignedMonoData        ( DSP_SignedBit )
+#define DSP_UnsignedStereoData    ( DSP_StereoBit )
+#define DSP_SignedStereoData      ( DSP_SignedBit | DSP_StereoBit )
 
 static void BLASTER_DSP4xx_BeginPlayback(int32_t length)
 {
