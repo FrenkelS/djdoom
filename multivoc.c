@@ -910,7 +910,6 @@ static int32_t MV_StartPlayback(void)
 	{
 		case SoundBlaster:
 			status = BLASTER_BeginBufferedPlayback(MV_MixBuffer[0], TotalBufferSize, MV_NumberOfBuffers, MV_RequestedMixRate, MV_MixMode, MV_ServiceVoc);
-
 			if (status != BLASTER_Ok)
 			{
 				MV_SetErrorCode(MV_BlasterError);
@@ -972,7 +971,7 @@ static void MV_StopPlayback(void)
 
 int32_t MV_PlayRaw(uint8_t *ptr, uint32_t length, uint32_t rate, int32_t pitchoffset, int32_t vol, int32_t left, int32_t right, int32_t priority)
 {
-   VoiceNode *voice;
+	VoiceNode *voice;
 
 	if (!MV_Installed)
 	{
