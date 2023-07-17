@@ -244,6 +244,7 @@ static int BLASTER_ServiceInterrupt(struct INT_DATA *pd)
 #elif defined __CCDL__
 			//TODO call BLASTER_OldInt() instead of acknowledging the interrupt
 			outp(0x20, 0x20);
+			return;
 #elif defined __DMC__
 			return 0;
 #endif
