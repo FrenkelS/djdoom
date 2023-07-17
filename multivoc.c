@@ -103,21 +103,6 @@ typedef struct
 
 typedef uint8_t HARSH_CLIP_TABLE_8[ MV_NumVoices * 256 ];
 
-
-#include <string.h>
-#define ClearBuffer_DW(ptr,data,length) memset(ptr,data,(length)<<2)
-/* TODO enable assembly version of ClearBuffer_DW
-static void ClearBuffer_DW(void *ptr, uint32_t data, int32_t length);
-#pragma aux ClearBuffer_DW = \
-   "cld",                    \
-   "push   es",              \
-   "push   ds",              \
-   "pop    es",              \
-   "rep    stosd",           \
-   "pop    es",              \
-parm [ edi ] [ eax ] [ ecx ] modify exact [ ecx edi ];
-*/
-
 void MV_Mix8BitMono(   uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
 void MV_Mix8BitStereo( uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
 void MV_Mix16BitMono(  uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
@@ -302,6 +287,15 @@ static void MV_StopVoice(VoiceNode *voice)
 	LL_AddToTail(VoiceNode, &VoicePool, voice);
 
 	RestoreInterrupts(flags);
+}
+
+
+static void ClearBuffer_DW(void *ptr, uint32_t data, int32_t length)
+{
+	uint32_t i;
+
+	for (i = 0; i < length; i++)
+		((uint32_t *)ptr)[i] = data;
 }
 
 
