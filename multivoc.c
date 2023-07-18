@@ -658,30 +658,6 @@ static void MV_SetVoicePitch(VoiceNode *voice, uint32_t rate, int32_t pitchoffse
 
 
 /*---------------------------------------------------------------------
-   Function: MV_SetPitch
-
-   Sets the pitch for the voice associated with the specified handle.
----------------------------------------------------------------------*/
-
-void MV_SetPitch(int32_t handle, int32_t pitchoffset)
-{
-	VoiceNode *voice;
-
-	if (!MV_Installed)
-	{
-		MV_SetErrorCode(MV_NotInstalled);
-		return;
-	}
-
-	voice = MV_GetVoice(handle);
-	if (voice == NULL)
-		MV_SetErrorCode(MV_VoiceNotFound);
-	else
-		MV_SetVoicePitch(voice, voice->SamplingRate, pitchoffset);
-}
-
-
-/*---------------------------------------------------------------------
    Function: MV_GetVolumeTable
 
    Returns a pointer to the volume table associated with the specified
@@ -813,13 +789,13 @@ static void MV_SetVoiceVolume(VoiceNode *voice, int32_t vol, int32_t left, int32
 
 
 /*---------------------------------------------------------------------
-   Function: MV_SetPan
+   Function: MV_SetOrigin
 
-   Sets the stereo and mono volume level of the voice associated
-   with the specified handle.
+   Sets the stereo and mono volume level of the voice associated with the specified handle.
+   Sets the pitch for the voice associated with the specified handle.
 ---------------------------------------------------------------------*/
 
-void MV_SetPan(int32_t handle, int32_t vol, int32_t left, int32_t right)
+void MV_SetOrigin(int32_t handle, int32_t pitchoffset, int32_t vol, int32_t left, int32_t right)
 {
 	VoiceNode *voice;
 
@@ -832,8 +808,10 @@ void MV_SetPan(int32_t handle, int32_t vol, int32_t left, int32_t right)
 	voice = MV_GetVoice(handle);
 	if (voice == NULL)
 		MV_SetErrorCode(MV_VoiceNotFound);
-	else 
+	else {
+		MV_SetVoicePitch(voice, voice->SamplingRate, pitchoffset);
 		MV_SetVoiceVolume(voice, vol, left, right);
+	}
 }
 
 

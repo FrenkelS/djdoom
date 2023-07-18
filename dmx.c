@@ -192,10 +192,7 @@ int32_t SFX_Playing(int32_t handle)
 void SFX_SetOrigin(int32_t handle, int32_t pitch, int32_t sep, int32_t volume)
 {
 	if (ass_sdev == SoundBlaster)
-	{
-		MV_SetPan(handle, volume * 2, ((254 - sep) * volume) / 63, ((sep) * volume) / 63);
-		MV_SetPitch(handle, ((pitch - 128) * 2400) / 128);
-	}
+		MV_SetOrigin(handle, ((pitch - 128) * 2400) / 128, volume * 2, ((254 - sep) * volume) / 63, ((sep) * volume) / 63);
 }
 
 
