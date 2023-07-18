@@ -379,12 +379,5 @@ void DMX_DeInit(void)
 void WAV_PlayMode(int32_t channels, uint16_t sampleRate)
 {
 	if (ass_sdev == SoundBlaster)
-	{
 		MV_Init(ass_sdev, sampleRate, channels);
-
-		if (BLASTER_CardHasMixer())
-			BLASTER_SetVoiceVolume();
-		else
-			MV_SetVolume();
-	}
 }

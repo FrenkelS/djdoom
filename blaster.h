@@ -81,8 +81,6 @@ uint32_t BLASTER_GetPlaybackRate(void);
 int32_t  BLASTER_SetMixMode(int32_t mode);
 void     BLASTER_StopPlayback(void);
 int32_t  BLASTER_BeginBufferedPlayback(uint8_t *BufferStart, int32_t BufferSize, int32_t NumDivisions, uint32_t SampleRate, int32_t MixMode, void (*CallBackFunc)(void));
-void     BLASTER_SetVoiceVolume(void);
-int32_t  BLASTER_CardHasMixer(void);
 int32_t  BLASTER_GetEnv(BLASTER_CONFIG *Config);
 void     BLASTER_SetCardSettings(BLASTER_CONFIG Config);
 void     BLASTER_SetupWaveBlaster(void);

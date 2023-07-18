@@ -1007,7 +1007,7 @@ int32_t MV_PlayRaw(uint8_t *ptr, uint32_t length, uint32_t rate, int32_t pitchof
    level.
 ---------------------------------------------------------------------*/
 
-void MV_SetVolume(void)
+static void MV_SetVolume(void)
 {
 	int32_t volume;
 	int32_t val;

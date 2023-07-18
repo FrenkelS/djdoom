@@ -43,9 +43,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TRUE  ( 1 == 1 )
 #define FALSE ( !TRUE )
 
-#define YES ( 1 == 1 )
-#define NO  ( !YES )
-
 #define BLASTER_MixerAddressPort  0x04
 #define BLASTER_MixerDataPort     0x05
 #define BLASTER_ResetPort         0x06
@@ -89,7 +86,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 typedef struct
 {
 	int32_t IsSupported;
-	int32_t HasMixer;
 	int32_t MaxMixMode;
 	int32_t MinSamplingRate;
 	int32_t MaxSamplingRate;
@@ -97,13 +93,13 @@ typedef struct
 
 static const CARD_CAPABILITY BLASTER_CardConfig[ BLASTER_MaxCardType + 1 ] =
 {
-	{ FALSE, INVALID,      INVALID, INVALID, INVALID }, // Unsupported
-	{  TRUE,      NO,    MONO_8BIT,    4000,   23000 }, // SB 1.0
-	{  TRUE,     YES,  STEREO_8BIT,    4000,   44100 }, // SBPro
-	{  TRUE,      NO,    MONO_8BIT,    4000,   23000 }, // SB 2.xx
-	{  TRUE,     YES,  STEREO_8BIT,    4000,   44100 }, // SBPro 2
-	{ FALSE, INVALID,      INVALID, INVALID, INVALID }, // Unsupported
-	{  TRUE,     YES, STEREO_16BIT,    5000,   44100 }, // SB16
+	{FALSE,      INVALID, INVALID, INVALID}, // Unsupported
+	{ TRUE,    MONO_8BIT,    4000,   23000}, // SB 1.0
+	{ TRUE,  STEREO_8BIT,    4000,   44100}, // SBPro
+	{ TRUE,    MONO_8BIT,    4000,   23000}, // SB 2.xx
+	{ TRUE,  STEREO_8BIT,    4000,   44100}, // SBPro 2
+	{FALSE,      INVALID, INVALID, INVALID}, // Unsupported
+	{ TRUE, STEREO_16BIT,    5000,   44100}, // SB16
 };
 
 
@@ -793,7 +789,7 @@ static int32_t BLASTER_ReadMixer(int32_t reg)
 
 #define volume 255
 
-void BLASTER_SetVoiceVolume(void)
+static void BLASTER_SetVoiceVolume(void)
 {
 	int32_t data;
 
@@ -814,18 +810,6 @@ void BLASTER_SetVoiceVolume(void)
 
 
 /*---------------------------------------------------------------------
-   Function: BLASTER_CardHasMixer
-
-   Checks if the selected Sound Blaster card has a mixer.
----------------------------------------------------------------------*/
-
-int32_t BLASTER_CardHasMixer(void)
-{
-	return BLASTER_CardConfig[BLASTER_MixerType].HasMixer;
-}
-
-
-/*---------------------------------------------------------------------
    Function: BLASTER_SaveVoiceVolume
 
    Saves the user's voice mixer settings.
@@ -833,20 +817,17 @@ int32_t BLASTER_CardHasMixer(void)
 
 static void BLASTER_SaveVoiceVolume(void)
 {
-	if ( BLASTER_CardHasMixer() )
+	switch( BLASTER_MixerType )
 	{
-		switch( BLASTER_MixerType )
-		{
-			case SBPro :
-			case SBPro2 :
-				BLASTER_OriginalVoiceVolumeLeft  = BLASTER_ReadMixer( MIXER_SBProVoice );
-				break;
+		case SBPro:
+		case SBPro2:
+			BLASTER_OriginalVoiceVolumeLeft  = BLASTER_ReadMixer(MIXER_SBProVoice);
+			break;
 
-			case SB16 :
-				BLASTER_OriginalVoiceVolumeLeft  = BLASTER_ReadMixer( MIXER_SB16VoiceLeft );
-				BLASTER_OriginalVoiceVolumeRight = BLASTER_ReadMixer( MIXER_SB16VoiceRight );
-				break;
-		}
+		case SB16:
+			BLASTER_OriginalVoiceVolumeLeft  = BLASTER_ReadMixer(MIXER_SB16VoiceLeft);
+			BLASTER_OriginalVoiceVolumeRight = BLASTER_ReadMixer(MIXER_SB16VoiceRight);
+			break;
 	}
 }
 
@@ -859,20 +840,17 @@ static void BLASTER_SaveVoiceVolume(void)
 
 static void BLASTER_RestoreVoiceVolume(void)
 {
-	if ( BLASTER_CardHasMixer() )
+	switch( BLASTER_MixerType )
 	{
-		switch( BLASTER_MixerType )
-		{
-			case SBPro :
-			case SBPro2 :
-				BLASTER_WriteMixer( MIXER_SBProVoice, BLASTER_OriginalVoiceVolumeLeft );
-				break;
+		case SBPro:
+		case SBPro2:
+			BLASTER_WriteMixer(MIXER_SBProVoice, BLASTER_OriginalVoiceVolumeLeft);
+			break;
 
-			case SB16 :
-				BLASTER_WriteMixer( MIXER_SB16VoiceLeft,  BLASTER_OriginalVoiceVolumeLeft );
-				BLASTER_WriteMixer( MIXER_SB16VoiceRight, BLASTER_OriginalVoiceVolumeRight );
-				break;
-		}
+		case SB16:
+			BLASTER_WriteMixer(MIXER_SB16VoiceLeft,  BLASTER_OriginalVoiceVolumeLeft);
+			BLASTER_WriteMixer(MIXER_SB16VoiceRight, BLASTER_OriginalVoiceVolumeRight);
+			break;
 	}
 }
 
@@ -1088,6 +1066,8 @@ int32_t BLASTER_Init(void)
 		BLASTER_OldInt = _dos_getvect(BLASTER_Config.Interrupt + 8);
 		_dos_setvect(BLASTER_Config.Interrupt + 8, BLASTER_ServiceInterrupt);
 #endif
+
+		BLASTER_SetVoiceVolume();
 
 		BLASTER_Installed = TRUE;
 		status = BLASTER_Ok;
