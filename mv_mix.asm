@@ -27,6 +27,12 @@ extern   _MV_SampleSize
 extern   _MV_RightChannelOffset
 
 
+extern   _MV_Position
+extern   _MV_Rate
+extern   _MV_Start
+extern   _MV_Length
+
+
 %ifidn __OUTPUT_FORMAT__, coff
 section .text public class=CODE USE32
 %elifidn __OUTPUT_FORMAT__, obj
@@ -51,8 +57,10 @@ _MV_Mix8BitMono:
 ; Two at once
         pushad
 
+        mov     eax, [_MV_Position]
         mov     ebp, eax
 
+        mov     ebx, [_MV_Start]
         mov     esi, ebx                        ; Source pointer
 
         ; Sample size
@@ -80,6 +88,7 @@ _MV_Mix8BitMono:
         mov     [eax],ebx
 
         ; Rate scale ptr
+        mov     edx, [_MV_Rate]
         mov     eax,apatch5+2                   ; convice tasm to modify code...
         mov     [eax],edx
         mov     eax,apatch6+2                   ; convice tasm to modify code...
@@ -88,6 +97,7 @@ _MV_Mix8BitMono:
         mov     edi, [_MV_MixDestination]       ; Get the position to write to
 
         ; Number of samples to mix
+        mov     ecx, [_MV_Length]
         shr     ecx, 1                          ; double sample count
         cmp     ecx, 0
         je      short exit8m
@@ -173,8 +183,10 @@ global    _MV_Mix8BitStereo
 _MV_Mix8BitStereo:
 
         pushad
+        mov     eax, [_MV_Position]
         mov     ebp, eax
 
+        mov     ebx, [_MV_Start]
         mov     esi, ebx                        ; Source pointer
 
         ; Sample size
@@ -199,6 +211,7 @@ _MV_Mix8BitStereo:
         mov     [eax],ebx
 
         ; Rate scale ptr
+        mov     edx, [_MV_Rate]
         mov     eax,bpatch3+2                   ; convice tasm to modify code...
         mov     [eax],edx
 
@@ -213,6 +226,7 @@ _MV_Mix8BitStereo:
         mov     edi, [_MV_MixDestination]       ; Get the position to write to
 
         ; Number of samples to mix
+        mov     ecx, [_MV_Length]
         cmp     ecx, 0
         je      short exit8S
 
@@ -286,8 +300,10 @@ _MV_Mix16BitMono:
 ; Two at once
         pushad
 
+        mov     eax, [_MV_Position]
         mov     ebp, eax
 
+        mov     ebx, [_MV_Start]
         mov     esi, ebx                        ; Source pointer
 
         ; Sample size
@@ -308,6 +324,7 @@ _MV_Mix16BitMono:
         mov     [eax],ebx
 
         ; Rate scale ptr
+        mov     edx, [_MV_Rate]
         mov     eax,cpatch3+2                   ; convice tasm to modify code...
         mov     [eax],edx
         mov     eax,cpatch4+2                   ; convice tasm to modify code...
@@ -316,6 +333,7 @@ _MV_Mix16BitMono:
         mov     edi, [_MV_MixDestination]       ; Get the position to write to
 
         ; Number of samples to mix
+        mov     ecx, [_MV_Length]
         shr     ecx, 1                          ; double sample count
         cmp     ecx, 0
         je      exit16M
@@ -415,8 +433,10 @@ global    _MV_Mix16BitStereo
 _MV_Mix16BitStereo:
 
         pushad
+        mov     eax, [_MV_Position]
         mov     ebp, eax
 
+        mov     ebx, [_MV_Start]
         mov     esi, ebx                        ; Source pointer
 
         ; Sample size
@@ -441,12 +461,14 @@ _MV_Mix16BitStereo:
         mov     [eax],ebx
 
         ; Rate scale ptr
+        mov     edx, [_MV_Rate]
         mov     eax,dpatch3+2                   ; convice tasm to modify code...
         mov     [eax],edx
 
         mov     edi, [_MV_MixDestination]       ; Get the position to write to
 
         ; Number of samples to mix
+        mov     ecx, [_MV_Length]
         cmp     ecx, 0
         je      exit16S
 

@@ -70,7 +70,7 @@ typedef struct VoiceNode
 	struct VoiceNode *next;
 	struct VoiceNode *prev;
 
-	void ( *mix )( uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
+	void ( *mix )( void );
 
 	uint8_t *NextBlock;
 	uint32_t BlockLength;
@@ -103,10 +103,10 @@ typedef struct
 
 typedef uint8_t HARSH_CLIP_TABLE_8[ MV_NumVoices * 256 ];
 
-void MV_Mix8BitMono(   uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
-void MV_Mix8BitStereo( uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
-void MV_Mix16BitMono(  uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
-void MV_Mix16BitStereo(uint32_t position, uint32_t rate, uint8_t *start, uint32_t length );
+void MV_Mix8BitMono(void);
+void MV_Mix8BitStereo(void);
+void MV_Mix16BitMono(void);
+void MV_Mix16BitStereo(void);
 
 
 #define IS_QUIET( ptr )  ( ( void * )( ptr ) == ( void * )&MV_VolumeTable[ 0 ] )
@@ -182,13 +182,14 @@ static int32_t MV_ErrorCode = MV_Ok;
    Mixes the sound into the buffer.
 ---------------------------------------------------------------------*/
 
+uint32_t MV_Position	__attribute__ ((externally_visible));
+uint32_t MV_Rate		__attribute__ ((externally_visible));
+uint8_t *MV_Start		__attribute__ ((externally_visible));
+uint32_t MV_Length		__attribute__ ((externally_visible));
+
 static void MV_Mix(VoiceNode *voice, int32_t buffer)
 {
-	uint8_t  *start;
 	int32_t   length;
-	int32_t   voclength;
-	uint32_t  position;
-	uint32_t  rate;
 	uint32_t  FixedPointBufferSize;
 
 	if ((voice->length == 0) && (MV_GetNextRawBlock(voice) != KeepPlaying))
@@ -210,16 +211,16 @@ static void MV_Mix(VoiceNode *voice, int32_t buffer)
 	// Add this voice to the mix
 	while (length > 0)
 	{
-		start    = voice->sound;
-		rate     = voice->RateScale;
-		position = voice->position;
+		MV_Start    = voice->sound;
+		MV_Rate     = voice->RateScale;
+		MV_Position = voice->position;
 
 		// Check if the last sample in this buffer would be
 		// beyond the length of the sample block
-		if ((position + FixedPointBufferSize) >= voice->length)
+		if ((MV_Position + FixedPointBufferSize) >= voice->length)
 		{
-			if (position < voice->length)
-				voclength = (voice->length - position + rate - 1) / rate;
+			if (MV_Position < voice->length)
+				MV_Length = (voice->length - MV_Position + MV_Rate - 1) / MV_Rate;
 			else
 			{
 				MV_GetNextRawBlock(voice);
@@ -227,18 +228,18 @@ static void MV_Mix(VoiceNode *voice, int32_t buffer)
 			}
 		}
 		else
-			voclength = length;
+			MV_Length = length;
 
-		voice->mix(position, rate, start, voclength);
+		voice->mix();
 
-		if (voclength & 1)
+		if (MV_Length & 1)
 		{
-			MV_MixPosition += rate;
-			voclength      -= 1;
+			MV_MixPosition += MV_Rate;
+			MV_Length      -= 1;
 		}
 		voice->position = MV_MixPosition;
 
-		length -= voclength;
+		length -= MV_Length;
 
 		if (voice->position >= voice->length)
 		{
@@ -1210,6 +1211,7 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 	MV_SetMixMode();
 
 	// Make sure we don't cross a physical page
+	ptr += __djgpp_conventional_base;
 	if (((uint32_t)ptr & 0xffff) + TotalBufferSize > 0x10000)
 		ptr = (uint8_t *)(((uint32_t)ptr & 0xff0000) + 0x10000);
 

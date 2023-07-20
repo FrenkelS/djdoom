@@ -111,7 +111,7 @@ int32_t DMA_SetupTransfer(int32_t channel, uint8_t *address, int32_t length)
 		Port = &DMA_PortInfo[channel];
 		ChannelSelect = channel & 0x3;
 
-		addr = (int32_t)address;
+		addr = (int32_t)(address - __djgpp_conventional_base);
 
 		if (Port->Width == WORD)
 		{
@@ -228,5 +228,5 @@ uint8_t *DMA_GetCurrentPos(int32_t channel)
 		}
 	}
 
-	return (uint8_t *)addr;
+	return (uint8_t *)(addr + __djgpp_conventional_base);
 }
