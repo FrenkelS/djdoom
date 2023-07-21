@@ -19,26 +19,26 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 /**********************************************************************
-   module: SNDCARDS.H
+   file:   MULTIVOC.H
 
    author: James R. Dose
-   date:   March 31, 1994
+   date:   December 20, 1993
 
-   Contains enumerated type definitions for sound cards.
+   Public header for MULTIVOC.C
 
-   (c) Copyright 1994 James R. Dose.  All Rights Reserved.
+   (c) Copyright 1993 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#ifndef __SNDCARDS_H
-#define __SNDCARDS_H
+#ifndef __MULTIVOC_H
+#define __MULTIVOC_H
 
-typedef enum
-{
-	SoundBlaster,
-	Adlib,
-	GenMidi,
-	PC,
-	NumSoundCards
-} soundcardnames;
+#include <stdint.h>
+
+int32_t MV_VoicePlaying(int32_t handle);
+void    MV_Kill(int32_t handle);
+void    MV_SetOrigin(int32_t handle, int32_t pitchoffset, int32_t vol, int32_t left, int32_t right);
+int32_t MV_PlayRaw(uint8_t *ptr, uint32_t length, uint32_t rate, int32_t pitchoffset, int32_t vol, int32_t left, int32_t right, int32_t priority);
+void    MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices);
+void    MV_Shutdown(void);
 
 #endif

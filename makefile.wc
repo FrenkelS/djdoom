@@ -29,10 +29,14 @@ GLOBOBJS = &
  dmx.obj &
  al_midi.obj &
  blastold.obj &
+ dma.obj &
+ ll_man.obj &
  midi.obj &
  mpu401.obj &
+ multivoc.obj &
  mus2mid.obj &
  music.obj &
+ mv_mix.obj &
  pcfx.obj &
  tsmapi.obj &
  task_man.obj &

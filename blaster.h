@@ -32,42 +32,40 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __BLASTER_H
 #define __BLASTER_H
 
-typedef struct
-   {
-   unsigned Address;
-   unsigned Type;
-   unsigned Interrupt;
-   unsigned Dma8;
-   unsigned Dma16;
-   unsigned Midi;
-   unsigned Emu;
-   } BLASTER_CONFIG;
+#include <stdint.h>
 
-#define UNDEFINED -1
+typedef struct
+{
+	uint32_t Address;
+	uint32_t Type;
+	uint32_t Interrupt;
+	uint32_t Dma8;
+	uint32_t Dma16;
+} BLASTER_CONFIG;
+
+extern BLASTER_CONFIG BLASTER_Config;
+extern int32_t BLASTER_DMAChannel;
 
 enum BLASTER_ERRORS
-   {
-   BLASTER_Error = -1,
-   BLASTER_Ok = 0,
-   BLASTER_EnvNotFound,
-   BLASTER_AddrNotSet,
-   BLASTER_IntNotSet,
-   BLASTER_DMANotSet,
-   BLASTER_DMA16NotSet,
-   BLASTER_MIDINotSet,
-   BLASTER_CardTypeNotSet,
-   BLASTER_InvalidParameter,
-   BLASTER_UnsupportedCardType
-   };
+{
+	BLASTER_Error = -1,
+	BLASTER_Ok = 0,
+	BLASTER_AddrNotSet,
+	BLASTER_IntNotSet,
+	BLASTER_DMANotSet,
+	BLASTER_CardTypeNotSet,
+	BLASTER_UnsupportedCardType,
+	BLASTER_CardNotReady
+};
 
 enum BLASTER_Types
-   {
-   SB     = 1,
-   SBPro  = 2,
-   SB20   = 3,
-   SBPro2 = 4,
-   SB16   = 6
-   };
+{
+	SB     = 1,
+	SBPro  = 2,
+	SB20   = 3,
+	SBPro2 = 4,
+	SB16   = 6
+};
 
 #define BLASTER_MinCardType    SB
 #define BLASTER_MaxCardType    SB16
@@ -79,6 +77,14 @@ enum BLASTER_Types
 #define STEREO_8BIT  ( STEREO )
 #define STEREO_16BIT ( STEREO | SIXTEEN_BIT )
 
-void  BLASTER_SetupWaveBlaster( void );
+uint32_t BLASTER_GetPlaybackRate(void);
+int32_t  BLASTER_SetMixMode(int32_t mode);
+void     BLASTER_StopPlayback(void);
+int32_t  BLASTER_BeginBufferedPlayback(uint8_t *BufferStart, int32_t BufferSize, int32_t NumDivisions, uint32_t SampleRate, int32_t MixMode, void (*CallBackFunc)(void));
+int32_t  BLASTER_GetEnv(BLASTER_CONFIG *Config);
+void     BLASTER_SetCardSettings(BLASTER_CONFIG Config);
+void     BLASTER_SetupWaveBlaster(void);
+int32_t  BLASTER_Init(void);
+void     BLASTER_Shutdown(void);
 
 #endif

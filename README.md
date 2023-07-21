@@ -23,12 +23,12 @@ and it took inspiration from
 There is some assembly in the code that requires [NASM](https://www.nasm.us).
 To build Doom using only C code, use the macro `C_ONLY`.
 
-Sound effects are supported through the PC speaker.
+Sound effects are supported through the PC speaker and Sound Blaster.
 And music is supported via Adlib, Sound Blaster, Pro Audio Spectrum, General MIDI, Wave Blaster and Sound Canvas.
 There's no support for joystick and Logitech Cyberman.
 
 ## How to add other compilers
-The differences between compilers specific to the Doom source code are in `compiler.h`, `d_main.c`, `i_ibm.c`, `interrup.h`, `planar.asm` and `task_man.c`.
+The differences between compilers specific to the Doom source code are in `blastold.c`, `compiler.h`, `d_main.c`, `i_ibm.c`, `interrup.h`, `multivoc.c`, `planar.asm` and `task_man.c`.
 Search in those files for the pre-defined compiler macros and start hacking.
 
 |Compiler    |Set environment variables|Compile code|Pre-defined compiler macro|

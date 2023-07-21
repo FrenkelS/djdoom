@@ -38,7 +38,7 @@ void SFX_SetOrigin(int32_t handle, int32_t pitch, int32_t sep, int32_t volume);
 int32_t ENS_Detect(void);
 int32_t CODEC_Detect(int32_t *sbPort, int32_t *sbDma);
 int32_t GF1_Detect(void);
-void GF1_SetMap(char *dmxlump, int32_t size);
+void GF1_SetMap(uint8_t *dmxlump, int32_t size);
 int32_t SB_Detect(int32_t *sbPort, int32_t *sbIrq, int32_t *sbDma, uint16_t *version);
 void SB_SetCard(int32_t iBaseAddr, int32_t iIrq, int32_t iDma);
 int32_t AL_Detect(int32_t *wait, int32_t *type);

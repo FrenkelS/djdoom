@@ -19,26 +19,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 /**********************************************************************
-   module: SNDCARDS.H
+   file:   DMA.H
 
    author: James R. Dose
-   date:   March 31, 1994
+   date:   February 4, 1994
 
-   Contains enumerated type definitions for sound cards.
+   Public header file for DMA.C
 
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#ifndef __SNDCARDS_H
-#define __SNDCARDS_H
+#ifndef __DMA_H
+#define __DMA_H
 
-typedef enum
+#include <stdint.h>
+
+enum DMA_ERRORS
 {
-	SoundBlaster,
-	Adlib,
-	GenMidi,
-	PC,
-	NumSoundCards
-} soundcardnames;
+	DMA_Error = -1,
+	DMA_Ok    = 0
+};
+
+int32_t DMA_VerifyChannel(int32_t channel);
+int32_t DMA_SetupTransfer(int32_t  channel, uint8_t *address, int32_t length);
+int32_t DMA_EndTransfer(int32_t channel);
+uint8_t *DMA_GetCurrentPos(int32_t channel);
 
 #endif

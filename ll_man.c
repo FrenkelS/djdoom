@@ -19,26 +19,50 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 /**********************************************************************
-   module: SNDCARDS.H
+   module: LL_MAN.C
 
    author: James R. Dose
-   date:   March 31, 1994
+   date:   January 1, 1994
 
-   Contains enumerated type definitions for sound cards.
+   Linked list management routines.
 
    (c) Copyright 1994 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#ifndef __SNDCARDS_H
-#define __SNDCARDS_H
+#include <stddef.h>
+#include "ll_man.h"
 
-typedef enum
+
+#define OFFSET( structure, offset ) \
+   ( *( ( uint8_t ** )&( structure )[ offset ] ) )
+
+
+void LL_AddNode(uint8_t *item, uint8_t **head, uint8_t **tail, int32_t next, int32_t prev)
 {
-	SoundBlaster,
-	Adlib,
-	GenMidi,
-	PC,
-	NumSoundCards
-} soundcardnames;
+	OFFSET(item, prev) = NULL;
+	OFFSET(item, next) = *head;
 
-#endif
+	if (*head)
+		OFFSET(*head, prev) = item;
+	else
+		*tail = item;
+
+	*head = item;
+}
+
+
+void LL_RemoveNode(uint8_t *item, uint8_t **head, uint8_t **tail, int32_t next, int32_t prev)
+{
+	if (OFFSET(item, prev) == NULL)
+		*head = OFFSET(item, next);
+	else
+		OFFSET(OFFSET(item, prev), next) = OFFSET(item, next);
+
+	if (OFFSET(item, next) == NULL)
+		*tail = OFFSET(item, prev);
+	else
+		OFFSET(OFFSET(item, next), prev) = OFFSET(item, prev);
+
+	OFFSET(item, next) = NULL;
+	OFFSET(item, prev) = NULL;
+}
