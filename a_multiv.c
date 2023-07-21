@@ -35,12 +35,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdint.h>
 #include <time.h>
 #include "doomdef.h"
-#include "interrup.h"
-#include "dma.h"
-#include "ll_man.h"
-#include "sndcards.h"
-#include "blaster.h"
-#include "multivoc.h"
+#include "a_blast.h"
+#include "a_dma.h"
+#include "a_inter.h"
+#include "a_ll_man.h"
+#include "a_multiv.h"
+#include "a_sndcrd.h"
 
 #define TRUE  ( 1 == 1 )
 #define FALSE ( !TRUE )

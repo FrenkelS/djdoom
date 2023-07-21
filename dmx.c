@@ -17,15 +17,15 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "al_midi.h"
-#include "blaster.h"
 #include "doomdef.h"
 #include "dmx.h"
-#include "mpu401.h"
-#include "multivoc.h"
-#include "music.h"
-#include "pcfx.h"
-#include "sndcards.h"
+#include "a_al_mid.h"
+#include "a_blast.h"
+#include "a_mpu401.h"
+#include "a_multiv.h"
+#include "a_music.h"
+#include "a_pcfx.h"
+#include "a_sndcrd.h"
 
 static BLASTER_CONFIG dmx_blaster;
 

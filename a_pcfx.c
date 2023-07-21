@@ -32,8 +32,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <conio.h>
 #include <dos.h>
 #include "doomdef.h"
-#include "pcfx.h"
-#include "task_man.h"
+#include "a_pcfx.h"
+#include "a_taskmn.h"
 
 #define PCFX_MinVoiceHandle 1
 
@@ -48,7 +48,7 @@ static int32_t	PCFX_VoiceHandle = PCFX_MinVoiceHandle;
 static boolean	PCFX_Installed = false;
 
 
-#include "interrup.h"
+#include "a_inter.h"
 
 
 /*---------------------------------------------------------------------

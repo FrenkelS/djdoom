@@ -17,8 +17,8 @@
 //
 
 #include "doomdef.h"
-#include "task_man.h"
-#include "tsmapi.h"
+#include "a_taskmn.h"
+#include "a_tsmapi.h"
 
 typedef struct {
 	task *t;

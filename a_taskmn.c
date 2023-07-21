@@ -31,8 +31,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <conio.h>
 #include <dos.h>
+#include "a_taskmn.h"
 #include "doomdef.h"
-#include "task_man.h"
 
 
 typedef struct
@@ -64,7 +64,7 @@ static volatile int32_t TaskServiceCount = 0;
 static boolean TS_Installed = false;
 
 
-#include "interrup.h"
+#include "a_inter.h"
 
 
 /*---------------------------------------------------------------------

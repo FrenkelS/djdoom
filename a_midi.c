@@ -32,11 +32,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <dos.h>
 #include <time.h>
 #include "doomdef.h"
-#include "sndcards.h"
-#include "interrup.h"
-#include "task_man.h"
-#include "music.h"
-#include "midi.h"
+#include "a_inter.h"
+#include "a_midi.h"
+#include "a_music.h"
+#include "a_sndcrd.h"
+#include "a_taskmn.h"
 
 extern int MUSIC_SoundDevice;
 

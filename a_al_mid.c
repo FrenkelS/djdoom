@@ -35,10 +35,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stddef.h>
 #include <stdlib.h>
 #include "doomdef.h"
-#include "interrup.h"
-#include "ll_man.h"
-#include "sndcards.h"
-#include "al_midi.h"
+#include "a_al_mid.h"
+#include "a_inter.h"
+#include "a_ll_man.h"
+#include "a_sndcrd.h"
 
 
 #define AL_MaxVolume             127

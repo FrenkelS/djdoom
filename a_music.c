@@ -32,13 +32,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "task_man.h"
-#include "sndcards.h"
-#include "music.h"
-#include "midi.h"
-#include "al_midi.h"
-#include "blaster.h"
-#include "mpu401.h"
+#include "a_al_mid.h"
+#include "a_blast.h"
+#include "a_midi.h"
+#include "a_mpu401.h"
+#include "a_music.h"
+#include "a_sndcrd.h"
+#include "a_taskmn.h"
 
 int32_t MUSIC_SoundDevice = -1;
 

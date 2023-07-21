@@ -28,7 +28,7 @@ And music is supported via Adlib, Sound Blaster, Pro Audio Spectrum, General MID
 There's no support for joystick and Logitech Cyberman.
 
 ## How to add other compilers
-The differences between compilers specific to the Doom source code are in `blastold.c`, `compiler.h`, `d_main.c`, `i_ibm.c`, `interrup.h`, `multivoc.c`, `planar.asm` and `task_man.c`.
+The differences between compilers specific to the Doom source code are in `a_blast.c`, `a_inter.h`, `a_multiv.c`, `a_taskmn.c`, `compiler.h`, `d_main.c`, `i_ibm.c` and `planar.asm`.
 Search in those files for the pre-defined compiler macros and start hacking.
 
 |Compiler    |Set environment variables|Compile code|Pre-defined compiler macro|

@@ -19,7 +19,7 @@
 #ifndef _DMX_H_
 #define _DMX_H_
 
-#include "tsmapi.h"
+#include "a_tsmapi.h"
 
 void MUS_PauseSong(int32_t handle);
 void MUS_ResumeSong(int32_t handle);
