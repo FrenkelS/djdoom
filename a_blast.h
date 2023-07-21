@@ -43,8 +43,6 @@ typedef struct
 	uint32_t Dma16;
 } BLASTER_CONFIG;
 
-extern BLASTER_CONFIG BLASTER_Config;
-
 enum BLASTER_ERRORS
 {
 	BLASTER_Error = -1,
@@ -84,6 +82,7 @@ int32_t  BLASTER_BeginBufferedPlayback(uint8_t *BufferStart, int32_t BufferSize,
 int32_t  BLASTER_GetEnv(BLASTER_CONFIG *Config);
 void     BLASTER_SetCardSettings(BLASTER_CONFIG Config);
 void     BLASTER_SetupWaveBlaster(void);
+int32_t  BLASTER_IsSwapLeftRight(void);
 int32_t  BLASTER_Init(void);
 void     BLASTER_Shutdown(void);
 

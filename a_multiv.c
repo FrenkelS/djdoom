@@ -1177,8 +1177,7 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 			if (status != BLASTER_Ok)
 				MV_SetErrorCode(MV_BlasterError);
 
-			if ((BLASTER_Config.Type == SBPro) || (BLASTER_Config.Type == SBPro2))
-				MV_SwapLeftRight = TRUE;
+			MV_SwapLeftRight = BLASTER_IsSwapLeftRight();
 			break;
 
 		default:

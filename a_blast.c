@@ -115,7 +115,7 @@ static void (_interrupt _far *BLASTER_OldInt)(void);
 
 #define UNDEFINED -1
 
-BLASTER_CONFIG BLASTER_Config =
+static BLASTER_CONFIG BLASTER_Config =
 {
 	UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED
 };
@@ -996,6 +996,12 @@ void BLASTER_SetupWaveBlaster(void)
 		// the SB16 will not produce sound or music.
 		BLASTER_WriteMixer(MIXER_DSP4xxISR_Enable, MIXER_DisableMPU401Interrupts);
 	}
+}
+
+
+int32_t BLASTER_IsSwapLeftRight(void)
+{
+	return BLASTER_Config.Type == SBPro || BLASTER_Config.Type == SBPro2;
 }
 
 
