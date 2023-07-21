@@ -890,7 +890,7 @@ static int32_t MV_StartPlayback(void)
 			}
 
 			MV_MixRate = BLASTER_GetPlaybackRate();
-			MV_DMAChannel = BLASTER_DMAChannel;
+			MV_DMAChannel = BLASTER_GetDMAChannel();
 			break;
 	}
 

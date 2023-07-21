@@ -44,7 +44,6 @@ typedef struct
 } BLASTER_CONFIG;
 
 extern BLASTER_CONFIG BLASTER_Config;
-extern int32_t BLASTER_DMAChannel;
 
 enum BLASTER_ERRORS
 {
@@ -78,6 +77,7 @@ enum BLASTER_Types
 #define STEREO_16BIT ( STEREO | SIXTEEN_BIT )
 
 uint32_t BLASTER_GetPlaybackRate(void);
+int32_t  BLASTER_GetDMAChannel(void);
 int32_t  BLASTER_SetMixMode(int32_t mode);
 void     BLASTER_StopPlayback(void);
 int32_t  BLASTER_BeginBufferedPlayback(uint8_t *BufferStart, int32_t BufferSize, int32_t NumDivisions, uint32_t SampleRate, int32_t MixMode, void (*CallBackFunc)(void));

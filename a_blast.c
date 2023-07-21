@@ -155,7 +155,7 @@ static int32_t BLASTER_MixerType    = 0;
 static int32_t BLASTER_OriginalVoiceVolumeLeft  = 255;
 static int32_t BLASTER_OriginalVoiceVolumeRight = 255;
 
-int32_t BLASTER_DMAChannel;
+static int32_t BLASTER_DMAChannel;
 
 static void BLASTER_DSP1xx_BeginPlayback(int32_t length);
 
@@ -476,6 +476,12 @@ static void BLASTER_SetPlaybackRate(uint32_t rate)
 uint32_t BLASTER_GetPlaybackRate(void)
 {
 	return BLASTER_SampleRate;
+}
+
+
+int32_t BLASTER_GetDMAChannel(void)
+{
+	return BLASTER_DMAChannel;
 }
 
 
