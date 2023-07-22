@@ -30,20 +30,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 **********************************************************************/
 
 #include "id_heads.h"
+#include "dmx.h"
 #include "a_al_mid.h"
 #include "a_blast.h"
 #include "a_midi.h"
 #include "a_mpu401.h"
 #include "a_music.h"
-#include "a_sndcrd.h"
 #include "a_taskmn.h"
 
-int32_t MUSIC_SoundDevice = -1;
+static int32_t MUSIC_SoundDevice = AHW_NONE;
 
 static midifuncs MUSIC_MidiFunctions;
 
 static int32_t MUSIC_InitFM(midifuncs *Funcs);
 static int32_t MUSIC_InitMidi(midifuncs *Funcs, int32_t Address);
+
+
+int32_t MUSIC_GetSoundDevice(void)
+{
+	return MUSIC_SoundDevice;
+}
+
 
 /*---------------------------------------------------------------------
    Function: MUSIC_Init
@@ -57,13 +64,13 @@ int32_t MUSIC_Init(int32_t SoundCard, int32_t Address)
 
 	switch (SoundCard)
 	{
-		case Adlib:
+		case AHW_ADLIB:
 			return MUSIC_InitFM(&MUSIC_MidiFunctions);
 
-		case GenMidi:
+		case AHW_MPU_401:
 			return MUSIC_InitMidi(&MUSIC_MidiFunctions, Address);
 
-		default :
+		default:
 			return MUSIC_Error;
 	}
 }
@@ -81,11 +88,11 @@ void MUSIC_Shutdown(void)
 
 	switch (MUSIC_SoundDevice)
 	{
-		case Adlib :
+		case AHW_ADLIB :
 			AL_Shutdown();
 			break;
 
-		case GenMidi:
+		case AHW_MPU_401:
 			MPU_Reset();
 			break;
 	}
@@ -100,13 +107,15 @@ void MUSIC_Shutdown(void)
 
 void MUSIC_SetVolume(int32_t volume)
 {
+	if (MUSIC_SoundDevice == AHW_NONE)
+		return;
+
 	if (volume < 0)
 		volume = 0;
 	else if (volume > 255)
 		volume = 255;
 
-	if (MUSIC_SoundDevice != -1)
-		MIDI_SetVolume(volume);
+	MIDI_SetVolume(volume);
 }
 
 
@@ -158,8 +167,8 @@ int32_t MUSIC_PlaySong(uint8_t *song, int32_t loopflag)
 
 	switch (MUSIC_SoundDevice)
 	{
-		case Adlib:
-		case GenMidi:
+		case AHW_ADLIB:
+		case AHW_MPU_401:
 			MIDI_StopSong();
 			status = MIDI_PlaySong(song, loopflag);
 			if (status != MIDI_Ok)

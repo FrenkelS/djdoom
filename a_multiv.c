@@ -33,12 +33,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <dos.h>
 #include <time.h>
 #include "id_heads.h"
+#include "dmx.h"
 #include "a_blast.h"
 #include "a_dma.h"
 #include "a_inter.h"
 #include "a_ll_man.h"
 #include "a_multiv.h"
-#include "a_sndcrd.h"
 
 enum MV_Errors
 {
@@ -112,7 +112,7 @@ void MV_Mix16BitStereo(void);
 static int16_t MV_VolumeTable[ 63 + 1 ][ 256 ];
 
 static boolean MV_Installed   = false;
-static int32_t MV_SoundCard   = SoundBlaster;
+static int32_t MV_SoundCard   = AHW_SOUND_BLASTER;
 static int32_t MV_MaxVoices   = 1;
 
 
@@ -827,7 +827,7 @@ static void MV_SetMixMode(void)
 
 	switch(MV_SoundCard)
 	{
-		case SoundBlaster:
+		case AHW_SOUND_BLASTER:
 			MV_MixMode = BLASTER_SetMixMode(STEREO | SIXTEEN_BIT);
 			break;
 	}
@@ -876,7 +876,7 @@ static int32_t MV_StartPlayback(void)
 	// Start playback
 	switch (MV_SoundCard)
 	{
-		case SoundBlaster:
+		case AHW_SOUND_BLASTER:
 			status = BLASTER_BeginBufferedPlayback(MV_MixBuffer[0], TotalBufferSize, MV_NumberOfBuffers, MV_RequestedMixRate, MV_MixMode, MV_ServiceVoc);
 			if (status != BLASTER_Ok)
 			{
@@ -908,7 +908,7 @@ static void MV_StopPlayback(void)
 	// Stop sound playback
 	switch (MV_SoundCard)
 	{
-		case SoundBlaster:
+		case AHW_SOUND_BLASTER:
 			BLASTER_StopPlayback();
 			break;
 	}
@@ -1167,7 +1167,7 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 	// Initialize the sound card
 	switch (soundcard)
 	{
-		case SoundBlaster:
+		case AHW_SOUND_BLASTER:
 			status = BLASTER_Init();
 			if (status != BLASTER_Ok)
 				MV_SetErrorCode(MV_BlasterError);
@@ -1264,7 +1264,7 @@ void MV_Shutdown(void)
 	// Shutdown the sound card
 	switch (MV_SoundCard)
 	{
-		case SoundBlaster:
+		case AHW_SOUND_BLASTER:
 			BLASTER_Shutdown();
 			break;
 	}

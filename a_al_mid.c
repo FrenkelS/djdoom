@@ -36,7 +36,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "a_al_mid.h"
 #include "a_inter.h"
 #include "a_ll_man.h"
-#include "a_sndcrd.h"
 
 
 #define AL_MaxVolume             127

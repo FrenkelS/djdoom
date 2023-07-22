@@ -32,13 +32,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <dos.h>
 #include <time.h>
 #include "id_heads.h"
+#include "dmx.h"
 #include "a_inter.h"
 #include "a_midi.h"
 #include "a_music.h"
-#include "a_sndcrd.h"
 #include "a_taskmn.h"
-
-extern int MUSIC_SoundDevice;
 
 #define RELATIVE_BEAT( measure, beat, tick ) \
    ( ( tick ) + ( ( beat ) << 9 ) + ( ( measure ) << 16 ) )
@@ -946,32 +944,23 @@ static int MIDI_Reset
    Sets the total volume of the music.
 ---------------------------------------------------------------------*/
 
-int32_t MIDI_SetVolume(int32_t volume)
-
-   {
-   if ( _MIDI_Funcs == NULL )
-      {
-      return( MIDI_NullMidiModule );
-      }
+void MIDI_SetVolume(int32_t volume)
+{
+	if (_MIDI_Funcs == NULL)
+		return;
 
 	if (volume < 0)
 		volume = 0;
 	if (volume > MIDI_MaxVolume)
 		volume = MIDI_MaxVolume;
 
-   _MIDI_TotalVolume = volume;
+	_MIDI_TotalVolume = volume;
 
-   if ( _MIDI_Funcs->SetVolume )
-      {
-      _MIDI_Funcs->SetVolume( volume );
-      }
-   else
-      {
-      _MIDI_SendChannelVolumes();
-      }
-
-   return( MIDI_Ok );
-   }
+	if (_MIDI_Funcs->SetVolume)
+		_MIDI_Funcs->SetVolume(volume);
+	else
+		_MIDI_SendChannelVolumes();
+}
 
 
 /*---------------------------------------------------------------------
@@ -1222,12 +1211,12 @@ static void _MIDI_InitEMIDI
    int    c2;
 
    type = EMIDI_GeneralMIDI;
-   switch( MUSIC_SoundDevice )
+   switch( MUSIC_GetSoundDevice() )
       {
-      case Adlib :
+      case AHW_ADLIB :
          type = EMIDI_Adlib;
          break;
-      case GenMidi :
+      case AHW_MPU_401 :
          type = EMIDI_GeneralMIDI;
          break;
       }

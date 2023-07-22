@@ -425,7 +425,7 @@ static boolean ReadMusHeader(FILE *file, musheader *header)
 //
 // Returns false on success or true on failure.
 
-boolean mus2mid(FILE *musinput, FILE *midioutput, int32_t rate, int32_t adlibhack)
+boolean mus2mid(FILE *musinput, FILE *midioutput, int32_t rate, boolean adlibhack)
 {
     // Header for the MUS file
     musheader musfileheader;

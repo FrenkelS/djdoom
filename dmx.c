@@ -25,7 +25,6 @@
 #include "a_multiv.h"
 #include "a_music.h"
 #include "a_pcfx.h"
-#include "a_sndcrd.h"
 
 static BLASTER_CONFIG dmx_blaster;
 
@@ -34,8 +33,8 @@ static uint8_t	*mid_data = NULL;
 
 static int32_t mus_loop = 0;
 static int32_t dmx_mus_port = 0;
-static int32_t ass_sdev = NumSoundCards;
-static int32_t ass_mdev = NumSoundCards;
+static int32_t dmx_sdev = AHW_NONE;
+static int32_t dmx_mdev = AHW_NONE;
 static int32_t mus_rate = 140;
 static int32_t mus_mastervolume = 127;
 
@@ -88,7 +87,7 @@ int32_t MUS_RegisterSong(uint8_t *data)
 			fclose(mus);
 			return 0;
 		}
-		if (mus2mid(mus, mid, mus_rate, ass_mdev == Adlib))
+		if (mus2mid(mus, mid, mus_rate, dmx_mdev == AHW_ADLIB))
 		{
 			fclose(mid);
 			fclose(mus);
@@ -173,17 +172,17 @@ int32_t SFX_PlayPatch(void *data, int32_t pitch, int32_t sep, int32_t volume, in
 
 void SFX_StopPatch(int32_t handle)
 {
-	if (ass_sdev == PC)
+	if (dmx_sdev == AHW_PC_SPEAKER)
 		PCFX_Stop(handle);
-	else if (ass_sdev == SoundBlaster)
+	else if (dmx_sdev == AHW_SOUND_BLASTER)
 		MV_Kill(handle);
 }
 
 int32_t SFX_Playing(int32_t handle)
 {
-	if (ass_sdev == PC)
+	if (dmx_sdev == AHW_PC_SPEAKER)
 		return PCFX_SoundPlaying(handle);
-	else if (ass_sdev == SoundBlaster) 
+	else if (dmx_sdev == AHW_SOUND_BLASTER) 
 		return MV_VoicePlaying(handle);
 	else
 		return false;
@@ -191,7 +190,7 @@ int32_t SFX_Playing(int32_t handle)
 
 void SFX_SetOrigin(int32_t handle, int32_t pitch, int32_t sep, int32_t volume)
 {
-	if (ass_sdev == SoundBlaster)
+	if (dmx_sdev == AHW_SOUND_BLASTER)
 		MV_SetOrigin(handle, ((pitch - 128) * 2400) / 128, volume * 2, ((254 - sep) * volume) / 63, ((sep) * volume) / 63);
 }
 
@@ -311,22 +310,11 @@ int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32
 	UNUSED(maxsongs);
 
 	// Sound effects
-	switch (sfxDevice)
-	{
-		case AHW_SOUND_BLASTER:
-			ass_sdev = SoundBlaster;
-			break;
-		case AHW_PC_SPEAKER:
-			ass_sdev = PC;
-			break;
-		default:
-			ass_sdev = NumSoundCards;
-			break;
-	}
+	dmx_sdev = sfxDevice;
 
-	if (ass_sdev == PC)
+	if (dmx_sdev == AHW_PC_SPEAKER)
 		PCFX_Init(ticrate);
-	else if (ass_sdev == SoundBlaster)
+	else if (dmx_sdev == AHW_SOUND_BLASTER)
 	{
 		BLASTER_SetCardSettings(dmx_blaster);
 		BLASTER_Init();
@@ -335,23 +323,11 @@ int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32
 
 	// Music
 	mus_rate = ticrate;
+	dmx_mdev = musicDevice;
 
-	switch (musicDevice)
+	if (dmx_mdev == AHW_ADLIB || dmx_mdev == AHW_MPU_401)
 	{
-		case AHW_ADLIB:
-			ass_mdev = Adlib;
-			break;
-		case AHW_MPU_401:
-			ass_mdev = GenMidi;
-			break;
-		default:
-			ass_mdev = NumSoundCards;
-			break;
-	}
-
-	if (ass_mdev == Adlib || ass_mdev == GenMidi)
-	{
-		int32_t status = MUSIC_Init(ass_mdev, dmx_mus_port);
+		int32_t status = MUSIC_Init(dmx_mdev, dmx_mus_port);
 		if (status == MUSIC_Ok)
 			MUSIC_SetVolume(0);
 	}
@@ -363,9 +339,9 @@ void DMX_DeInit(void)
 {
 	MUSIC_Shutdown();
 
-	if (ass_sdev == PC)
+	if (dmx_sdev == AHW_PC_SPEAKER)
 		PCFX_Shutdown();
-	else if (ass_sdev == SoundBlaster)
+	else if (dmx_sdev == AHW_SOUND_BLASTER)
 		MV_Shutdown();
 
 	if (mid_data)
@@ -375,6 +351,6 @@ void DMX_DeInit(void)
 
 void WAV_PlayMode(int32_t channels, uint16_t sampleRate)
 {
-	if (ass_sdev == SoundBlaster)
-		MV_Init(ass_sdev, sampleRate, channels);
+	if (dmx_sdev == AHW_SOUND_BLASTER)
+		MV_Init(dmx_sdev, sampleRate, channels);
 }

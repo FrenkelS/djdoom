@@ -353,7 +353,7 @@ void I_StartupSound (void)
 	printf("I_StartupSound: Hope you hear a pop.\n");
 
   // initialize dmxCodes[]
-  dmxCodes[snd_none]  = 0;
+  dmxCodes[snd_none]  = AHW_NONE;
   dmxCodes[snd_PC]    = AHW_PC_SPEAKER;
   dmxCodes[snd_Adlib] = AHW_ADLIB;
   dmxCodes[snd_SB]    = AHW_SOUND_BLASTER;

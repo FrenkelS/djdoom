@@ -46,6 +46,7 @@ void AL_SetCard(int32_t wait, void *genmidi);
 int32_t MPU_Detect(int32_t *mPort, int32_t *type);
 void MPU_SetCard(int32_t mPort);
 
+#define AHW_NONE			0x0000L
 #define AHW_PC_SPEAKER		0x0001L
 #define AHW_ADLIB			0x0002L
 #define AHW_AWE32			0x0004L

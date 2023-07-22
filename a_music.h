@@ -48,6 +48,7 @@ typedef struct
 	uint32_t tick;
 } songposition;
 
+int32_t MUSIC_GetSoundDevice(void);
 int32_t MUSIC_Init(int32_t SoundCard, int32_t Address);
 void    MUSIC_Shutdown(void);
 void    MUSIC_SetVolume(int32_t volume);

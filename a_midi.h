@@ -57,7 +57,7 @@ typedef struct
 	int32_t (*GetVolume)(void);
 } midifuncs;
 
-int32_t MIDI_SetVolume(int32_t volume);
+void    MIDI_SetVolume(int32_t volume);
 void    MIDI_SetMidiFuncs(midifuncs *funcs);
 void    MIDI_ContinueSong(void);
 void    MIDI_PauseSong(void);
