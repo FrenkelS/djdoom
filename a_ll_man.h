@@ -32,8 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __LL_MAN_H
 #define __LL_MAN_H
 
-#include <stdint.h>
-
 void LL_AddNode(   uint8_t *node, uint8_t **head, uint8_t **tail, int32_t next, int32_t prev);
 void LL_RemoveNode(uint8_t *node, uint8_t **head, uint8_t **tail, int32_t next, int32_t prev);
 

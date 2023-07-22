@@ -16,7 +16,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "doomdef.h"
+#include "id_heads.h"
 #include "a_taskmn.h"
 #include "a_tsmapi.h"
 

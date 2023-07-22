@@ -32,9 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <conio.h>
 #include <dos.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include "doomdef.h"
+#include "id_heads.h"
 #include "a_al_mid.h"
 #include "a_inter.h"
 #include "a_ll_man.h"

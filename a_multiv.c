@@ -30,11 +30,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    (c) Copyright 1993 James R. Dose.  All Rights Reserved.
 **********************************************************************/
 
-#include <stdlib.h>
 #include <dos.h>
-#include <stdint.h>
 #include <time.h>
-#include "doomdef.h"
+#include "id_heads.h"
 #include "a_blast.h"
 #include "a_dma.h"
 #include "a_inter.h"

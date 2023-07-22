@@ -21,8 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __AL_MIDI_H
 #define __AL_MIDI_H
 
-#include <stdint.h>
-
 void AL_Shutdown(void);
 void AL_Init(void);
 void AL_NoteOff(int32_t channel, int32_t key, int32_t velocity);

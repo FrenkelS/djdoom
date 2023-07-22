@@ -32,8 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __BLASTER_H
 #define __BLASTER_H
 
-#include <stdint.h>
-
 typedef struct
 {
 	uint32_t Address;

@@ -32,8 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __TASK_MAN_H
 #define __TASK_MAN_H
 
-#include "doomdef.h"
-
 typedef struct task
 {
 	struct task			*next;

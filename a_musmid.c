@@ -17,16 +17,12 @@
 // mus2mid.c - Ben Ryves 2006 - http://benryves.com - benryves@benryves.com
 // Use to convert a MUS file into a single track, type 0 MIDI file.
 
-#include <stdint.h>
-#include <stdio.h>
+#include "id_heads.h"
 
 #define NUM_CHANNELS 16
 
 #define MIDI_PERCUSSION_CHAN 9
 #define MUS_PERCUSSION_CHAN 15
-
-typedef uint8_t byte;
-typedef enum {false, true} bool;
 
 // MUS event codes
 typedef enum
@@ -97,7 +93,7 @@ static int32_t channel_map[NUM_CHANNELS];
 
 // Write timestamp to a MIDI file.
 
-static bool WriteTime(uint32_t time, FILE *midioutput)
+static boolean WriteTime(uint32_t time, FILE *midioutput)
 {
     uint32_t buffer = time & 0x7F;
     byte writeval;
@@ -133,7 +129,7 @@ static bool WriteTime(uint32_t time, FILE *midioutput)
 
 
 // Write the end of track marker
-static bool WriteEndTrack(FILE *midioutput)
+static boolean WriteEndTrack(FILE *midioutput)
 {
     byte endtrack[] = {0xFF, 0x2F, 0x00};
 
@@ -152,7 +148,7 @@ static bool WriteEndTrack(FILE *midioutput)
 }
 
 // Write a key press event
-static bool WritePressKey(byte channel, byte key,
+static boolean WritePressKey(byte channel, byte key,
                           byte velocity, FILE *midioutput)
 {
     byte working = midi_presskey | channel;
@@ -187,7 +183,7 @@ static bool WritePressKey(byte channel, byte key,
 }
 
 // Write a key release event
-static bool WriteReleaseKey(byte channel, byte key,
+static boolean WriteReleaseKey(byte channel, byte key,
                             FILE *midioutput)
 {
     byte working = midi_releasekey | channel;
@@ -222,7 +218,7 @@ static bool WriteReleaseKey(byte channel, byte key,
 }
 
 // Write a pitch wheel/bend event
-static bool WritePitchWheel(byte channel, int16_t wheel,
+static boolean WritePitchWheel(byte channel, int16_t wheel,
                             FILE *midioutput)
 {
     byte working = midi_pitchwheel | channel;
@@ -256,7 +252,7 @@ static bool WritePitchWheel(byte channel, int16_t wheel,
 }
 
 // Write a patch change event
-static bool WriteChangePatch(byte channel, byte patch,
+static boolean WriteChangePatch(byte channel, byte patch,
                              FILE *midioutput)
 {
     byte working = midi_changepatch | channel;
@@ -285,7 +281,7 @@ static bool WriteChangePatch(byte channel, byte patch,
 
 // Write a valued controller change event
 
-static bool WriteChangeController_Valued(byte channel,
+static boolean WriteChangeController_Valued(byte channel,
                                          byte control,
                                          byte value,
                                          FILE *midioutput)
@@ -333,7 +329,7 @@ static bool WriteChangeController_Valued(byte channel,
 }
 
 // Write a valueless controller change event
-static bool WriteChangeController_Valueless(byte channel,
+static boolean WriteChangeController_Valueless(byte channel,
                                             byte control,
                                             FILE *midioutput)
 {
@@ -409,9 +405,9 @@ static int32_t GetMIDIChannel(int32_t mus_channel, FILE *midioutput)
     }
 }
 
-static bool ReadMusHeader(FILE *file, musheader *header)
+static boolean ReadMusHeader(FILE *file, musheader *header)
 {
-    bool result;
+    boolean result;
 
     result = fread(&header->id, sizeof(byte), 4, file) == 4
           && fread(&header->scorelength, sizeof(short), 1, file) == 1
@@ -427,9 +423,9 @@ static bool ReadMusHeader(FILE *file, musheader *header)
 // Read a MUS file from a stream (musinput) and output a MIDI file to
 // a stream (midioutput).
 //
-// Returns 0 on success or 1 on failure.
+// Returns false on success or true on failure.
 
-bool mus2mid(FILE *musinput, FILE *midioutput, int32_t rate, int32_t adlibhack)
+boolean mus2mid(FILE *musinput, FILE *midioutput, int32_t rate, int32_t adlibhack)
 {
     // Header for the MUS file
     musheader musfileheader;

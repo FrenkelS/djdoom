@@ -21,8 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __MPU401_H
 #define __MPU401_H
 
-#include <stdint.h>
-
 #define MPU_Ok 0
 
 int32_t  MPU_Reset(void);

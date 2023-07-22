@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <conio.h>
 #include <dos.h>
-#include "doomdef.h"
+#include "id_heads.h"
 #include "a_mpu401.h"
 
 #define MPU_NotFound       -1

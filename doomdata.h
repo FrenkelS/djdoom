@@ -24,12 +24,6 @@
 #ifndef __DOOMDATA__
 #define __DOOMDATA__
 
-#ifndef __BYTEBOOL__
-#define __BYTEBOOL__
-typedef enum {false, true} boolean;
-typedef uint8_t byte;
-#endif
-
 /*
 ===============================================================================
 
