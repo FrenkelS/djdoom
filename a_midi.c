@@ -157,8 +157,8 @@ static void _MIDI_ResetTracks( void );
 static void _MIDI_AdvanceTick( void );
 static void _MIDI_MetaEvent( track *Track );
 static void _MIDI_SysEx( track *Track );
-static int32_t _MIDI_InterpretControllerInfo(track *Track, boolean TimeSet, int32_t channel, int32_t c1, int32_t c2);
-static int  _MIDI_SendControlChange( int channel, int c1, int c2 );
+static boolean _MIDI_InterpretControllerInfo(track *Track, boolean TimeSet, int32_t channel, int32_t c1, int32_t c2);
+static void _MIDI_SendControlChange( int channel, int c1, int c2 );
 static void _MIDI_SetChannelVolume( int channel, int volume );
 static void _MIDI_SendChannelVolumes( void );
 static void _MIDI_InitEMIDI( void );
@@ -436,7 +436,7 @@ static void _MIDI_MetaEvent
    Interprets the MIDI controller info.
 ---------------------------------------------------------------------*/
 
-static int32_t _MIDI_InterpretControllerInfo(track *Track, boolean TimeSet, int32_t channel, int32_t c1, int32_t c2)
+static boolean _MIDI_InterpretControllerInfo(track *Track, boolean TimeSet, int32_t channel, int32_t c1, int32_t c2)
 {
    track *trackptr;
    int tracknum;
@@ -783,28 +783,16 @@ static void _MIDI_ServiceRoutine
    Sends a control change to the proper device
 ---------------------------------------------------------------------*/
 
-static int _MIDI_SendControlChange
-   (
-   int channel,
-   int c1,
-   int c2
-   )
+static void _MIDI_SendControlChange(int channel, int c1, int c2)
+{
+	if ( _MIDI_Funcs == NULL )
+		return;
 
-   {
-   if ( _MIDI_Funcs == NULL )
-      {
-      return( MIDI_Error );
-      }
+	if ( _MIDI_Funcs->ControlChange == NULL )
+		return;
 
-   if ( _MIDI_Funcs->ControlChange == NULL )
-      {
-      return( MIDI_Error );
-      }
-
-   _MIDI_Funcs->ControlChange( channel, c1, c2 );
-
-   return( MIDI_Ok );
-   }
+	_MIDI_Funcs->ControlChange( channel, c1, c2 );
+}
 
 
 /*---------------------------------------------------------------------
@@ -813,23 +801,17 @@ static int _MIDI_SendControlChange
    Sends all notes off commands on all midi channels.
 ---------------------------------------------------------------------*/
 
-static int MIDI_AllNotesOff
-   (
-   void
-   )
+static void MIDI_AllNotesOff(void)
+{
+	int channel;
 
-   {
-   int channel;
-
-   for( channel = 0; channel < NUM_MIDI_CHANNELS; channel++ )
-      {
-      _MIDI_SendControlChange( channel, 0x40, 0 );
-      _MIDI_SendControlChange( channel, MIDI_ALL_NOTES_OFF, 0 );
-      _MIDI_SendControlChange( channel, 0x78, 0 );
-      }
-
-   return( MIDI_Ok );
-   }
+	for( channel = 0; channel < NUM_MIDI_CHANNELS; channel++ )
+	{
+		_MIDI_SendControlChange( channel, 0x40, 0 );
+		_MIDI_SendControlChange( channel, MIDI_ALL_NOTES_OFF, 0 );
+		_MIDI_SendControlChange( channel, 0x78, 0 );
+	}
+}
 
 
 /*---------------------------------------------------------------------
@@ -900,42 +882,36 @@ static void _MIDI_SendChannelVolumes
    Resets the MIDI device to General Midi defaults.
 ---------------------------------------------------------------------*/
 
-static int MIDI_Reset
-   (
-   void
-   )
+static void MIDI_Reset(void)
+{
+	int channel;
+	long time;
+	unsigned flags;
 
-   {
-   int channel;
-   long time;
-   unsigned flags;
+	MIDI_AllNotesOff();
 
-   MIDI_AllNotesOff();
+	flags = DisableInterrupts();
+	_enable();
+	time = clock() + CLOCKS_PER_SEC/24;
+	while(clock() < time)
+		;
 
-   flags = DisableInterrupts();
-   _enable();
-   time = clock() + CLOCKS_PER_SEC/24;
-   while(clock() < time)
-      ;
+	RestoreInterrupts( flags );
 
-   RestoreInterrupts( flags );
+	for( channel = 0; channel < NUM_MIDI_CHANNELS; channel++ )
+	{
+		_MIDI_SendControlChange( channel, MIDI_RESET_ALL_CONTROLLERS, 0 );
+		_MIDI_SendControlChange( channel, MIDI_RPN_MSB, MIDI_PITCHBEND_MSB );
+		_MIDI_SendControlChange( channel, MIDI_RPN_LSB, MIDI_PITCHBEND_LSB );
+		_MIDI_SendControlChange( channel, MIDI_DATAENTRY_MSB, 2 ); /* Pitch Bend Sensitivity MSB */
+		_MIDI_SendControlChange( channel, MIDI_DATAENTRY_LSB, 0 ); /* Pitch Bend Sensitivity LSB */
+		_MIDI_ChannelVolume[ channel ] = GENMIDI_DefaultVolume;
+	}
 
-   for( channel = 0; channel < NUM_MIDI_CHANNELS; channel++ )
-      {
-      _MIDI_SendControlChange( channel, MIDI_RESET_ALL_CONTROLLERS, 0 );
-      _MIDI_SendControlChange( channel, MIDI_RPN_MSB, MIDI_PITCHBEND_MSB );
-      _MIDI_SendControlChange( channel, MIDI_RPN_LSB, MIDI_PITCHBEND_LSB );
-      _MIDI_SendControlChange( channel, MIDI_DATAENTRY_MSB, 2 ); /* Pitch Bend Sensitivity MSB */
-      _MIDI_SendControlChange( channel, MIDI_DATAENTRY_LSB, 0 ); /* Pitch Bend Sensitivity LSB */
-      _MIDI_ChannelVolume[ channel ] = GENMIDI_DefaultVolume;
-      }
+	_MIDI_SendChannelVolumes();
 
-   _MIDI_SendChannelVolumes();
-
-   Reset = true;
-
-   return( MIDI_Ok );
-   }
+	Reset = true;
+}
 
 
 /*---------------------------------------------------------------------
