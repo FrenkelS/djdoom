@@ -47,51 +47,44 @@ align 4
 ;
 ;================
 
-; eax - position
-; edx - rate
-; ebx - start
-; ecx - number of samples to mix
-
 global    _MV_Mix8BitMono
 _MV_Mix8BitMono:
 ; Two at once
         pushad
 
-        mov     eax, [_MV_Position]
-        mov     ebp, eax
+        mov     ebp, [_MV_Position]
 
-        mov     ebx, [_MV_Start]
-        mov     esi, ebx                        ; Source pointer
+        mov     esi, [_MV_Start]                ; Source pointer
 
         ; Sample size
         mov     ebx, [_MV_SampleSize]
-        mov     eax,apatch7+2                   ; convice tasm to modify code...
+        mov     eax,apatch7+2                   ; convice nasm to modify code...
         mov     [eax],bl
-        mov     eax,apatch8+2                   ; convice tasm to modify code...
+        mov     eax,apatch8+2                   ; convice nasm to modify code...
         mov     [eax],bl
-        mov     eax,apatch9+3                   ; convice tasm to modify code...
+        mov     eax,apatch9+3                   ; convice nasm to modify code...
         mov     [eax],bl
 
         ; Volume table ptr
         mov     ebx, [_MV_LeftVolume]           ; Since we're mono, use left volume
-        mov     eax,apatch1+4                   ; convice tasm to modify code...
+        mov     eax,apatch1+4                   ; convice nasm to modify code...
         mov     [eax],ebx
-        mov     eax,apatch2+4                   ; convice tasm to modify code...
+        mov     eax,apatch2+4                   ; convice nasm to modify code...
         mov     [eax],ebx
 
         ; Harsh Clip table ptr
         mov     ebx, [_MV_HarshClipTable]
         add     ebx, 128
-        mov     eax,apatch3+2                   ; convice tasm to modify code...
+        mov     eax,apatch3+2                   ; convice nasm to modify code...
         mov     [eax],ebx
-        mov     eax,apatch4+2                   ; convice tasm to modify code...
+        mov     eax,apatch4+2                   ; convice nasm to modify code...
         mov     [eax],ebx
 
         ; Rate scale ptr
         mov     edx, [_MV_Rate]
-        mov     eax,apatch5+2                   ; convice tasm to modify code...
+        mov     eax,apatch5+2                   ; convice nasm to modify code...
         mov     [eax],edx
-        mov     eax,apatch6+2                   ; convice tasm to modify code...
+        mov     eax,apatch6+2                   ; convice nasm to modify code...
         mov     [eax],edx
 
         mov     edi, [_MV_MixDestination]       ; Get the position to write to
@@ -174,53 +167,47 @@ exit8m:
 ;
 ;================
 
-; eax - position
-; edx - rate
-; ebx - start
-; ecx - number of samples to mix
-
 global    _MV_Mix8BitStereo
 _MV_Mix8BitStereo:
 
         pushad
-        mov     eax, [_MV_Position]
-        mov     ebp, eax
 
-        mov     ebx, [_MV_Start]
-        mov     esi, ebx                        ; Source pointer
+        mov     ebp, [_MV_Position]
+
+        mov     esi, [_MV_Start]                ; Source pointer
 
         ; Sample size
         mov     ebx, [_MV_SampleSize]
-        mov     eax,bpatch8+2                   ; convice tasm to modify code...
+        mov     eax,bpatch8+2                   ; convice nasm to modify code...
         mov     [eax],bl
 
         ; Right channel offset
         mov     ebx, [_MV_RightChannelOffset]
-        mov     eax,bpatch6+3                   ; convice tasm to modify code...
+        mov     eax,bpatch6+3                   ; convice nasm to modify code...
         mov     [eax],ebx
-        mov     eax,bpatch7+2                   ; convice tasm to modify code...
+        mov     eax,bpatch7+2                   ; convice nasm to modify code...
         mov     [eax],ebx
 
         ; Volume table ptr
         mov     ebx, [_MV_LeftVolume]
-        mov     eax,bpatch1+4                   ; convice tasm to modify code...
+        mov     eax,bpatch1+4                   ; convice nasm to modify code...
         mov     [eax],ebx
 
         mov     ebx, [_MV_RightVolume]
-        mov     eax,bpatch2+4                   ; convice tasm to modify code...
+        mov     eax,bpatch2+4                   ; convice nasm to modify code...
         mov     [eax],ebx
 
         ; Rate scale ptr
         mov     edx, [_MV_Rate]
-        mov     eax,bpatch3+2                   ; convice tasm to modify code...
+        mov     eax,bpatch3+2                   ; convice nasm to modify code...
         mov     [eax],edx
 
         ; Harsh Clip table ptr
         mov     ebx, [_MV_HarshClipTable]
         add     ebx,128
-        mov     eax,bpatch4+2                   ; convice tasm to modify code...
+        mov     eax,bpatch4+2                   ; convice nasm to modify code...
         mov     [eax],ebx
-        mov     eax,bpatch5+2                   ; convice tasm to modify code...
+        mov     eax,bpatch5+2                   ; convice nasm to modify code...
         mov     [eax],ebx
 
         mov     edi, [_MV_MixDestination]       ; Get the position to write to
@@ -290,44 +277,37 @@ exit8S:
 ;
 ;================
 
-; eax - position
-; edx - rate
-; ebx - start
-; ecx - number of samples to mix
-
 global    _MV_Mix16BitMono
 _MV_Mix16BitMono:
 ; Two at once
         pushad
 
-        mov     eax, [_MV_Position]
-        mov     ebp, eax
+        mov     ebp, [_MV_Position]
 
-        mov     ebx, [_MV_Start]
-        mov     esi, ebx                        ; Source pointer
+        mov     esi, [_MV_Start]                ; Source pointer
 
         ; Sample size
         mov     ebx, [_MV_SampleSize]
-        mov     eax,cpatch5+3                   ; convice tasm to modify code...
+        mov     eax,cpatch5+3                   ; convice nasm to modify code...
         mov     [eax],bl
-        mov     eax,cpatch6+3                   ; convice tasm to modify code...
+        mov     eax,cpatch6+3                   ; convice nasm to modify code...
         mov     [eax],bl
-        mov     eax,cpatch7+2                   ; convice tasm to modify code...
+        mov     eax,cpatch7+2                   ; convice nasm to modify code...
         add     bl,bl
         mov     [eax],bl
 
         ; Volume table ptr
         mov     ebx, [_MV_LeftVolume]
-        mov     eax,cpatch1+4                   ; convice tasm to modify code...
+        mov     eax,cpatch1+4                   ; convice nasm to modify code...
         mov     [eax],ebx
-        mov     eax,cpatch2+4                   ; convice tasm to modify code...
+        mov     eax,cpatch2+4                   ; convice nasm to modify code...
         mov     [eax],ebx
 
         ; Rate scale ptr
         mov     edx, [_MV_Rate]
-        mov     eax,cpatch3+2                   ; convice tasm to modify code...
+        mov     eax,cpatch3+2                   ; convice nasm to modify code...
         mov     [eax],edx
-        mov     eax,cpatch4+2                   ; convice tasm to modify code...
+        mov     eax,cpatch4+2                   ; convice nasm to modify code...
         mov     [eax],edx
 
         mov     edi, [_MV_MixDestination]       ; Get the position to write to
@@ -424,45 +404,39 @@ exit16M:
 ;
 ;================
 
-; eax - position
-; edx - rate
-; ebx - start
-; ecx - number of samples to mix
-
 global    _MV_Mix16BitStereo
 _MV_Mix16BitStereo:
 
         pushad
-        mov     eax, [_MV_Position]
-        mov     ebp, eax
 
-        mov     ebx, [_MV_Start]
-        mov     esi, ebx                        ; Source pointer
+        mov     ebp, [_MV_Position]
+
+        mov     esi, [_MV_Start]                ; Source pointer
 
         ; Sample size
         mov     ebx, [_MV_SampleSize]
-        mov     eax,dpatch6+2                   ; convice tasm to modify code...
+        mov     eax,dpatch6+2                   ; convice nasm to modify code...
         mov     [eax],bl
 
         ; Right channel offset
         mov     ebx, [_MV_RightChannelOffset]
-        mov     eax,dpatch4+3                   ; convice tasm to modify code...
+        mov     eax,dpatch4+3                   ; convice nasm to modify code...
         mov     [eax],ebx
-        mov     eax,dpatch5+3                   ; convice tasm to modify code...
+        mov     eax,dpatch5+3                   ; convice nasm to modify code...
         mov     [eax],ebx
 
         ; Volume table ptr
         mov     ebx, [_MV_LeftVolume]
-        mov     eax,dpatch1+4                   ; convice tasm to modify code...
+        mov     eax,dpatch1+4                   ; convice nasm to modify code...
         mov     [eax],ebx
 
         mov     ebx, [_MV_RightVolume]
-        mov     eax,dpatch2+4                   ; convice tasm to modify code...
+        mov     eax,dpatch2+4                   ; convice nasm to modify code...
         mov     [eax],ebx
 
         ; Rate scale ptr
         mov     edx, [_MV_Rate]
-        mov     eax,dpatch3+2                   ; convice tasm to modify code...
+        mov     eax,dpatch3+2                   ; convice nasm to modify code...
         mov     [eax],edx
 
         mov     edi, [_MV_MixDestination]       ; Get the position to write to
