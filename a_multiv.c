@@ -288,7 +288,7 @@ static void MV_StopVoice(VoiceNode *voice)
 
 static void ClearBuffer_DW(void *ptr, uint32_t data, int32_t length)
 {
-	uint32_t i;
+	int32_t i;
 
 	for (i = 0; i < length; i++)
 		((uint32_t *)ptr)[i] = data;
