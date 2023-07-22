@@ -28,7 +28,7 @@ void AL_NoteOn(int32_t channel, int32_t key, int32_t velocity);
 void AL_ControlChange(int32_t channel, int32_t type, int32_t data);
 void AL_ProgramChange(int32_t channel, int32_t patch);
 void AL_SetPitchBend(int32_t channel, int32_t lsb, int32_t msb);
-int32_t AL_DetectFM(void);
+boolean AL_DetectFM(void);
 void AL_RegisterTimbreBank(uint8_t *timbres);
 
 #endif

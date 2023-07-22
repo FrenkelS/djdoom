@@ -858,11 +858,11 @@ void AL_SetPitchBend(int32_t channel, int32_t lsb, int32_t msb)
    Determines if an Adlib compatible card is installed in the machine.
 ---------------------------------------------------------------------*/
 
-int32_t AL_DetectFM(void)
+boolean AL_DetectFM(void)
 {
 	int status1;
 	int status2;
-	int i;
+	int delay;
 
 	AL_SendOutput(4, 0x60);   // Reset T1 & T2
 	AL_SendOutput(4, 0x80);   // Reset IRQ
@@ -872,13 +872,13 @@ int32_t AL_DetectFM(void)
 	AL_SendOutput(2, 0xff);   // Set timer 1
 	AL_SendOutput(4, 0x21);   // Start timer 1
 
-	for (i = 100; i > 0; i--)
-		inp(ADLIB_PORT);
+	for (delay = 200; delay > 0; delay--)
+		inp(ADLIB_PORT);      // Delay for at least 80 microseconds.
 
 	status2 = inp(ADLIB_PORT);
 
-	AL_SendOutput(4, 0x60);
-	AL_SendOutput(4, 0x80);
+	AL_SendOutput(4, 0x60);   // Reset T1 & T2
+	AL_SendOutput(4, 0x80);   // Reset IRQ
 
 	return ((status1 & 0xe0) == 0x00) && ((status2 & 0xe0) == 0xc0);
 }
