@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __MULTIVOC_H
 #define __MULTIVOC_H
 
-int32_t MV_VoicePlaying(int32_t handle);
+boolean MV_VoicePlaying(int32_t handle);
 void    MV_Kill(int32_t handle);
 void    MV_SetOrigin(int32_t handle, int32_t pitchoffset, int32_t vol, int32_t left, int32_t right);
 int32_t MV_PlayRaw(uint8_t *ptr, uint32_t length, uint32_t rate, int32_t pitchoffset, int32_t vol, int32_t left, int32_t right, int32_t priority);

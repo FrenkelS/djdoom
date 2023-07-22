@@ -40,9 +40,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define VALID   ( 1 == 1 )
 #define INVALID ( !VALID )
 
-#define TRUE  ( 1 == 1 )
-#define FALSE ( !TRUE )
-
 #define BLASTER_MixerAddressPort  0x04
 #define BLASTER_MixerDataPort     0x05
 #define BLASTER_ResetPort         0x06
@@ -85,7 +82,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef struct
 {
-	int32_t IsSupported;
+	boolean IsSupported;
 	int32_t MaxMixMode;
 	int32_t MinSamplingRate;
 	int32_t MaxSamplingRate;
@@ -93,13 +90,13 @@ typedef struct
 
 static const CARD_CAPABILITY BLASTER_CardConfig[ BLASTER_MaxCardType + 1 ] =
 {
-	{FALSE,      INVALID, INVALID, INVALID}, // Unsupported
-	{ TRUE,    MONO_8BIT,    4000,   23000}, // SB 1.0
-	{ TRUE,  STEREO_8BIT,    4000,   44100}, // SBPro
-	{ TRUE,    MONO_8BIT,    4000,   23000}, // SB 2.xx
-	{ TRUE,  STEREO_8BIT,    4000,   44100}, // SBPro 2
-	{FALSE,      INVALID, INVALID, INVALID}, // Unsupported
-	{ TRUE, STEREO_16BIT,    5000,   44100}, // SB16
+	{false,      INVALID, INVALID, INVALID}, // Unsupported
+	{ true,    MONO_8BIT,    4000,   23000}, // SB 1.0
+	{ true,  STEREO_8BIT,    4000,   44100}, // SBPro
+	{ true,    MONO_8BIT,    4000,   23000}, // SB 2.xx
+	{ true,  STEREO_8BIT,    4000,   44100}, // SBPro 2
+	{false,      INVALID, INVALID, INVALID}, // Unsupported
+	{ true, STEREO_16BIT,    5000,   44100}, // SB16
 };
 
 
@@ -120,7 +117,7 @@ static BLASTER_CONFIG BLASTER_Config =
 	UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED
 };
 
-static int32_t BLASTER_Installed = FALSE;
+static boolean BLASTER_Installed = false;
 static int32_t BLASTER_Version;
 
 static uint8_t *BLASTER_DMABuffer;
@@ -143,7 +140,7 @@ static uint32_t BLASTER_SampleRate       = BLASTER_DefaultSampleRate;
 
 static uint32_t BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
 
-static volatile int32_t   BLASTER_SoundPlaying;
+static volatile boolean BLASTER_SoundPlaying;
 
 static void ( *BLASTER_CallBack )( void );
 
@@ -569,7 +566,7 @@ void BLASTER_StopPlayback(void)
 	// Turn off speaker
 	BLASTER_WriteDSP(DSP_SpeakerOff);
 
-	BLASTER_SoundPlaying = FALSE;
+	BLASTER_SoundPlaying = false;
 
 	BLASTER_DMABuffer = NULL;
 }
@@ -624,7 +621,7 @@ static void BLASTER_DSP1xx_BeginPlayback(int32_t length)
 
 	BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
 
-	BLASTER_SoundPlaying = TRUE;
+	BLASTER_SoundPlaying = true;
 }
 
 
@@ -656,7 +653,7 @@ static void BLASTER_DSP2xx_BeginPlayback(int32_t length)
 		BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
 	}
 
-	BLASTER_SoundPlaying = TRUE;
+	BLASTER_SoundPlaying = true;
 }
 
 
@@ -711,7 +708,7 @@ static void BLASTER_DSP4xx_BeginPlayback(int32_t length)
 	BLASTER_WriteDSP( LoByte );
 	BLASTER_WriteDSP( HiByte );
 
-	BLASTER_SoundPlaying = TRUE;
+	BLASTER_SoundPlaying = true;
 }
 
 
@@ -999,7 +996,7 @@ void BLASTER_SetupWaveBlaster(void)
 }
 
 
-int32_t BLASTER_IsSwapLeftRight(void)
+boolean BLASTER_IsSwapLeftRight(void)
 {
 	return BLASTER_Config.Type == SBPro || BLASTER_Config.Type == SBPro2;
 }
@@ -1028,7 +1025,7 @@ int32_t BLASTER_Init(void)
 	{
 		BLASTER_SaveVoiceVolume();
 
-		BLASTER_SoundPlaying = FALSE;
+		BLASTER_SoundPlaying = false;
 
 		BLASTER_CallBack = NULL;
 
@@ -1081,7 +1078,7 @@ int32_t BLASTER_Init(void)
 
 		BLASTER_SetVoiceVolume();
 
-		BLASTER_Installed = TRUE;
+		BLASTER_Installed = true;
 		status = BLASTER_Ok;
 	}
 
@@ -1118,11 +1115,11 @@ void BLASTER_Shutdown(void)
 	_dos_setvect(BLASTER_Config.Interrupt + 8, BLASTER_OldInt);
 #endif
 
-	BLASTER_SoundPlaying = FALSE;
+	BLASTER_SoundPlaying = false;
 
 	BLASTER_DMABuffer = NULL;
 
 	BLASTER_CallBack = NULL;
 
-	BLASTER_Installed = FALSE;
+	BLASTER_Installed = false;
 }

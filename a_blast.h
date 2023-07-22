@@ -80,7 +80,7 @@ int32_t  BLASTER_BeginBufferedPlayback(uint8_t *BufferStart, int32_t BufferSize,
 int32_t  BLASTER_GetEnv(BLASTER_CONFIG *Config);
 void     BLASTER_SetCardSettings(BLASTER_CONFIG Config);
 void     BLASTER_SetupWaveBlaster(void);
-int32_t  BLASTER_IsSwapLeftRight(void);
+boolean  BLASTER_IsSwapLeftRight(void);
 int32_t  BLASTER_Init(void);
 void     BLASTER_Shutdown(void);
 

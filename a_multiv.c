@@ -40,9 +40,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "a_multiv.h"
 #include "a_sndcrd.h"
 
-#define TRUE  ( 1 == 1 )
-#define FALSE ( !TRUE )
-
 enum MV_Errors
 {
 	MV_Error   = -1,
@@ -80,7 +77,7 @@ typedef struct VoiceNode
 	uint32_t SamplingRate;
 	uint32_t RateScale;
 	uint32_t position;
-	int32_t  Playing;
+	boolean  Playing;
 
 	int32_t  handle;
 	int32_t  priority;
@@ -114,7 +111,7 @@ void MV_Mix16BitStereo(void);
 //static signed short MV_VolumeTable[ MV_MaxVolume + 1 ][ 256 ];
 static int16_t MV_VolumeTable[ 63 + 1 ][ 256 ];
 
-static int32_t MV_Installed   = FALSE;
+static boolean MV_Installed   = false;
 static int32_t MV_SoundCard   = SoundBlaster;
 static int32_t MV_MaxVoices   = 1;
 
@@ -135,7 +132,7 @@ static int32_t MV_Bits       = 8;
 #define SILENCE_8BIT      0x80808080
 
 static int32_t MV_Silence    = SILENCE_8BIT;
-static int32_t MV_SwapLeftRight = FALSE;
+static boolean MV_SwapLeftRight = false;
 
 static int32_t MV_RequestedMixRate;
 static int32_t MV_MixRate;
@@ -146,7 +143,7 @@ static int32_t MV_BuffShift;
 static int32_t MV_TotalMemory;
 
 static uint16_t MV_BufferDescriptor;
-static int32_t  MV_BufferEmpty[NumberOfBuffers];
+static boolean  MV_BufferEmpty[NumberOfBuffers];
 static uint8_t *MV_MixBuffer[NumberOfBuffers + 1];
 
 static VoiceNode *MV_Voices = NULL;
@@ -331,14 +328,14 @@ static void MV_ServiceVoc(void)
 	if (!MV_BufferEmpty[MV_MixPage])
 	{
 		ClearBuffer_DW(MV_MixBuffer[MV_MixPage], MV_Silence, MV_BufferSize >> 2);
-		MV_BufferEmpty[MV_MixPage] = TRUE;
+		MV_BufferEmpty[MV_MixPage] = true;
 	}
 
 	// Play any waiting voices
 	voice = VoiceList.start;
 	while (voice != NULL)
 	{
-		MV_BufferEmpty[MV_MixPage] = FALSE;
+		MV_BufferEmpty[MV_MixPage] = false;
 
 		MV_Mix(voice, MV_MixPage);
 
@@ -363,7 +360,7 @@ static playbackstatus MV_GetNextRawBlock(VoiceNode *voice)
 {
 	if (voice->BlockLength == 0)
 	{
-		voice->Playing = FALSE;
+		voice->Playing = false;
 
 		return NoMoreData;
 	} else {
@@ -416,14 +413,14 @@ static VoiceNode *MV_GetVoice(int32_t handle)
    playing.
 ---------------------------------------------------------------------*/
 
-int32_t MV_VoicePlaying(int32_t handle)
+boolean MV_VoicePlaying(int32_t handle)
 {
 	VoiceNode *voice;
 
 	if (!MV_Installed)
 	{
 		MV_SetErrorCode(MV_NotInstalled);
-		return FALSE;
+		return false;
 	}
 
 	voice = MV_GetVoice(handle);
@@ -871,7 +868,7 @@ static int32_t MV_StartPlayback(void)
 	// Initialize the buffers
 	ClearBuffer_DW(MV_MixBuffer[0], MV_Silence, TotalBufferSize >> 2);
 	for (buffer = 0; buffer < MV_NumberOfBuffers; buffer++)
-		MV_BufferEmpty[buffer] = TRUE;
+		MV_BufferEmpty[buffer] = true;
 
 	// Set the mix buffer variables
 	MV_MixPage = 1;
@@ -958,7 +955,7 @@ int32_t MV_PlayRaw(uint8_t *ptr, uint32_t length, uint32_t rate, int32_t pitchof
 		return MV_Error;
 	}
 
-	voice->Playing     = TRUE;
+	voice->Playing     = true;
 	voice->NextBlock   = ptr;
 	voice->position    = 0;
 	voice->BlockLength = length;
@@ -1062,7 +1059,7 @@ static int32_t MV_TestPlayback(void)
 }
 
 
-static int32_t DPMI_GetDOSMemory(void **ptr, uint16_t *selector, uint32_t length)
+static boolean DPMI_GetDOSMemory(void **ptr, uint16_t *selector, uint32_t length)
 {
 	union REGS regs;
 
@@ -1092,9 +1089,9 @@ static int32_t DPMI_GetDOSMemory(void **ptr, uint16_t *selector, uint32_t length
 
 		*ptr      = (void *)(eax << 4);
 		*selector = dx;
-		return FALSE;
+		return false;
 	} else {
-		return TRUE;
+		return true;
 	}
 }
 
@@ -1165,7 +1162,7 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 		return;
 	}
 
-	MV_SwapLeftRight = FALSE;
+	MV_SwapLeftRight = false;
 
 	// Initialize the sound card
 	switch (soundcard)
@@ -1199,7 +1196,7 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 	}
 
 	MV_SoundCard    = soundcard;
-	MV_Installed    = TRUE;
+	MV_Installed    = true;
 
 	// Set the sampling rate
 	MV_RequestedMixRate = MixRate;
@@ -1259,7 +1256,7 @@ void MV_Shutdown(void)
 
 	MV_KillAllVoices();
 
-	MV_Installed = FALSE;
+	MV_Installed = false;
 
 	// Stop the sound playback engine
 	MV_StopPlayback();

@@ -196,7 +196,7 @@ int32_t PCFX_Play(void *vdata)
    Checks if a sound effect is currently playing.
 ---------------------------------------------------------------------*/
 
-int32_t PCFX_SoundPlaying(int32_t handle)
+boolean PCFX_SoundPlaying(int32_t handle)
 {
 	return (handle == PCFX_VoiceHandle) && (PCFX_LengthLeft > 0);
 }
