@@ -169,12 +169,10 @@ static void TS_SetTimerToMaxTaskRate(void)
    Interrupt service routine
 ---------------------------------------------------------------------*/
 
-#if defined __DJGPP__
-static void TS_ServiceSchedule (void)
-#elif defined __CCDL__ || defined __WATCOMC__
-static void _interrupt _far TS_ServiceSchedule (void)
-#elif defined __DMC__
+#if defined __DMC__
 static int TS_ServiceSchedule (struct INT_DATA *pd)
+#else
+static void _interrupt _far TS_ServiceSchedule (void)
 #endif
 {
 	task *ptr;

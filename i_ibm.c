@@ -691,12 +691,10 @@ static byte lastpress;
 ================
 */
 
-#if defined __DJGPP__
-static void I_KeyboardISR (void)
-#elif defined __CCDL__ || defined __WATCOMC__
-static void _interrupt I_KeyboardISR (void)
-#elif defined __DMC__
+#if defined __DMC__
 static int I_KeyboardISR (struct INT_DATA *pd)
+#else
+static void _interrupt I_KeyboardISR (void)	
 #endif
 {
 // Get the scan code

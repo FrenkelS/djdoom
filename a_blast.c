@@ -184,12 +184,10 @@ static void BLASTER_DisableInterrupt(void)
 // function that switches stacks.
 static int32_t GlobalStatus;
 
-#if defined __DJGPP__
-static void BLASTER_ServiceInterrupt(void)
-#elif defined __CCDL__ || defined __WATCOMC__
-static void _interrupt _far BLASTER_ServiceInterrupt(void)
-#elif defined __DMC__
+#if defined __DMC__
 static int BLASTER_ServiceInterrupt(struct INT_DATA *pd)
+#else
+static void _interrupt _far BLASTER_ServiceInterrupt(void)
 #endif
 {
 	// Acknowledge interrupt

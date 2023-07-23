@@ -33,6 +33,9 @@
 #define outp(port,data)		outportb(port,data)
 #define outpw(port,data)	outportw(port,data)
 
+#define _interrupt
+#define _far
+
 #define replaceInterrupt(OldInt,NewInt,vector,handler)				\
 _go32_dpmi_get_protected_mode_interrupt_vector(vector, &OldInt);	\
 																	\
