@@ -212,24 +212,7 @@ static int BLASTER_ServiceInterrupt(struct INT_DATA *pd)
 			inp( BLASTER_Config.Address + BLASTER_DataAvailablePort );
 		} else {
 			// Wasn't our interrupt.  Call the old one.
-#if defined __DJGPP__
-			asm
-			(
-				"cli \n"
-				"pushfl \n"
-				"lcall *%0"
-				:
-				: "m" (BLASTER_OldInt.pm_offset)
-			);
-#elif defined __WATCOMC__
 			_chain_intr(BLASTER_OldInt);
-#elif defined __CCDL__
-			//TODO call BLASTER_OldInt() instead of acknowledging the interrupt
-			outp(0x20, 0x20);
-			return;
-#elif defined __DMC__
-			return 0;
-#endif
 		}
 	} else {
 		// Older card - can't detect if an interrupt occurred.

@@ -33,6 +33,16 @@
 #define outp(port,data)		outportb(port,data)
 #define outpw(port,data)	outportw(port,data)
 
+#define _chain_intr(OldInt)		\
+asm								\
+(								\
+	"cli \n"					\
+	"pushfl \n"					\
+	"lcall *%0"					\
+	:							\
+	: "m" (OldInt.pm_offset)	\
+)
+
 
 
 #elif defined __DMC__
@@ -41,6 +51,8 @@
 #define int386 int86
 #define __djgpp_conventional_base ((int32_t)_x386_zero_base_ptr)
 #define __attribute__(x)
+
+#define _chain_intr(OldInt)	return(0)
 
 
 
@@ -52,6 +64,9 @@
 #define int386 _int386
 #define __djgpp_conventional_base 0
 #define __attribute__(x)
+
+//TODO call OldInt() instead of acknowledging the interrupt
+#define _chain_intr(OldInt)	outp(0x20,0x20);return
 
 
 

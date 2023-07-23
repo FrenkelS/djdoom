@@ -205,23 +205,7 @@ static int TS_ServiceSchedule (struct INT_DATA *pd)
 	if (TaskServiceCount > 0xffffL)
 	{
 		TaskServiceCount &= 0xffff;
-#if defined __DJGPP__
-		asm
-		(
-			"cli \n"
-			"pushfl \n"
-			"lcall *%0"
-			:
-			: "m" (OldInt8.pm_offset)
-		);
-#elif defined __WATCOMC__
 		_chain_intr(OldInt8);
-#elif defined __CCDL__
-		//TODO call OldInt8() instead of acknowledging the interrupt
-		outp(0x20, 0x20);
-#elif defined __DMC__
-		return 0;
-#endif
 	} else {
 		outp(0x20, 0x20);
 #if defined __DMC__
