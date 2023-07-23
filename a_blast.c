@@ -1021,16 +1021,7 @@ void BLASTER_Shutdown(void)
 	BLASTER_ResetDSP();
 
 	// Restore the original interrupt
-#if defined __DJGPP__
-	_go32_dpmi_set_protected_mode_interrupt_vector(BLASTER_Config.Interrupt + 8, &BLASTER_OldInt);
-	_go32_dpmi_free_iret_wrapper(&BLASTER_NewInt);
-#elif defined __DMC__
-	int_restore(BLASTER_Config.Interrupt + 8);
-#elif defined __CCDL__
-	dpmi_set_protected_interrupt(BLASTER_Config.Interrupt + 8, BLASTER_OldInt.pm_selector, BLASTER_OldInt.pm_offset);
-#elif defined __WATCOMC__
-	_dos_setvect(BLASTER_Config.Interrupt + 8, BLASTER_OldInt);
-#endif
+	restoreInterrupt(BLASTER_Config.Interrupt + 8, BLASTER_OldInt, BLASTER_NewInt);
 
 	BLASTER_SoundPlaying = false;
 

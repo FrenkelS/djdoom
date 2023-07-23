@@ -251,16 +251,7 @@ void TS_Shutdown(void)
 
 		TS_SetClockSpeed(0);
 
-#if defined __DJGPP__
-		_go32_dpmi_set_protected_mode_interrupt_vector(TIMERINT, &OldInt8);
-		_go32_dpmi_free_iret_wrapper(&NewInt8);
-#elif defined __DMC__
-		int_restore(TIMERINT);
-#elif defined __CCDL__
-		dpmi_set_protected_interrupt(TIMERINT, OldInt8.pm_selector, OldInt8.pm_offset);
-#elif defined __WATCOMC__
-		_dos_setvect(TIMERINT, OldInt8);
-#endif
+		restoreInterrupt(TIMERINT, OldInt8, NewInt8);
 
 		TS_Installed = false;
 	}

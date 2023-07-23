@@ -41,6 +41,10 @@ NewInt.pm_offset = (int32_t)handler;								\
 _go32_dpmi_allocate_iret_wrapper(&NewInt);							\
 _go32_dpmi_set_protected_mode_interrupt_vector(vector, &NewInt)
 
+#define restoreInterrupt(vector,OldInt,NewInt)						\
+_go32_dpmi_set_protected_mode_interrupt_vector(vector, &OldInt);	\
+_go32_dpmi_free_iret_wrapper(&NewInt);
+
 #define _chain_intr(OldInt)		\
 asm								\
 (								\
@@ -61,6 +65,8 @@ asm								\
 #define __attribute__(x)
 
 #define replaceInterrupt(OldInt,NewInt,vector,handler)	int_intercept(vector,handler,0)
+
+#define restoreInterrupt(vector,OldInt,NewInt)	int_restore(vector)
 
 #define _chain_intr(OldInt)	return(0)
 
@@ -90,6 +96,8 @@ typedef struct
 	dpmi_set_protected_interrupt(vector, segregs.cs, (uint32_t)handler);			\
 }
 
+#define restoreInterrupt(vector,OldInt,NewInt)	dpmi_set_protected_interrupt(vector,OldInt.pm_selector,OldInt.pm_offset)
+
 //TODO call OldInt() instead of acknowledging the interrupt
 #define _chain_intr(OldInt)	\
 outp(0x20,0x20);			\
@@ -105,6 +113,8 @@ return
 #define replaceInterrupt(OldInt,NewInt,vector,handler)	\
 OldInt = _dos_getvect(vector);							\
 _dos_setvect(vector, handler)
+
+#define restoreInterrupt(vector,OldInt,NewInt)	_dos_setvect(vector,OldInt)
 
 typedef union {
 	struct {

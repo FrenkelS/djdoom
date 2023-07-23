@@ -742,16 +742,7 @@ static void I_ShutdownKeyboard (void)
 {
 	if (isKeyboardIsrSet)
 	{
-#if defined __DJGPP__
-		_go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARDINT, &oldkeyboardisr);
-		_go32_dpmi_free_iret_wrapper(&newkeyboardisr);
-#elif defined __DMC__
-		int_restore(KEYBOARDINT);
-#elif defined __CCDL__
-		dpmi_set_protected_interrupt(KEYBOARDINT, oldkeyboardisr.pm_selector, oldkeyboardisr.pm_offset);
-#elif defined __WATCOMC__
-		_dos_setvect (KEYBOARDINT, oldkeyboardisr);
-#endif
+		restoreInterrupt(KEYBOARDINT, oldkeyboardisr, newkeyboardisr);
 	}
 
 	*(int16_t *)(0x41c + __djgpp_conventional_base) = *(int16_t *)(0x41a + __djgpp_conventional_base);      // clear bios key buffer
