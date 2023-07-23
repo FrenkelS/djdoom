@@ -1251,7 +1251,7 @@ byte *I_ZoneBase (int32_t *size)
 	byte	*ptr;
 
 	heap = _go32_dpmi_remaining_physical_memory();
-	printf ("DPMI memory: 0x%x",heap);
+	printf ("DPMI memory: %d kB", heap >> 10);
 
 	do
 	{
@@ -1261,7 +1261,7 @@ byte *I_ZoneBase (int32_t *size)
 		ptr = malloc (heap);
 	} while (!ptr);
 
-	printf (", 0x%x allocated for zone\n", heap);
+	printf (", %d kB allocated for zone\n", heap >> 10);
 	if (heap < 0x180000)
 	{
 		printf ("\n");
