@@ -142,7 +142,7 @@ static int32_t MV_BuffShift;
 
 static int32_t MV_TotalMemory;
 
-static uint16_t MV_BufferDescriptor;
+static int      MV_BufferDescriptor;
 static boolean  MV_BufferEmpty[NumberOfBuffers];
 static uint8_t *MV_MixBuffer[NumberOfBuffers + 1];
 
@@ -1059,55 +1059,72 @@ static int32_t MV_TestPlayback(void)
 }
 
 
-static boolean DPMI_GetDOSMemory(void **ptr, uint16_t *selector, uint32_t length)
+#if defined __CCDL__
+static int32_t __dpmi_allocate_dos_memory(int32_t paragraphs, int *selector)
 {
-	union REGS regs;
-
-#if defined __DJGPP__ || defined __CCDL__ || defined __WATCOMC__
-	regs.w.ax = 0x0100;
-	regs.w.bx = (length + 15) / 16;
-#elif defined __DMC__
-	regs.x.ax = 0x0100;
-	regs.x.bx = (length + 15) / 16;
-#endif
-
-	int386(0x31, &regs, &regs);
-
-#if defined __DJGPP__ || defined __CCDL__ || defined __WATCOMC__
-	if (!regs.w.cflag)
-#elif defined __DMC__
-	if (!regs.x.cflag)
-#endif
-	{
-#if defined __DJGPP__ || defined __CCDL__ || defined __WATCOMC__
-		uint32_t eax = regs.w.ax;
-		uint16_t  dx = regs.w.dx;
-#elif defined __DMC__
-		uint32_t eax = regs.x.ax;
-		uint16_t  dx = regs.x.dx;
-#endif
-
-		*ptr      = (void *)(eax << 4);
-		*selector = dx;
-		return false;
-	} else {
-		return true;
+	int32_t status;
+	uint16_t sel;
+	uint16_t segment;
+	status = dpmi_alloc_real_memory(&sel, &segment, paragraphs);
+	if (status)
+		return -1;
+	else {
+		*selector = sel;
+		return segment;
 	}
 }
-
-
-static void DPMI_FreeDOSMemory(uint16_t selector)
+#elif defined __DMC__
+static int32_t __dpmi_allocate_dos_memory(int32_t paragraphs, int *selector)
 {
 	union REGS regs;
-#if defined __DJGPP__ || defined __CCDL__ || defined __WATCOMC__
-	regs.w.ax = 0x0101;
-	regs.w.dx = selector;
-#elif __DMC__
+	regs.x.ax = 0x0100;
+	regs.x.bx = paragraphs;
+	int386(0x31, &regs, &regs);
+
+	if (regs.x.cflag)
+		return -1;
+	else {
+		*selector = regs.x.dx;
+		return regs.x.ax;
+	}
+}
+#elif defined __WATCOMC__
+static int32_t __dpmi_allocate_dos_memory(int32_t paragraphs, int32_t *selector)
+{
+	union REGS regs;
+	regs.w.ax = 0x0100;
+	regs.w.bx = paragraphs;
+	int386(0x31, &regs, &regs);
+
+	if (regs.w.cflag)
+		return -1;
+	else {
+		*selector = regs.w.dx;
+		return regs.w.ax;
+	}
+}
+#endif
+
+
+#if defined __CCDL__
+#define __dpmi_free_dos_memory(selector) dpmi_dealloc_real_memory(selector)
+#elif defined __DMC__
+static void __dpmi_free_dos_memory(int32_t selector)
+{
+	union REGS regs;
 	regs.x.ax = 0x0101;
 	regs.x.dx = selector;
-#endif
 	int386(0x31, &regs, &regs);
 }
+#elif defined __WATCOMC__
+static void __dpmi_free_dos_memory(int32_t selector)
+{
+	union REGS regs;
+	regs.w.ax = 0x0101;
+	regs.w.dx = selector;
+	int386(0x31, &regs, &regs);
+}
+#endif
 
 
 /*---------------------------------------------------------------------
@@ -1120,8 +1137,9 @@ static void DPMI_FreeDOSMemory(uint16_t selector)
 void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 {
 	uint8_t *ptr;
+	int32_t  segment;
 	int32_t  status;
-	int32_t  buffer;
+	int32_t  paragraphs;
 	int32_t  index;
 
 	if (MV_Installed)
@@ -1150,8 +1168,9 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 		LL_AddToTail(VoiceNode, &VoicePool, &MV_Voices[index]);
 
 	// Allocate mix buffer within 1st megabyte
-	status = DPMI_GetDOSMemory((void **)&ptr, &MV_BufferDescriptor, 2 * TotalBufferSize);
-	if (status)
+	paragraphs = ((2 * TotalBufferSize) + 15) / 16;
+	segment = __dpmi_allocate_dos_memory(paragraphs, &MV_BufferDescriptor);
+	if (segment == -1)
 	{
 		free(MV_Voices);
 		MV_Voices = NULL;
@@ -1160,6 +1179,12 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 
 		MV_SetErrorCode(MV_NoMem);
 		return;
+	} else {
+		ptr = (uint8_t *)((segment << 4) + __djgpp_conventional_base);
+
+		// Make sure we don't cross a physical page
+		if (((uint32_t)ptr & 0xffff) + TotalBufferSize > 0x10000)
+			ptr = (uint8_t *)(((uint32_t)ptr & 0xff0000) + 0x10000);
 	}
 
 	MV_SwapLeftRight = false;
@@ -1185,7 +1210,7 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 
 		MV_TotalMemory = 0;
 
-		DPMI_FreeDOSMemory(MV_BufferDescriptor);
+		__dpmi_free_dos_memory(MV_BufferDescriptor);
 
 		MV_SetErrorCode(status);
 		return;
@@ -1200,15 +1225,10 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 	// Set Mixer to play stereo digitized sound
 	MV_SetMixMode();
 
-	// Make sure we don't cross a physical page
-	ptr += __djgpp_conventional_base;
-	if (((uint32_t)ptr & 0xffff) + TotalBufferSize > 0x10000)
-		ptr = (uint8_t *)(((uint32_t)ptr & 0xff0000) + 0x10000);
-
 	MV_MixBuffer[MV_NumberOfBuffers] = ptr;
-	for (buffer = 0; buffer < MV_NumberOfBuffers; buffer++)
+	for (index = 0; index < MV_NumberOfBuffers; index++)
 	{
-		MV_MixBuffer[buffer] = ptr;
+		MV_MixBuffer[index] = ptr;
 		ptr += MV_BufferSize;
 	}
 
@@ -1281,7 +1301,7 @@ void MV_Shutdown(void)
 	MV_MaxVoices = 1;
 
 	// Release the descriptor from our mix buffer
-	DPMI_FreeDOSMemory(MV_BufferDescriptor);
+	__dpmi_free_dos_memory(MV_BufferDescriptor);
 	for (buffer = 0; buffer < NumberOfBuffers; buffer++)
 		MV_MixBuffer[buffer] = NULL;
 }

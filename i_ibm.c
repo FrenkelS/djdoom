@@ -111,7 +111,7 @@ static boolean         joystickpresent;
 static uint32_t        joystickx, joysticky;
 static boolean I_ReadJoystick (void)	// returns false if not connected
 {
-	// TODO implement joystick support
+	//TODO implement joystick support
 	return false;
 }
 
@@ -1243,16 +1243,16 @@ void I_Quit (void)
 ===============
 */
 
-static int32_t I_GetLargestAvailableFreeBlockInBytes(void)
-{
 #if defined __DJGPP__
-	return _go32_dpmi_remaining_physical_memory();
+// nothing
 #elif defined __DMC__
-	return _memmax();
+#define _go32_dpmi_remaining_physical_memory _memmax
 #elif defined __CCDL__
+static int32_t _go32_dpmi_remaining_physical_memory(void)
+{
 	DPMI_FREEMEM_INFO meminfo;
 
-	//There's a push/pop bug in CC386's dpmi_get_memory_info(), so we'll do it ourselves instead.
+	// There's a push/pop bug in CC386's dpmi_get_memory_info(), so we'll do it ourselves instead.
 	DPMI_FREEMEM_INFO *ptrmeminfo = &meminfo;
 	asm
 	{
@@ -1262,7 +1262,10 @@ static int32_t I_GetLargestAvailableFreeBlockInBytes(void)
 	}
 
 	return meminfo.largest_block;
+}
 #elif defined __WATCOMC__
+static int32_t _go32_dpmi_remaining_physical_memory(void)
+{
 	struct SREGS			segregs;
 	__dpmi_free_mem_info	meminfo;
 
@@ -1272,17 +1275,21 @@ static int32_t I_GetLargestAvailableFreeBlockInBytes(void)
 	regs.x.edi = FP_OFF(&meminfo);
 	int386x( DPMI_INT, &regs, &regs, &segregs );
 	return meminfo.largest_available_free_block_in_bytes;
-#else
-	return 0x800000 + 0x20000; //TODO implement I_GetLargestAvailableFreeBlockInBytes()
-#endif
 }
+#else
+static int32_t _go32_dpmi_remaining_physical_memory(void)
+{
+	 //TODO implement _go32_dpmi_remaining_physical_memory()
+	return 0x800000 + 0x20000;
+}
+#endif
 
 byte *I_ZoneBase (int32_t *size)
 {
 	int32_t	heap;
 	byte	*ptr;
 
-	heap = I_GetLargestAvailableFreeBlockInBytes();
+	heap = _go32_dpmi_remaining_physical_memory();
 	printf ("DPMI memory: 0x%x",heap);
 
 	do
