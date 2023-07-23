@@ -1168,10 +1168,6 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 	switch (soundcard)
 	{
 		case AHW_SOUND_BLASTER:
-			status = BLASTER_Init();
-			if (status != BLASTER_Ok)
-				MV_SetErrorCode(MV_BlasterError);
-
 			MV_SwapLeftRight = BLASTER_IsSwapLeftRight();
 			break;
 

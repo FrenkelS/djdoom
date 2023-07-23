@@ -60,8 +60,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIXER_SB16VoiceLeft       0x32
 #define MIXER_SB16VoiceRight      0x33
 
+#define DSP_Version1xx            0x0100
 #define DSP_Version2xx            0x0200
 #define DSP_Version201            0x0201
+#define DSP_Version3xx            0x0300
 #define DSP_Version4xx            0x0400
 
 #define DSP_8BitAutoInitMode          0x1c
@@ -72,32 +74,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DSP_8BitDAC                   0xC6
 #define DSP_SetTimeConstant           0x40
 #define DSP_Set_DA_Rate               0x41
-#define DSP_Set_AD_Rate               0x42
 #define DSP_Halt8bitTransfer          0xd0
 #define DSP_Halt16bitTransfer         0xd5
 #define DSP_SpeakerOn                 0xd1
 #define DSP_SpeakerOff                0xd3
 #define DSP_GetVersion                0xE1
 #define DSP_Reset                     0xFFFF
-
-typedef struct
-{
-	boolean IsSupported;
-	int32_t MaxMixMode;
-	int32_t MinSamplingRate;
-	int32_t MaxSamplingRate;
-} CARD_CAPABILITY;
-
-static const CARD_CAPABILITY BLASTER_CardConfig[ BLASTER_MaxCardType + 1 ] =
-{
-	{false,      INVALID, INVALID, INVALID}, // Unsupported
-	{ true,    MONO_8BIT,    4000,   23000}, // SB 1.0
-	{ true,  STEREO_8BIT,    4000,   44100}, // SBPro
-	{ true,    MONO_8BIT,    4000,   23000}, // SB 2.xx
-	{ true,  STEREO_8BIT,    4000,   44100}, // SBPro 2
-	{false,      INVALID, INVALID, INVALID}, // Unsupported
-	{ true, STEREO_16BIT,    5000,   44100}, // SB16
-};
 
 
 #if defined __DJGPP__
@@ -110,11 +92,20 @@ static void (_interrupt _far *BLASTER_OldInt)(void);
 #endif
 
 
+enum BLASTER_Types
+{
+	SB     = 1,
+	SBPro  = 2,
+	SB20   = 3,
+	SB16   = 6
+};
+
 #define UNDEFINED -1
 
 static BLASTER_CONFIG BLASTER_Config =
 {
-	UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED
+	UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+	UNDEFINED, UNDEFINED, UNDEFINED
 };
 
 static boolean BLASTER_Installed = false;
@@ -135,7 +126,7 @@ static int32_t  BLASTER_TotalDMABufferSize;
 
 static  int32_t BLASTER_TransferLength   = 0;
 static  int32_t BLASTER_MixMode          = BLASTER_DefaultMixMode;
-static  int32_t BLASTER_SamplePacketSize = MONO_16BIT_SAMPLE_SIZE;
+static uint32_t BLASTER_SamplePacketSize = MONO_16BIT_SAMPLE_SIZE;
 static uint32_t BLASTER_SampleRate       = BLASTER_DefaultSampleRate;
 
 static uint32_t BLASTER_HaltTransferCommand = DSP_Halt8bitTransfer;
@@ -147,8 +138,6 @@ static void ( *BLASTER_CallBack )( void );
 static int32_t  BLASTER_IntController1Mask;
 static int32_t  BLASTER_IntController2Mask;
 
-static int32_t BLASTER_MixerAddress = UNDEFINED;
-static int32_t BLASTER_MixerType    = 0;
 static int32_t BLASTER_OriginalVoiceVolumeLeft  = 255;
 static int32_t BLASTER_OriginalVoiceVolumeRight = 255;
 
@@ -340,7 +329,7 @@ static int32_t BLASTER_ResetDSP(void)
 
 	int32_t port = BLASTER_Config.Address + BLASTER_ResetPort;
 
-	int32_t status = BLASTER_CardNotReady;
+	int32_t status = BLASTER_Error;
 
 	outp(port, 1);
 
@@ -406,59 +395,51 @@ static int32_t BLASTER_GetDSPVersion(void)
 
 static void BLASTER_SetPlaybackRate(uint32_t rate)
 {
-	int32_t LoByte;
-	int32_t HiByte;
-	CARD_CAPABILITY const *card;
-
-	card = &BLASTER_CardConfig[BLASTER_Config.Type];
-
 	if (BLASTER_Version < DSP_Version4xx)
 	{
-		int32_t timeconstant;
-		int32_t ActualRate;
-
 		// Send sampling rate as time constant for older Sound
 		// Blaster compatible cards.
 
+		 int32_t timeconstant;
+		uint32_t ActualRate;
+
 		ActualRate = rate * BLASTER_SamplePacketSize;
-		if (ActualRate < card->MinSamplingRate)
-			rate = card->MinSamplingRate / BLASTER_SamplePacketSize;
+		if (ActualRate < BLASTER_Config.MinSamplingRate)
+			rate = BLASTER_Config.MinSamplingRate / BLASTER_SamplePacketSize;
 
-		if (ActualRate > card->MaxSamplingRate)
-			rate = card->MaxSamplingRate / BLASTER_SamplePacketSize;
+		if (ActualRate > BLASTER_Config.MaxSamplingRate)
+			rate = BLASTER_Config.MaxSamplingRate / BLASTER_SamplePacketSize;
 
-		timeconstant = ( int32_t )CalcTimeConstant( rate, BLASTER_SamplePacketSize );
+		timeconstant = (int32_t)CalcTimeConstant(rate, BLASTER_SamplePacketSize);
 
 		// Keep track of what the actual rate is
-		BLASTER_SampleRate  = ( uint32_t )CalcSamplingRate( timeconstant );
+		BLASTER_SampleRate  = (uint32_t)CalcSamplingRate(timeconstant);
 		BLASTER_SampleRate /= BLASTER_SamplePacketSize;
 
-		BLASTER_WriteDSP( DSP_SetTimeConstant );
-		BLASTER_WriteDSP( timeconstant );
+		BLASTER_WriteDSP(DSP_SetTimeConstant);
+		BLASTER_WriteDSP(timeconstant);
 	} else {
 		// Send literal sampling rate for cards with DSP version
 		// 4.xx (Sound Blaster 16)
 
+		int32_t LoByte;
+		int32_t HiByte;
+
 		BLASTER_SampleRate = rate;
 
-		if ( BLASTER_SampleRate < card->MinSamplingRate )
-			BLASTER_SampleRate = card->MinSamplingRate;
+		if (BLASTER_SampleRate < BLASTER_Config.MinSamplingRate)
+			BLASTER_SampleRate = BLASTER_Config.MinSamplingRate;
 
-		if ( BLASTER_SampleRate > card->MaxSamplingRate )
-			BLASTER_SampleRate = card->MaxSamplingRate;
+		if (BLASTER_SampleRate > BLASTER_Config.MaxSamplingRate)
+			BLASTER_SampleRate = BLASTER_Config.MaxSamplingRate;
 
-		HiByte = HIBYTE( BLASTER_SampleRate );
-		LoByte = LOBYTE( BLASTER_SampleRate );
+		HiByte = HIBYTE(BLASTER_SampleRate);
+		LoByte = LOBYTE(BLASTER_SampleRate);
 
 		// Set playback rate
-		BLASTER_WriteDSP( DSP_Set_DA_Rate );
-		BLASTER_WriteDSP( HiByte );
-		BLASTER_WriteDSP( LoByte );
-
-		// Set recording rate
-		BLASTER_WriteDSP( DSP_Set_AD_Rate );
-		BLASTER_WriteDSP( HiByte );
-		BLASTER_WriteDSP( LoByte );
+		BLASTER_WriteDSP(DSP_Set_DA_Rate);
+		BLASTER_WriteDSP(HiByte);
+		BLASTER_WriteDSP(LoByte);
 	}
 }
 
@@ -490,7 +471,7 @@ int32_t BLASTER_GetDMAChannel(void)
 
 #define BLASTER_MaxMixMode        STEREO_16BIT
 
-static const int32_t BLASTER_SampleSize[ BLASTER_MaxMixMode + 1 ] =
+static const uint32_t BLASTER_SampleSize[ BLASTER_MaxMixMode + 1 ] =
 {
 	MONO_8BIT_SAMPLE_SIZE,  STEREO_8BIT_SAMPLE_SIZE,
 	MONO_16BIT_SAMPLE_SIZE, STEREO_16BIT_SAMPLE_SIZE
@@ -498,43 +479,41 @@ static const int32_t BLASTER_SampleSize[ BLASTER_MaxMixMode + 1 ] =
 
 int32_t BLASTER_SetMixMode(int32_t mode)
 {
-	int32_t CardType = BLASTER_Config.Type;
-
 	mode &= BLASTER_MaxMixMode;
 
-	if ( !( BLASTER_CardConfig[ CardType ].MaxMixMode & STEREO ) )
+	if (!(BLASTER_Config.MaxMixMode & STEREO))
 		mode &= ~STEREO;
 
-	if ( !( BLASTER_CardConfig[ CardType ].MaxMixMode & SIXTEEN_BIT ) )
+	if (!(BLASTER_Config.MaxMixMode & SIXTEEN_BIT))
 		mode &= ~SIXTEEN_BIT;
 
 	BLASTER_MixMode = mode;
-	BLASTER_SamplePacketSize = BLASTER_SampleSize[ mode ];
+	BLASTER_SamplePacketSize = BLASTER_SampleSize[mode];
 
 	// For the Sound Blaster Pro, we have to set the mixer chip
 	// to play mono or stereo samples.
 
-	if ( ( CardType == SBPro ) || ( CardType == SBPro2 ) )
+	if (BLASTER_Config.Type == SBPro)
 	{
 		int32_t data;
 		int32_t	port = BLASTER_Config.Address + BLASTER_MixerAddressPort;
-		outp( port, MIXER_SBProOutputSetting );
+		outp(port, MIXER_SBProOutputSetting);
 
 		port = BLASTER_Config.Address + BLASTER_MixerDataPort;
 
 		// Get current mode
-		data = inp( port );
+		data = inp(port);
 
 		// set stereo mode bit
-		if ( mode & STEREO )
+		if (mode & STEREO)
 			data |= MIXER_SBProStereoFlag;
 		else
 			data &= ~MIXER_SBProStereoFlag;
 
 		// set the mode
-		outp( port, data );
+		outp(port, data);
 
-		BLASTER_SetPlaybackRate( BLASTER_SampleRate );
+		BLASTER_SetPlaybackRate(BLASTER_SampleRate);
 	}
 
 	return mode;
@@ -549,19 +528,16 @@ int32_t BLASTER_SetMixMode(int32_t mode)
 
 void BLASTER_StopPlayback(void)
 {
-	int32_t DmaChannel;
-
 	// Don't allow anymore interrupts
 	BLASTER_DisableInterrupt();
 
-	if ( BLASTER_HaltTransferCommand == DSP_Reset )
+	if (BLASTER_HaltTransferCommand == DSP_Reset)
 		BLASTER_ResetDSP();
 	else
-		BLASTER_WriteDSP( BLASTER_HaltTransferCommand );
+		BLASTER_WriteDSP(BLASTER_HaltTransferCommand);
 
 	// Disable the DMA channel
-	DmaChannel = BLASTER_MixMode & SIXTEEN_BIT ? BLASTER_Config.Dma16 : BLASTER_Config.Dma8;
-	DMA_EndTransfer( DmaChannel );
+	DMA_EndTransfer(BLASTER_DMAChannel);
 
 	// Turn off speaker
 	BLASTER_WriteDSP(DSP_SpeakerOff);
@@ -580,17 +556,9 @@ void BLASTER_StopPlayback(void)
 
 static int32_t BLASTER_SetupDMABuffer(uint8_t *BufferPtr, int32_t BufferSize)
 {
-	int32_t DmaStatus;
-
-	int32_t DmaChannel = BLASTER_MixMode & SIXTEEN_BIT ? BLASTER_Config.Dma16 : BLASTER_Config.Dma8;
-	if ( DmaChannel == UNDEFINED )
+	int32_t DmaStatus = DMA_SetupTransfer(BLASTER_DMAChannel, BufferPtr, BufferSize);
+	if (DmaStatus != DMA_Ok)
 		return BLASTER_Error;
-
-	DmaStatus = DMA_SetupTransfer( DmaChannel, BufferPtr, BufferSize );
-	if ( DmaStatus == DMA_Error )
-		return BLASTER_Error;
-
-	BLASTER_DMAChannel = DmaChannel;
 
 	BLASTER_DMABuffer          = BufferPtr;
 	BLASTER_CurrentDMABuffer   = BufferPtr;
@@ -765,8 +733,8 @@ int32_t BLASTER_BeginBufferedPlayback(uint8_t *BufferStart, int32_t BufferSize, 
 
 static void BLASTER_WriteMixer(int32_t reg, int32_t data)
 {
-	outp(BLASTER_MixerAddress + BLASTER_MixerAddressPort, reg);
-	outp(BLASTER_MixerAddress + BLASTER_MixerDataPort,   data);
+	outp(BLASTER_Config.Address + BLASTER_MixerAddressPort, reg);
+	outp(BLASTER_Config.Address + BLASTER_MixerDataPort,   data);
 }
 
 
@@ -778,8 +746,8 @@ static void BLASTER_WriteMixer(int32_t reg, int32_t data)
 
 static int32_t BLASTER_ReadMixer(int32_t reg)
 {
-	outp(BLASTER_MixerAddress + BLASTER_MixerAddressPort, reg);
-	return inp(BLASTER_MixerAddress + BLASTER_MixerDataPort);
+	outp(BLASTER_Config.Address + BLASTER_MixerAddressPort, reg);
+	return inp(BLASTER_Config.Address + BLASTER_MixerDataPort);
 }
 
 
@@ -796,10 +764,9 @@ static void BLASTER_SetVoiceVolume(void)
 {
 	int32_t data;
 
-	switch (BLASTER_MixerType)
+	switch (BLASTER_Config.Type)
 	{
 		case SBPro:
-		case SBPro2:
 			data = (volume & 0xf0) + (volume >> 4);
 			BLASTER_WriteMixer(MIXER_SBProVoice, data);
 			break;
@@ -820,10 +787,9 @@ static void BLASTER_SetVoiceVolume(void)
 
 static void BLASTER_SaveVoiceVolume(void)
 {
-	switch( BLASTER_MixerType )
+	switch(BLASTER_Config.Type)
 	{
 		case SBPro:
-		case SBPro2:
 			BLASTER_OriginalVoiceVolumeLeft  = BLASTER_ReadMixer(MIXER_SBProVoice);
 			break;
 
@@ -843,10 +809,9 @@ static void BLASTER_SaveVoiceVolume(void)
 
 static void BLASTER_RestoreVoiceVolume(void)
 {
-	switch( BLASTER_MixerType )
+	switch(BLASTER_Config.Type)
 	{
 		case SBPro:
-		case SBPro2:
 			BLASTER_WriteMixer(MIXER_SBProVoice, BLASTER_OriginalVoiceVolumeLeft);
 			break;
 
@@ -869,55 +834,45 @@ static void BLASTER_RestoreVoiceVolume(void)
 #define BlasterEnv_Interrupt  'I'
 #define BlasterEnv_8bitDma    'D'
 #define BlasterEnv_16bitDma   'H'
-#define BlasterEnv_Type       'T'
 
-int32_t BLASTER_GetEnv(BLASTER_CONFIG *Config)
+void BLASTER_GetEnv(int32_t *sbPort, int32_t *sbIrq, int32_t *sbDma8, int32_t *sbDma16)
 {
 	char *Blaster;
 	char parameter;
-	int32_t  status;
-	int32_t  errorcode;
 
-	Config->Address   = UNDEFINED;
-	Config->Type      = UNDEFINED;
-	Config->Interrupt = UNDEFINED;
-	Config->Dma8      = UNDEFINED;
-	Config->Dma16     = UNDEFINED;
+	*sbDma16 = UNDEFINED;
 
-	Blaster = getenv( "BLASTER" );
-	if ( Blaster == NULL )
-		return BLASTER_Error;
+	Blaster = getenv("BLASTER");
+	if (Blaster == NULL)
+		return;
 
-	while( *Blaster != 0 )
+	while(*Blaster != 0)
 	{
-		if ( *Blaster == ' ' )
+		if (*Blaster == ' ')
 		{
 			Blaster++;
 			continue;
 		}
 
-		parameter = toupper( *Blaster );
+		parameter = toupper(*Blaster);
 		Blaster++;
 
-		if ( !isxdigit( *Blaster ) )
-			return BLASTER_Error;
+		if (!isxdigit(*Blaster))
+			return;
 
-		switch( parameter )
+		switch(parameter)
 		{
-			case BlasterEnv_Address :
-				sscanf( Blaster, "%x", &Config->Address );
+			case BlasterEnv_Address:
+				sscanf(Blaster, "%x", sbPort);
 				break;
-			case BlasterEnv_Interrupt :
-				sscanf( Blaster, "%d", &Config->Interrupt );
+			case BlasterEnv_Interrupt:
+				sscanf(Blaster, "%d", sbIrq);
 				break;
-			case BlasterEnv_8bitDma :
-				sscanf( Blaster, "%d", &Config->Dma8 );
+			case BlasterEnv_8bitDma:
+				sscanf(Blaster, "%d", sbDma8);
 				break;
-			case BlasterEnv_Type :
-				sscanf( Blaster, "%d", &Config->Type );
-				break;
-			case BlasterEnv_16bitDma :
-				sscanf( Blaster, "%d", &Config->Dma16 );
+			case BlasterEnv_16bitDma:
+				sscanf(Blaster, "%d", sbDma16);
 				break;
 			default  :
 				// Skip the offending data
@@ -925,31 +880,9 @@ int32_t BLASTER_GetEnv(BLASTER_CONFIG *Config)
 				break;
 		}
 
-		while( isxdigit( *Blaster ) )
+		while(isxdigit(*Blaster))
 			Blaster++;
 	}
-
-	status    = BLASTER_Ok;
-	errorcode = BLASTER_Ok;
-
-	if ( Config->Type == UNDEFINED )
-		errorcode = BLASTER_CardTypeNotSet;
-	else if ( ( Config->Type < BLASTER_MinCardType ) || ( Config->Type > BLASTER_MaxCardType ) || ( !BLASTER_CardConfig[ Config->Type ].IsSupported ) )
-		errorcode = BLASTER_UnsupportedCardType;
-
-	if ( Config->Dma8 == UNDEFINED )
-		errorcode = BLASTER_DMANotSet;
-
-	if ( Config->Interrupt == UNDEFINED )
-		errorcode = BLASTER_IntNotSet;
-
-	if ( Config->Address == UNDEFINED )
-		errorcode = BLASTER_AddrNotSet;
-
-	if ( errorcode != BLASTER_Ok )
-		status = BLASTER_Error;
-
-	return status;
 }
 
 
@@ -961,20 +894,13 @@ int32_t BLASTER_GetEnv(BLASTER_CONFIG *Config)
 
 void BLASTER_SetCardSettings(BLASTER_CONFIG Config)
 {
-	if ( BLASTER_Installed )
+	if (BLASTER_Installed)
 		BLASTER_Shutdown();
 
-	if ( ( Config.Type < BLASTER_MinCardType ) || ( Config.Type > BLASTER_MaxCardType ) || ( !BLASTER_CardConfig[ Config.Type ].IsSupported ) )
-		return;
-
 	BLASTER_Config.Address   = Config.Address;
-	BLASTER_Config.Type      = Config.Type;
 	BLASTER_Config.Interrupt = Config.Interrupt;
 	BLASTER_Config.Dma8      = Config.Dma8;
 	BLASTER_Config.Dma16     = Config.Dma16;
-
-	BLASTER_MixerAddress     = Config.Address;
-	BLASTER_MixerType        = Config.Type;
 }
 
 
@@ -987,7 +913,7 @@ void BLASTER_SetCardSettings(BLASTER_CONFIG Config)
 
 void BLASTER_SetupWaveBlaster(void)
 {
-	if (BLASTER_MixerType == SB16)
+	if (BLASTER_Config.Type == SB16)
 	{
 		// Disable MPU401 interrupts.  If they are not disabled,
 		// the SB16 will not produce sound or music.
@@ -998,7 +924,7 @@ void BLASTER_SetupWaveBlaster(void)
 
 boolean BLASTER_IsSwapLeftRight(void)
 {
-	return BLASTER_Config.Type == SBPro || BLASTER_Config.Type == SBPro2;
+	return BLASTER_Config.Type == SBPro;
 }
 
 
@@ -1009,7 +935,7 @@ boolean BLASTER_IsSwapLeftRight(void)
    digitized sounds.
 ---------------------------------------------------------------------*/
 
-int32_t BLASTER_Init(void)
+void BLASTER_Init(void)
 {
 	int32_t status;
 
@@ -1017,72 +943,103 @@ int32_t BLASTER_Init(void)
 		BLASTER_Shutdown();
 
 	// Save the interrupt masks
-	BLASTER_IntController1Mask = inp( 0x21 );
-	BLASTER_IntController2Mask = inp( 0xA1 );
+	BLASTER_IntController1Mask = inp(0x21);
+	BLASTER_IntController2Mask = inp(0xA1);
 
 	status = BLASTER_ResetDSP();
-	if ( status == BLASTER_Ok )
+	if (status != BLASTER_Ok)
+		return;
+
+	BLASTER_SaveVoiceVolume();
+
+	BLASTER_SoundPlaying = false;
+
+	BLASTER_CallBack = NULL;
+
+	BLASTER_DMABuffer = NULL;
+
+	BLASTER_Version = BLASTER_GetDSPVersion();
+
+	BLASTER_DMAChannel = UNDEFINED;
+	if (BLASTER_Config.Dma16 != UNDEFINED && BLASTER_Version >= DSP_Version4xx)
 	{
-		BLASTER_SaveVoiceVolume();
-
-		BLASTER_SoundPlaying = false;
-
-		BLASTER_CallBack = NULL;
-
-		BLASTER_DMABuffer = NULL;
-
-		BLASTER_Version = BLASTER_GetDSPVersion();
-
-		BLASTER_SetPlaybackRate( BLASTER_DefaultSampleRate );
-		BLASTER_SetMixMode( BLASTER_DefaultMixMode );
-
-		if ( BLASTER_Config.Dma16 != UNDEFINED )
-		{
-			status = DMA_VerifyChannel( BLASTER_Config.Dma16 );
-			if ( status == DMA_Error )
-				return BLASTER_Error;
-		}
-
-		if ( BLASTER_Config.Dma8 != UNDEFINED )
-		{
-			status = DMA_VerifyChannel( BLASTER_Config.Dma8 );
-			if ( status == DMA_Error )
-				return BLASTER_Error;
-		}
-
-		// Install our interrupt handler
-		if (!(BLASTER_Config.Interrupt == 2 || BLASTER_Config.Interrupt == 5 || BLASTER_Config.Interrupt == 7))
-			return BLASTER_Error;
-
-#if defined __DJGPP__
-		_go32_dpmi_get_protected_mode_interrupt_vector(BLASTER_Config.Interrupt + 8, &BLASTER_OldInt);
-
-		BLASTER_NewInt.pm_selector = _go32_my_cs(); 
-		BLASTER_NewInt.pm_offset = (int32_t)BLASTER_ServiceInterrupt;
-		_go32_dpmi_allocate_iret_wrapper(&BLASTER_NewInt);
-		_go32_dpmi_set_protected_mode_interrupt_vector(BLASTER_Config.Interrupt + 8, &BLASTER_NewInt);
-#elif defined __DMC__
-		int_intercept(BLASTER_Config.Interrupt + 8, BLASTER_ServiceInterrupt, 0);
-#elif defined __CCDL__
-		{
-			struct SREGS	segregs;
-
-			_segread(&segregs);
-			dpmi_get_protected_interrupt(&BLASTER_OldIntSelector, &BLASTER_OldIntOffset, BLASTER_Config.Interrupt + 8);
-			dpmi_set_protected_interrupt(BLASTER_Config.Interrupt + 8, segregs.cs, (uint32_t)BLASTER_ServiceInterrupt);
-		}
-#elif defined __WATCOMC__
-		BLASTER_OldInt = _dos_getvect(BLASTER_Config.Interrupt + 8);
-		_dos_setvect(BLASTER_Config.Interrupt + 8, BLASTER_ServiceInterrupt);
-#endif
-
-		BLASTER_SetVoiceVolume();
-
-		BLASTER_Installed = true;
-		status = BLASTER_Ok;
+		status = DMA_VerifyChannel(BLASTER_Config.Dma16);
+		if (status == DMA_Ok)
+			BLASTER_DMAChannel = BLASTER_Config.Dma16;
 	}
 
-	return status;
+	if (BLASTER_DMAChannel == UNDEFINED)
+	{
+		status = DMA_VerifyChannel(BLASTER_Config.Dma8);
+		if (status != DMA_Ok)
+			return;
+
+		BLASTER_DMAChannel = BLASTER_Config.Dma8;
+	}
+
+	if (BLASTER_Version >= DSP_Version4xx)
+	{
+		BLASTER_Config.Type            = SB16;
+		BLASTER_Config.MinSamplingRate = 5000;
+		BLASTER_Config.MaxSamplingRate = 44100;
+		BLASTER_Config.MaxMixMode      = BLASTER_DMAChannel == BLASTER_Config.Dma16 ? STEREO_16BIT : STEREO_8BIT;
+	}
+	else if (BLASTER_Version >= DSP_Version3xx)
+	{
+		BLASTER_Config.Type            = SBPro;
+		BLASTER_Config.MinSamplingRate = 4000;
+		BLASTER_Config.MaxSamplingRate = 44100;
+		BLASTER_Config.MaxMixMode      = STEREO_8BIT;
+	}
+	else if (BLASTER_Version >= DSP_Version2xx)
+	{
+		BLASTER_Config.Type            = SB20;
+		BLASTER_Config.MinSamplingRate = 4000;
+		BLASTER_Config.MaxSamplingRate = 23000;
+		BLASTER_Config.MaxMixMode      = MONO_8BIT;
+	}
+	else if (BLASTER_Version >= DSP_Version1xx)
+	{		
+		BLASTER_Config.Type            = SB;
+		BLASTER_Config.MinSamplingRate = 4000;
+		BLASTER_Config.MaxSamplingRate = 23000;
+		BLASTER_Config.MaxMixMode      = MONO_8BIT;
+	}
+	else
+		return;
+
+	BLASTER_SetPlaybackRate(BLASTER_DefaultSampleRate);
+	BLASTER_SetMixMode(BLASTER_DefaultMixMode);
+
+	// Install our interrupt handler
+	if (!(BLASTER_Config.Interrupt == 2 || BLASTER_Config.Interrupt == 5 || BLASTER_Config.Interrupt == 7))
+		return;
+
+#if defined __DJGPP__
+	_go32_dpmi_get_protected_mode_interrupt_vector(BLASTER_Config.Interrupt + 8, &BLASTER_OldInt);
+
+	BLASTER_NewInt.pm_selector = _go32_my_cs(); 
+	BLASTER_NewInt.pm_offset = (int32_t)BLASTER_ServiceInterrupt;
+	_go32_dpmi_allocate_iret_wrapper(&BLASTER_NewInt);
+	_go32_dpmi_set_protected_mode_interrupt_vector(BLASTER_Config.Interrupt + 8, &BLASTER_NewInt);
+#elif defined __DMC__
+	int_intercept(BLASTER_Config.Interrupt + 8, BLASTER_ServiceInterrupt, 0);
+#elif defined __CCDL__
+	{
+		struct SREGS	segregs;
+
+		_segread(&segregs);
+		dpmi_get_protected_interrupt(&BLASTER_OldIntSelector, &BLASTER_OldIntOffset, BLASTER_Config.Interrupt + 8);
+		dpmi_set_protected_interrupt(BLASTER_Config.Interrupt + 8, segregs.cs, (uint32_t)BLASTER_ServiceInterrupt);
+	}
+#elif defined __WATCOMC__
+	BLASTER_OldInt = _dos_getvect(BLASTER_Config.Interrupt + 8);
+	_dos_setvect(BLASTER_Config.Interrupt + 8, BLASTER_ServiceInterrupt);
+#endif
+
+	BLASTER_SetVoiceVolume();
+
+	BLASTER_Installed = true;
 }
 
 

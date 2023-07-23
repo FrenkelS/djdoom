@@ -35,35 +35,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 typedef struct
 {
 	uint32_t Address;
-	uint32_t Type;
 	uint32_t Interrupt;
 	uint32_t Dma8;
 	uint32_t Dma16;
+	uint32_t Type;
+
+	uint32_t MinSamplingRate;
+	uint32_t MaxSamplingRate;
+	uint32_t MaxMixMode;
 } BLASTER_CONFIG;
 
 enum BLASTER_ERRORS
 {
 	BLASTER_Error = -1,
-	BLASTER_Ok = 0,
-	BLASTER_AddrNotSet,
-	BLASTER_IntNotSet,
-	BLASTER_DMANotSet,
-	BLASTER_CardTypeNotSet,
-	BLASTER_UnsupportedCardType,
-	BLASTER_CardNotReady
+	BLASTER_Ok    = 0
 };
-
-enum BLASTER_Types
-{
-	SB     = 1,
-	SBPro  = 2,
-	SB20   = 3,
-	SBPro2 = 4,
-	SB16   = 6
-};
-
-#define BLASTER_MinCardType    SB
-#define BLASTER_MaxCardType    SB16
 
 #define STEREO      1
 #define SIXTEEN_BIT 2
@@ -77,11 +63,11 @@ int32_t  BLASTER_GetDMAChannel(void);
 int32_t  BLASTER_SetMixMode(int32_t mode);
 void     BLASTER_StopPlayback(void);
 int32_t  BLASTER_BeginBufferedPlayback(uint8_t *BufferStart, int32_t BufferSize, int32_t NumDivisions, uint32_t SampleRate, int32_t MixMode, void (*CallBackFunc)(void));
-int32_t  BLASTER_GetEnv(BLASTER_CONFIG *Config);
+void     BLASTER_GetEnv(int32_t *sbPort, int32_t *sbIrq, int32_t *sbDma8, int32_t *sbDma16);
 void     BLASTER_SetCardSettings(BLASTER_CONFIG Config);
 void     BLASTER_SetupWaveBlaster(void);
 boolean  BLASTER_IsSwapLeftRight(void);
-int32_t  BLASTER_Init(void);
+void     BLASTER_Init(void);
 void     BLASTER_Shutdown(void);
 
 #endif

@@ -201,31 +201,29 @@ int32_t GF1_Detect(void) {return -1;}
 void GF1_SetMap(uint8_t *dmxlump, int32_t size) {UNUSED(dmxlump); UNUSED(size);}
 
 
-int32_t SB_Detect(int32_t *sbPort, int32_t *sbIrq, int32_t *sbDma, uint16_t *version)
+int32_t SB_Detect(int32_t *sbPort, int32_t *sbIrq, int32_t *sbDma, uint16_t *dspVersion)
 {
-	int32_t status;
+	int32_t sbDma16;
 
-	UNUSED(version);
+	UNUSED(dspVersion);
 
-	status = BLASTER_GetEnv(&dmx_blaster);
-	if (status != BLASTER_Ok)
-	{
-		// BLASTER environment variable not set
-		// use the values set through the setup program
-
-		if (!sbPort || !sbIrq || !sbDma)
-			return -1;
-
-		dmx_blaster.Type      = SB; // Sound Blaster 1.0
-		dmx_blaster.Address   = *sbPort;
-		dmx_blaster.Interrupt = *sbIrq;
-		dmx_blaster.Dma8      = *sbDma;
-	}
+	BLASTER_GetEnv(sbPort, sbIrq, sbDma, &sbDma16);
+	dmx_blaster.Address   = *sbPort;
+	dmx_blaster.Interrupt = *sbIrq;
+	dmx_blaster.Dma8      = *sbDma;
+	dmx_blaster.Dma16     = sbDma16;
 
 	return 0;
 }
 
-void SB_SetCard(int32_t iBaseAddr, int32_t iIrq, int32_t iDma) {UNUSED(iBaseAddr); UNUSED(iIrq); UNUSED(iDma);}
+void SB_SetCard(int32_t iBaseAddr, int32_t iIrq, int32_t iDma)
+{
+	UNUSED(iBaseAddr);
+	UNUSED(iIrq);
+	UNUSED(iDma);
+
+	BLASTER_SetCardSettings(dmx_blaster);
+}
 
 
 int32_t AL_Detect(int32_t *wait, int32_t *type)
@@ -315,10 +313,7 @@ int32_t DMX_Init(int32_t ticrate, int32_t maxsongs, uint32_t musicDevice, uint32
 	if (dmx_sdev == AHW_PC_SPEAKER)
 		PCFX_Init(ticrate);
 	else if (dmx_sdev == AHW_SOUND_BLASTER)
-	{
-		BLASTER_SetCardSettings(dmx_blaster);
 		BLASTER_Init();
-	}
 
 
 	// Music
