@@ -33,6 +33,14 @@
 #define outp(port,data)		outportb(port,data)
 #define outpw(port,data)	outportw(port,data)
 
+#define replaceInterrupt(OldInt,NewInt,vector,handler)				\
+_go32_dpmi_get_protected_mode_interrupt_vector(vector, &OldInt);	\
+																	\
+NewInt.pm_selector = _go32_my_cs(); 								\
+NewInt.pm_offset = (int32_t)handler;								\
+_go32_dpmi_allocate_iret_wrapper(&NewInt);							\
+_go32_dpmi_set_protected_mode_interrupt_vector(vector, &NewInt)
+
 #define _chain_intr(OldInt)		\
 asm								\
 (								\
@@ -52,6 +60,8 @@ asm								\
 #define __djgpp_conventional_base ((int32_t)_x386_zero_base_ptr)
 #define __attribute__(x)
 
+#define replaceInterrupt(OldInt,NewInt,vector,handler)	int_intercept(vector,handler,0)
+
 #define _chain_intr(OldInt)	return(0)
 
 
@@ -65,8 +75,25 @@ asm								\
 #define __djgpp_conventional_base 0
 #define __attribute__(x)
 
+typedef struct
+{
+	uint32_t pm_offset;
+	uint16_t pm_selector;
+} _go32_dpmi_seginfo;
+
+#define replaceInterrupt(OldInt,NewInt,vector,handler)								\
+{																					\
+	struct SREGS	segregs;														\
+																					\
+	_segread(&segregs);																\
+	dpmi_get_protected_interrupt(&OldInt.pm_selector, &OldInt.pm_offset, vector);	\
+	dpmi_set_protected_interrupt(vector, segregs.cs, (uint32_t)handler);			\
+}
+
 //TODO call OldInt() instead of acknowledging the interrupt
-#define _chain_intr(OldInt)	outp(0x20,0x20);return
+#define _chain_intr(OldInt)	\
+outp(0x20,0x20);			\
+return
 
 
 
@@ -74,6 +101,10 @@ asm								\
 //Watcom
 #define __djgpp_conventional_base 0
 #define __attribute__(x)
+
+#define replaceInterrupt(OldInt,NewInt,vector,handler)	\
+OldInt = _dos_getvect(vector);							\
+_dos_setvect(vector, handler)
 
 typedef union {
 	struct {

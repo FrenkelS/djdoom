@@ -82,11 +82,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DSP_Reset                     0xFFFF
 
 
-#if defined __DJGPP__
+#if defined __DJGPP__ || defined __CCDL__
 static _go32_dpmi_seginfo BLASTER_OldInt, BLASTER_NewInt;
-#elif defined __CCDL__
-static uint16_t BLASTER_OldIntSelector;
-static uint32_t BLASTER_OldIntOffset;
 #elif defined __WATCOMC__
 static void (_interrupt _far *BLASTER_OldInt)(void);
 #endif
@@ -998,27 +995,7 @@ void BLASTER_Init(void)
 	if (!(BLASTER_Config.Interrupt == 2 || BLASTER_Config.Interrupt == 5 || BLASTER_Config.Interrupt == 7))
 		return;
 
-#if defined __DJGPP__
-	_go32_dpmi_get_protected_mode_interrupt_vector(BLASTER_Config.Interrupt + 8, &BLASTER_OldInt);
-
-	BLASTER_NewInt.pm_selector = _go32_my_cs(); 
-	BLASTER_NewInt.pm_offset = (int32_t)BLASTER_ServiceInterrupt;
-	_go32_dpmi_allocate_iret_wrapper(&BLASTER_NewInt);
-	_go32_dpmi_set_protected_mode_interrupt_vector(BLASTER_Config.Interrupt + 8, &BLASTER_NewInt);
-#elif defined __DMC__
-	int_intercept(BLASTER_Config.Interrupt + 8, BLASTER_ServiceInterrupt, 0);
-#elif defined __CCDL__
-	{
-		struct SREGS	segregs;
-
-		_segread(&segregs);
-		dpmi_get_protected_interrupt(&BLASTER_OldIntSelector, &BLASTER_OldIntOffset, BLASTER_Config.Interrupt + 8);
-		dpmi_set_protected_interrupt(BLASTER_Config.Interrupt + 8, segregs.cs, (uint32_t)BLASTER_ServiceInterrupt);
-	}
-#elif defined __WATCOMC__
-	BLASTER_OldInt = _dos_getvect(BLASTER_Config.Interrupt + 8);
-	_dos_setvect(BLASTER_Config.Interrupt + 8, BLASTER_ServiceInterrupt);
-#endif
+	replaceInterrupt(BLASTER_OldInt, BLASTER_NewInt, BLASTER_Config.Interrupt + 8, BLASTER_ServiceInterrupt);
 
 	BLASTER_SetVoiceVolume();
 
@@ -1050,7 +1027,7 @@ void BLASTER_Shutdown(void)
 #elif defined __DMC__
 	int_restore(BLASTER_Config.Interrupt + 8);
 #elif defined __CCDL__
-	dpmi_set_protected_interrupt(BLASTER_Config.Interrupt + 8, BLASTER_OldIntSelector, BLASTER_OldIntOffset);
+	dpmi_set_protected_interrupt(BLASTER_Config.Interrupt + 8, BLASTER_OldInt.pm_selector, BLASTER_OldInt.pm_offset);
 #elif defined __WATCOMC__
 	_dos_setvect(BLASTER_Config.Interrupt + 8, BLASTER_OldInt);
 #endif

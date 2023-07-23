@@ -50,11 +50,8 @@ typedef struct
 static task HeadTask;
 static task *TaskList = &HeadTask;
 
-#if defined __DJGPP__
+#if defined __DJGPP__ || defined __CCDL__
 static _go32_dpmi_seginfo OldInt8, NewInt8;
-#elif defined __CCDL__
-static uint16_t OldInt8selector;
-static uint32_t OldInt8offset;
 #elif defined __WATCOMC__
 static void (_interrupt _far *OldInt8)(void);
 #endif
@@ -233,27 +230,7 @@ static void TS_Startup(void)
 		TaskServiceRate  = 0x10000L;
 		TaskServiceCount = 0;
 
-#if defined __DJGPP__
-		_go32_dpmi_get_protected_mode_interrupt_vector(TIMERINT, &OldInt8);
-
-		NewInt8.pm_selector = _go32_my_cs(); 
-		NewInt8.pm_offset = (int32_t)TS_ServiceSchedule;
-		_go32_dpmi_allocate_iret_wrapper(&NewInt8);
-		_go32_dpmi_set_protected_mode_interrupt_vector(TIMERINT, &NewInt8);
-#elif defined __DMC__
-		int_intercept(TIMERINT, TS_ServiceSchedule, 0);
-#elif defined __CCDL__
-		{
-			struct SREGS	segregs;
-
-			_segread(&segregs);
-			dpmi_get_protected_interrupt(&OldInt8selector, &OldInt8offset, TIMERINT);
-			dpmi_set_protected_interrupt(TIMERINT, segregs.cs, (uint32_t)TS_ServiceSchedule);
-		}
-#elif defined __WATCOMC__
-		OldInt8 = _dos_getvect(TIMERINT);
-		_dos_setvect(TIMERINT, TS_ServiceSchedule);
-#endif
+		replaceInterrupt(OldInt8, NewInt8, TIMERINT, TS_ServiceSchedule);
 
 		TS_Installed = true;
 	}
@@ -280,7 +257,7 @@ void TS_Shutdown(void)
 #elif defined __DMC__
 		int_restore(TIMERINT);
 #elif defined __CCDL__
-		dpmi_set_protected_interrupt(TIMERINT, OldInt8selector, OldInt8offset);
+		dpmi_set_protected_interrupt(TIMERINT, OldInt8.pm_selector, OldInt8.pm_offset);
 #elif defined __WATCOMC__
 		_dos_setvect(TIMERINT, OldInt8);
 #endif

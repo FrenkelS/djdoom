@@ -723,64 +723,36 @@ static int I_KeyboardISR (struct INT_DATA *pd)
 ===============
 */
 
-#if defined __DJGPP__
-static _go32_dpmi_seginfo oldkeyboardisr = {0}, newkeyboardisr;
-#elif defined __DMC__
 static boolean isKeyboardIsrSet = false;
-#elif defined __CCDL__
-static uint16_t oldkeyboardisrselector;
-static uint32_t oldkeyboardisroffset = 0;
+
+#if defined __DJGPP__ || defined __CCDL__
+static _go32_dpmi_seginfo oldkeyboardisr, newkeyboardisr;
 #elif defined __WATCOMC__
 static void (_interrupt _far *oldkeyboardisr) (void) = NULL;
 #endif
 
 static void I_StartupKeyboard (void)
 {
-#if defined __DJGPP__
-	_go32_dpmi_get_protected_mode_interrupt_vector(KEYBOARDINT, &oldkeyboardisr);
-
-	newkeyboardisr.pm_selector = _go32_my_cs(); 
-	newkeyboardisr.pm_offset = (int32_t)I_KeyboardISR;
-	_go32_dpmi_allocate_iret_wrapper(&newkeyboardisr);
-	_go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARDINT, &newkeyboardisr);
-#elif defined __DMC__
-	int_intercept(KEYBOARDINT, I_KeyboardISR, 0);
+	replaceInterrupt(oldkeyboardisr, newkeyboardisr, KEYBOARDINT, I_KeyboardISR);
 	isKeyboardIsrSet = true;
-#elif defined __CCDL__
-	struct SREGS	segregs;
-
-	_segread(&segregs);
-	dpmi_get_protected_interrupt(&oldkeyboardisrselector, &oldkeyboardisroffset, KEYBOARDINT);
-	dpmi_set_protected_interrupt(KEYBOARDINT, segregs.cs, (uint32_t)I_KeyboardISR);
-#elif defined __WATCOMC__
-	oldkeyboardisr = _dos_getvect(KEYBOARDINT);
-	_dos_setvect (KEYBOARDINT, I_KeyboardISR);
-#else
-	//TODO implement I_StartupKeyboard()
-#endif
 }
 
 
 static void I_ShutdownKeyboard (void)
 {
-#if defined __DJGPP__
-	if (oldkeyboardisr.size)
+	if (isKeyboardIsrSet)
 	{
+#if defined __DJGPP__
 		_go32_dpmi_set_protected_mode_interrupt_vector(KEYBOARDINT, &oldkeyboardisr);
 		_go32_dpmi_free_iret_wrapper(&newkeyboardisr);
-	}
 #elif defined __DMC__
-	if (isKeyboardIsrSet)
 		int_restore(KEYBOARDINT);
 #elif defined __CCDL__
-	if (oldkeyboardisroffset)
-		dpmi_set_protected_interrupt(KEYBOARDINT, oldkeyboardisrselector, oldkeyboardisroffset);
+		dpmi_set_protected_interrupt(KEYBOARDINT, oldkeyboardisr.pm_selector, oldkeyboardisr.pm_offset);
 #elif defined __WATCOMC__
-	if (oldkeyboardisr)
 		_dos_setvect (KEYBOARDINT, oldkeyboardisr);
-#else
-	//TODO implement I_ShutdownKeyboard()
 #endif
+	}
 
 	*(int16_t *)(0x41c + __djgpp_conventional_base) = *(int16_t *)(0x41a + __djgpp_conventional_base);      // clear bios key buffer
 }
