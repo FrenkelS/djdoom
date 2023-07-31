@@ -46,7 +46,7 @@ _go32_dpmi_set_protected_mode_interrupt_vector(vector, &NewInt)
 
 #define restoreInterrupt(vector,OldInt,NewInt)						\
 _go32_dpmi_set_protected_mode_interrupt_vector(vector, &OldInt);	\
-_go32_dpmi_free_iret_wrapper(&NewInt);
+_go32_dpmi_free_iret_wrapper(&NewInt)
 
 #define _chain_intr(OldInt)		\
 asm								\
