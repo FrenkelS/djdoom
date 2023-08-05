@@ -1138,7 +1138,6 @@ typedef struct
 	 int32_t		tics;
 	 void			(*action) ();
 	 statenum_t		nextstate;
-	 int32_t		misc1, misc2;
 } state_t;
 
 extern state_t	states[NUMSTATES];
