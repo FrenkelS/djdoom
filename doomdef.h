@@ -702,7 +702,6 @@ typedef struct
 	int32_t		handle,position,size;
 } lumpinfo_t;
 
-extern	void**		_lumpcache; // temp hack
 extern lumpinfo_t *lumpinfo;
 
 void	W_InitMultipleFiles (char **filenames);
