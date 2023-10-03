@@ -81,11 +81,11 @@ sector_t *getSector(int32_t currentSector,int32_t line,int32_t side);
 side_t	*getSide(int32_t currentSector,int32_t line, int32_t side);
 fixed_t	P_FindLowestFloorSurrounding(sector_t *sec);
 fixed_t	P_FindHighestFloorSurrounding(sector_t *sec);
-fixed_t	P_FindNextHighestFloor(sector_t *sec,int32_t currentheight);
+fixed_t	P_FindNextHighestFloor(sector_t *sec);
 fixed_t	P_FindLowestCeilingSurrounding(sector_t *sec);
 fixed_t	P_FindHighestCeilingSurrounding(sector_t *sec);
 int32_t	P_FindSectorFromLineTag(line_t	*line,int32_t start);
-int32_t	P_FindMinSurroundingLight(sector_t *sector,int32_t max);
+int32_t	P_FindMinSurroundingLight(sector_t *sector);
 sector_t *getNextSector(line_t *line,sector_t *sec);
 
 //

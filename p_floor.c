@@ -282,15 +282,13 @@ boolean EV_DoFloor(line_t *line,floor_e floortype)
 				floor->direction = 1;
 				floor->sector = sec;
 				floor->speed = FLOORSPEED*4;
-				floor->floordestheight = 
-					P_FindNextHighestFloor(sec,sec->floorheight);
+				floor->floordestheight = P_FindNextHighestFloor(sec);
 				break;
 			case raiseFloorToNearest:
 				floor->direction = 1;
 				floor->sector = sec;
 				floor->speed = FLOORSPEED;
-				floor->floordestheight = 
-					P_FindNextHighestFloor(sec,sec->floorheight);
+				floor->floordestheight = P_FindNextHighestFloor(sec);
 				break;
 			case raiseFloor24:
 				floor->direction = 1;

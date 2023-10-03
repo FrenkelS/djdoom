@@ -65,7 +65,7 @@ void P_SpawnFireFlicker  (sector_t *sector)
 	flick->thinker.function = T_FireFlicker;
 	flick->sector = sector;
 	flick->maxlight = sector->lightlevel;
-	flick->minlight = P_FindMinSurroundingLight(sector,sector->lightlevel)+16;
+	flick->minlight = P_FindMinSurroundingLight(sector)+16;
 	flick->count = 4;
 }
 
@@ -124,7 +124,7 @@ void P_SpawnLightFlash (sector_t *sector)
 	flash->sector = sector;
 	flash->maxlight = sector->lightlevel;
 
-	flash->minlight = P_FindMinSurroundingLight(sector,sector->lightlevel);
+	flash->minlight = P_FindMinSurroundingLight(sector);
 	flash->maxtime = 64;
 	flash->mintime = 7;
 	flash->count = (P_Random()&flash->maxtime)+1;
@@ -179,7 +179,7 @@ void P_SpawnStrobeFlash (sector_t *sector,int32_t fastOrSlow, int32_t inSync)
 	flash->brighttime = STROBEBRIGHT;
 	flash->thinker.function = T_StrobeFlash;
 	flash->maxlight = sector->lightlevel;
-	flash->minlight = P_FindMinSurroundingLight(sector, sector->lightlevel);
+	flash->minlight = P_FindMinSurroundingLight(sector);
 		
 	if (flash->minlight == flash->maxlight)
 		flash->minlight = 0;
@@ -317,7 +317,7 @@ void P_SpawnGlowingLight(sector_t *sector)
 	g = Z_Malloc( sizeof(*g), PU_LEVSPEC, 0);
 	P_AddThinker(&g->thinker);
 	g->sector = sector;
-	g->minlight = P_FindMinSurroundingLight(sector,sector->lightlevel);
+	g->minlight = P_FindMinSurroundingLight(sector);
 	g->maxlight = sector->lightlevel;
 	g->thinker.function = T_Glow;
 	g->direction = -1;

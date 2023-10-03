@@ -206,8 +206,9 @@ fixed_t	P_FindHighestFloorSurrounding(sector_t *sec)
 //	FIND NEXT HIGHEST FLOOR IN SURROUNDING SECTORS
 //
 //==================================================================
-fixed_t	P_FindNextHighestFloor(sector_t *sec,int32_t currentheight)
+fixed_t	P_FindNextHighestFloor(sector_t *sec)
 {
+	int32_t currentheight = sec->floorheight;
 	int32_t		i;
 	int32_t		h;
 	int32_t		min;
@@ -307,14 +308,14 @@ int32_t	P_FindSectorFromLineTag(line_t	*line,int32_t start)
 //	Find minimum light from an adjacent sector
 //
 //==================================================================
-int32_t	P_FindMinSurroundingLight(sector_t *sector,int32_t max)
+int32_t	P_FindMinSurroundingLight(sector_t *sector)
 {
 	int32_t			i;
 	int32_t			min;
 	line_t		*line;
 	sector_t	*check;
 	
-	min = max;
+	min = sector->lightlevel;
 	for (i=0 ; i < sector->linecount ; i++)
 	{
 		line = sector->lines[i];
