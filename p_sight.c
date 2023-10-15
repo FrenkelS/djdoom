@@ -37,8 +37,6 @@ static divline_t	strace;			// from t1 to t2
 static fixed_t		t2x;
 static fixed_t		t2y;
 
-static int32_t		sightcounts[2];
-
 
 /*
 ==============
@@ -307,11 +305,9 @@ boolean P_CheckSight (mobj_t *t1, mobj_t *t2)
 	
 	if (rejectmatrix[bytenum]&bitnum)
 	{
-sightcounts[0]++;
 		return false;		// can't possibly be connected
 	}
 
-	sightcounts[1]++;
 	validcount++;
 
 	sightzstart = t1->z + t1->height - (t1->height>>2);
