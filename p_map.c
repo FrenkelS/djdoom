@@ -1,6 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
-// Copyright (C) 2023 Frenkel Smeijers
+// Copyright (C) 2023-2024 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -438,8 +438,7 @@ boolean P_CheckPosition (mobj_t *thing, fixed_t x, fixed_t y)
 =
 = P_TryMove
 =
-= Attempt to move to a new position, crossing special lines unless MF_TELEPORT
-= is set
+= Attempt to move to a new position, crossing special lines
 =
 ===================
 */
@@ -459,11 +458,9 @@ boolean P_TryMove (mobj_t *thing, fixed_t x, fixed_t y)
 		if (tmceilingz - tmfloorz < thing->height)
 			return false;	// doesn't fit
 		floatok = true;
-		if ( !(thing->flags&MF_TELEPORT)
-			&&tmceilingz - thing->z < thing->height)
+		if (tmceilingz - thing->z < thing->height)
 			return false;	// mobj must lower itself to fit
-		if ( !(thing->flags&MF_TELEPORT)
-			&& tmfloorz - thing->z > 24*FRACUNIT )
+		if (tmfloorz - thing->z > 24*FRACUNIT )
 			return false;	// too big a step up
 		if ( !(thing->flags&(MF_DROPOFF|MF_FLOAT))
 			&& tmfloorz - tmdropoffz > 24*FRACUNIT )
@@ -487,7 +484,7 @@ boolean P_TryMove (mobj_t *thing, fixed_t x, fixed_t y)
 //
 // if any special lines were hit, do the effect
 //
-	if (! (thing->flags&(MF_TELEPORT|MF_NOCLIP)) )
+	if (!(thing->flags & MF_NOCLIP))
 		while (numspechit--)
 		{
 		// see if the line was crossed

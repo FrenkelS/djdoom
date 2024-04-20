@@ -1,6 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
-// Copyright (C) 2023 Frenkel Smeijers
+// Copyright (C) 2023-2024 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -303,7 +303,6 @@ typedef struct
 #define	MF_NOCLIP		0x1000		// player cheat
 #define	MF_SLIDE		0x2000		// keep info about sliding along walls
 #define	MF_FLOAT		0x4000		// allow moves to any height, no gravity
-#define	MF_TELEPORT		0x8000		// don't cross lines or look at heights
 #define MF_MISSILE		0x10000		// don't hit same species, explode on block
 
 #define	MF_DROPPED		0x20000		// dropped by a demon, not level spawned
