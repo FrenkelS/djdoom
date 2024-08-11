@@ -147,10 +147,12 @@ typedef byte	lighttable_t;		// this could be wider for >8 bit display
 typedef struct visplane_s
 {
 	struct visplane_s *next;
+	struct visplane_s *drawnext;
 	fixed_t		height;
 	int32_t		picnum;
 	int32_t		lightlevel;
 	int32_t		minx, maxx;
+	byte		used;
 	byte		pad1;						// leave pads for [minx-1]/[maxx+1]
 	byte		top[SCREENWIDTH];
 	byte		pad2;
@@ -313,7 +315,7 @@ void R_ClearClipSegs (void);
 
 void R_ClearDrawSegs (void);
 void R_InitSkyMap (void);
-void R_InitVisplanes(void);
+void R_ResetPlanes(void);
 void R_RenderBSPNode (int32_t bspnum);
 
 //

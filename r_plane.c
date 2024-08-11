@@ -32,9 +32,8 @@ static int32_t	skytexturemid;
 // opening
 //
 
-#define UNUSED_VISPLANE 0
-
-static visplane_t		visplanes[MAXVISPLANES];
+static visplane_t*		visplanes[MAXVISPLANES];
+static visplane_t*		drawvisplane;
 visplane_t		*floorplane, *ceilingplane;
 
 static int16_t	openings[MAXOPENINGS];
@@ -75,8 +74,6 @@ static fixed_t		cachedystep[SCREENHEIGHT];
 =
 = R_InitSkyMap
 =
-= Called whenever the view size changes
-=
 ================
 */
 
@@ -87,18 +84,9 @@ void R_InitSkyMap (void)
 }
 
 
-void R_InitVisplanes(void)
+void R_ResetPlanes(void)
 {
-	int32_t i;
-
-	for (i = 0; i < MAXVISPLANES - 1; i++)
-	{
-		visplanes[i].next   = &visplanes[i + 1];
-		visplanes[i].picnum = UNUSED_VISPLANE;
-	}
-
-	visplanes[MAXVISPLANES - 1].next   = &visplanes[0];
-	visplanes[MAXVISPLANES - 1].picnum = UNUSED_VISPLANE;
+	memset(visplanes, 0, sizeof(visplanes));
 }
 
 
@@ -193,6 +181,7 @@ void R_ClearPlanes (void)
 		ceilingclip[i] = -1;
 	}
 
+	drawvisplane = NULL;
 	lastopening = openings;
 	
 //
@@ -234,30 +223,57 @@ visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)
 	}
 
 	hash = visplane_hash(height, picnum, lightlevel);
-	check = &visplanes[hash];
-	
-	for (i = 0; i < MAXVISPLANES; i++)
-	{
-		if (check->height     == height
-		&&  check->picnum     == picnum
-		&&  check->lightlevel == lightlevel)
-			return check;
+	check = visplanes[hash];
 
-		if (check->picnum == UNUSED_VISPLANE)
+	while (check != NULL)
+	{
+		if (check->used)
 		{
+			if (check->height     == height
+			&&  check->picnum     == picnum
+			&&  check->lightlevel == lightlevel)
+			{
+				return check;
+			}
+			else
+			{
+				check = check->next;
+			}
+		}
+		else
+		{
+			check->used       = true;
 			check->height     = height;
 			check->picnum     = picnum;
 			check->lightlevel = lightlevel;
 			check->minx       = SCREENWIDTH;
 			check->maxx       = -1;
 			memset(check->top, 0xff, sizeof(check->top));
+
+			check->drawnext = drawvisplane;
+			drawvisplane = check;
+
 			return check;
 		}
-
-		check = check->next;
 	}
 
-	I_Error("R_FindPlane: no more visplanes");
+	check = Z_Malloc(sizeof(visplane_t), PU_LEVEL, NULL);
+	memset(check->bottom, 0, sizeof(check->bottom));
+	check->next = visplanes[hash];
+	visplanes[hash] = check;
+
+	check->used       = true;
+	check->height     = height;
+	check->picnum     = picnum;
+	check->lightlevel = lightlevel;
+	check->minx       = SCREENWIDTH;
+	check->maxx       = -1;
+	memset(check->top, 0xff, sizeof(check->top));
+
+	check->drawnext = drawvisplane;
+	drawvisplane = check;
+
+	return check;
 }
 
 /*
@@ -313,25 +329,48 @@ visplane_t *R_CheckPlane (visplane_t *pl, int32_t start, int32_t stop)
 // make a new visplane
 
 	hash = visplane_hash(pl->height, pl->picnum, pl->lightlevel);
-	hash++;
-	hash &= (MAXVISPLANES - 1);
-	check = &visplanes[hash];
+	check = visplanes[hash];
 
-	while (true)
+	do
 	{
-		if (check->picnum == UNUSED_VISPLANE)
+		if (check->used)
 		{
+			check = check->next;
+		}
+		else
+		{
+			check->used       = true;
 			check->height     = pl->height;
 			check->picnum     = pl->picnum;
 			check->lightlevel = pl->lightlevel;
 			check->minx       = start;
 			check->maxx       = stop;
 			memset(check->top, 0xff, sizeof(check->top));
+
+			check->drawnext = drawvisplane;
+			drawvisplane = check;
+
 			return check;
 		}
+	} while (check != NULL);
 
-		check = check->next;
-	}
+	check = Z_Malloc(sizeof(visplane_t), PU_LEVEL, NULL);
+	memset(check->bottom, 0, sizeof(check->bottom));
+	check->next = visplanes[hash];
+	visplanes[hash] = check;
+
+	check->used       = true;
+	check->height     = pl->height;
+	check->picnum     = pl->picnum;
+	check->lightlevel = pl->lightlevel;
+	check->minx       = start;
+	check->maxx       = stop;
+	memset(check->top, 0xff, sizeof(check->top));
+
+	check->drawnext = drawvisplane;
+	drawvisplane = check;
+
+	return check;
 }
 
 
@@ -384,7 +423,7 @@ static void R_MakeSpans (int32_t x, int32_t t1, int32_t b1, int32_t t2, int32_t 
 
 void R_DrawPlanes (void)
 {
-	visplane_t	*pl;
+	visplane_t	*pl, *prev;
 	int32_t		light;
 	int32_t		i, x, stop;
 	int32_t		angle;
@@ -396,12 +435,10 @@ void R_DrawPlanes (void)
 		I_Error ("R_DrawPlanes: opening overflow (%i)", lastopening - openings);
 #endif
 
-	for (i = 0, pl = &visplanes[0]; i < MAXVISPLANES; i++, pl++)
+	pl = drawvisplane;
+	while (pl != NULL)
 	{
-		if (pl->picnum == UNUSED_VISPLANE)
-			continue;
-
-		if (pl->minx <= pl->maxx)
+		if (pl->used && pl->minx <= pl->maxx)
 		{
 			if (pl->picnum == skyflatnum)
 			{
@@ -449,6 +486,9 @@ void R_DrawPlanes (void)
 			}
 		}
 
-		pl->picnum = UNUSED_VISPLANE;
+		prev = pl;
+		pl = pl->drawnext;
+		prev->used     = false;
+		prev->drawnext = NULL;
 	}
 }
