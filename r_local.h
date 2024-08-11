@@ -147,6 +147,7 @@ typedef byte	lighttable_t;		// this could be wider for >8 bit display
 typedef struct visplane_s
 {
 	struct visplane_s *next;
+	struct visplane_s *drawnext;
 	fixed_t		height;
 	int32_t		picnum;
 	int32_t		lightlevel;

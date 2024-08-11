@@ -35,6 +35,7 @@ static int32_t	skytexturemid;
 #define UNUSED_VISPLANE 0
 
 static visplane_t		visplanes[MAXVISPLANES];
+static visplane_t		*drawvisplane;
 visplane_t		*floorplane, *ceilingplane;
 
 static int16_t	openings[MAXOPENINGS];
@@ -193,6 +194,7 @@ void R_ClearPlanes (void)
 		ceilingclip[i] = -1;
 	}
 
+	drawvisplane = NULL;
 	lastopening = openings;
 	
 //
@@ -251,6 +253,10 @@ visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)
 			check->minx       = SCREENWIDTH;
 			check->maxx       = -1;
 			memset(check->top, 0xff, sizeof(check->top));
+
+			check->drawnext = drawvisplane;
+			drawvisplane = check;
+
 			return check;
 		}
 
@@ -258,6 +264,7 @@ visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)
 	}
 
 	I_Error("R_FindPlane: no more visplanes");
+	return NULL;
 }
 
 /*
@@ -317,7 +324,7 @@ visplane_t *R_CheckPlane (visplane_t *pl, int32_t start, int32_t stop)
 	hash &= (MAXVISPLANES - 1);
 	check = &visplanes[hash];
 
-	while (true)
+	for (x = 0; x < MAXVISPLANES; x++)
 	{
 		if (check->picnum == UNUSED_VISPLANE)
 		{
@@ -327,11 +334,18 @@ visplane_t *R_CheckPlane (visplane_t *pl, int32_t start, int32_t stop)
 			check->minx       = start;
 			check->maxx       = stop;
 			memset(check->top, 0xff, sizeof(check->top));
+
+			check->drawnext = drawvisplane;
+			drawvisplane = check;
+
 			return check;
 		}
 
 		check = check->next;
 	}
+
+	I_Error("R_CheckPlane: no more visplanes");
+	return NULL;
 }
 
 
@@ -384,9 +398,9 @@ static void R_MakeSpans (int32_t x, int32_t t1, int32_t b1, int32_t t2, int32_t 
 
 void R_DrawPlanes (void)
 {
-	visplane_t	*pl;
+	visplane_t	*pl, *prev;
 	int32_t		light;
-	int32_t		i, x, stop;
+	int32_t		x, stop;
 	int32_t		angle;
 
 #ifdef RANGECHECK
@@ -396,11 +410,9 @@ void R_DrawPlanes (void)
 		I_Error ("R_DrawPlanes: opening overflow (%i)", lastopening - openings);
 #endif
 
-	for (i = 0, pl = &visplanes[0]; i < MAXVISPLANES; i++, pl++)
+	pl = drawvisplane;
+	while (pl != NULL)
 	{
-		if (pl->picnum == UNUSED_VISPLANE)
-			continue;
-
 		if (pl->minx <= pl->maxx)
 		{
 			if (pl->picnum == skyflatnum)
@@ -449,6 +461,9 @@ void R_DrawPlanes (void)
 			}
 		}
 
-		pl->picnum = UNUSED_VISPLANE;
+		prev = pl;
+		pl = pl->drawnext;
+		prev->picnum   = UNUSED_VISPLANE;
+		prev->drawnext = NULL;
 	}
 }
