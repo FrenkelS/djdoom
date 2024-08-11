@@ -32,7 +32,9 @@ static int32_t	skytexturemid;
 // opening
 //
 
-static visplane_t*		visplanes[MAXVISPLANES];
+#define	VISPLANEBUCKETS	32
+
+static visplane_t*		visplanes[VISPLANEBUCKETS];
 static visplane_t*		drawvisplane;
 visplane_t		*floorplane, *ceilingplane;
 
@@ -207,7 +209,7 @@ void R_ClearPlanes (void)
 
 static uint32_t visplane_hash(fixed_t height, int32_t picnum, int32_t lightlevel)
 {
-	return (picnum * 3 + lightlevel + height * 7) & (MAXVISPLANES - 1);
+	return (picnum * 3 + lightlevel + height * 7) & (VISPLANEBUCKETS - 1);
 }
 
 visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)

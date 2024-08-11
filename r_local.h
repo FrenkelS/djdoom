@@ -141,7 +141,6 @@ typedef struct
 
 typedef byte	lighttable_t;		// this could be wider for >8 bit display
 
-#define	MAXVISPLANES	128
 #define	MAXOPENINGS		SCREENWIDTH*64
 
 typedef struct visplane_s
