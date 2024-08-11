@@ -213,7 +213,7 @@ static uint32_t visplane_hash(fixed_t height, int32_t picnum, int32_t lightlevel
 visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)
 {
 	visplane_t *check;
-	uint32_t hash, i;
+	uint32_t hash;
 
 	if(picnum == skyflatnum)
 	{
@@ -425,7 +425,7 @@ void R_DrawPlanes (void)
 {
 	visplane_t	*pl, *prev;
 	int32_t		light;
-	int32_t		i, x, stop;
+	int32_t		x, stop;
 	int32_t		angle;
 
 #ifdef RANGECHECK
