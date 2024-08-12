@@ -320,11 +320,11 @@ visplane_t *R_CheckPlane (visplane_t *pl, int32_t start, int32_t stop)
 // make a new visplane
 
 	hash = visplane_hash(pl->height, pl->picnum, pl->lightlevel);
-	hash++;
-	hash &= (MAXVISPLANES - 1);
 	check = &visplanes[hash];
 
-	for (x = 0; x < MAXVISPLANES; x++)
+	// skip first visplane that might be the one that needs splitting
+	check = check->next;
+	for (x = 0; x < MAXVISPLANES - 1; x++)
 	{
 		if (check->picnum == UNUSED_VISPLANE)
 		{
