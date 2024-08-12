@@ -141,7 +141,6 @@ typedef struct
 
 typedef byte	lighttable_t;		// this could be wider for >8 bit display
 
-#define	MAXVISPLANES	128
 #define	MAXOPENINGS		SCREENWIDTH*64
 
 typedef struct visplane_s
@@ -315,6 +314,7 @@ void R_ClearClipSegs (void);
 void R_ClearDrawSegs (void);
 void R_InitSkyMap (void);
 void R_InitVisplanes(void);
+void R_ResetPlanes(void);
 void R_RenderBSPNode (int32_t bspnum);
 
 //

@@ -34,7 +34,14 @@ static int32_t	skytexturemid;
 
 #define UNUSED_VISPLANE -1
 
+#if defined REMOVE_LIMITS
+#define VISPLANEBUCKETS	32
+static visplane_t*		visplanes[VISPLANEBUCKETS];
+#else
+#define	MAXVISPLANES	128
 static visplane_t		visplanes[MAXVISPLANES];
+#endif
+
 static visplane_t		*drawvisplane;
 visplane_t		*floorplane, *ceilingplane;
 
@@ -76,8 +83,6 @@ static fixed_t		cachedystep[SCREENHEIGHT];
 =
 = R_InitSkyMap
 =
-= Called whenever the view size changes
-=
 ================
 */
 
@@ -90,6 +95,7 @@ void R_InitSkyMap (void)
 
 void R_InitVisplanes(void)
 {
+#if !defined REMOVE_LIMITS
 	int32_t i;
 
 	for (i = 0; i < MAXVISPLANES - 1; i++)
@@ -100,6 +106,15 @@ void R_InitVisplanes(void)
 
 	visplanes[MAXVISPLANES - 1].next   = &visplanes[0];
 	visplanes[MAXVISPLANES - 1].picnum = UNUSED_VISPLANE;
+#endif
+}
+
+
+void R_ResetPlanes(void)
+{
+#if defined REMOVE_LIMITS
+	memset(visplanes, 0, sizeof(visplanes));
+#endif
 }
 
 
@@ -220,7 +235,8 @@ void R_ClearPlanes (void)
 
 static uint32_t visplane_hash(fixed_t height, int32_t picnum, int32_t lightlevel)
 {
-	return (picnum * 3 + lightlevel + height * 7) & (MAXVISPLANES - 1);
+	size_t visplanestablesize = sizeof(visplanes) / sizeof(visplanes[0]);
+	return (picnum * 3 + lightlevel + height * 7) & (visplanestablesize - 1);
 }
 
 visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)
@@ -236,6 +252,58 @@ visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)
 	}
 
 	hash = visplane_hash(height, picnum, lightlevel);
+
+#if defined REMOVE_LIMITS
+	check = visplanes[hash];
+
+	while (check != NULL)
+	{
+		if (check->picnum != UNUSED_VISPLANE)
+		{
+			if (check->height     == height
+			&&  check->picnum     == picnum
+			&&  check->lightlevel == lightlevel)
+			{
+				return check;
+			}
+			else
+			{
+				check = check->next;
+			}
+		}
+		else
+		{
+			check->height     = height;
+			check->picnum     = picnum;
+			check->lightlevel = lightlevel;
+			check->minx       = SCREENWIDTH;
+			check->maxx       = -1;
+			memset(check->top, 0xff, sizeof(check->top));
+
+			check->drawnext = drawvisplane;
+			drawvisplane = check;
+
+			return check;
+		}
+	}
+
+	check = Z_Malloc(sizeof(visplane_t), PU_LEVEL, NULL);
+	memset(check->bottom, 0, sizeof(check->bottom));
+	check->next = visplanes[hash];
+	visplanes[hash] = check;
+
+	check->height     = height;
+	check->picnum     = picnum;
+	check->lightlevel = lightlevel;
+	check->minx       = SCREENWIDTH;
+	check->maxx       = -1;
+	memset(check->top, 0xff, sizeof(check->top));
+
+	check->drawnext = drawvisplane;
+	drawvisplane = check;
+
+	return check;
+#else
 	check = &visplanes[hash];
 	
 	for (i = 0; i < MAXVISPLANES; i++)
@@ -265,6 +333,7 @@ visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)
 
 	I_Error("R_FindPlane: no more visplanes");
 	return NULL;
+#endif
 }
 
 /*
@@ -320,6 +389,51 @@ visplane_t *R_CheckPlane (visplane_t *pl, int32_t start, int32_t stop)
 // make a new visplane
 
 	hash = visplane_hash(pl->height, pl->picnum, pl->lightlevel);
+
+#if defined REMOVE_LIMITS
+	check = visplanes[hash];
+
+	// skip first visplane that might be the one that needs splitting
+	check = check->next;
+	while (check != NULL)
+	{
+		if (check->picnum != UNUSED_VISPLANE)
+		{
+			check = check->next;
+		}
+		else
+		{
+			check->height     = pl->height;
+			check->picnum     = pl->picnum;
+			check->lightlevel = pl->lightlevel;
+			check->minx       = start;
+			check->maxx       = stop;
+			memset(check->top, 0xff, sizeof(check->top));
+
+			check->drawnext = drawvisplane;
+			drawvisplane = check;
+
+			return check;
+		}
+	}
+
+	check = Z_Malloc(sizeof(visplane_t), PU_LEVEL, NULL);
+	memset(check->bottom, 0, sizeof(check->bottom));
+	check->next = visplanes[hash];
+	visplanes[hash] = check;
+
+	check->height     = pl->height;
+	check->picnum     = pl->picnum;
+	check->lightlevel = pl->lightlevel;
+	check->minx       = start;
+	check->maxx       = stop;
+	memset(check->top, 0xff, sizeof(check->top));
+
+	check->drawnext = drawvisplane;
+	drawvisplane = check;
+
+	return check;
+#else
 	check = &visplanes[hash];
 
 	// skip first visplane that might be the one that needs splitting
@@ -346,6 +460,7 @@ visplane_t *R_CheckPlane (visplane_t *pl, int32_t start, int32_t stop)
 
 	I_Error("R_CheckPlane: no more visplanes");
 	return NULL;
+#endif
 }
 
 
