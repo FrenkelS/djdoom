@@ -32,7 +32,7 @@ static int32_t	skytexturemid;
 // opening
 //
 
-#define UNUSED_VISPLANE 0
+#define UNUSED_VISPLANE -1
 #define	VISPLANEBUCKETS	32
 
 static visplane_t*		visplanes[VISPLANEBUCKETS];
