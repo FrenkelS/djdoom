@@ -32,6 +32,7 @@ static int32_t	skytexturemid;
 // opening
 //
 
+#define UNUSED_VISPLANE 0
 #define	VISPLANEBUCKETS	32
 
 static visplane_t*		visplanes[VISPLANEBUCKETS];
@@ -229,7 +230,7 @@ visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)
 
 	while (check != NULL)
 	{
-		if (check->used)
+		if (check->picnum != UNUSED_VISPLANE)
 		{
 			if (check->height     == height
 			&&  check->picnum     == picnum
@@ -244,7 +245,6 @@ visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)
 		}
 		else
 		{
-			check->used       = true;
 			check->height     = height;
 			check->picnum     = picnum;
 			check->lightlevel = lightlevel;
@@ -264,7 +264,6 @@ visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)
 	check->next = visplanes[hash];
 	visplanes[hash] = check;
 
-	check->used       = true;
 	check->height     = height;
 	check->picnum     = picnum;
 	check->lightlevel = lightlevel;
@@ -335,13 +334,12 @@ visplane_t *R_CheckPlane (visplane_t *pl, int32_t start, int32_t stop)
 
 	do
 	{
-		if (check->used)
+		if (check->picnum != UNUSED_VISPLANE)
 		{
 			check = check->next;
 		}
 		else
 		{
-			check->used       = true;
 			check->height     = pl->height;
 			check->picnum     = pl->picnum;
 			check->lightlevel = pl->lightlevel;
@@ -361,7 +359,6 @@ visplane_t *R_CheckPlane (visplane_t *pl, int32_t start, int32_t stop)
 	check->next = visplanes[hash];
 	visplanes[hash] = check;
 
-	check->used       = true;
 	check->height     = pl->height;
 	check->picnum     = pl->picnum;
 	check->lightlevel = pl->lightlevel;
@@ -440,7 +437,7 @@ void R_DrawPlanes (void)
 	pl = drawvisplane;
 	while (pl != NULL)
 	{
-		if (pl->used && pl->minx <= pl->maxx)
+		if (pl->minx <= pl->maxx)
 		{
 			if (pl->picnum == skyflatnum)
 			{
@@ -490,7 +487,7 @@ void R_DrawPlanes (void)
 
 		prev = pl;
 		pl = pl->drawnext;
-		prev->used     = false;
+		prev->picnum   = UNUSED_VISPLANE;
 		prev->drawnext = NULL;
 	}
 }

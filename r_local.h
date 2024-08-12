@@ -151,7 +151,6 @@ typedef struct visplane_s
 	int32_t		picnum;
 	int32_t		lightlevel;
 	int32_t		minx, maxx;
-	byte		used;
 	byte		pad1;						// leave pads for [minx-1]/[maxx+1]
 	byte		top[SCREENWIDTH];
 	byte		pad2;
