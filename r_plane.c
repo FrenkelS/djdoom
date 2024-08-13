@@ -224,6 +224,19 @@ void R_ClearPlanes (void)
 }
 
 
+static void setVisplaneData(visplane_t* visplane, fixed_t height, int32_t picnum, int32_t lightlevel, int32_t minx, int32_t maxx)
+{
+	visplane->height     = height;
+	visplane->picnum     = picnum;
+	visplane->lightlevel = lightlevel;
+	visplane->minx       = minx;
+	visplane->maxx       = maxx;
+	memset(visplane->top, 0xff, sizeof(visplane->top));
+
+	visplane->drawnext = drawvisplane;
+	drawvisplane = visplane;
+}
+
 
 /*
 ===============
@@ -273,16 +286,7 @@ visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)
 		}
 		else
 		{
-			check->height     = height;
-			check->picnum     = picnum;
-			check->lightlevel = lightlevel;
-			check->minx       = SCREENWIDTH;
-			check->maxx       = -1;
-			memset(check->top, 0xff, sizeof(check->top));
-
-			check->drawnext = drawvisplane;
-			drawvisplane = check;
-
+			setVisplaneData(check, height, picnum, lightlevel, SCREENWIDTH, -1);
 			return check;
 		}
 	}
@@ -292,16 +296,7 @@ visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)
 	check->next = visplanes[hash];
 	visplanes[hash] = check;
 
-	check->height     = height;
-	check->picnum     = picnum;
-	check->lightlevel = lightlevel;
-	check->minx       = SCREENWIDTH;
-	check->maxx       = -1;
-	memset(check->top, 0xff, sizeof(check->top));
-
-	check->drawnext = drawvisplane;
-	drawvisplane = check;
-
+	setVisplaneData(check, height, picnum, lightlevel, SCREENWIDTH, -1);
 	return check;
 #else
 	check = &visplanes[hash];
@@ -315,16 +310,7 @@ visplane_t *R_FindPlane (fixed_t height, int32_t picnum, int32_t lightlevel)
 
 		if (check->picnum == UNUSED_VISPLANE)
 		{
-			check->height     = height;
-			check->picnum     = picnum;
-			check->lightlevel = lightlevel;
-			check->minx       = SCREENWIDTH;
-			check->maxx       = -1;
-			memset(check->top, 0xff, sizeof(check->top));
-
-			check->drawnext = drawvisplane;
-			drawvisplane = check;
-
+			setVisplaneData(check, height, picnum, lightlevel, SCREENWIDTH, -1);
 			return check;
 		}
 
@@ -403,16 +389,7 @@ visplane_t *R_CheckPlane (visplane_t *pl, int32_t start, int32_t stop)
 		}
 		else
 		{
-			check->height     = pl->height;
-			check->picnum     = pl->picnum;
-			check->lightlevel = pl->lightlevel;
-			check->minx       = start;
-			check->maxx       = stop;
-			memset(check->top, 0xff, sizeof(check->top));
-
-			check->drawnext = drawvisplane;
-			drawvisplane = check;
-
+			setVisplaneData(check, pl->height, pl->picnum, pl->lightlevel, start, stop);
 			return check;
 		}
 	}
@@ -422,16 +399,7 @@ visplane_t *R_CheckPlane (visplane_t *pl, int32_t start, int32_t stop)
 	check->next = visplanes[hash];
 	visplanes[hash] = check;
 
-	check->height     = pl->height;
-	check->picnum     = pl->picnum;
-	check->lightlevel = pl->lightlevel;
-	check->minx       = start;
-	check->maxx       = stop;
-	memset(check->top, 0xff, sizeof(check->top));
-
-	check->drawnext = drawvisplane;
-	drawvisplane = check;
-
+	setVisplaneData(check, pl->height, pl->picnum, pl->lightlevel, start, stop);
 	return check;
 #else
 	check = &visplanes[hash];
@@ -442,16 +410,7 @@ visplane_t *R_CheckPlane (visplane_t *pl, int32_t start, int32_t stop)
 	{
 		if (check->picnum == UNUSED_VISPLANE)
 		{
-			check->height     = pl->height;
-			check->picnum     = pl->picnum;
-			check->lightlevel = pl->lightlevel;
-			check->minx       = start;
-			check->maxx       = stop;
-			memset(check->top, 0xff, sizeof(check->top));
-
-			check->drawnext = drawvisplane;
-			drawvisplane = check;
-
+			setVisplaneData(check, pl->height, pl->picnum, pl->lightlevel, start, stop);
 			return check;
 		}
 
