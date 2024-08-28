@@ -787,11 +787,11 @@ void I_InitGraphics (void);
 void I_InitNetwork (void);
 void I_NetCmd (void);
 
-void I_Error (char *error, ...);
+void _Noreturn I_Error (char *error, ...);
 // called by anything that can generate a terminal error
 // bad exit with diagnostic message
 
-void I_Quit (void);
+void _Noreturn I_Quit (void);
 // called by M_Responder when quit is selected
 // clean exit, displays sell blurb
 

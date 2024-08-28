@@ -1,6 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
-// Copyright (C) 2023 Frenkel Smeijers
+// Copyright (C) 2023-2024 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -420,7 +420,7 @@ static void D_Display (void)
 ================
 */
 
-static void D_DoomLoop (void)
+static void _Noreturn D_DoomLoop(void)
 {
 	if (demorecording)
 		G_BeginRecording ();

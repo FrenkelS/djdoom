@@ -1,6 +1,6 @@
 //
 //
-// Copyright (C) 2023 Frenkel Smeijers
+// Copyright (C) 2023-2024 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -66,6 +66,7 @@ asm								\
 #define int386 int86
 #define __djgpp_conventional_base ((int32_t)_x386_zero_base_ptr)
 #define __attribute__(x)
+#define _Noreturn /* see #pragma noreturn(identifier) */
 
 #define replaceInterrupt(OldInt,NewInt,vector,handler)	int_intercept(vector,handler,0)
 
@@ -83,6 +84,7 @@ asm								\
 #define int386 _int386
 #define __djgpp_conventional_base 0
 #define __attribute__(x)
+#define _Noreturn
 
 typedef struct
 {
@@ -112,6 +114,7 @@ return
 //Watcom
 #define __djgpp_conventional_base 0
 #define __attribute__(x)
+#define _Noreturn __declspec(aborts)
 
 #define replaceInterrupt(OldInt,NewInt,vector,handler)	\
 OldInt = _dos_getvect(vector);							\
