@@ -1,6 +1,6 @@
 //
 // Copyright (C) 1993-1996 Id Software, Inc.
-// Copyright (C) 2023 Frenkel Smeijers
+// Copyright (C) 2023-2024 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -141,11 +141,12 @@ typedef struct
 
 typedef byte	lighttable_t;		// this could be wider for >8 bit display
 
-#define	MAXVISPLANES	128
 #define	MAXOPENINGS		SCREENWIDTH*64
 
-typedef struct
+typedef struct visplane_s
 {
+	struct visplane_s *next;
+	struct visplane_s *drawnext;
 	fixed_t		height;
 	int32_t		picnum;
 	int32_t		lightlevel;
@@ -312,6 +313,8 @@ void R_ClearClipSegs (void);
 
 void R_ClearDrawSegs (void);
 void R_InitSkyMap (void);
+void R_InitVisplanes(void);
+void R_ResetPlanes(void);
 void R_RenderBSPNode (int32_t bspnum);
 
 //
