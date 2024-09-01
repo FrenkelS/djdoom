@@ -228,7 +228,9 @@ static void R_InitSpriteDefs (void)
 */
 #define	MAXVISSPRITES	128
 
-static vissprite_t	vissprites[MAXVISSPRITES], *vissprite_p;
+static int32_t		num_vissprite;
+static vissprite_t	vissprites[MAXVISSPRITES];
+static vissprite_t*	vissprite_ptrs[MAXVISSPRITES];
 
 
 /*
@@ -264,7 +266,7 @@ void R_InitSprites (void)
 
 void R_ClearSprites (void)
 {
-	vissprite_p = vissprites;
+	num_vissprite = 0;
 }
 
 
@@ -280,10 +282,10 @@ static vissprite_t		overflowsprite;
 
 static vissprite_t *R_NewVisSprite (void)
 {
-	if (vissprite_p == &vissprites[MAXVISSPRITES])
+	if (num_vissprite >= MAXVISSPRITES)
 		return &overflowsprite;
-	vissprite_p++;
-	return vissprite_p-1;
+
+	return vissprites + num_vissprite++;
 }
 
 
@@ -694,53 +696,55 @@ static void R_DrawPlayerSprites (void)
 ========================
 */
 
-static vissprite_t	vsprsortedhead;
+#define bcopyp(d, s, n) memcpy(d, s, (n) * sizeof(void *))
+
+// merge sort
+static void msort(vissprite_t **s, vissprite_t **t, int32_t n)
+{
+	if (n >= 16)
+	{
+		int32_t n1 = n / 2, n2 = n - n1;
+		vissprite_t **s1 = s, **s2 = s + n1, **d = t;
+
+		msort(s1, t, n1);
+		msort(s2, t, n2);
+
+		while ((*s1)->scale > (*s2)->scale ? (*d++ = *s1++, --n1) : (*d++ = *s2++, --n2))
+			;
+
+		if (n2)
+			bcopyp(d, s2, n2);
+		else
+			bcopyp(d, s1, n1);
+
+		bcopyp(s, t, n);
+	}
+	else
+	{
+		for (int32_t i = 1; i < n; i++)
+		{
+			vissprite_t *temp = s[i];
+			if (s[i - 1]->scale < temp->scale)
+			{
+				int32_t j = i;
+				while ((s[j] = s[j - 1])->scale < temp->scale && --j)
+					;
+				s[j] = temp;
+			}
+		}
+	}
+}
 
 static void R_SortVisSprites (void)
 {
-	int32_t		i, count;
-	vissprite_t	*ds, *best;
-	vissprite_t	unsorted;
-	fixed_t		bestscale;
+	int32_t i = num_vissprite;
 
-	count = vissprite_p - vissprites;
-
-	unsorted.next = unsorted.prev = &unsorted;
-	if (!count)
-		return;
-
-	for (ds=vissprites ; ds<vissprite_p ; ds++)
+	if (i)
 	{
-		ds->next = ds+1;
-		ds->prev = ds-1;
-	}
-	vissprites[0].prev = &unsorted;
-	unsorted.next = &vissprites[0];
-	(vissprite_p-1)->next = &unsorted;
-	unsorted.prev = vissprite_p-1;
+		while (--i >= 0)
+			vissprite_ptrs[i] = vissprites + i;
 
-//
-// pull the vissprites out by scale
-//
-	best = NULL;		// shut up warning
-	vsprsortedhead.next = vsprsortedhead.prev = &vsprsortedhead;
-	for (i=0 ; i<count ; i++)
-	{
-		bestscale = MAXINT;
-		for (ds=unsorted.next ; ds!= &unsorted ; ds=ds->next)
-		{
-			if (ds->scale < bestscale)
-			{
-				bestscale = ds->scale;
-				best = ds;
-			}
-		}
-		best->next->prev = best->prev;
-		best->prev->next = best->next;
-		best->next = &vsprsortedhead;
-		best->prev = vsprsortedhead.prev;
-		vsprsortedhead.prev->next = best;
-		vsprsortedhead.prev = best;
+		msort(vissprite_ptrs, vissprite_ptrs + num_vissprite, num_vissprite);
 	}
 }
 
@@ -862,19 +866,13 @@ static void R_DrawSprite (vissprite_t *spr)
 
 void R_DrawMasked (void)
 {
-	vissprite_t		*spr;
 	drawseg_t		*ds;
 
 	R_SortVisSprites ();
 
-	if (vissprite_p > vissprites)
-	{
 	// draw all vissprites back to front
-
-		for (spr = vsprsortedhead.next ; spr != &vsprsortedhead
-		; spr=spr->next)
-			R_DrawSprite (spr);
-	}
+	for (int32_t i = num_vissprite; --i >= 0; )
+		R_DrawSprite(vissprite_ptrs[i]);
 
 //
 // render any remaining masked mid textures
