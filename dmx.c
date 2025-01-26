@@ -1,7 +1,7 @@
 //
 // Copyright (C) 2005-2014 Simon Howard
 // Copyright (C) 2015-2017 Alexey Khokholov (Nuke.YKT)
-// Copyright (C) 2023 Frenkel Smeijers
+// Copyright (C) 2023-2025 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -154,7 +154,6 @@ int32_t SFX_PlayPatch(void *data, int32_t pitch, int32_t sep, int32_t volume, in
 	uint16_t type = ((uint16_t*)data)[0];
 
 	UNUSED(flags);
-	UNUSED(priority);
 
 	if (type == 0)
 		return PCFX_Play(data);
