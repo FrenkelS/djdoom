@@ -1,6 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
-Copyright (C) 2023 Frenkel Smeijers
+Copyright (C) 2023-2025 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -58,7 +58,7 @@ typedef struct
 } midifuncs;
 
 void    MIDI_SetVolume(int32_t volume);
-void    MIDI_SetMidiFuncs(midifuncs *funcs);
+void    MIDI_SetMidiFuncs(midifuncs *funcs, int32_t soundDevice);
 void    MIDI_ContinueSong(void);
 void    MIDI_PauseSong(void);
 void    MIDI_StopSong(void);

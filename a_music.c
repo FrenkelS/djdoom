@@ -1,6 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
-Copyright (C) 2023 Frenkel Smeijers
+Copyright (C) 2023-2025 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -44,12 +44,6 @@ static midifuncs MUSIC_MidiFunctions;
 
 static int32_t MUSIC_InitFM(midifuncs *Funcs);
 static int32_t MUSIC_InitMidi(midifuncs *Funcs, int32_t Address);
-
-
-int32_t MUSIC_GetSoundDevice(void)
-{
-	return MUSIC_SoundDevice;
-}
 
 
 /*---------------------------------------------------------------------
@@ -201,7 +195,7 @@ static int32_t MUSIC_InitFM(midifuncs *Funcs)
 	Funcs->SetVolume         = NULL;
 	Funcs->GetVolume         = NULL;
 
-	MIDI_SetMidiFuncs(Funcs);
+	MIDI_SetMidiFuncs(Funcs, MUSIC_SoundDevice);
 
 	return MUSIC_Ok;
 }
@@ -224,7 +218,7 @@ static int32_t MUSIC_InitMidi(midifuncs *Funcs, int32_t Address)
 	Funcs->SetVolume         = NULL;
 	Funcs->GetVolume         = NULL;
 
-	MIDI_SetMidiFuncs(Funcs);
+	MIDI_SetMidiFuncs(Funcs, MUSIC_SoundDevice);
 
 	return MUSIC_Ok;
 }

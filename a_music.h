@@ -1,6 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
-Copyright (C) 2023 Frenkel Smeijers
+Copyright (C) 2023-2025 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -48,7 +48,6 @@ typedef struct
 	uint32_t tick;
 } songposition;
 
-int32_t MUSIC_GetSoundDevice(void);
 int32_t MUSIC_Init(int32_t SoundCard, int32_t Address);
 void    MUSIC_Shutdown(void);
 void    MUSIC_SetVolume(int32_t volume);

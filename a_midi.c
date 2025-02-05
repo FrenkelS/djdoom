@@ -205,6 +205,7 @@ static int _MIDI_TotalVolume = MIDI_MaxVolume;
 static int _MIDI_ChannelVolume[ NUM_MIDI_CHANNELS ];
 
 static midifuncs *_MIDI_Funcs = NULL;
+static int32_t _MIDI_Type;
 
 static boolean Reset = false;
 
@@ -984,14 +985,11 @@ void MIDI_PauseSong
    Selects the routines that send the MIDI data to the music device.
 ---------------------------------------------------------------------*/
 
-void MIDI_SetMidiFuncs
-   (
-   midifuncs *funcs
-   )
-
-   {
-   _MIDI_Funcs = funcs;
-   }
+void MIDI_SetMidiFuncs(midifuncs *funcs, int32_t MUSIC_SoundDevice)
+{
+	_MIDI_Funcs = funcs;
+	_MIDI_Type  = MUSIC_SoundDevice == AHW_ADLIB ? EMIDI_Adlib : EMIDI_GeneralMIDI;
+}
 
 
 /*---------------------------------------------------------------------
@@ -1182,20 +1180,8 @@ static void _MIDI_InitEMIDI
    boolean IncludeFound;
    track *Track;
    int    tracknum;
-   int    type;
    int    c1;
    int    c2;
-
-   type = EMIDI_GeneralMIDI;
-   switch( MUSIC_GetSoundDevice() )
-      {
-      case AHW_ADLIB :
-         type = EMIDI_Adlib;
-         break;
-      case AHW_MPU_401 :
-         type = EMIDI_GeneralMIDI;
-         break;
-      }
 
    _MIDI_ResetTracks();
 
@@ -1326,7 +1312,7 @@ static void _MIDI_InitEMIDI
                   break;
 
                case EMIDI_INCLUDE_TRACK :
-                  if ( EMIDI_AffectsCurrentCard( c2, type ) )
+                  if ( EMIDI_AffectsCurrentCard( c2, _MIDI_Type ) )
                      {
                      //printf( "Include track %d on card %d\n", tracknum, c2 );
                      IncludeFound = true;
@@ -1341,7 +1327,7 @@ static void _MIDI_InitEMIDI
                   break;
 
                case EMIDI_EXCLUDE_TRACK :
-                  if ( EMIDI_AffectsCurrentCard( c2, type ) )
+                  if ( EMIDI_AffectsCurrentCard( c2, _MIDI_Type ) )
                      {
                      //printf( "Exclude track %d on card %d\n", tracknum, c2 );
                      Track->EMIDI_IncludeTrack = false;
