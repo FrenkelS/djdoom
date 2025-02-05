@@ -1,6 +1,6 @@
 //
 //
-// Copyright (C) 2023 Frenkel Smeijers
+// Copyright (C) 2023-2025 Frenkel Smeijers
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -20,55 +20,36 @@
 #include "a_taskmn.h"
 #include "a_tsmapi.h"
 
-typedef struct {
-	task *t;
-	void (*callback)(void);
-} task_t;
+static task *t;
+static void (*callback)(void);
 
-#define MAX_TASKS 8
-
-static task_t tasks[MAX_TASKS];
 
 void TSM_Install(uint32_t rate)
 {
 	UNUSED(rate);
-	memset(tasks, 0, sizeof(tasks));
 }
 
 static void tsm_funch(task *t)
 {
-	int32_t taskId = t->taskId;
-	tasks[taskId].callback();
+	UNUSED(t);
+	callback();
 }
 
 int32_t TSM_NewService(void(*function)(void), int32_t rate, int32_t priority, int32_t pause)
 {
-	int32_t taskId;
-
 	UNUSED(pause);
 
-	for (taskId = 0; taskId < MAX_TASKS; taskId++)
-	{
-		if (tasks[taskId].t == NULL)
-			break;
-	}
-
-	if (taskId == MAX_TASKS)
-		return -1;
-
-	tasks[taskId].callback = function;
-	tasks[taskId].t = TS_ScheduleTask(tsm_funch, rate, priority, taskId);
+	callback = function;
+	t = TS_ScheduleTask(tsm_funch, rate, priority);
 	TS_Dispatch();
-	return taskId;
+	return 0;
 }
 
 void TSM_DelService(int32_t taskId)
 {
-	if (taskId >= 0)
-	{
-		TS_Terminate(tasks[taskId].t);
-		tasks[taskId].t = NULL;
-	}
+	UNUSED(taskId);
+	TS_Terminate(t);
+	t = NULL;
 }
 
 void TSM_Remove(void)

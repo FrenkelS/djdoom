@@ -1,6 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
-Copyright (C) 2023 Frenkel Smeijers
+Copyright (C) 2023-2025 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -37,7 +37,6 @@ typedef struct task
 	struct task			*next;
 	struct task			*prev;
 	void				(*TaskService)(struct task *);
-	int32_t				taskId;
 	int32_t				rate;
 	volatile int32_t	count;
 	int32_t				priority;
@@ -45,7 +44,7 @@ typedef struct task
 } task;
 
 void TS_Shutdown(void);
-task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority, int32_t taskId);
+task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority);
 void TS_Terminate(task *ptr);
 void TS_Dispatch(void);
 void TS_SetTaskRate(task *Task, int32_t rate);

@@ -1,6 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
-Copyright (C) 2023 Frenkel Smeijers
+Copyright (C) 2023-2025 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -212,7 +212,7 @@ void PCFX_Init(int32_t ticrate)
 		return;
 
 	PCFX_Stop(PCFX_VoiceHandle);
-	PCFX_ServiceTask = TS_ScheduleTask(&PCFX_Service, ticrate, 2, 0);
+	PCFX_ServiceTask = TS_ScheduleTask(&PCFX_Service, ticrate, 2);
 	TS_Dispatch();
 
 	PCFX_Installed = true;

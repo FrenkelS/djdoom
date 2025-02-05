@@ -1,6 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
-Copyright (C) 2023 Frenkel Smeijers
+Copyright (C) 2023-2025 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -283,7 +283,7 @@ static void TS_AddTask(task *node)
    Schedules a new task for processing.
 ---------------------------------------------------------------------*/
 
-task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority, int32_t taskId)
+task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority)
 {
 	task *ptr;
 
@@ -294,7 +294,6 @@ task *TS_ScheduleTask(void (*Function)(task *), int32_t rate, int32_t priority, 
 			TS_Startup();
 
 		ptr->TaskService = Function;
-		ptr->taskId = taskId;
 		ptr->rate = TS_SetTimer(rate);
 		ptr->count = 0;
 		ptr->priority = priority;
