@@ -1,6 +1,6 @@
 /*
 Copyright (C) 1994-1995 Apogee Software, Ltd.
-Copyright (C) 2023 Frenkel Smeijers
+Copyright (C) 2023-2025 Frenkel Smeijers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -113,7 +113,6 @@ static int16_t MV_VolumeTable[ 63 + 1 ][ 256 ];
 
 static boolean MV_Installed   = false;
 static int32_t MV_SoundCard   = AHW_SOUND_BLASTER;
-static int32_t MV_MaxVoices   = 1;
 
 
 #define MixBufferSize     256
@@ -1158,9 +1157,6 @@ void MV_Init(int32_t soundcard, int32_t MixRate, int32_t Voices)
 	MV_Voices = (VoiceNode *)ptr;
 	MV_HarshClipTable = ptr + (MV_TotalMemory - sizeof(HARSH_CLIP_TABLE_8));
 
-	// Set number of voices before calculating volume table
-	MV_MaxVoices = Voices;
-
 	LL_Reset(&VoiceList);
 	LL_Reset(&VoicePool);
 
@@ -1297,8 +1293,6 @@ void MV_Shutdown(void)
 
 	LL_Reset(&VoiceList);
 	LL_Reset(&VoicePool);
-
-	MV_MaxVoices = 1;
 
 	// Release the descriptor from our mix buffer
 	__dpmi_free_dos_memory(MV_BufferDescriptor);
