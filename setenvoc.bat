@@ -1,2 +1,0 @@
-SET LADSOFT=C:\Progs\cc386
-SET PATH=C:\Progs\nasm-2.16.01;%LADSOFT%\bin;%PATH%
